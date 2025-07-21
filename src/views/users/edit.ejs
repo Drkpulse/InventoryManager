@@ -1,0 +1,26 @@
+<h1>Edit User</h1>
+
+<form method="POST" action="/users/<%= editUser.id %>">
+  <div class="form-group">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" value="<%= editUser.name %>" required>
+  </div>
+
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="<%= editUser.email %>" required>
+  </div>
+
+  <div class="form-group">
+    <label for="role">Role</label>
+    <select id="role" name="role" required>
+      <option value="user" <%= editUser.role === 'user' ? 'selected' : '' %>>User</option>
+      <option value="admin" <%= editUser.role === 'admin' ? 'selected' : '' %>>Admin</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn">Update User</button>
+    <a href="/users" class="btn">Cancel</a>
+  </div>
+</form>

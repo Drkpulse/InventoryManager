@@ -1,0 +1,17 @@
+<section class="home">
+  <h1>Welcome to Inventory Manager</h1>
+
+  <% if (user) { %>
+    <p>Hello, <%= user.name %>!</p>
+    <div class="actions">
+      <a href="/items" class="btn">View Inventory</a>
+      <a href="/items/new" class="btn">Add New Item</a>
+    </div>
+  <% } else { %>
+    <p>A simple inventory management system</p>
+    <div class="actions">
+      <a href="/auth/login" class="btn">Login</a>
+      <a href="/auth/register" class="btn">Register</a>
+    </div>
+  <% } %>
+</section>

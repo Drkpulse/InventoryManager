@@ -1,0 +1,58 @@
+<h1>Add New Employee</h1>
+
+<form method="POST" action="/employees">
+  <div class="form-group">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required>
+  </div>
+
+  <div class="form-group">
+    <label for="cep">Employee ID</label>
+    <input type="text" id="cep" name="cep" required>
+  </div>
+
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required>
+  </div>
+
+  <div class="form-group">
+    <label for="office_id">Office Software</label>
+    <select id="office_id" name="office_id" required>
+      <option value="">Select Office Software</option>
+      <% offices.forEach(office => { %>
+        <option value="<%= office.id %>"><%= office.name %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="platform_id">Platform</label>
+    <select id="platform_id" name="platform_id" required>
+      <option value="">Select Platform</option>
+      <% platforms.forEach(platform => { %>
+        <option value="<%= platform.id %>"><%= platform.name %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="dept_id">Department</label>
+    <select id="dept_id" name="dept_id" required>
+      <option value="">Select Department</option>
+      <% departments.forEach(dept => { %>
+        <option value="<%= dept.id %>"><%= dept.name %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="joined_date">Joined Date</label>
+    <input type="date" id="joined_date" name="joined_date" required>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn">Add Employee</button>
+    <a href="/employees" class="btn">Cancel</a>
+  </div>
+</form>

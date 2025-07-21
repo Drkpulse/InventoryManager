@@ -1,0 +1,83 @@
+<h1>Manage Brands</h1>
+
+<div class="reference-form">
+  <h3>Add Brand</h3>
+  <form method="POST" action="/references/brands">
+    <div class="form-group">
+      <label for="name">Brand Name</label>
+      <input type="text" id="name" name="name" required>
+    </div>
+
+    <div class="form-group">
+      <button type="submit" class="btn">Add Brand</button>
+    </div>
+  </form>
+</div>
+
+<div class="reference-list">
+  <h3>Existing Brands</h3>
+
+  <% if (brands && brands.length > 0) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% brands.forEach(brand => { %>
+          <tr>
+            <td>
+              <form class="inline-edit-form" method="POST" action="/references/brands/<%= brand.id %>">
+                <input type="text" name="name" value="<%= brand.name %>" required>
+                <button type="submit" class="btn">Update</button>
+              </form>
+            </td>
+            <td>
+              <form method="POST" action="/references/brands/<%= brand.id %>/delete" style="display: inline;">
+                <button type="submit" class="btn btn-danger delete-btn">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p>No brands found.</p>
+  <% } %>
+</div>
+
+<style>
+  .reference-form {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .reference-form h3 {
+    margin-bottom: 1rem;
+  }
+
+  .reference-list {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .reference-list h3 {
+    margin-bottom: 1rem;
+  }
+
+  .inline-edit-form {
+    display: flex;
+    align-items: center;
+  }
+
+  .inline-edit-form input {
+    margin-right: 0.5rem;
+  }
+</style>

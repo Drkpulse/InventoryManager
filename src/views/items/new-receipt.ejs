@@ -1,0 +1,267 @@
+<h1>New Purchase Receipt</h1>
+
+<div class="alert alert-info">
+  Use this form to record a new purchase with one or more items.
+</div>
+
+<form method="POST" action="/items/new-receipt" id="receiptForm">
+  <div class="form-section">
+    <h3>Receipt Information</h3>
+
+    <div class="form-group">
+      <label for="receipt">Receipt Number</label>
+      <input type="text" id="receipt" name="receipt" required>
+      <small>The unique identifier for this purchase receipt</small>
+    </div>
+
+    <div class="form-group">
+      <label for="supplier">Supplier</label>
+      <input type="text" id="supplier" name="supplier" required>
+    </div>
+
+    <div class="form-group">
+      <label for="date_acquired">Purchase Date</label>
+      <input type="date" id="date_acquired" name="date_acquired" value="<%= new Date().toISOString().split('T')[0] %>" required>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Items</h3>
+    <p>Add the items that were purchased on this receipt.</p>
+
+    <div id="items-container">
+      <!-- First item (required) -->
+      <div class="item-entry">
+        <h4>Item 1</h4>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Item ID (CEP/BRC)</label>
+            <input type="text" name="cep_brc" required>
+          </div>
+
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" name="name" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <select name="type_id" required>
+              <option value="">Select Type</option>
+              <% types.forEach(type => { %>
+                <option value="<%= type.id %>"><%= type.name %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Price</label>
+            <input type="number" name="price" min="0" step="0.01">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Brand</label>
+            <select name="brand_id">
+              <option value="">Select Brand</option>
+              <% brands.forEach(brand => { %>
+                <option value="<%= brand.id %>"><%= brand.name %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Model</label>
+            <input type="text" name="model">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Serial Number</label>
+          <input type="text" name="serial_cod">
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-secondary" id="addItemBtn">Add Another Item</button>
+  </div>
+
+  <div class="form-group submit-section">
+    <button type="submit" class="btn">Save Receipt with Items</button>
+    <a href="/items" class="btn btn-secondary">Cancel</a>
+  </div>
+</form>
+
+<style>
+  .form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .form-section h3 {
+    margin-bottom: 1rem;
+    color: var(--secondary);
+  }
+
+  .item-entry {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+
+  .item-entry h4 {
+    margin-bottom: 1rem;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .form-row .form-group {
+    flex: 1;
+  }
+
+  .remove-item {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    color: var(--danger);
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  .btn-secondary {
+    background-color: #6c757d;
+  }
+
+  .submit-section {
+    margin-top: 2rem;
+  }
+
+  .alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('items-container');
+    const addButton = document.getElementById('addItemBtn');
+    let itemCount = 1;
+
+    // Add a new item entry
+    addButton.addEventListener('click', function() {
+      itemCount++;
+
+      // Create new item entry
+      const newItem = document.createElement('div');
+      newItem.className = 'item-entry';
+
+      newItem.innerHTML = `
+        <h4>Item ${itemCount}</h4>
+        <button type="button" class="remove-item" title="Remove Item">&times;</button>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Item ID (CEP/BRC)</label>
+            <input type="text" name="cep_brc">
+          </div>
+
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" name="name">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <select name="type_id">
+              <option value="">Select Type</option>
+              ${Array.from(document.querySelectorAll('select[name="type_id"]:first-of-type option'))
+                .map(opt => `<option value="${opt.value}">${opt.text}</option>`)
+                .join('')}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Price</label>
+            <input type="number" name="price" min="0" step="0.01">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Brand</label>
+            <select name="brand_id">
+              <option value="">Select Brand</option>
+              ${Array.from(document.querySelectorAll('select[name="brand_id"]:first-of-type option'))
+                .map(opt => `<option value="${opt.value}">${opt.text}</option>`)
+                .join('')}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Model</label>
+            <input type="text" name="model">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Serial Number</label>
+          <input type="text" name="serial_cod">
+        </div>
+      `;
+
+      container.appendChild(newItem);
+
+      // Add remove button functionality
+      newItem.querySelector('.remove-item').addEventListener('click', function() {
+        container.removeChild(newItem);
+      });
+    });
+
+    // Form validation
+    document.getElementById('receiptForm').addEventListener('submit', function(e) {
+      const receipt = document.getElementById('receipt').value.trim();
+      const supplier = document.getElementById('supplier').value.trim();
+      const date = document.getElementById('date_acquired').value.trim();
+
+      const firstItemId = document.querySelector('input[name="cep_brc"]').value.trim();
+      const firstName = document.querySelector('input[name="name"]').value.trim();
+
+      let valid = true;
+
+      if (!receipt) {
+        valid = false;
+        alert('Receipt number is required');
+      } else if (!supplier) {
+        valid = false;
+        alert('Supplier is required');
+      } else if (!date) {
+        valid = false;
+        alert('Purchase date is required');
+      } else if (!firstItemId || !firstName) {
+        valid = false;
+        alert('At least one item with ID and name is required');
+      }
+
+      if (!valid) {
+        e.preventDefault();
+      }
+    });
+  });
+</script>

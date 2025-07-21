@@ -1,0 +1,30 @@
+<h1>Purchase History</h1>
+
+<div class="report-actions">
+  <a href="/reports/export-assets" class="btn">Export to CSV</a>
+</div>
+
+<% if (history && history.length > 0) { %>
+  <table>
+    <thead>
+      <tr>
+        <th>Month</th>
+        <th>Items Purchased</th>
+        <th>Total Spent</th>
+        <th>Suppliers</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% history.forEach(entry => { %>
+        <tr>
+          <td><%= new Date(entry.month).toLocaleDateString(undefined, { year: 'numeric', month: 'long' }) %></td>
+          <td><%= entry.items_purchased %></td>
+          <td>$<%= parseFloat(entry.total_spent).toFixed(2) %></td>
+          <td><%= entry.suppliers %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } else { %>
+  <p>No purchase history available.</p>
+<% } %>

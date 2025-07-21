@@ -1,0 +1,176 @@
+<section class="dashboard">
+  <h1>Dashboard</h1>
+
+  <div class="stats-cards">
+    <div class="stat-card">
+      <h3>Items</h3>
+      <p class="stat-number"><%= stats.itemCount %></p>
+      <p class="stat-label">Total Items</p>
+      <a href="/items" class="card-link">View All</a>
+    </div>
+
+    <div class="stat-card">
+      <h3>Employees</h3>
+      <p class="stat-number"><%= stats.employeeCount %></p>
+      <p class="stat-label">Active Employees</p>
+      <a href="/employees" class="card-link">View All</a>
+    </div>
+
+    <div class="stat-card">
+      <h3>Departments</h3>
+      <p class="stat-number"><%= stats.departmentCount %></p>
+      <p class="stat-label">Departments</p>
+      <a href="/departments" class="card-link">View All</a>
+    </div>
+
+    <div class="stat-card">
+      <h3>Unassigned</h3>
+      <p class="stat-number"><%= stats.unassignedCount %></p>
+      <p class="stat-label">Unassigned Items</p>
+      <a href="/reports/unassigned-assets" class="card-link">View Report</a>
+    </div>
+  </div>
+
+  <div class="dashboard-row">
+    <div class="dashboard-panel">
+      <h2>Asset Distribution</h2>
+      <div class="chart-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Item Type</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% itemsByType.forEach(type => { %>
+              <tr>
+                <td><%= type.name %></td>
+                <td><%= type.count %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="dashboard-panel">
+      <h2>Recent Items</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Assigned To</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% recentItems.forEach(item => { %>
+            <tr>
+              <td><%= item.cep_brc %></td>
+              <td>
+                <a href="/items/<%= item.id %>/<%= item.cep_brc %>"><%= item.name %></a>
+              </td>
+              <td><%= item.type_name || 'N/A' %></td>
+              <td><%= item.assigned_to_name || 'Unassigned' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <a href="/items" class="view-all">View All Items →</a>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <a href="/items/new" class="btn">Add New Item</a>
+    <a href="/employees/new" class="btn">Add New Employee</a>
+    <a href="/reports/export-assets" class="btn">Export Inventory</a>
+  </div>
+</section>
+
+<style>
+  .stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary);
+    margin: 0.5rem 0;
+  }
+
+  .stat-label {
+    color: #666;
+    margin-bottom: 1rem;
+  }
+
+  .card-link {
+    display: inline-block;
+    font-size: 0.9rem;
+  }
+
+  .dashboard-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .dashboard-panel {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .dashboard-panel h2 {
+    margin-bottom: 1rem;
+    color: var(--dark);
+    font-size: 1.2rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+  }
+
+  .data-table {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .data-table th {
+    text-align: left;
+    font-weight: 600;
+  }
+
+  .view-all {
+    display: block;
+    text-align: right;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,30 @@
+<h1>Assets by Department</h1>
+
+<div class="report-actions">
+  <a href="/reports/export-assets" class="btn">Export to CSV</a>
+</div>
+
+<% if (departments && departments.length > 0) { %>
+  <table>
+    <thead>
+      <tr>
+        <th>Department</th>
+        <th>Total Items</th>
+        <th>Total Value</th>
+        <th>Asset Types</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% departments.forEach(dept => { %>
+        <tr>
+          <td><%= dept.department %></td>
+          <td><%= dept.total_items || 0 %></td>
+          <td>$<%= dept.total_value ? parseFloat(dept.total_value).toFixed(2) : '0.00' %></td>
+          <td><%= dept.asset_types || 'N/A' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } else { %>
+  <p>No department data available.</p>
+<% } %>

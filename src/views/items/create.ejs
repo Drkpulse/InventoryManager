@@ -1,0 +1,137 @@
+<h1>Add New Item</h1>
+
+<% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul>
+      <% errors.forEach(error => { %>
+        <li><%= error %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="POST" action="/items">
+  <div class="form-section">
+    <h3>Basic Information</h3>
+
+    <div class="form-group">
+      <label for="cep_brc">Item ID (CEP/BRC)</label>
+      <input type="text" id="cep_brc" name="cep_brc" value="<%= typeof formData !== 'undefined' ? formData.cep_brc : '' %>" required>
+      <small>Unique identifier for this item</small>
+    </div>
+
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" value="<%= typeof formData !== 'undefined' ? formData.name : '' %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="type_id">Type</label>
+      <select id="type_id" name="type_id" required>
+        <option value="">Select Type</option>
+        <% types.forEach(type => { %>
+          <option value="<%= type.id %>" <%= typeof formData !== 'undefined' && formData.type_id == type.id ? 'selected' : '' %>>
+            <%= type.name %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Product Details</h3>
+
+    <div class="form-group">
+      <label for="brand_id">Brand</label>
+      <select id="brand_id" name="brand_id">
+        <option value="">Select Brand</option>
+        <% brands.forEach(brand => { %>
+          <option value="<%= brand.id %>" <%= typeof formData !== 'undefined' && formData.brand_id == brand.id ? 'selected' : '' %>>
+            <%= brand.name %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="model">Model</label>
+      <input type="text" id="model" name="model" value="<%= typeof formData !== 'undefined' ? formData.model : '' %>">
+    </div>
+
+    <div class="form-group">
+      <label for="serial_cod">Serial Number</label>
+      <input type="text" id="serial_cod" name="serial_cod" value="<%= typeof formData !== 'undefined' ? formData.serial_cod : '' %>">
+    </div>
+
+    <div class="form-group">
+      <label for="price">Price</label>
+      <input type="number" id="price" name="price" min="0" step="0.01" value="<%= typeof formData !== 'undefined' ? formData.price : '' %>">
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Purchase Information</h3>
+
+    <div class="form-group">
+      <label for="receipt">Receipt</label>
+      <select id="receipt" name="receipt">
+        <option value="">Select Receipt</option>
+        <% sales.forEach(sale => { %>
+          <option value="<%= sale.receipt %>" <%= typeof formData !== 'undefined' && formData.receipt === sale.receipt ? 'selected' : '' %>>
+            <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
+          </option>
+        <% }) %>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Assignment</h3>
+
+    <div class="form-group">
+      <label for="assigned_to">Assigned To</label>
+      <select id="assigned_to" name="assigned_to">
+        <option value="">Unassigned</option>
+        <% employees.forEach(employee => { %>
+          <option value="<%= employee.id %>" <%= typeof formData !== 'undefined' && formData.assigned_to == employee.id ? 'selected' : '' %>>
+            <%= employee.name %> (<%= employee.cep %>)
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="date_assigned">Date Assigned</label>
+      <input type="date" id="date_assigned" name="date_assigned"
+        value="<%= typeof formData !== 'undefined' && formData.date_assigned ? formData.date_assigned : '' %>">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn">Add Item</button>
+    <a href="/items" class="btn">Cancel</a>
+  </div>
+</form>
+
+<style>
+  .form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .form-section h3 {
+    margin-bottom: 1rem;
+    color: var(--secondary);
+  }
+
+  .form-section:last-of-type {
+    border-bottom: none;
+  }
+
+  small {
+    color: #666;
+    display: block;
+    margin-top: 0.25rem;
+  }
+</style>

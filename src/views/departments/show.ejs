@@ -1,0 +1,42 @@
+<h1><%= department.name %> Department</h1>
+
+<div class="department-employees">
+  <h2>Employees</h2>
+
+  <% if (employees && employees.length > 0) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>ID</th>
+          <th>Email</th>
+          <th>Platform</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% employees.forEach(employee => { %>
+          <tr>
+            <td><%= employee.name %></td>
+            <td><%= employee.cep %></td>
+            <td><%= employee.email %></td>
+            <td><%= employee.platform_name || 'N/A' %></td>
+            <td>
+              <a href="/employees/<%= employee.id %>" class="btn">View</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p>No employees in this department.</p>
+  <% } %>
+</div>
+
+<div class="actions" style="margin-top: 2rem;">
+  <a href="/departments" class="btn">Back to Departments</a>
+  <a href="/departments/<%= department.id %>/edit" class="btn">Edit Department</a>
+  <form style="display: inline;" method="POST" action="/departments/<%= department.id %>/delete">
+    <button type="submit" class="btn btn-danger delete-btn">Delete Department</button>
+  </form>
+</div>

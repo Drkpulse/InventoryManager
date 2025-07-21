@@ -1,0 +1,22 @@
+<h1>My Profile</h1>
+
+<form method="POST" action="/users/profile">
+  <div class="form-group">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" value="<%= profile.name %>" required>
+  </div>
+
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="<%= profile.email %>" required>
+  </div>
+
+  <div class="form-group">
+    <label for="role">Role</label>
+    <input type="text" id="role" value="<%= profile.role %>" disabled>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn">Update Profile</button>
+  </div>
+</form>

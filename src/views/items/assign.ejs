@@ -1,0 +1,49 @@
+<h1>Assign Item</h1>
+
+<div class="item-summary">
+  <h3><%= item.name %></h3>
+  <p class="item-id"><%= item.cep_brc %></p>
+  <p><strong>Type:</strong> <%= item.type_name || 'N/A' %></p>
+  <p><strong>Brand:</strong> <%= item.brand_name || 'N/A' %></p>
+  <p><strong>Model:</strong> <%= item.model || 'N/A' %></p>
+</div>
+
+<form method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/assign">
+  <div class="form-group">
+    <label for="assigned_to">Assign To Employee</label>
+    <select id="assigned_to" name="assigned_to" required>
+      <option value="">Select Employee</option>
+      <% employees.forEach(employee => { %>
+        <option value="<%= employee.id %>">
+          <%= employee.name %> (<%= employee.cep %>)
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="date_assigned">Date Assigned</label>
+    <input type="date" id="date_assigned" name="date_assigned"
+      value="<%= new Date().toISOString().split('T')[0] %>" required>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn">Assign Item</button>
+    <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn">Cancel</a>
+  </div>
+</form>
+
+<style>
+  .item-summary {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .item-id {
+    color: #666;
+    margin-bottom: 1rem;
+  }
+</style>

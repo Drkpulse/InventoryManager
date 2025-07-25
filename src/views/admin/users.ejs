@@ -1,57 +1,170 @@
-<h1>User Management</h1>
+<div class="page-container">
+  <div class="page-header-simple">
+    <div class="header-title-section">
+      <div class="breadcrumb-nav">
+        <a href="/admin" class="breadcrumb-link">
+          <i class="fas fa-cog"></i> Admin
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <span class="breadcrumb-current">User Management</span>
+      </div>
+      <h1>User Management</h1>
+      <div class="users-meta">
+        <span class="users-count">
+          <i class="fas fa-users"></i>
+          <%= users ? users.length : 0 %> users
+        </span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/admin" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Admin
+        </a>
+        <a href="/admin/users/new" class="btn btn-primary">
+          <i class="fas fa-user-plus"></i> Add New User
+        </a>
+      </div>
+    </div>
+  </div>
 
-<div class="admin-actions" style="margin-bottom: 1rem;">
-  <a href="/admin/users/new" class="btn">Add New User</a>
+  <div class="content-section">
+    <% if (typeof users !== 'undefined' && users && users.length > 0) { %>
+      <div class="users-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>
+                <i class="fas fa-user"></i> User
+              </th>
+              <th>
+                <i class="fas fa-envelope"></i> Email
+              </th>
+              <th>
+                <i class="fas fa-shield-alt"></i> Role
+              </th>
+              <th>
+                <i class="fas fa-circle"></i> Status
+              </th>
+              <th>
+                <i class="fas fa-clock"></i> Last Login
+              </th>
+              <th class="actions-col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(user => { %>
+              <tr>
+                <td>
+                  <div class="user-info">
+                    <div class="user-avatar">
+                      <%= user.name.charAt(0).toUpperCase() %>
+                    </div>
+                    <div class="user-details">
+                      <div class="user-name"><%= user.name %></div>
+                      <div class="user-email"><%= user.email %></div>
+                    </div>
+                  </div>
+                </td>
+                <td><%= user.email %></td>
+                <td>
+                  <span class="status-badge role-badge <%= user.role === 'admin' ? 'role-admin' : 'role-user' %>">
+                    <i class="fas <%= user.role === 'admin' ? 'fa-crown' : 'fa-user' %>"></i>
+                    <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge <%= user.active ? 'status-active' : 'status-inactive' %>">
+                    <i class="fas <%= user.active ? 'fa-check-circle' : 'fa-times-circle' %>"></i>
+                    <%= user.active ? 'Active' : 'Inactive' %>
+                  </span>
+                </td>
+                <td>
+                  <span class="date-display">
+                    <% if (user.last_login) { %>
+                      <i class="fas fa-calendar-alt"></i>
+                      <%= new Date(user.last_login).toLocaleDateString() %>
+                    <% } else { %>
+                      <i class="fas fa-minus"></i>
+                      Never
+                    <% } %>
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons-group">
+                    <a href="/admin/users/<%= user.id %>/edit" class="btn btn-small btn-ghost">
+                      <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <% if (user.id !== currentUser.id) { %>
+                      <form style="display: inline;" method="POST" action="/admin/users/<%= user.id %>/toggle-status">
+                        <button type="submit" class="btn btn-small <%= user.active ? 'btn-warning' : 'btn-success' %>">
+                          <i class="fas <%= user.active ? 'fa-user-slash' : 'fa-user-check' %>"></i>
+                          <%= user.active ? 'Deactivate' : 'Activate' %>
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <span class="btn btn-small btn-disabled">
+                        <i class="fas fa-user-shield"></i> Current User
+                      </span>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3>No Users Found</h3>
+        <p>There are no users in the system yet. Create the first user to get started.</p>
+        <a href="/admin/users/new" class="btn btn-primary">
+          <i class="fas fa-user-plus"></i> Add First User
+        </a>
+      </div>
+    <% } %>
+  </div>
 </div>
 
-<% if (typeof users !== 'undefined' && users && users.length > 0) { %>
-  <div class="users-table-container">
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Status</th>
-          <th>Last Login</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% users.forEach(user => { %>
-          <tr>
-            <td><%= user.name %></td>
-            <td><%= user.email %></td>
-            <td>
-              <span class="role-badge <%= user.role === 'admin' ? 'role-admin' : 'role-user' %>">
-                <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
-              </span>
-            </td>
-            <td>
-              <span class="status-badge <%= user.active ? 'status-active' : 'status-inactive' %>">
-                <%= user.active ? 'Active' : 'Inactive' %>
-              </span>
-            </td>
-            <td>
-              <%= user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never' %>
-            </td>
-            <td class="actions-cell">
-              <a href="/admin/users/<%= user.id %>/edit" class="btn btn-small">Edit</a>
-              <% if (user.id !== currentUser.id) { %>
-                <form style="display: inline;" method="POST" action="/admin/users/<%= user.id %>/toggle-status">
-                  <button type="submit" class="btn btn-small <%= user.active ? 'btn-warning' : 'btn-success' %>">
-                    <%= user.active ? 'Deactivate' : 'Activate' %>
-                  </button>
-                </form>
-              <% } %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </div>
-<% } else { %>
-  <p>No users found.</p>
-<% } %>
+<style>
+/* Role badges */
+.role-badge.role-admin {
+  background: var(--primary-light);
+  color: var(--primary);
+}
 
-<link rel="stylesheet" href="/css/styles.css">
+.role-badge.role-user {
+  background: var(--secondary-light);
+  color: var(--secondary);
+}
+
+/* Date display */
+.date-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.date-display i {
+  opacity: 0.7;
+}
+
+/* Disabled button state */
+.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--gray-100) !important;
+  color: var(--gray-500) !important;
+  border-color: var(--gray-200) !important;
+}
+
+.btn-disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+</style>

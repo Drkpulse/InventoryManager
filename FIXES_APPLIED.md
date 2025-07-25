@@ -10,15 +10,19 @@ This document outlines the fixes applied to resolve the reported database errors
 - `column "active" does not exist` in users table
 - `column "description" does not exist` in software table  
 - `column s.description does not exist` in software queries
+- `column "description" of relation "items" does not exist` in items creation
+- `column "settings" does not exist` for user preferences
 
 **Solution**: 
 - Added SQL migration script: `database/add-missing-columns.sql`
 - Modified controllers to use `COALESCE()` for missing columns
 - Added graceful fallbacks in queries
+- Added missing columns to all tables
 
 **Files Modified**:
 - `src/controllers/adminController.js` - Fixed users query
 - `src/controllers/softwareController.js` - Fixed software queries
+- `src/controllers/userController.js` - Enhanced settings handling
 - `database/add-missing-columns.sql` - Migration script
 
 ### 2. Content Loading in mainContent
@@ -46,6 +50,24 @@ This document outlines the fixes applied to resolve the reported database errors
 
 **Files Modified**:
 - `src/controllers/itemController.js` - Enhanced with full reference data
+
+### 4. User Settings and Theme Issues
+
+**Problem**: User settings not saving properly and theme changes not working
+- Empty errors when saving theme changes
+- Theme not applying immediately
+- Poor user feedback on settings save
+
+**Solution**:
+- Enhanced user controller with proper JSON responses for AJAX
+- Added `settings` JSONB column to users table
+- Improved form submission with AJAX and immediate feedback
+- Enhanced theme handling with preview and persistence
+
+**Files Modified**:
+- `src/controllers/userController.js` - Added JSON responses and better error handling
+- `src/views/users/settings.ejs` - Enhanced form with AJAX submission and preview
+- `database/add-missing-columns.sql` - Added settings column
 
 ## How to Apply the Fixes
 
@@ -79,8 +101,10 @@ This document outlines the fixes applied to resolve the reported database errors
 
 ### Database Changes
 - Added `active` column to `users` table (BOOLEAN DEFAULT TRUE)
+- Added `settings` column to `users` table (JSONB DEFAULT '{}')
 - Added `description` column to `software` table (TEXT)
 - Added `max_licenses` column to `software` table (INTEGER DEFAULT 1)
+- Added `description` column to `items` table (TEXT)
 - Added `license_key` column to `employee_software` table (VARCHAR(255))
 
 ### AJAX Navigation
@@ -100,8 +124,11 @@ After applying fixes, verify that:
 1. ✅ Users page loads without "active" column error
 2. ✅ Software page loads without "description" column error  
 3. ✅ Items page loads with all filters and data
-4. ✅ Navigation between pages works in mainContent area
-5. ✅ All AJAX requests return proper JSON responses
+4. ✅ Items can be created without "description" column error
+5. ✅ Navigation between pages works in mainContent area
+6. ✅ User settings save correctly with proper feedback
+7. ✅ Theme changes apply immediately and persist
+8. ✅ All AJAX requests return proper JSON responses
 
 ## Files Created/Modified
 
@@ -109,6 +136,7 @@ After applying fixes, verify that:
 - `src/middleware/ajaxResponse.js` - AJAX response handler
 - `database/add-missing-columns.sql` - Database migration
 - `startup-fix.sh` - Automated fix script
+- `fix-all-issues.js` - Comprehensive fix script
 - `FIXES_APPLIED.md` - This documentation
 
 ### Modified Files:
@@ -116,5 +144,7 @@ After applying fixes, verify that:
 - `src/controllers/adminController.js` - Fixed users query
 - `src/controllers/softwareController.js` - Fixed software queries  
 - `src/controllers/itemController.js` - Enhanced items functionality
+- `src/controllers/userController.js` - Enhanced settings with JSON responses
+- `src/views/users/settings.ejs` - Enhanced form with AJAX and theme preview
 
 The application should now work correctly with proper AJAX navigation and no database column errors.

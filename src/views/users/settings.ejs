@@ -35,7 +35,7 @@
     <!-- Display Settings -->
     <div class="form-section">
       <h3><i class="fas fa-palette"></i> Display Settings</h3>
-      <form method="POST" action="/users/settings/display" class="needs-validation" novalidate>
+      <form method="POST" action="/users/settings/display" class="needs-validation" novalidate id="displaySettingsForm">
         <div class="form-row">
           <div class="form-group col-md-6">
             <label for="theme" class="required">Theme</label>
@@ -99,7 +99,7 @@
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="btn btn-primary" id="saveDisplayBtn">
             <i class="fas fa-save"></i> Save Display Settings
           </button>
         </div>
@@ -263,9 +263,95 @@ document.getElementById('confirm_password').addEventListener('input', function()
   }
 });
 
-// Theme change preview
-document.getElementById('theme').addEventListener('change', function() {
-  const body = document.body;
-  body.setAttribute('data-theme', this.value);
+// Theme change preview and enhanced form handling
+document.addEventListener('DOMContentLoaded', function() {
+  const themeSelect = document.getElementById('theme');
+  const displayForm = document.getElementById('displaySettingsForm');
+  const saveBtn = document.getElementById('saveDisplayBtn');
+  
+  // Theme preview functionality
+  if (themeSelect) {
+    themeSelect.addEventListener('change', function() {
+      const body = document.body;
+      const selectedTheme = this.value;
+      
+      if (selectedTheme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      } else {
+        body.setAttribute('data-theme', selectedTheme);
+      }
+    });
+  }
+  
+  // Enhanced form submission with feedback
+  if (displayForm) {
+    displayForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const originalBtnText = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      saveBtn.disabled = true;
+      
+      const formData = new FormData(this);
+      
+      fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          // Show success message
+          showMessage('Settings saved successfully!', 'success');
+          
+          // Apply theme immediately
+          if (formData.get('theme') && window.themeHandler) {
+            window.themeHandler.setTheme(formData.get('theme'));
+          }
+        } else {
+          throw new Error(data.error || 'Failed to save settings');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showMessage('Failed to save settings: ' + error.message, 'error');
+      })
+      .finally(() => {
+        saveBtn.innerHTML = originalBtnText;
+        saveBtn.disabled = false;
+      });
+    });
+  }
+  
+  function showMessage(message, type) {
+    // Remove existing alerts
+    document.querySelectorAll('.alert').forEach(alert => alert.remove());
+    
+    // Create new alert
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
+    alertDiv.innerHTML = `
+      <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+      ${message}
+    `;
+    
+    // Insert after page header
+    const pageHeader = document.querySelector('.page-header-simple');
+    pageHeader.insertAdjacentElement('afterend', alertDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      alertDiv.remove();
+    }, 5000);
+  }
 });
 </script>

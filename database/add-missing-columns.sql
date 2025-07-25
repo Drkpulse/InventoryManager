@@ -3,9 +3,15 @@
 -- Add 'active' column to users table
 ALTER TABLE users ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE;
 
+-- Add 'settings' column to users table for user preferences
+ALTER TABLE users ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{}'::jsonb;
+
 -- Add 'description' and 'max_licenses' columns to software table
 ALTER TABLE software ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE software ADD COLUMN IF NOT EXISTS max_licenses INTEGER DEFAULT 1;
+
+-- Add 'description' column to items table (referenced in item controller)
+ALTER TABLE items ADD COLUMN IF NOT EXISTS description TEXT;
 
 -- Add 'license_key' column to employee_software table (referenced in schema)
 ALTER TABLE employee_software ADD COLUMN IF NOT EXISTS license_key VARCHAR(255);
@@ -26,6 +32,6 @@ SELECT
     column_name, 
     data_type 
 FROM information_schema.columns 
-WHERE table_name IN ('users', 'software', 'employee_software') 
-    AND column_name IN ('active', 'description', 'max_licenses', 'license_key')
+WHERE table_name IN ('users', 'software', 'employee_software', 'items') 
+    AND column_name IN ('active', 'settings', 'description', 'max_licenses', 'license_key')
 ORDER BY table_name, column_name;

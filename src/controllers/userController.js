@@ -78,10 +78,31 @@ exports.updateDisplaySettings = async (req, res) => {
       httpOnly: false // Allow JavaScript access
     });
     
-    res.redirect('/users/settings?updated=true');
+    // Check if this is an AJAX request
+    const isAjax = req.headers['x-requested-with'] === 'XMLHttpRequest';
+    
+    if (isAjax) {
+      res.json({ 
+        success: true, 
+        message: 'Display settings updated successfully',
+        redirect: '/users/settings?updated=true'
+      });
+    } else {
+      res.redirect('/users/settings?updated=true');
+    }
   } catch (error) {
     console.error('Error updating display settings:', error);
-    res.status(500).send('Server error: ' + error.message);
+    
+    const isAjax = req.headers['x-requested-with'] === 'XMLHttpRequest';
+    
+    if (isAjax) {
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to update settings: ' + error.message 
+      });
+    } else {
+      res.status(500).send('Server error: ' + error.message);
+    }
   }
 };
 

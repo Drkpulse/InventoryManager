@@ -1,0 +1,120 @@
+# Database and Content Loading Fixes
+
+This document outlines the fixes applied to resolve the reported database errors and content loading issues.
+
+## Issues Fixed
+
+### 1. Database Column Errors
+
+**Problem**: Missing columns causing database errors:
+- `column "active" does not exist` in users table
+- `column "description" does not exist` in software table  
+- `column s.description does not exist` in software queries
+
+**Solution**: 
+- Added SQL migration script: `database/add-missing-columns.sql`
+- Modified controllers to use `COALESCE()` for missing columns
+- Added graceful fallbacks in queries
+
+**Files Modified**:
+- `src/controllers/adminController.js` - Fixed users query
+- `src/controllers/softwareController.js` - Fixed software queries
+- `database/add-missing-columns.sql` - Migration script
+
+### 2. Content Loading in mainContent
+
+**Problem**: Pages not loading properly in the `mainContent` div with AJAX navigation
+
+**Solution**:
+- Created AJAX response middleware: `src/middleware/ajaxResponse.js`
+- Added middleware to detect AJAX requests and return JSON responses
+- Modified app.js to include the middleware
+
+**Files Modified**:
+- `src/middleware/ajaxResponse.js` - New middleware for AJAX handling
+- `src/app.js` - Added middleware integration
+- `src/controllers/itemController.js` - Enhanced items controller with proper data
+
+### 3. Items Page Enhancement
+
+**Problem**: Items page missing required reference data for filters
+
+**Solution**:
+- Added brands and departments data to items controller
+- Enhanced items query to include department information
+- Added pagination and filtering data
+
+**Files Modified**:
+- `src/controllers/itemController.js` - Enhanced with full reference data
+
+## How to Apply the Fixes
+
+### Option 1: Automated Fix (Recommended)
+```bash
+./startup-fix.sh
+```
+
+### Option 2: Manual Steps
+
+1. **Start PostgreSQL** (if not running):
+   ```bash
+   sudo service postgresql start
+   # or
+   sudo systemctl start postgresql  
+   # or (macOS)
+   brew services start postgresql
+   ```
+
+2. **Apply Database Migration**:
+   ```bash
+   psql -h localhost -U postgres -d inventory_db -f database/add-missing-columns.sql
+   ```
+
+3. **Start the Application**:
+   ```bash
+   npm start
+   ```
+
+## Technical Details
+
+### Database Changes
+- Added `active` column to `users` table (BOOLEAN DEFAULT TRUE)
+- Added `description` column to `software` table (TEXT)
+- Added `max_licenses` column to `software` table (INTEGER DEFAULT 1)
+- Added `license_key` column to `employee_software` table (VARCHAR(255))
+
+### AJAX Navigation
+The new middleware automatically detects AJAX requests (via `X-Requested-With: XMLHttpRequest` header) and:
+- Renders only the page content (not the full layout)
+- Returns JSON response with `title` and `content` fields
+- Allows the frontend content loader to update just the main content area
+
+### Error Handling
+- Controllers now use `COALESCE()` to provide default values for missing columns
+- Graceful fallbacks ensure the application works even if database schema is incomplete
+- Frontend JavaScript handles loading states and error conditions
+
+## Verification
+
+After applying fixes, verify that:
+1. ✅ Users page loads without "active" column error
+2. ✅ Software page loads without "description" column error  
+3. ✅ Items page loads with all filters and data
+4. ✅ Navigation between pages works in mainContent area
+5. ✅ All AJAX requests return proper JSON responses
+
+## Files Created/Modified
+
+### New Files:
+- `src/middleware/ajaxResponse.js` - AJAX response handler
+- `database/add-missing-columns.sql` - Database migration
+- `startup-fix.sh` - Automated fix script
+- `FIXES_APPLIED.md` - This documentation
+
+### Modified Files:
+- `src/app.js` - Added AJAX middleware
+- `src/controllers/adminController.js` - Fixed users query
+- `src/controllers/softwareController.js` - Fixed software queries  
+- `src/controllers/itemController.js` - Enhanced items functionality
+
+The application should now work correctly with proper AJAX navigation and no database column errors.

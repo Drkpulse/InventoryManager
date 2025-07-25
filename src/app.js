@@ -17,6 +17,9 @@ const softwareRoutes = require('./routes/softwareRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const translations = require('./utils/translations');
 
+// Add AJAX response middleware
+const handleAjaxResponse = require('./middleware/ajaxResponse');
+
 // Add notification routes BEFORE the main routes
 const notificationRoutes = require('./routes/notificationRoutes');
 const apiRoutes = require('./routes/apiRoutes');
@@ -44,6 +47,9 @@ app.use(session({
 
 // Flash messages
 app.use(flash());
+
+// Add AJAX response handling middleware
+app.use(handleAjaxResponse);
 
 app.use((req, res, next) => {
   const user = req.user || req.session?.user || { settings: {} };

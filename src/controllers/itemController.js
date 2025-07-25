@@ -75,11 +75,12 @@ exports.getAllItems = async (req, res) => {
     // Get the filtered items with pagination
     const itemsQuery = `
       SELECT i.*, t.name as type_name, b.name as brand_name,
-             e.name as assigned_to_name
+             e.name as assigned_to_name, d.name as department_name
       FROM items i
       LEFT JOIN types t ON i.type_id = t.id
       LEFT JOIN brands b ON i.brand_id = b.id
       LEFT JOIN employees e ON i.assigned_to = e.id
+      LEFT JOIN departments d ON e.dept_id = d.id
       ${whereClause}
       ORDER BY i.created_at DESC
       LIMIT ${perPage} OFFSET ${offset}
@@ -89,6 +90,12 @@ exports.getAllItems = async (req, res) => {
 
     // Get all types for the filter dropdown
     const typesResult = await db.query('SELECT id, name FROM types ORDER BY name');
+    
+    // Get all brands for the filter dropdown
+    const brandsResult = await db.query('SELECT id, name FROM brands ORDER BY name');
+    
+    // Get all departments for the filter dropdown
+    const departmentsResult = await db.query('SELECT id, name FROM departments ORDER BY name');
 
     // Convert price strings to numbers for toFixed to work
     const items = itemsResult.rows.map(item => ({
@@ -101,10 +108,14 @@ exports.getAllItems = async (req, res) => {
       body: 'items/index',
       items: items,
       types: typesResult.rows,
+      brands: brandsResult.rows,
+      departments: departmentsResult.rows,
       selectedType: typeFilter,
       assignmentFilter: assignmentFilter,
       currentPage: page,
       totalPages: totalPages,
+      totalItems: totalItems,
+      perPage: perPage,
       user: req.session.user
     });
   } catch (error) {

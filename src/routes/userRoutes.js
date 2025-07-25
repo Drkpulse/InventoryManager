@@ -156,6 +156,50 @@ router.get('/settings', isAuthenticated, userController.getSettings);
 // Update display settings
 router.post('/settings/display', isAuthenticated, userController.updateDisplaySettings);
 
+// Quick theme update endpoint for toggle button
+router.post('/settings/theme', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { theme } = req.body;
+
+    // Validate theme value
+    if (!['light', 'dark', 'auto'].includes(theme)) {
+      return res.status(400).json({ success: false, error: 'Invalid theme value' });
+    }
+
+    // Get current settings
+    const settingsResult = await db.query('SELECT settings FROM users WHERE id = $1', [userId]);
+    let settings = settingsResult.rows[0].settings || {};
+
+    // Update theme
+    settings.theme = theme;
+
+    // Save to database
+    await db.query('UPDATE users SET settings = $1 WHERE id = $2', [JSON.stringify(settings), userId]);
+
+    // Update session
+    req.session.user.settings = settings;
+
+    // Set cookie for immediate theme application
+    res.cookie('user_theme', theme, {
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+      httpOnly: false
+    });
+
+    res.json({ 
+      success: true, 
+      message: 'Theme updated successfully',
+      theme: theme
+    });
+  } catch (error) {
+    console.error('Error updating theme:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update theme' 
+    });
+  }
+});
+
 // Update notification settings
 router.post('/settings/notifications', isAuthenticated, userController.updateNotificationSettings);
 

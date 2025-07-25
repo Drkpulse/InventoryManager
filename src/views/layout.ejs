@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/user-interface-improvements.css">
+  <link rel="stylesheet" href="/css/modern-components.css">
 </head>
 <body data-theme="<%= user && user.settings && user.settings.theme ? user.settings.theme : 'light' %>">
   <div class="app-container <%= locals.isDashboardPage ? 'dashboard-page' : '' %>
@@ -31,6 +32,11 @@
           </div>
 
           <div class="user-menu">
+            <!-- Theme Toggle -->
+            <button class="icon-button theme-toggle" id="themeToggle" data-theme-toggle title="Toggle dark mode">
+              <i class="fas fa-moon"></i>
+            </button>
+
             <div class="notifications">
               <div class="dropdown">
                 <button class="icon-button notification-toggle dropdown-toggle" id="notificationToggle">

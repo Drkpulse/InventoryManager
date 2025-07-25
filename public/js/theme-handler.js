@@ -24,12 +24,16 @@ function initializeTheme() {
     window.matchMedia('(prefers-color-scheme: dark)').addListener(function(e) {
       if (body.getAttribute('data-theme-preference') === 'auto') {
         body.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        updateThemeToggleIcons();
       }
     });
   }
   
   // Store the original preference for auto-switching
   body.setAttribute('data-theme-preference', currentTheme);
+  
+  // Update toggle button icons on initialization
+  setTimeout(updateThemeToggleIcons, 100);
 }
 
 // Helper function to get cookie value
@@ -46,16 +50,8 @@ function setupThemeToggling() {
   if (themeSelector) {
     themeSelector.addEventListener('change', function() {
       const selectedTheme = this.value;
-      const body = document.body;
-      
-      if (selectedTheme === 'auto') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-      } else {
-        body.setAttribute('data-theme', selectedTheme);
-      }
-      
-      body.setAttribute('data-theme-preference', selectedTheme);
+      setTheme(selectedTheme);
+      saveThemePreference(selectedTheme);
     });
   }
   
@@ -67,8 +63,8 @@ function setupThemeToggling() {
       const currentTheme = body.getAttribute('data-theme');
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
       
-      body.setAttribute('data-theme', newTheme);
-      body.setAttribute('data-theme-preference', newTheme);
+      setTheme(newTheme);
+      saveThemePreference(newTheme);
       
       // Update settings form if present
       const themeSelector = document.getElementById('theme');
@@ -77,6 +73,9 @@ function setupThemeToggling() {
       }
     });
   });
+  
+  // Update toggle button icons
+  updateThemeToggleIcons();
 }
 
 // Utility function to get current theme
@@ -84,7 +83,48 @@ function getCurrentTheme() {
   return document.body.getAttribute('data-theme');
 }
 
-// Utility function to set theme
+
+
+// Function to update theme toggle button icons
+function updateThemeToggleIcons() {
+  const themeToggles = document.querySelectorAll('[data-theme-toggle]');
+  const currentTheme = getCurrentTheme();
+  
+  themeToggles.forEach(toggle => {
+    const icon = toggle.querySelector('i');
+    if (icon) {
+      if (currentTheme === 'dark') {
+        icon.className = 'fas fa-sun';
+        toggle.title = 'Switch to light mode';
+      } else {
+        icon.className = 'fas fa-moon';
+        toggle.title = 'Switch to dark mode';
+      }
+    }
+  });
+}
+
+// Function to save theme preference to server
+function saveThemePreference(theme) {
+  // Only save if user is logged in
+  const userDataElement = document.getElementById('user-data');
+  if (userDataElement) {
+    fetch('/users/settings/theme', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ theme }),
+    }).catch(error => {
+      console.warn('Failed to save theme preference:', error);
+    });
+  }
+  
+  // Also save to localStorage as fallback
+  localStorage.setItem('theme-preference', theme);
+}
+
+// Enhanced setTheme function
 function setTheme(theme) {
   const body = document.body;
   
@@ -102,6 +142,9 @@ function setTheme(theme) {
   if (themeSelector) {
     themeSelector.value = theme;
   }
+  
+  // Update toggle button icons
+  updateThemeToggleIcons();
 }
 
 // Export functions for use in other scripts
@@ -109,5 +152,7 @@ window.themeHandler = {
   getCurrentTheme,
   setTheme,
   initializeTheme,
-  setupThemeToggling
+  setupThemeToggling,
+  updateThemeToggleIcons,
+  saveThemePreference
 };

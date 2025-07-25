@@ -35,8 +35,8 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Name</th>
-          <th>Employees</th>
+          <th><%= t("items.name") %></th>
+          <th><%= t("nav.employees") %></th>
           <% if (user.role === 'admin') { %>
             <th>Actions</th>
           <% } %>
@@ -50,7 +50,7 @@
               <% if (user.role === 'admin') { %>
                 <form class="inline-edit-form" method="POST" action="/references/platforms/<%= platform.id %>">
                   <input type="text" name="name" value="<%= platform.name %>" required>
-                  <button type="submit" class="btn">Update</button>
+                  <button type="submit" class="btn"><%= t("common.update") %></button>
                 </form>
               <% } else { %>
                 <%= platform.name %>
@@ -60,7 +60,7 @@
             <% if (user.role === 'admin') { %>
               <td>
                 <form method="POST" action="/references/platforms/<%= platform.id %>/delete" style="display: inline;">
-                  <button type="submit" class="btn btn-danger delete-btn">Delete</button>
+                  <button type="submit" class="btn btn-danger delete-btn"><%= t("common.delete") %></button>
                 </form>
               </td>
             <% } %>

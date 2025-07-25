@@ -246,7 +246,17 @@ const translations = {
     'status.available': 'Disponível',
     'status.maintenance': 'Em Manutenção',
     'status.retired': 'Retirado',
-    'status.damaged': 'Danificado'
+    'status.damaged': 'Danificado',
+     
+     // Additional keys
+     'nav.profile': 'Meu Perfil',
+     'nav.logout': 'Sair',
+     'items.assign': 'Atribuir',
+     'items.unassign': 'Remover Atribuição',
+     'items.history': 'Histórico',
+     'actions.print_label': 'Imprimir Etiqueta',
+     'actions.edit_details': 'Editar Detalhes',
+     'actions.view_history': 'Ver Histórico',
   }
 };
 

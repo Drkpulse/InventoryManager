@@ -4,8 +4,8 @@
   <table>
     <thead>
       <tr>
-        <th>Name</th>
-        <th>Email</th>
+        <th><%= t("items.name") %></th>
+        <th><%= t("employees.email") %></th>
         <th>Role</th>
         <th>Actions</th>
       </tr>
@@ -17,9 +17,9 @@
           <td><%= user.email %></td>
           <td><%= user.role %></td>
           <td>
-            <a href="/users/<%= user.id %>/edit" class="btn">Edit</a>
+            <a href="/users/<%= user.id %>/edit" class="btn"><%= t("common.edit") %></a>
             <form style="display: inline;" method="POST" action="/users/<%= user.id %>/delete">
-              <button type="submit" class="btn btn-danger delete-btn">Delete</button>
+              <button type="submit" class="btn btn-danger delete-btn"><%= t("common.delete") %></button>
             </form>
           </td>
         </tr>

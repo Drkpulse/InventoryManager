@@ -13,19 +13,19 @@
     <div class="nav-header">Main Menu</div>
     <a href="/" class="nav-link">
       <i class="fas fa-tachometer-alt"></i>
-      <span>Dashboard</span>
+      <span><%= t("nav.dashboard") %></span>
     </a>
     <a href="/items" class="nav-link">
       <i class="fas fa-laptop"></i>
-      <span>Assets</span>
+      <span><%= t("nav.items") %></span>
     </a>
     <a href="/employees" class="nav-link">
       <i class="fas fa-users"></i>
-      <span>Employees</span>
+      <span><%= t("nav.employees") %></span>
     </a>
     <a href="/software" class="nav-link">
       <i class="fas fa-laptop-code"></i>
-      <span>Software</span>
+      <span><%= t("nav.software") %></span>
     </a>
     <a href="/clients" class="nav-link">
       <i class="fas fa-building"></i>
@@ -53,7 +53,7 @@
       </div>
     </div>
 
-    <div class="nav-header">Reports</div>
+    <div class="nav-header"><%= t("nav.reports") %></div>
     <a href="/reports/assets" class="nav-link">
       <i class="fas fa-chart-bar"></i>
       <span>Asset Reports</span>
@@ -68,7 +68,7 @@
     </a>
 
     <% if (user && user.role === 'admin') { %>
-    <div class="nav-header">Administration</div>
+    <div class="nav-header"><%= t("nav.admin") %></div>
     <a href="/admin/users" class="nav-link">
       <i class="fas fa-user-shield"></i>
       <span>User Management</span>

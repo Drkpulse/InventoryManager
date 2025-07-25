@@ -41,14 +41,14 @@
           </div>
 
           <div class="form-group">
-            <label>Name</label>
+            <label><%= t("items.name") %></label>
             <input type="text" name="name" required>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Type</label>
+            <label><%= t("items.type") %></label>
             <select name="type_id" required>
               <option value="">Select Type</option>
               <% types.forEach(type => { %>
@@ -58,14 +58,14 @@
           </div>
 
           <div class="form-group">
-            <label>Price</label>
+            <label><%= t("items.price") %></label>
             <input type="number" name="price" min="0" step="0.01">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Brand</label>
+            <label><%= t("items.brand") %></label>
             <select name="brand_id">
               <option value="">Select Brand</option>
               <% brands.forEach(brand => { %>
@@ -75,13 +75,13 @@
           </div>
 
           <div class="form-group">
-            <label>Model</label>
+            <label><%= t("items.model") %></label>
             <input type="text" name="model">
           </div>
         </div>
 
         <div class="form-group">
-          <label>Serial Number</label>
+          <label><%= t("items.serial_number") %></label>
           <input type="text" name="serial_cod">
         </div>
       </div>
@@ -92,7 +92,7 @@
 
   <div class="form-group submit-section">
     <button type="submit" class="btn">Save Receipt with Items</button>
-    <a href="/items" class="btn btn-secondary">Cancel</a>
+    <a href="/items" class="btn btn-secondary"><%= t("common.cancel") %></a>
   </div>
 </form>
 
@@ -181,14 +181,14 @@
           </div>
 
           <div class="form-group">
-            <label>Name</label>
+            <label><%= t("items.name") %></label>
             <input type="text" name="name">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Type</label>
+            <label><%= t("items.type") %></label>
             <select name="type_id">
               <option value="">Select Type</option>
               ${Array.from(document.querySelectorAll('select[name="type_id"]:first-of-type option'))
@@ -198,14 +198,14 @@
           </div>
 
           <div class="form-group">
-            <label>Price</label>
+            <label><%= t("items.price") %></label>
             <input type="number" name="price" min="0" step="0.01">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Brand</label>
+            <label><%= t("items.brand") %></label>
             <select name="brand_id">
               <option value="">Select Brand</option>
               ${Array.from(document.querySelectorAll('select[name="brand_id"]:first-of-type option'))
@@ -215,13 +215,13 @@
           </div>
 
           <div class="form-group">
-            <label>Model</label>
+            <label><%= t("items.model") %></label>
             <input type="text" name="model">
           </div>
         </div>
 
         <div class="form-group">
-          <label>Serial Number</label>
+          <label><%= t("items.serial_number") %></label>
           <input type="text" name="serial_cod">
         </div>
       `;

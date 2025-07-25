@@ -61,4 +61,7 @@ router.get('/:id/:cep_brc/assign', isAuthenticated, itemController.assignItemFor
 router.post('/:id/:cep_brc/assign', isAuthenticated, itemController.assignItem);
 router.post('/:id/:cep_brc/unassign', isAuthenticated, itemController.unassignItem);
 
+// Status change route
+router.post('/:id/:cep_brc/status', isAuthenticated, itemController.changeItemStatus);
+
 module.exports = router;

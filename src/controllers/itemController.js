@@ -899,3 +899,65 @@ exports.getItemHistory = async (req, res) => {
     res.status(500).send('Server error: ' + error.message);
   }
 };
+
+// Change item status
+exports.changeItemStatus = async (req, res) => {
+  try {
+    const { id, cep_brc } = req.params;
+    const { status } = req.body;
+    
+    console.log('🔄 Changing item status:', { id, cep_brc, status });
+
+    // Validate status
+    const validStatuses = ['available', 'maintenance', 'retired', 'damaged'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid status'
+      });
+    }
+
+    // Update item status
+    const result = await db.query(`
+      UPDATE items 
+      SET condition = $1, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = $2 AND cep_brc = $3
+      RETURNING *
+    `, [status, id, cep_brc]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Item not found'
+      });
+    }
+
+    // Log the status change
+    await db.query(`
+      INSERT INTO item_history (item_id, action, details, performed_by, created_at)
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+    `, [
+      id,
+      'status_changed',
+      JSON.stringify({ 
+        old_status: req.body.old_status || 'unknown',
+        new_status: status,
+        changed_by: (req.user || req.session.user).name
+      }),
+      (req.user || req.session.user).id
+    ]);
+
+    res.json({
+      success: true,
+      message: 'Status updated successfully',
+      newStatus: status
+    });
+
+  } catch (error) {
+    console.error('Error changing item status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update status'
+    });
+  }
+};

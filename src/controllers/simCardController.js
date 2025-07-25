@@ -11,9 +11,7 @@ const validateSIMCardData = (data) => {
     errors.push('Carrier is required');
   }
 
-  if (!data.client_id) {
-    errors.push('Client is required');
-  }
+  // Client is optional - removed client_id requirement
 
   return errors;
 };

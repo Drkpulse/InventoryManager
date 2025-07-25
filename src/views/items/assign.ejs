@@ -45,7 +45,7 @@
 
           <div class="asset-specs">
             <div class="spec-item">
-              <dt>Type</dt>
+              <dt><%= t("items.type") %></dt>
               <dd>
                 <% if (item.type_name) { %>
                   <span class="category-badge">
@@ -58,7 +58,7 @@
             </div>
 
             <div class="spec-item">
-              <dt>Brand</dt>
+              <dt><%= t("items.brand") %></dt>
               <dd>
                 <% if (item.brand_name) { %>
                   <span class="brand-badge">
@@ -71,7 +71,7 @@
             </div>
 
             <div class="spec-item">
-              <dt>Model</dt>
+              <dt><%= t("items.model") %></dt>
               <dd>
                 <span class="info-value"><%= item.model || 'Not specified' %></span>
               </dd>
@@ -79,7 +79,7 @@
 
             <% if (item.serial_cod) { %>
             <div class="spec-item">
-              <dt>Serial Number</dt>
+              <dt><%= t("items.serial_number") %></dt>
               <dd>
                 <span class="info-value code"><%= item.serial_cod %></span>
               </dd>

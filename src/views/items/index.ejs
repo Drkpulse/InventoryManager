@@ -52,7 +52,7 @@
         </div>
 
         <div class="filter-group">
-          <label for="brandFilter">Brand</label>
+          <label for="brandFilter"><%= t("items.brand") %></label>
           <select id="brandFilter" name="brand">
             <option value="">All Brands</option>
             <% if (typeof brands !== 'undefined') { %>
@@ -78,10 +78,10 @@
           <label for="conditionFilter">Condition</label>
           <select id="conditionFilter" name="condition">
             <option value="">All Conditions</option>
-            <option value="active">Active</option>
-            <option value="maintenance">Under Maintenance</option>
-            <option value="retired">Retired</option>
-            <option value="damaged">Damaged</option>
+            <option value="active"><%= t("status.active") %></option>
+            <option value="maintenance"><%= t("status.maintenance") %></option>
+            <option value="retired"><%= t("status.retired") %></option>
+            <option value="damaged"><%= t("status.damaged") %></option>
           </select>
         </div>
       </div>

@@ -27,14 +27,14 @@
 	</div>
 
 	<div class="form-group">
-	  <label for="description">Description</label>
+	  <label for="description"><%= t("items.description") %></label>
 	  <textarea id="description" name="description" rows="3"><%= assetType.description || '' %></textarea>
 	  <small>Optional description explaining what this asset type represents</small>
 	</div>
 
 	<div class="form-group">
 	  <button type="submit" class="btn">Update Asset Type</button>
-	  <a href="/references/asset-types" class="btn">Cancel</a>
+	  <a href="/references/asset-types" class="btn"><%= t("common.cancel") %></a>
 	</div>
   </form>
 

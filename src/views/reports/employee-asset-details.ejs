@@ -33,11 +33,11 @@
     <thead>
       <tr>
         <th>ID</th>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Brand</th>
-        <th>Model</th>
-        <th>Price</th>
+        <th><%= t("items.name") %></th>
+        <th><%= t("items.type") %></th>
+        <th><%= t("items.brand") %></th>
+        <th><%= t("items.model") %></th>
+        <th><%= t("items.price") %></th>
         <th>Date Assigned</th>
         <th>Actions</th>
       </tr>
@@ -53,7 +53,7 @@
           <td>$<%= item.price ? parseFloat(item.price).toFixed(2) : '0.00' %></td>
           <td><%= item.date_assigned ? new Date(item.date_assigned).toLocaleDateString() : 'N/A' %></td>
           <td>
-            <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn">View</a>
+            <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn"><%= t("common.view") %></a>
             <a href="/items/<%= item.id %>/<%= item.cep_brc %>/unassign" class="btn btn-danger">Unassign</a>
           </td>
         </tr>

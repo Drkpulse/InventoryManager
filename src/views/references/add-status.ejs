@@ -18,7 +18,7 @@
   </div>
 
   <div class="form-group">
-    <label for="description">Description</label>
+    <label for="description"><%= t("items.description") %></label>
     <textarea id="description" name="description" rows="3"><%= typeof formData !== 'undefined' ? getFormValue("description") : '' %></textarea>
     <small>Optional description explaining what this status represents</small>
   </div>
@@ -45,7 +45,7 @@
 
   <div class="form-group">
     <button type="submit" class="btn">Add Status</button>
-    <a href="/references/statuses" class="btn">Cancel</a>
+    <a href="/references/statuses" class="btn"><%= t("common.cancel") %></a>
   </div>
 </form>
 

@@ -7,9 +7,7 @@ const validatePrinterData = (data) => {
     errors.push('Supplier is required');
   }
 
-  if (!data.client_id) {
-    errors.push('Client is required');
-  }
+  // Client is optional - removed client_id requirement
 
   if (!data.status_id) {
     errors.push('Status is required');
@@ -198,7 +196,7 @@ exports.createPrinter = async (req, res) => {
       INSERT INTO printers (supplier, model, employee_id, client_id, cost, status_id)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
-    `, [supplier, model, employee_id || null, client_id, cost || null, status_id]);
+    `, [supplier, model, employee_id || null, client_id || null, cost || null, status_id]);
 
     const newPrinter = result.rows[0];
 
@@ -210,7 +208,7 @@ exports.createPrinter = async (req, res) => {
       client_id: client_id,
       cost: cost || null,
       status_id: status_id
-    }, req.user.id);
+    }, (req.user || req.session.user).id);
 
     req.flash('success', 'Printer created successfully');
     res.redirect(`/printers/${newPrinter.id}`);

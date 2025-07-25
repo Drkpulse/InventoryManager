@@ -60,7 +60,7 @@
             </div>
 
             <div class="form-group full-width">
-              <label for="description">Description</label>
+              <label for="description"><%= t("items.description") %></label>
               <textarea id="description" name="description" class="form-textarea" rows="3"
                 placeholder="Enter detailed description of the asset (optional)"><%= typeof formData !== 'undefined' ? getFormValue("description") : '' %></textarea>
               <small class="field-help">
@@ -92,7 +92,7 @@
 
           <div class="form-grid">
             <div class="form-group">
-              <label for="brand_id">Brand</label>
+              <label for="brand_id"><%= t("items.brand") %></label>
               <select id="brand_id" name="brand_id" class="form-select">
                 <option value="">Select Brand</option>
                 <% brands.forEach(brand => { %>
@@ -104,14 +104,14 @@
             </div>
 
             <div class="form-group">
-              <label for="model">Model</label>
+              <label for="model"><%= t("items.model") %></label>
               <input type="text" id="model" name="model"
                 value="<%= typeof formData !== 'undefined' ? getFormValue("model") : '' %>"
                 class="form-input" placeholder="Product model number">
             </div>
 
             <div class="form-group">
-              <label for="serial_cod">Serial Number</label>
+              <label for="serial_cod"><%= t("items.serial_number") %></label>
               <input type="text" id="serial_cod" name="serial_cod"
                 value="<%= typeof formData !== 'undefined' ? getFormValue("serial_cod") : '' %>"
                 class="form-input" placeholder="Unique serial number">

@@ -9,9 +9,7 @@ const validatePDAData = (data) => {
     errors.push('Serial number is required');
   }
 
-  if (!data.client_id) {
-    errors.push('Client is required');
-  }
+  // Client is optional - removed client_id requirement
 
   if (!data.status_id) {
     errors.push('Status is required');

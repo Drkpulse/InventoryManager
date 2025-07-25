@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
           showMessage('Settings saved successfully!', 'success');
           
           // Apply theme immediately using multiple methods
-          const newTheme = data.theme || getFormValue("get")('theme');
+          const newTheme = data.theme || params.get('theme');
           if (newTheme) {
             console.log('🎨 Applying theme:', newTheme);
             
@@ -351,8 +351,10 @@ document.addEventListener('DOMContentLoaded', function() {
         showMessage('Failed to save settings: ' + error.message, 'error');
       })
       .finally(() => {
-        saveBtn.innerHTML = originalBtnText;
-        saveBtn.disabled = false;
+        setTimeout(() => {
+          saveBtn.innerHTML = originalBtnText;
+          saveBtn.disabled = false;
+        }, 1000); // Delay to show success state
       });
     });
   }

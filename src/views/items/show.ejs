@@ -71,7 +71,7 @@
           </h2>
           <div class="info-grid">
             <div class="info-item">
-              <dt>Type</dt>
+              <dt><%= t("items.type") %></dt>
               <dd>
                 <% if (item.type_name) { %>
                   <span class="info-value primary">
@@ -84,7 +84,7 @@
             </div>
 
             <div class="info-item">
-              <dt>Brand</dt>
+              <dt><%= t("items.brand") %></dt>
               <dd>
                 <% if (item.brand_name) { %>
                   <span class="info-value">
@@ -97,14 +97,14 @@
             </div>
 
             <div class="info-item">
-              <dt>Model</dt>
+              <dt><%= t("items.model") %></dt>
               <dd>
                 <span class="info-value"><%= item.model || 'Not specified' %></span>
               </dd>
             </div>
 
             <div class="info-item">
-              <dt>Serial Number</dt>
+              <dt><%= t("items.serial_number") %></dt>
               <dd>
                 <% if (item.serial_cod) { %>
                   <span class="info-value code"><%= item.serial_cod %></span>
@@ -272,12 +272,63 @@
                 <span>Assign</span>
               </a>
             <% } %>
+            
+            <!-- Status Change -->
+            <div class="status-change-item">
+              <i class="fas fa-exchange-alt"></i>
+              <span>Change Status</span>
+              <div class="status-dropdown">
+                <select id="statusSelect" onchange="changeItemStatus('<%= item.id %>', '<%= item.cep_brc %>')">
+                  <option value="">Select new status...</option>
+                  <option value="available" <%= item.condition === 'available' ? 'disabled' : '' %>><%= t("status.available") %></option>
+                  <option value="maintenance" <%= item.condition === 'maintenance' ? 'disabled' : '' %>><%= t("status.maintenance") %></option>
+                  <option value="retired" <%= item.condition === 'retired' ? 'disabled' : '' %>><%= t("status.retired") %></option>
+                  <option value="damaged" <%= item.condition === 'damaged' ? 'disabled' : '' %>><%= t("status.damaged") %></option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+function changeItemStatus(itemId, itemCode) {
+  const select = document.getElementById('statusSelect');
+  const newStatus = select.value;
+  
+  if (!newStatus) return;
+  
+  if (confirm(`Are you sure you want to change the status to "${newStatus}"?`)) {
+    fetch(`/items/${itemId}/${itemCode}/status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload(); // Reload to show updated status
+      } else {
+        alert('Failed to update status: ' + (data.error || 'Unknown error'));
+        select.value = ''; // Reset selection
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Failed to update status');
+      select.value = ''; // Reset selection
+    });
+  } else {
+    select.value = ''; // Reset selection if cancelled
+  }
+}
+</script>
 
 <style>
 /* Additional styles for description section */

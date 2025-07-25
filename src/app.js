@@ -15,7 +15,7 @@ const reportRoutes = require('./routes/reportRoutes');
 const referenceRoutes = require('./routes/referenceRoutes');
 const softwareRoutes = require('./routes/softwareRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
-const translations = require('./utils/translations');
+const { translations, t } = require('./utils/translations');
 
 // Add AJAX response middleware
 const handleAjaxResponse = require('./middleware/ajaxResponse');
@@ -68,7 +68,6 @@ app.use((req, res, next) => {
 
   // Enhanced translation function
   res.locals.t = (key, params = {}) => {
-    const { t } = translations;
     return t(key, lang, params);
   };
 

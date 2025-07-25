@@ -5,8 +5,11 @@ const bcrypt = require('bcrypt');
 exports.users = async (req, res) => {
   try {
     // Fetch all users from database
+    // Use COALESCE to handle missing active column gracefully
     const usersResult = await db.query(`
-      SELECT id, name, email, role, active, last_login, created_at
+      SELECT id, name, email, role, 
+             COALESCE(active, true) as active, 
+             last_login, created_at
       FROM users
       ORDER BY created_at DESC
     `);

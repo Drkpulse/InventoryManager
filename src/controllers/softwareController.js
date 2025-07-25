@@ -10,8 +10,8 @@ exports.index = async (req, res) => {
         s.license_type,
         s.cost_per_license,
         s.vendor,
-        s.description,
-        s.max_licenses,
+        COALESCE(s.description, '') as description,
+        COALESCE(s.max_licenses, 1) as max_licenses,
         COUNT(es.employee_id) as employee_count
       FROM software s
       LEFT JOIN employee_software es ON s.id = es.software_id
@@ -76,8 +76,8 @@ exports.showEditForm = async (req, res) => {
         s.license_type,
         s.cost_per_license,
         s.vendor,
-        s.description,
-        s.max_licenses,
+        COALESCE(s.description, '') as description,
+        COALESCE(s.max_licenses, 1) as max_licenses,
         COUNT(es.employee_id) as employee_count
       FROM software s
       LEFT JOIN employee_software es ON s.id = es.software_id

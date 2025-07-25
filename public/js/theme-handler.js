@@ -1,58 +1,98 @@
-/**
- * Theme handler for dark/light mode
- */
-(function() {
-  // Apply theme on page load
-  function applyTheme() {
-    // Check for theme in localStorage first
-    const storedTheme = localStorage.getItem('theme');
+// Theme Handler - Manages light/dark mode switching
+document.addEventListener('DOMContentLoaded', function() {
+  initializeTheme();
+  setupThemeToggling();
+});
 
-    if (storedTheme) {
-      document.body.classList.toggle('dark-mode', storedTheme === 'dark');
-      return;
-    }
-
-    // If no stored theme, check user settings from data attribute
-    const userDataElement = document.getElementById('user-data');
-    if (userDataElement && userDataElement.dataset.settings) {
-      try {
-        const settings = JSON.parse(userDataElement.dataset.settings);
-        if (settings.theme) {
-          document.body.classList.toggle('dark-mode', settings.theme === 'dark');
-          // Save to localStorage for persistence
-          localStorage.setItem('theme', settings.theme);
-        }
-      } catch (error) {
-        console.error('Error parsing user settings:', error);
+function initializeTheme() {
+  const body = document.body;
+  const currentTheme = body.getAttribute('data-theme');
+  
+  // If theme is auto, detect system preference
+  if (currentTheme === 'auto') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function(e) {
+      if (body.getAttribute('data-theme-preference') === 'auto') {
+        body.setAttribute('data-theme', e.matches ? 'dark' : 'light');
       }
-    }
+    });
   }
+  
+  // Store the original preference for auto-switching
+  body.setAttribute('data-theme-preference', currentTheme);
+}
 
-  // Listen for theme changes via form
-  function setupThemeListener() {
-    const themeSelect = document.getElementById('theme');
-    if (themeSelect) {
-      themeSelect.addEventListener('change', function() {
-        const selectedTheme = this.value;
-        document.body.classList.toggle('dark-mode', selectedTheme === 'dark');
-        localStorage.setItem('theme', selectedTheme);
-      });
-    }
+function setupThemeToggling() {
+  // Handle theme selector in settings
+  const themeSelector = document.getElementById('theme');
+  if (themeSelector) {
+    themeSelector.addEventListener('change', function() {
+      const selectedTheme = this.value;
+      const body = document.body;
+      
+      if (selectedTheme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      } else {
+        body.setAttribute('data-theme', selectedTheme);
+      }
+      
+      body.setAttribute('data-theme-preference', selectedTheme);
+    });
   }
-
-  // Initialize
-  document.addEventListener('DOMContentLoaded', function() {
-    applyTheme();
-    setupThemeListener();
+  
+  // Handle any theme toggle buttons
+  const themeToggles = document.querySelectorAll('[data-theme-toggle]');
+  themeToggles.forEach(toggle => {
+    toggle.addEventListener('click', function() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      body.setAttribute('data-theme', newTheme);
+      body.setAttribute('data-theme-preference', newTheme);
+      
+      // Update settings form if present
+      const themeSelector = document.getElementById('theme');
+      if (themeSelector) {
+        themeSelector.value = newTheme;
+      }
+    });
   });
+}
 
-  // For SPA navigation
-  if (typeof window.contentLoaderEvents === 'undefined') {
-    window.contentLoaderEvents = {};
+// Utility function to get current theme
+function getCurrentTheme() {
+  return document.body.getAttribute('data-theme');
+}
+
+// Utility function to set theme
+function setTheme(theme) {
+  const body = document.body;
+  
+  if (theme === 'auto') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+  } else {
+    body.setAttribute('data-theme', theme);
   }
+  
+  body.setAttribute('data-theme-preference', theme);
+  
+  // Update any theme selectors
+  const themeSelector = document.getElementById('theme');
+  if (themeSelector) {
+    themeSelector.value = theme;
+  }
+}
 
-  window.contentLoaderEvents.afterContentLoaded = function() {
-    applyTheme();
-    setupThemeListener();
-  };
-})();
+// Export functions for use in other scripts
+window.themeHandler = {
+  getCurrentTheme,
+  setTheme,
+  initializeTheme,
+  setupThemeToggling
+};

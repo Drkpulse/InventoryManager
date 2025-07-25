@@ -310,12 +310,28 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .then(data => {
         if (data.success) {
+          console.log('✅ Settings saved:', data);
+          
           // Show success message
           showMessage('Settings saved successfully!', 'success');
           
-          // Apply theme immediately
-          if (formData.get('theme') && window.themeHandler) {
-            window.themeHandler.setTheme(formData.get('theme'));
+          // Apply theme immediately using multiple methods
+          const newTheme = data.theme || formData.get('theme');
+          if (newTheme) {
+            console.log('🎨 Applying theme:', newTheme);
+            
+            // Method 1: Update body attribute
+            document.body.setAttribute('data-theme', newTheme);
+            
+            // Method 2: Use theme handler if available
+            if (window.themeHandler) {
+              window.themeHandler.setTheme(newTheme);
+            }
+            
+            // Method 3: Set cookie for persistence
+            document.cookie = `user_theme=${newTheme}; path=/; max-age=${365 * 24 * 60 * 60}`;
+            
+            console.log('✅ Theme applied successfully');
           }
         } else {
           throw new Error(data.error || 'Failed to save settings');

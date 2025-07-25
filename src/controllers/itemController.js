@@ -1,8 +1,10 @@
 const db = require('../config/db');
 const historyLogger = require('../utils/historyLogger');
 
-const validateItemData = (data) => {
+const validateItemData = (data, isEdit = false) => {
   const errors = [];
+
+  console.log('🔍 Validating item data:', { data, isEdit });
 
   if (!data.cep_brc || data.cep_brc.trim() === '') {
     errors.push('Item ID (CEP/BRC) is required');
@@ -12,7 +14,7 @@ const validateItemData = (data) => {
     errors.push('Item name is required');
   }
 
-  if (!data.type_id) {
+  if (!data.type_id || data.type_id === '') {
     errors.push('Item type is required');
   }
 
@@ -28,6 +30,12 @@ const validateItemData = (data) => {
 
   if (data.date_assigned && !data.assigned_to) {
     errors.push('Employee assignment is required when setting assignment date');
+  }
+
+  if (errors.length > 0) {
+    console.log('❌ Validation errors found:', errors);
+  } else {
+    console.log('✅ Validation passed');
   }
 
   return errors;
@@ -301,6 +309,8 @@ exports.updateItemForm = async (req, res) => {
   try {
     const { id, cep_brc } = req.params;
 
+    console.log('📝 Loading edit form for item:', { id, cep_brc });
+
     // Get item data
     const itemResult = await db.query(
       'SELECT * FROM items WHERE id = $1 AND cep_brc = $2',
@@ -308,8 +318,11 @@ exports.updateItemForm = async (req, res) => {
     );
 
     if (itemResult.rows.length === 0) {
+      console.log('❌ Item not found:', { id, cep_brc });
       return res.status(404).send('Item not found');
     }
+
+    console.log('📊 Item data loaded:', itemResult.rows[0]);
 
     // Get types for dropdown
     const types = await db.query('SELECT * FROM types ORDER BY name');
@@ -358,8 +371,14 @@ exports.updateItem = async (req, res) => {
       return res.status(403).send('Only administrators can change Item IDs');
     }
 
-    // Validate input data
-    const validationErrors = validateItemData(req.body);
+    // Validate input data for editing
+    const validationErrors = validateItemData(req.body, true);
+    
+    console.log('📝 Editing item with data:', {
+      id, cep_brc, 
+      formData: req.body,
+      validationErrors
+    });
 
     if (validationErrors.length > 0) {
       // Get reference data for the form

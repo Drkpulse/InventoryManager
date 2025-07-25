@@ -3,6 +3,8 @@ const db = require('../config/db');
 const validatePDAData = (data) => {
   const errors = [];
 
+  console.log('🔍 Validating PDA data:', data);
+
   if (!data.serial_number || data.serial_number.trim() === '') {
     errors.push('Serial number is required');
   }
@@ -19,11 +21,16 @@ const validatePDAData = (data) => {
     errors.push('Cost must be a valid number');
   }
 
+  // Note: PDAs don't require SIMs - they can work standalone
+  console.log(errors.length > 0 ? '❌ PDA validation errors:' : '✅ PDA validation passed:', errors);
+
   return errors;
 };
 
 exports.getAllPDAs = async (req, res) => {
   try {
+    console.log('📱 Loading PDAs page with filters:', req.query);
+    
     const page = parseInt(req.query.page) || 1;
     const perPage = 20;
     const offset = (page - 1) * perPage;

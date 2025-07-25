@@ -160,13 +160,21 @@ exports.createSIMCardForm = async (req, res) => {
     `);
     const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
 
+    console.log('🔍 Loading SIM card create form', {
+      clientsCount: clientsResult.rows.length,
+      pdasCount: pdasResult.rows.length,
+      statusesCount: statusesResult.rows.length,
+      query: req.query
+    });
+
     res.render('layout', {
       title: 'Add New SIM Card',
       body: 'simcards/create',
       clients: clientsResult.rows,
       pdas: pdasResult.rows,
       statuses: statusesResult.rows,
-      user: req.user
+      query: req.query,
+      user: req.session.user || req.user
     });
   } catch (error) {
     console.error('Error rendering create form:', error);

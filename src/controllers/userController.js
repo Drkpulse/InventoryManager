@@ -40,6 +40,15 @@ exports.updateDisplaySettings = async (req, res) => {
     const userId = req.session.user.id;
     const { theme, language, timezone, items_per_page } = req.body;
 
+    console.log('🎨 Updating display settings:', {
+      userId,
+      theme,
+      language,
+      timezone,
+      items_per_page,
+      isAjax: req.headers['x-requested-with'] === 'XMLHttpRequest'
+    });
+
     // Make sure settings column exists
     await ensureSettingsColumnExists();
 
@@ -47,8 +56,11 @@ exports.updateDisplaySettings = async (req, res) => {
     const userResult = await db.query('SELECT settings FROM users WHERE id = $1', [userId]);
 
     if (userResult.rows.length === 0) {
+      console.log('❌ User not found:', userId);
       return res.status(404).send('User not found');
     }
+
+    console.log('📊 Current user settings:', userResult.rows[0].settings);
 
     // Update settings
     let settings = userResult.rows[0].settings || {};
@@ -61,6 +73,8 @@ exports.updateDisplaySettings = async (req, res) => {
       items_per_page: items_per_page || '20'
     };
 
+    console.log('💾 New settings to save:', settings);
+
     // Save to database
     await db.query('UPDATE users SET settings = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [JSON.stringify(settings), userId]);
 
@@ -69,6 +83,8 @@ exports.updateDisplaySettings = async (req, res) => {
       ...req.session.user,
       settings
     };
+
+    console.log('✅ Settings saved successfully');
 
     req.flash('success', 'Display settings updated successfully');
     
@@ -85,13 +101,14 @@ exports.updateDisplaySettings = async (req, res) => {
       res.json({ 
         success: true, 
         message: 'Display settings updated successfully',
-        redirect: '/users/settings?updated=true'
+        settings: settings,
+        theme: settings.theme
       });
     } else {
       res.redirect('/users/settings?updated=true');
     }
   } catch (error) {
-    console.error('Error updating display settings:', error);
+    console.error('❌ Error updating display settings:', error);
     
     const isAjax = req.headers['x-requested-with'] === 'XMLHttpRequest';
     

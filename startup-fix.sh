@@ -2,6 +2,12 @@
 
 echo "🚀 Starting Inventory Manager Fix Process..."
 
+# Run tests first
+echo "🧪 Running fix verification tests..."
+node test-fixes.js
+
+echo ""
+
 # Check if PostgreSQL is running
 if ! pgrep -x "postgres" > /dev/null; then
     echo "📋 PostgreSQL is not running. Attempting to start..."

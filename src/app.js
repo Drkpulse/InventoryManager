@@ -85,6 +85,15 @@ app.use('/references', referenceRoutes);
 app.use('/software', softwareRoutes);
 app.use('/departments', departmentRoutes);
 
+// Health check endpoint (before authentication)
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Use main routes AFTER notification routes
 app.use('/', routes);
 

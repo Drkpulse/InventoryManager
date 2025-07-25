@@ -6,7 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeTheme() {
   const body = document.body;
-  const currentTheme = body.getAttribute('data-theme');
+  let currentTheme = body.getAttribute('data-theme');
+  
+  // Check for theme from cookie (for immediate updates)
+  const cookieTheme = getCookie('user_theme');
+  if (cookieTheme && cookieTheme !== currentTheme) {
+    currentTheme = cookieTheme;
+    body.setAttribute('data-theme', currentTheme);
+  }
   
   // If theme is auto, detect system preference
   if (currentTheme === 'auto') {
@@ -23,6 +30,14 @@ function initializeTheme() {
   
   // Store the original preference for auto-switching
   body.setAttribute('data-theme-preference', currentTheme);
+}
+
+// Helper function to get cookie value
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
 }
 
 function setupThemeToggling() {

@@ -1,14 +1,14 @@
-<div class="content-header">
-  <div class="header-title">
+<div class="page-container">
+  <div class="page-header-simple">
     <h1><i class="fas fa-print"></i> Printer Management</h1>
-    <p>Manage client printers and their assignments</p>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/printers/new" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add New Printer
+        </a>
+      </div>
+    </div>
   </div>
-  <div class="header-actions">
-    <a href="/printers/new" class="btn btn-primary">
-      <i class="fas fa-plus"></i> Add New Printer
-    </a>
-  </div>
-</div>
 
 <% if (locals.messages && messages.success) { %>
   <div class="alert alert-success">
@@ -37,9 +37,11 @@
   <table class="data-table">
     <thead>
       <tr>
-        <th>ID</th>
         <th>Supplier</th>
+        <th>Model</th>
         <th>Client</th>
+        <th>Cost</th>
+        <th>Status</th>
         <th>Employee</th>
         <th>Created</th>
         <th>Actions</th>
@@ -48,7 +50,7 @@
     <tbody>
       <% if (printers.length === 0) { %>
         <tr>
-          <td colspan="6" class="text-center">
+          <td colspan="8" class="text-center">
             <div class="empty-state">
               <i class="fas fa-print"></i>
               <h3>No printers found</h3>
@@ -60,16 +62,26 @@
       <% } else { %>
         <% printers.forEach(printer => { %>
           <tr>
-            <td>
-              <a href="/printers/<%= printer.id %>" class="entity-link">
-                #<%= printer.id %>
-              </a>
-            </td>
             <td><%= printer.supplier %></td>
+            <td><%= printer.model || '-' %></td>
             <td>
               <a href="/clients/<%= printer.client_id %>">
                 <%= printer.client_name %> (<%= printer.client_code %>)
               </a>
+            </td>
+            <td>
+              <% if (printer.cost) { %>
+                €<%= parseFloat(printer.cost).toFixed(2) %>
+              <% } else { %>
+                <span class="text-muted">-</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (printer.status_name) { %>
+                <span class="badge badge-info"><%= printer.status_name %></span>
+              <% } else { %>
+                <span class="text-muted">-</span>
+              <% } %>
             </td>
             <td>
               <% if (printer.employee_name) { %>
@@ -120,3 +132,5 @@ function confirmDelete(printerId) {
   }
 }
 </script>
+
+</div> <!-- end page-container -->

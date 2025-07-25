@@ -162,6 +162,45 @@ ul {
   font-size: 0;
 }
 
+/* Sidebar dropdown styles */
+.nav-item.has-dropdown {
+  position: relative;
+}
+
+.nav-dropdown {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.nav-item.has-dropdown.open .nav-dropdown {
+  max-height: 200px;
+}
+
+.nav-dropdown .nav-link {
+  padding-left: 3rem;
+  font-size: 0.9rem;
+}
+
+.dropdown-arrow {
+  margin-left: auto;
+  transition: transform 0.3s ease;
+  font-size: 0.8rem;
+}
+
+.nav-item.has-dropdown.open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.app-container.sidebar-collapsed .nav-dropdown {
+  display: none;
+}
+
+.app-container.sidebar-collapsed .dropdown-arrow {
+  display: none;
+}
+
 .nav-link {
   display: flex;
   align-items: center;

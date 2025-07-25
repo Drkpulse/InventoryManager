@@ -10,7 +10,14 @@
     "init-db": "node database/init-db.js",
     "add-settings": "node database/add-settings-column.js",
     "gen-pwd": "node tools/generate-password.js",
-    "reset-admin": "node tools/reset-admin.js"
+    "reset-admin": "node tools/reset-admin.js",
+    "deploy": "./deploy.sh",
+    "docker:build": "docker build -t it-asset-manager .",
+    "docker:run": "docker run -p 3000:3000 it-asset-manager",
+    "docker:compose": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "health": "curl -f http://localhost:3000/health || exit 1"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

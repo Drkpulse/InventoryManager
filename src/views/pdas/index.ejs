@@ -1,14 +1,17 @@
-<div class="content-header">
-  <div class="header-title">
+<div class="page-container">
+  <div class="page-header-simple">
     <h1><i class="fas fa-mobile-alt"></i> PDA Management</h1>
-    <p>Manage client PDAs and SIM card assignments</p>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/pdas/new" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add New PDA
+        </a>
+        <a href="/simcards/new" class="btn btn-secondary">
+          <i class="fas fa-sim-card"></i> Add SIM Card
+        </a>
+      </div>
+    </div>
   </div>
-  <div class="header-actions">
-    <a href="/pdas/new" class="btn btn-primary">
-      <i class="fas fa-plus"></i> Add New PDA
-    </a>
-  </div>
-</div>
 
 <% if (locals.messages && messages.success) { %>
   <div class="alert alert-success">
@@ -30,10 +33,13 @@
         </option>
       <% }); %>
     </select>
-    <select class="form-control" onchange="filterPDAs('sim', this.value)">
-      <option value="">All PDAs</option>
-      <option value="with_sim" <%= filters.sim === 'with_sim' ? 'selected' : '' %>>With SIM Card</option>
-      <option value="without_sim" <%= filters.sim === 'without_sim' ? 'selected' : '' %>>Without SIM Card</option>
+    <select class="form-control" onchange="filterPDAs('status', this.value)">
+      <option value="">All Statuses</option>
+      <% statuses.forEach(status => { %>
+        <option value="<%= status.id %>" <%= filters.status == status.id ? 'selected' : '' %>>
+          <%= status.name %>
+        </option>
+      <% }); %>
     </select>
   </div>
 </div>
@@ -43,8 +49,11 @@
     <thead>
       <tr>
         <th>Serial Number</th>
+        <th>Model</th>
         <th>Client</th>
-        <th>SIM Card</th>
+        <th>Cost</th>
+        <th>Status</th>
+        <th>SIM Cards</th>
         <th>Created</th>
         <th>Actions</th>
       </tr>
@@ -52,7 +61,7 @@
     <tbody>
       <% if (pdas.length === 0) { %>
         <tr>
-          <td colspan="5" class="text-center">
+          <td colspan="8" class="text-center">
             <div class="empty-state">
               <i class="fas fa-mobile-alt"></i>
               <h3>No PDAs found</h3>
@@ -69,21 +78,30 @@
                 <%= pda.serial_number %>
               </a>
             </td>
+            <td><%= pda.model || '-' %></td>
             <td>
               <a href="/clients/<%= pda.client_id %>">
                 <%= pda.client_name %> (<%= pda.client_code %>)
               </a>
             </td>
             <td>
-              <% if (pda.has_sim_card) { %>
-                <span class="badge badge-success">
-                  <i class="fas fa-check"></i> Yes
-                </span>
+              <% if (pda.cost) { %>
+                €<%= parseFloat(pda.cost).toFixed(2) %>
               <% } else { %>
-                <span class="badge badge-secondary">
-                  <i class="fas fa-times"></i> No
-                </span>
+                <span class="text-muted">-</span>
               <% } %>
+            </td>
+            <td>
+              <% if (pda.status_name) { %>
+                <span class="badge badge-info"><%= pda.status_name %></span>
+              <% } else { %>
+                <span class="text-muted">-</span>
+              <% } %>
+            </td>
+            <td>
+              <span class="badge badge-secondary">
+                <i class="fas fa-sim-card"></i> <%= pda.sim_count || 0 %>
+              </span>
             </td>
             <td><%= new Date(pda.created_at).toLocaleDateString() %></td>
             <td>
@@ -127,3 +145,5 @@ function confirmDelete(pdaId, serialNumber) {
   }
 }
 </script>
+
+</div> <!-- end page-container -->

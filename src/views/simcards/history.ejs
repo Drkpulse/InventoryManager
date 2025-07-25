@@ -1,0 +1,114 @@
+<div class="page-container">
+  <div class="page-header-simple">
+    <h1><i class="fas fa-history"></i> SIM Card History: <%= simCard.sim_number %></h1>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/simcards/<%= simCard.id %>" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to SIM Card
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-summary">
+    <h3><i class="fas fa-sim-card"></i> SIM Card Details</h3>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <label>SIM Number:</label>
+        <span><%= simCard.sim_number %></span>
+      </div>
+      <div class="summary-item">
+        <label>Carrier:</label>
+        <span><%= simCard.carrier %></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="history-container">
+    <h3><i class="fas fa-clock"></i> Change History</h3>
+    
+    <% if (history.length === 0) { %>
+      <div class="empty-state">
+        <i class="fas fa-history"></i>
+        <h4>No history found</h4>
+        <p>No changes have been recorded for this SIM card yet.</p>
+      </div>
+    <% } else { %>
+      <div class="timeline">
+        <% history.forEach(entry => { %>
+          <div class="timeline-item">
+            <div class="timeline-marker">
+              <% if (entry.action_type === 'created') { %>
+                <i class="fas fa-plus text-success"></i>
+              <% } else if (entry.action_type === 'updated') { %>
+                <i class="fas fa-edit text-warning"></i>
+              <% } else if (entry.action_type === 'deleted') { %>
+                <i class="fas fa-trash text-danger"></i>
+              <% } else { %>
+                <i class="fas fa-info text-info"></i>
+              <% } %>
+            </div>
+            
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <h4 class="timeline-title">
+                  <%= entry.action_type.charAt(0).toUpperCase() + entry.action_type.slice(1) %> SIM Card
+                </h4>
+                <div class="timeline-meta">
+                  <span class="timeline-date">
+                    <i class="fas fa-calendar"></i>
+                    <%= new Date(entry.created_at).toLocaleDateString() %>
+                    <%= new Date(entry.created_at).toLocaleTimeString() %>
+                  </span>
+                  <span class="timeline-user">
+                    <i class="fas fa-user"></i>
+                    <%= entry.performed_by_name || 'System' %>
+                  </span>
+                </div>
+              </div>
+              
+              <div class="timeline-details">
+                <% if (entry.action_type === 'created') { %>
+                  <p>SIM card was created with the following details:</p>
+                  <div class="change-details">
+                    <% const details = JSON.parse(entry.action_details); %>
+                    <% Object.keys(details).forEach(key => { %>
+                      <div class="change-item">
+                        <strong><%= key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>:</strong> 
+                        <%= details[key] %>
+                      </div>
+                    <% }); %>
+                  </div>
+                <% } else if (entry.action_type === 'updated') { %>
+                  <p>The following changes were made:</p>
+                  <div class="change-details">
+                    <% const changes = JSON.parse(entry.action_details); %>
+                    <% Object.keys(changes).forEach(key => { %>
+                      <div class="change-item">
+                        <strong><%= key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>:</strong>
+                        <span class="change-from"><%= changes[key].from || 'None' %></span>
+                        <i class="fas fa-arrow-right"></i>
+                        <span class="change-to"><%= changes[key].to || 'None' %></span>
+                      </div>
+                    <% }); %>
+                  </div>
+                <% } else if (entry.action_type === 'deleted') { %>
+                  <p>SIM card was deleted with the following final state:</p>
+                  <div class="change-details">
+                    <% const details = JSON.parse(entry.action_details); %>
+                    <% Object.keys(details).forEach(key => { %>
+                      <div class="change-item">
+                        <strong><%= key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>:</strong> 
+                        <%= details[key] %>
+                      </div>
+                    <% }); %>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+</div>

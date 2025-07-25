@@ -99,7 +99,9 @@ exports.getAllPDAs = async (req, res) => {
   } catch (error) {
     console.error('Error fetching PDAs:', error);
     res.status(500).render('error', { 
-      error: 'Failed to fetch PDAs',
+      title: 'Server Error',
+      message: 'Failed to fetch PDAs: ' + error.message,
+      status: 500,
       user: req.user 
     });
   }

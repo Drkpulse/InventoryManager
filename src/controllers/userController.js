@@ -62,7 +62,7 @@ exports.updateDisplaySettings = async (req, res) => {
     };
 
     // Save to database
-    await db.query('UPDATE users SET settings = $1 WHERE id = $2', [settings, userId]);
+    await db.query('UPDATE users SET settings = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [JSON.stringify(settings), userId]);
 
     // Update session
     req.session.user = {
@@ -117,7 +117,7 @@ exports.updateNotificationSettings = async (req, res) => {
     };
 
     // Save to database
-    await db.query('UPDATE users SET settings = $1 WHERE id = $2', [settings, userId]);
+    await db.query('UPDATE users SET settings = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [JSON.stringify(settings), userId]);
 
     // Update session
     req.session.user = {

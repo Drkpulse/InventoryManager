@@ -245,6 +245,23 @@ it-asset-manager/
 └── 📋 package.json        # Dependencies and scripts
 ```
 
+## 🚨 Quick Fix for Column Errors
+
+If you encounter database column errors like `column p.status_id does not exist`, run:
+
+```bash
+# Automated database repair (recommended)
+npm run repair-db
+
+# Or just run migrations
+npm run migrate
+
+# Then restart the application
+npm start
+```
+
+See [QUICK_FIX_GUIDE.md](QUICK_FIX_GUIDE.md) for detailed troubleshooting.
+
 ## 🔍 Troubleshooting
 
 ### **Common Issues**

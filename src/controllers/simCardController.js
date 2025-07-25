@@ -171,7 +171,9 @@ exports.createSIMCardForm = async (req, res) => {
   } catch (error) {
     console.error('Error rendering create form:', error);
     res.status(500).render('error', { 
-      error: 'Failed to load create form',
+      title: 'Server Error',
+      message: 'Failed to load create form: ' + error.message,
+      status: 500,
       user: req.user 
     });
   }

@@ -71,6 +71,13 @@ exports.updateDisplaySettings = async (req, res) => {
     };
 
     req.flash('success', 'Display settings updated successfully');
+    
+    // Set cookie for immediate theme application
+    res.cookie('user_theme', settings.theme || 'light', {
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+      httpOnly: false // Allow JavaScript access
+    });
+    
     res.redirect('/users/settings?updated=true');
   } catch (error) {
     console.error('Error updating display settings:', error);

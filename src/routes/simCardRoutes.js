@@ -10,5 +10,9 @@ router.post('/', isAuthenticated, simCardController.createSIMCard);
 
 // Individual SIM card routes
 router.get('/:id', isAuthenticated, simCardController.getSIMCardById);
+router.get('/:id/edit', isAuthenticated, simCardController.updateSIMCardForm);
+router.post('/:id', isAuthenticated, simCardController.updateSIMCard);
+router.post('/:id/delete', isAuthenticated, simCardController.deleteSIMCard);
+router.get('/:id/history', isAuthenticated, simCardController.getSIMCardHistory);
 
 module.exports = router;

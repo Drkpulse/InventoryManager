@@ -228,6 +228,28 @@ function setupDropdowns() {
     }
   });
 
+  // Setup sidebar nav dropdowns
+  const navDropdownTriggers = document.querySelectorAll('.dropdown-trigger');
+  navDropdownTriggers.forEach(trigger => {
+    if (!trigger.hasNavListener) {
+      trigger.hasNavListener = true;
+      trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const navItem = this.closest('.nav-item.has-dropdown');
+        navItem.classList.toggle('open');
+
+        // Close other nav dropdowns
+        document.querySelectorAll('.nav-item.has-dropdown.open').forEach(item => {
+          if (item !== navItem) {
+            item.classList.remove('open');
+          }
+        });
+      });
+    }
+  });
+
   // Only add document click listener once
   if (!document.body.hasDropdownListener) {
     document.body.hasDropdownListener = true;
@@ -235,6 +257,11 @@ function setupDropdowns() {
       if (!e.target.closest('.dropdown')) {
         document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
           menu.classList.remove('show');
+        });
+      }
+      if (!e.target.closest('.nav-item.has-dropdown')) {
+        document.querySelectorAll('.nav-item.has-dropdown.open').forEach(item => {
+          item.classList.remove('open');
         });
       }
     });

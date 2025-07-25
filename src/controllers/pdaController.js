@@ -153,6 +153,10 @@ exports.getPDAById = async (req, res) => {
 
 exports.createPDAForm = async (req, res) => {
   try {
+    console.log('📱 Loading PDA create form', {
+      query: req.query
+    });
+
     // Get all clients and statuses for dropdown
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
     const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
@@ -162,7 +166,8 @@ exports.createPDAForm = async (req, res) => {
       body: 'pdas/create',
       clients: clientsResult.rows,
       statuses: statusesResult.rows,
-      user: req.user
+      query: req.query,
+      user: req.session.user || req.user
     });
   } catch (error) {
     console.error('Error rendering create form:', error);

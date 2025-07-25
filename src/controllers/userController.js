@@ -38,6 +38,14 @@ exports.getSettings = async (req, res) => {
 exports.updateDisplaySettings = async (req, res) => {
   try {
     const userId = req.session.user.id;
+    
+    console.log('🎨 Raw request data:', {
+      body: req.body,
+      headers: req.headers,
+      contentType: req.headers['content-type'],
+      isAjax: req.headers['x-requested-with'] === 'XMLHttpRequest'
+    });
+
     const { theme, language, timezone, items_per_page } = req.body;
 
     console.log('🎨 Updating display settings:', {
@@ -46,7 +54,7 @@ exports.updateDisplaySettings = async (req, res) => {
       language,
       timezone,
       items_per_page,
-      isAjax: req.headers['x-requested-with'] === 'XMLHttpRequest'
+      bodyKeys: Object.keys(req.body)
     });
 
     // Make sure settings column exists

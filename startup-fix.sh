@@ -2,7 +2,11 @@
 
 echo "🚀 Starting Inventory Manager Fix Process..."
 
-# Run tests first
+# Run comprehensive debug analysis first
+echo "🐛 Running comprehensive debug analysis..."
+node debug-all-issues.js
+
+echo ""
 echo "🧪 Running fix verification tests..."
 node test-fixes.js
 

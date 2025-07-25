@@ -139,8 +139,13 @@ After applying fixes, verify that:
 ### New Files:
 - `src/middleware/ajaxResponse.js` - AJAX response handler
 - `database/add-missing-columns.sql` - Database migration
+- `database/add-contracts-table.sql` - Contracts table migration
+- `public/css/user-interface-improvements.css` - Enhanced UI styling
 - `startup-fix.sh` - Automated fix script
 - `fix-all-issues.js` - Comprehensive fix script
+- `test-fixes.js` - Verification test suite
+- `debug-all-issues.js` - Comprehensive debug analysis
+- `fix-template-issues.js` - Template issue auto-fix
 - `FIXES_APPLIED.md` - This documentation
 
 ### Modified Files:

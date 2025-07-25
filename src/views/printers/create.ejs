@@ -69,7 +69,7 @@
             <option value="">Select a client...</option>
             <% clients.forEach(client => { %>
               <option value="<%= client.id %>" 
-                <%= (locals.formData && formData.client_id == client.id) || (req.query.client_id == client.id) ? 'selected' : '' %>>
+                <%= (locals.formData && formData.client_id == client.id) || (locals.query && query.client_id == client.id) ? 'selected' : '' %>>
                 <%= client.name %> (<%= client.client_id %>)
               </option>
             <% }); %>

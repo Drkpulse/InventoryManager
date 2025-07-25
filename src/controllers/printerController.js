@@ -145,6 +145,10 @@ exports.getPrinterById = async (req, res) => {
 
 exports.createPrinterForm = async (req, res) => {
   try {
+    console.log('🖨️ Loading printer create form', {
+      query: req.query
+    });
+
     // Get all clients, employees, and statuses for dropdowns
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
     const employeesResult = await db.query('SELECT id, name FROM employees ORDER BY name');
@@ -156,7 +160,8 @@ exports.createPrinterForm = async (req, res) => {
       clients: clientsResult.rows,
       employees: employeesResult.rows,
       statuses: statusesResult.rows,
-      user: req.user
+      query: req.query,
+      user: req.session.user || req.user
     });
   } catch (error) {
     console.error('Error rendering create form:', error);

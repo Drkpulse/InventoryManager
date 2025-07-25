@@ -42,7 +42,7 @@
               <label for="cep_brc" class="required">Asset ID (CEP/BRC)</label>
               <div class="input-with-validation">
                 <input type="text" id="cep_brc" name="cep_brc"
-                  value="<%= typeof formData !== 'undefined' ? formData.cep_brc : '' %>"
+                  value="<%= typeof formData !== 'undefined' ? getFormValue("cep_brc") : '' %>"
                   class="form-input" required placeholder="Enter unique asset identifier">
                 <div class="validation-feedback" id="cepValidation"></div>
                 <small class="field-help">
@@ -55,14 +55,14 @@
             <div class="form-group full-width">
               <label for="name" class="required">Asset Name</label>
               <input type="text" id="name" name="name"
-                value="<%= typeof formData !== 'undefined' ? formData.name : '' %>"
+                value="<%= typeof formData !== 'undefined' ? getFormValue("name") : '' %>"
                 class="form-input" required placeholder="Enter descriptive name for this asset">
             </div>
 
             <div class="form-group full-width">
               <label for="description">Description</label>
               <textarea id="description" name="description" class="form-textarea" rows="3"
-                placeholder="Enter detailed description of the asset (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
+                placeholder="Enter detailed description of the asset (optional)"><%= typeof formData !== 'undefined' ? getFormValue("description") : '' %></textarea>
               <small class="field-help">
                 <i class="fas fa-info-circle"></i>
                 Provide additional details about the asset, its purpose, or any special characteristics
@@ -74,7 +74,7 @@
               <select id="type_id" name="type_id" class="form-select" required>
                 <option value="">Select Asset Type</option>
                 <% types.forEach(type => { %>
-                  <option value="<%= type.id %>" <%= typeof formData !== 'undefined' && formData.type_id == type.id ? 'selected' : '' %>>
+                  <option value="<%= type.id %>" <%= getFormValue("type_id") == type.id ? 'selected' : '' %>>
                     <%= type.name %>
                   </option>
                 <% }) %>
@@ -96,7 +96,7 @@
               <select id="brand_id" name="brand_id" class="form-select">
                 <option value="">Select Brand</option>
                 <% brands.forEach(brand => { %>
-                  <option value="<%= brand.id %>" <%= typeof formData !== 'undefined' && formData.brand_id == brand.id ? 'selected' : '' %>>
+                  <option value="<%= brand.id %>" <%= getFormValue("brand_id") == brand.id ? 'selected' : '' %>>
                     <%= brand.name %>
                   </option>
                 <% }) %>
@@ -106,14 +106,14 @@
             <div class="form-group">
               <label for="model">Model</label>
               <input type="text" id="model" name="model"
-                value="<%= typeof formData !== 'undefined' ? formData.model : '' %>"
+                value="<%= typeof formData !== 'undefined' ? getFormValue("model") : '' %>"
                 class="form-input" placeholder="Product model number">
             </div>
 
             <div class="form-group">
               <label for="serial_cod">Serial Number</label>
               <input type="text" id="serial_cod" name="serial_cod"
-                value="<%= typeof formData !== 'undefined' ? formData.serial_cod : '' %>"
+                value="<%= typeof formData !== 'undefined' ? getFormValue("serial_cod") : '' %>"
                 class="form-input" placeholder="Unique serial number">
             </div>
 
@@ -122,7 +122,7 @@
               <div class="input-group">
                 <span class="input-group-text">€</span>
                 <input type="number" id="price" name="price" min="0" step="0.01"
-                  value="<%= typeof formData !== 'undefined' ? formData.price : '' %>"
+                  value="<%= typeof formData !== 'undefined' ? getFormValue("price") : '' %>"
                   class="form-input" placeholder="0.00">
               </div>
             </div>
@@ -142,7 +142,7 @@
               <select id="receipt" name="receipt" class="form-select">
                 <option value="">Select Receipt (Optional)</option>
                 <% sales.forEach(sale => { %>
-                  <option value="<%= sale.receipt %>" <%= typeof formData !== 'undefined' && formData.receipt === sale.receipt ? 'selected' : '' %>>
+                  <option value="<%= sale.receipt %>" <%= getFormValue("receipt") === sale.receipt ? 'selected' : '' %>>
                     <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
                   </option>
                 <% }) %>
@@ -168,7 +168,7 @@
               <select id="assigned_to" name="assigned_to" class="form-select">
                 <option value="">Leave Unassigned</option>
                 <% employees.forEach(employee => { %>
-                  <option value="<%= employee.id %>" <%= typeof formData !== 'undefined' && formData.assigned_to == employee.id ? 'selected' : '' %>>
+                  <option value="<%= employee.id %>" <%= getFormValue("assigned_to") == employee.id ? 'selected' : '' %>>
                     <%= employee.name %> (<%= employee.cep %>)
                   </option>
                 <% }) %>
@@ -178,7 +178,7 @@
             <div class="form-group">
               <label for="date_assigned">Assignment Date</label>
               <input type="date" id="date_assigned" name="date_assigned" class="form-input"
-                value="<%= typeof formData !== 'undefined' && formData.date_assigned ? formData.date_assigned : '' %>">
+                value="<%= getFormValue("date_assigned") ? getFormValue("date_assigned") : '' %>">
               <small class="field-help">
                 <i class="fas fa-info-circle"></i>
                 Date when asset is assigned to employee (auto-fills when employee is selected)

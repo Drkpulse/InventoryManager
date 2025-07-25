@@ -25,7 +25,9 @@ exports.index = async (req, res) => {
       user: req.session.user,
       software: software.rows,
       isSoftwarePage: true
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching software:', error);
     res.status(500).render('layout', {
@@ -43,7 +45,9 @@ exports.showAddForm = (req, res) => {
     body: 'software/add',
     user: req.session.user,
     isSoftwarePage: true
-  });
+  ,
+      query: req.query,
+      });
 };
 
 exports.create = async (req, res) => {
@@ -96,7 +100,9 @@ exports.showEditForm = async (req, res) => {
       user: req.session.user,
       software: software.rows[0],
       isSoftwarePage: true
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching software:', error);
     req.flash('error', 'Could not fetch software data');

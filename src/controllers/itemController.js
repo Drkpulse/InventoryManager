@@ -125,7 +125,9 @@ exports.getAllItems = async (req, res) => {
       totalItems: totalItems,
       perPage: perPage,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching items:', error);
     res.status(500).send('Server error: ' + error.message);
@@ -164,7 +166,9 @@ exports.getItemById = async (req, res) => {
       body: 'items/show',
       item: item,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching item:', error);
     res.status(500).send('Server error: ' + error.message);
@@ -193,7 +197,9 @@ exports.createItemForm = async (req, res) => {
       sales: sales.rows,
       employees: employees.rows,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching data for item form:', error);
     res.status(500).send('Server error');
@@ -234,6 +240,8 @@ exports.createItem = async (req, res) => {
         errors: validationErrors,
         formData: req.body,
         user: req.session.user
+      ,
+      query: req.query,
       });
     }
 
@@ -345,7 +353,9 @@ exports.updateItemForm = async (req, res) => {
       sales: sales.rows,
       employees: employees.rows,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching item for edit:', error);
     res.status(500).send('Server error');
@@ -539,7 +549,9 @@ exports.assignItemForm = async (req, res) => {
       item: itemResult.rows[0],
       employees: employees.rows,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error loading assignment form:', error);
     res.status(500).send('Server error');
@@ -701,7 +713,9 @@ exports.newReceiptForm = async (req, res) => {
       types: types.rows,
       brands: brands.rows,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error loading form:', error);
     res.status(500).send('Server error');

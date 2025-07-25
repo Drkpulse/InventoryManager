@@ -13,20 +13,20 @@
 <form method="POST" action="/admin/users/add">
   <div class="form-group">
     <label for="name">Name</label>
-    <input type="text" id="name" name="name" value="<%= typeof formData !== 'undefined' ? formData.name : '' %>" required>
+    <input type="text" id="name" name="name" value="<%= typeof formData !== 'undefined' ? getFormValue("name") : '' %>" required>
   </div>
 
   <div class="form-group">
     <label for="email">Email</label>
-    <input type="email" id="email" name="email" value="<%= typeof formData !== 'undefined' ? formData.email : '' %>" required>
+    <input type="email" id="email" name="email" value="<%= typeof formData !== 'undefined' ? getFormValue("email") : '' %>" required>
   </div>
 
   <div class="form-group">
     <label for="role">Role</label>
     <select id="role" name="role" required>
       <option value="">Select Role</option>
-      <option value="user" <%= typeof formData !== 'undefined' && formData.role === 'user' ? 'selected' : '' %>>User</option>
-      <option value="admin" <%= typeof formData !== 'undefined' && formData.role === 'admin' ? 'selected' : '' %>>Admin</option>
+      <option value="user" <%= getFormValue("role") === 'user' ? 'selected' : '' %>>User</option>
+      <option value="admin" <%= getFormValue("role") === 'admin' ? 'selected' : '' %>>Admin</option>
     </select>
   </div>
 

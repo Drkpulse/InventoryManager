@@ -31,7 +31,9 @@ exports.getAllEmployees = async (req, res) => {
       locations: locations.rows,
       user: req.session.user,
       showDeletedMessage: req.query.deleted === 'true'
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching employees:', error);
     res.status(500).send('Server error');
@@ -85,7 +87,9 @@ exports.getEmployeeById = async (req, res) => {
       items: itemsResult.rows,
       software: softwareResult.rows,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching employee:', error);
     res.status(500).send('Server error');
@@ -110,7 +114,9 @@ exports.createEmployeeForm = async (req, res) => {
       locations: locations.rows,
       software: software.rows,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching data for employee form:', error);
     res.status(500).send('Server error');
@@ -233,7 +239,9 @@ exports.updateEmployeeForm = async (req, res) => {
       software: software.rows,
       assignedSoftwareIds: assignedSoftwareIds,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching employee for edit:', error);
     res.status(500).send('Server error');
@@ -573,7 +581,9 @@ exports.getEmployeeHistory = async (req, res) => {
       formatFieldName,
       formatFieldValue,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching employee history:', error);
     res.status(500).send('Server error');
@@ -639,7 +649,9 @@ exports.getEmployees = async (req, res) => {
       totalEmployees,
       perPage,
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching employees:', error);
     res.status(500).send('Server error');

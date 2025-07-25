@@ -13,19 +13,19 @@
 <form method="POST" action="/references/platforms">
   <div class="form-group">
     <label for="id">Location ID</label>
-    <input type="text" id="id" name="id" value="<%= typeof formData !== 'undefined' ? formData.id : '' %>" required>
+    <input type="text" id="id" name="id" value="<%= typeof formData !== 'undefined' ? getFormValue("id") : '' %>" required>
     <small>Unique identifier for the location (e.g., 971, 972, 973)</small>
   </div>
 
   <div class="form-group">
     <label for="name">Location Name</label>
-    <input type="text" id="name" name="name" value="<%= typeof formData !== 'undefined' ? formData.name : '' %>" required>
+    <input type="text" id="name" name="name" value="<%= typeof formData !== 'undefined' ? getFormValue("name") : '' %>" required>
     <small>Descriptive name for the location (e.g., Braga, Porto, Lisboa)</small>
   </div>
 
   <div class="form-group">
     <label for="description">Description</label>
-    <textarea id="description" name="description" rows="3"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
+    <textarea id="description" name="description" rows="3"><%= typeof formData !== 'undefined' ? getFormValue("description") : '' %></textarea>
     <small>Optional description or additional details about this location</small>
   </div>
 

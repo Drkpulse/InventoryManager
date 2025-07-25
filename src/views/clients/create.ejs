@@ -35,7 +35,7 @@
             class="form-control" 
             id="client_id" 
             name="client_id" 
-            value="<%= locals.formData ? formData.client_id : '' %>"
+            value="<%= locals.formData ? getFormValue("client_id") : '' %>"
             placeholder="e.g., CLI001"
             required
           >
@@ -54,7 +54,7 @@
             class="form-control" 
             id="name" 
             name="name" 
-            value="<%= locals.formData ? formData.name : '' %>"
+            value="<%= locals.formData ? getFormValue("name") : '' %>"
             placeholder="e.g., TechCorp Solutions"
             required
           >
@@ -72,7 +72,7 @@
           name="description" 
           rows="4"
           placeholder="Optional description of the client..."
-        ><%= locals.formData ? formData.description : '' %></textarea>
+        ><%= locals.formData ? getFormValue("description") : '' %></textarea>
         <small class="form-text text-muted">
           Optional description or notes about this client
         </small>

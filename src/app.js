@@ -19,6 +19,7 @@ const translations = require('./utils/translations');
 
 // Add AJAX response middleware
 const handleAjaxResponse = require('./middleware/ajaxResponse');
+const templateHelpers = require('./middleware/templateHelpers');
 
 // Add notification routes BEFORE the main routes
 const notificationRoutes = require('./routes/notificationRoutes');
@@ -35,6 +36,12 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Add multer for handling multipart/form-data
+const multer = require('multer');
+const upload = multer();
+app.use(upload.none()); // For forms without file uploads
+
 app.use(methodOverride('_method'));
 
 // Session configuration
@@ -51,20 +58,22 @@ app.use(flash());
 // Add AJAX response handling middleware
 app.use(handleAjaxResponse);
 
+// Add template helpers
+app.use(templateHelpers);
+
 app.use((req, res, next) => {
   const user = req.user || req.session?.user || { settings: {} };
 
-  const lang =
-    user?.settings?.language ||
-    req.session?.language ||
-    'en';
+  const lang = user?.settings?.language || req.session?.language || 'en';
 
-  res.locals.t = (key) =>
-    translations[lang]?.[key] ||
-    translations['en'][key] ||
-    key;
+  // Enhanced translation function
+  res.locals.t = (key, params = {}) => {
+    const { t } = translations;
+    return t(key, lang, params);
+  };
 
   res.locals.user = user;
+  res.locals.currentLanguage = lang;
 
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');

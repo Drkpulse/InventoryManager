@@ -35,7 +35,7 @@
             class="form-control" 
             id="sim_number" 
             name="sim_number" 
-            value="<%= locals.formData ? formData.sim_number : '' %>"
+            value="<%= locals.formData ? getFormValue("sim_number") : '' %>"
             placeholder="e.g., SIM001234567"
             required
           >
@@ -51,7 +51,7 @@
             class="form-control" 
             id="carrier" 
             name="carrier" 
-            value="<%= locals.formData ? formData.carrier : '' %>"
+            value="<%= locals.formData ? getFormValue("carrier") : '' %>"
             placeholder="e.g., Vodafone, MEO, NOS"
             required
           >
@@ -73,7 +73,7 @@
             <option value="">Select a client...</option>
             <% clients.forEach(client => { %>
               <option value="<%= client.id %>" 
-                <%= (locals.formData && formData.client_id == client.id) || (locals.query && query.client_id == client.id) ? 'selected' : '' %>>
+                <%= (locals.formData && getFormValue("client_id") == client.id) || (locals.query && query.client_id == client.id) ? 'selected' : '' %>>
                 <%= client.name %> (<%= client.client_id %>)
               </option>
             <% }); %>
@@ -94,7 +94,7 @@
             <option value="">Select a status...</option>
             <% statuses.forEach(status => { %>
               <option value="<%= status.id %>" 
-                <%= locals.formData && formData.status_id == status.id ? 'selected' : '' %>>
+                <%= locals.formData && getFormValue("status_id") == status.id ? 'selected' : '' %>>
                 <%= status.name %>
               </option>
             <% }); %>
@@ -116,7 +116,7 @@
             <option value="">No PDA assigned</option>
             <% pdas.forEach(pda => { %>
               <option value="<%= pda.id %>" 
-                <%= locals.formData && formData.pda_id == pda.id ? 'selected' : '' %>>
+                <%= locals.formData && getFormValue("pda_id") == pda.id ? 'selected' : '' %>>
                 <%= pda.serial_number %> (<%= pda.client_name %>)
               </option>
             <% }); %>
@@ -134,7 +134,7 @@
             class="form-control" 
             id="monthly_cost" 
             name="monthly_cost" 
-            value="<%= locals.formData ? formData.monthly_cost : '' %>"
+            value="<%= locals.formData ? getFormValue("monthly_cost") : '' %>"
             placeholder="e.g., 25.00"
           >
           <small class="form-text text-muted">

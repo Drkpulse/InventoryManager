@@ -50,7 +50,7 @@
 
 	  const formData = new FormData(this);
 	  console.log('Form data:');
-	  for (let [key, value] of formData.entries()) {
+	  for (let [key, value] of getFormValue("entries")()) {
 		console.log(key, ':', value);
 	  }
 

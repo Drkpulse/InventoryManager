@@ -20,7 +20,9 @@ exports.users = async (req, res) => {
       users: usersResult.rows,
       currentUser: req.session.user, // Add this line
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error loading users:', error);
     res.status(500).render('layout', {
@@ -38,7 +40,9 @@ exports.showAddUserForm = (req, res) => {
     body: 'admin/add-user',
     user: req.session.user,
     isAdminPage: true
-  });
+  ,
+      query: req.query,
+      });
 };
 
 exports.addUser = async (req, res) => {
@@ -84,7 +88,9 @@ exports.showEditUserForm = async (req, res) => {
       user: req.session.user,
       editUser: userResult.rows[0],
       isAdminPage: true
-    });
+    ,
+      query: req.query,
+      });
   } catch (error) {
     console.error('Error fetching user:', error);
     req.flash('error', 'Could not fetch user data');
@@ -178,7 +184,9 @@ exports.settings = async (req, res) => {
       body: 'error',
       message: 'Could not fetch system settings',
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   }
 };
 
@@ -252,6 +260,8 @@ exports.logs = async (req, res) => {
       body: 'error',
       message: 'Could not fetch activity logs',
       user: req.session.user
-    });
+    ,
+      query: req.query,
+      });
   }
 };

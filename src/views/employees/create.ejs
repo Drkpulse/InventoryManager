@@ -50,7 +50,7 @@
             <div class="form-group full-width">
               <label for="name" class="required">Full Name</label>
               <input type="text" id="name" name="name"
-                value="<%= typeof formData !== 'undefined' ? formData.name : '' %>"
+                value="<%= typeof formData !== 'undefined' ? getFormValue("name") : '' %>"
                 class="form-input" required placeholder="Enter employee's full name">
               <small class="field-help">
                 <i class="fas fa-info-circle"></i>
@@ -62,7 +62,7 @@
               <label for="cep" class="required">Employee ID</label>
               <div class="input-with-validation">
                 <input type="text" id="cep" name="cep"
-                  value="<%= typeof formData !== 'undefined' ? formData.cep : '' %>"
+                  value="<%= typeof formData !== 'undefined' ? getFormValue("cep") : '' %>"
                   class="form-input" required placeholder="e.g., EMP001, CEP123">
                 <div class="validation-feedback" id="cepValidation"></div>
                 <small class="field-help">
@@ -75,7 +75,7 @@
             <div class="form-group">
               <label for="email" class="required">Email Address</label>
               <input type="email" id="email" name="email"
-                value="<%= typeof formData !== 'undefined' ? formData.email : '' %>"
+                value="<%= typeof formData !== 'undefined' ? getFormValue("email") : '' %>"
                 class="form-input" required placeholder="employee@company.com">
               <small class="field-help">
                 <i class="fas fa-envelope"></i>
@@ -98,7 +98,7 @@
               <select id="dept_id" name="dept_id" class="form-select" required>
                 <option value="">Select Department</option>
                 <% departments.forEach(dept => { %>
-                  <option value="<%= dept.id %>" <%= typeof formData !== 'undefined' && formData.dept_id == dept.id ? 'selected' : '' %>>
+                  <option value="<%= dept.id %>" <%= getFormValue("dept_id") == dept.id ? 'selected' : '' %>>
                     <%= dept.name %>
                   </option>
                 <% }) %>
@@ -114,7 +114,7 @@
               <select id="location_id" name="location_id" class="form-select" required>
                 <option value="">Select Location</option>
                 <% locations.forEach(location => { %>
-                  <option value="<%= location.id %>" <%= typeof formData !== 'undefined' && formData.location_id == location.id ? 'selected' : '' %>>
+                  <option value="<%= location.id %>" <%= getFormValue("location_id") == location.id ? 'selected' : '' %>>
                     <%= location.name %>
                   </option>
                 <% }) %>
@@ -128,7 +128,7 @@
             <div class="form-group">
               <label for="joined_date" class="required">Start Date</label>
               <input type="date" id="joined_date" name="joined_date"
-                value="<%= typeof formData !== 'undefined' ? formData.joined_date : '' %>"
+                value="<%= typeof formData !== 'undefined' ? getFormValue("joined_date") : '' %>"
                 class="form-input" required>
               <small class="field-help">
                 <i class="fas fa-calendar-plus"></i>
@@ -139,7 +139,7 @@
             <div class="form-group">
               <label for="job_title">Job Title</label>
               <input type="text" id="job_title" name="job_title"
-                value="<%= typeof formData !== 'undefined' ? formData.job_title : '' %>"
+                value="<%= typeof formData !== 'undefined' ? getFormValue("job_title") : '' %>"
                 class="form-input" placeholder="e.g., Software Developer, Manager">
               <small class="field-help">
                 <i class="fas fa-user-tie"></i>
@@ -165,7 +165,7 @@
                       <input type="checkbox"
                              name="software_assignments"
                              value="<%= sw.id %>"
-                             <%= typeof formData !== 'undefined' && formData.software_assignments && formData.software_assignments.includes(sw.id.toString()) ? 'checked' : '' %>>
+                             <%= getFormValue("software_assignments") && getFormValue("software_assignments").includes(sw.id.toString()) ? 'checked' : '' %>>
                       <span class="checkmark"></span>
                       <div class="software-info">
                         <div class="software-header">

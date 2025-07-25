@@ -23,14 +23,14 @@
 	<div class="form-group">
 	  <label for="name">Asset Type Name</label>
 	  <input type="text" id="name" name="name"
-			 value="<%= typeof formData !== 'undefined' && formData.name ? formData.name : '' %>"
+			 value="<%= getFormValue("name") ? getFormValue("name") : '' %>"
 			 required>
 	  <small>Name of the asset type (e.g., Laptop, Desktop, Monitor, Printer)</small>
 	</div>
 
 	<div class="form-group">
 	  <label for="description">Description</label>
-	  <textarea id="description" name="description" rows="3"><%= typeof formData !== 'undefined' && formData.description ? formData.description : '' %></textarea>
+	  <textarea id="description" name="description" rows="3"><%= getFormValue("description") ? getFormValue("description") : '' %></textarea>
 	  <small>Optional description explaining what this asset type represents</small>
 	</div>
 
@@ -54,7 +54,7 @@
 
 	  const formData = new FormData(this);
 	  console.log('Form data:');
-	  for (let [key, value] of formData.entries()) {
+	  for (let [key, value] of getFormValue("entries")()) {
 		console.log(key, ':', value);
 	  }
 

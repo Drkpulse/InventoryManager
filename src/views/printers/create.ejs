@@ -35,7 +35,7 @@
             class="form-control" 
             id="supplier" 
             name="supplier" 
-            value="<%= locals.formData ? formData.supplier : '' %>"
+            value="<%= locals.formData ? getFormValue("supplier") : '' %>"
             placeholder="e.g., HP, Canon, Epson"
             required
           >
@@ -51,7 +51,7 @@
             class="form-control" 
             id="model" 
             name="model" 
-            value="<%= locals.formData ? formData.model : '' %>"
+            value="<%= locals.formData ? getFormValue("model") : '' %>"
             placeholder="e.g., LaserJet Pro 4000"
           >
         </div>
@@ -69,7 +69,7 @@
             <option value="">Select a client...</option>
             <% clients.forEach(client => { %>
               <option value="<%= client.id %>" 
-                <%= (locals.formData && formData.client_id == client.id) || (locals.query && query.client_id == client.id) ? 'selected' : '' %>>
+                <%= (locals.formData && getFormValue("client_id") == client.id) || (locals.query && query.client_id == client.id) ? 'selected' : '' %>>
                 <%= client.name %> (<%= client.client_id %>)
               </option>
             <% }); %>
@@ -90,7 +90,7 @@
             <option value="">Select a status...</option>
             <% statuses.forEach(status => { %>
               <option value="<%= status.id %>" 
-                <%= locals.formData && formData.status_id == status.id ? 'selected' : '' %>>
+                <%= locals.formData && getFormValue("status_id") == status.id ? 'selected' : '' %>>
                 <%= status.name %>
               </option>
             <% }); %>
@@ -110,7 +110,7 @@
             class="form-control" 
             id="cost" 
             name="cost" 
-            value="<%= locals.formData ? formData.cost : '' %>"
+            value="<%= locals.formData ? getFormValue("cost") : '' %>"
             placeholder="e.g., 299.99"
           >
         </div>
@@ -126,7 +126,7 @@
           <option value="">No employee assigned</option>
           <% employees.forEach(employee => { %>
             <option value="<%= employee.id %>" 
-              <%= locals.formData && formData.employee_id == employee.id ? 'selected' : '' %>>
+              <%= locals.formData && getFormValue("employee_id") == employee.id ? 'selected' : '' %>>
               <%= employee.name %>
             </option>
           <% }); %>

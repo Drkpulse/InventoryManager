@@ -151,119 +151,15 @@ router.post('/:id/delete', isAdmin, async (req, res) => {
 });
 
 // Settings routes
-router.get('/settings', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user.id;
-
-    // First check if the settings column exists
-    let userSettings = {};
-    try {
-      const result = await db.query('SELECT id, name, email, role, settings FROM users WHERE id = $1', [userId]);
-      userSettings = result.rows[0].settings || {};
-    } catch (error) {
-      // If column doesn't exist, use empty settings
-      if (error.code === '42703') { // Column doesn't exist error
-        console.log('Settings column does not exist yet, using default empty settings');
-
-        // Create settings column
-        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{}'::jsonb`);
-      } else {
-        throw error; // Re-throw other errors
-      }
-    }
-
-    res.render('layout', {
-      title: 'Settings',
-      body: 'users/settings',
-      user: {
-        ...req.session.user,
-        settings: userSettings
-      },
-      showUpdated: req.query.updated === 'true'
-    });
-  } catch (error) {
-    console.error('Error fetching user settings:', error);
-    res.status(500).send('Server error');
-  }
-});
+router.get('/settings', isAuthenticated, userController.getSettings);
 
 // Update display settings
-router.post('/settings/display', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user.id;
-    const { theme, language } = req.body;
+router.post('/settings/display', isAuthenticated, userController.updateDisplaySettings);
 
-    // Ensure settings column exists
-    await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{}'::jsonb`);
-
-    // Get current settings
-    const userResult = await db.query('SELECT settings FROM users WHERE id = $1', [userId]);
-    let settings = userResult.rows[0]?.settings || {};
-
-    // Update settings
-    settings = {
-      ...settings,
-      theme: theme || 'light',
-      language: language || 'en'
-    };
-
-    // Save to database
-    await db.query('UPDATE users SET settings = $1 WHERE id = $2', [settings, userId]);
-
-    // Update session
-    req.session.user = {
-      ...req.session.user,
-      settings
-    };
-
-    res.redirect('/users/settings?updated=true');
-  } catch (error) {
-    console.error('Error updating display settings:', error);
-    res.status(500).send('Server error: ' + error.message);
-  }
-});
+// Update notification settings
+router.post('/settings/notifications', isAuthenticated, userController.updateNotificationSettings);
 
 // Update security settings
-router.post('/settings/security', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user.id;
-    const { current_password, new_password, confirm_password } = req.body;
-
-    // Check if passwords match
-    if (new_password !== confirm_password) {
-      return res.render('layout', {
-        title: 'Settings',
-        body: 'users/settings',
-        error: 'New passwords do not match',
-        user: req.session.user
-      });
-    }
-
-    // Check current password
-    const userResult = await db.query('SELECT password FROM users WHERE id = $1', [userId]);
-    const isMatch = await bcrypt.compare(current_password, userResult.rows[0].password);
-
-    if (!isMatch) {
-      return res.render('layout', {
-        title: 'Settings',
-        body: 'users/settings',
-        error: 'Current password is incorrect',
-        user: req.session.user
-      });
-    }
-
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(new_password, salt);
-
-    // Update password
-    await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
-
-    return res.redirect('/users/settings?updated=true');
-  } catch (error) {
-    console.error('Error updating security settings:', error);
-    res.status(500).send('Server error');
-  }
-});
+router.post('/settings/security', isAuthenticated, userController.updateSecuritySettings);
 
 module.exports = router;

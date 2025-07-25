@@ -454,16 +454,19 @@ INSERT INTO system_settings (setting_key, setting_value, description) VALUES
 INSERT INTO clients (client_id, name, description) VALUES
   ('CLI001', 'TechCorp Solutions', 'Main technology partner'),
   ('CLI002', 'Digital Services Ltd', 'Digital transformation services'),
-  ('CLI003', 'Innovation Hub', 'Innovation and development center');
+  ('CLI003', 'Innovation Hub', 'Innovation and development center'),
+  ('CLI004', 'PrintCorp Ltd', 'Printing and publishing services'),
+  ('CLI005', 'DataLogistics Inc', 'Data collection and logistics'),
+  ('CLI006', 'Mobile Solutions SA', 'Mobile device management');
 
--- Insert sample printers
+-- Insert sample printers (assigned to different clients than PDAs)
 INSERT INTO printers (supplier, model, employee_id, client_id, cost, status_id) VALUES
-  ('HP Inc.', 'LaserJet Pro 4000', 1, 1, 299.99, 1),
-  ('Canon', 'PIXMA MG3620', 2, 1, 79.99, 1),
-  ('Epson', 'EcoTank ET-2720', NULL, 2, 199.99, 1),
-  ('Brother', 'HL-L2350DW', 3, 3, 149.99, 2);
+  ('HP Inc.', 'LaserJet Pro 4000', 1, 4, 299.99, 1),
+  ('Canon', 'PIXMA MG3620', 2, 4, 79.99, 1),
+  ('Epson', 'EcoTank ET-2720', NULL, 5, 199.99, 1),
+  ('Brother', 'HL-L2350DW', 3, 6, 149.99, 2);
 
--- Insert sample PDAs
+-- Insert sample PDAs (assigned to different clients than printers)
 INSERT INTO pdas (serial_number, model, client_id, cost, status_id) VALUES
   ('PDA001', 'Zebra TC21', 1, 450.00, 1),
   ('PDA002', 'Honeywell CT30', 1, 380.00, 1),
@@ -471,13 +474,16 @@ INSERT INTO pdas (serial_number, model, client_id, cost, status_id) VALUES
   ('PDA004', 'Datalogic Memor 10', 3, 395.00, 2),
   ('PDA005', 'Zebra TC21', 2, 450.00, 1);
 
--- Insert sample SIM cards
+-- Insert sample SIM cards (can be assigned to any client)
 INSERT INTO sim_cards (sim_number, carrier, client_id, pda_id, monthly_cost, status_id) VALUES
   ('SIM001234567', 'Vodafone', 1, 1, 25.00, 1),
   ('SIM001234568', 'MEO', 1, NULL, 20.00, 1),
   ('SIM001234569', 'NOS', 2, 3, 30.00, 1),
   ('SIM001234570', 'Vodafone', 2, NULL, 25.00, 2),
-  ('SIM001234571', 'MEO', 3, NULL, 20.00, 1);
+  ('SIM001234571', 'MEO', 3, NULL, 20.00, 1),
+  ('SIM001234572', 'Vodafone', 4, NULL, 25.00, 1),
+  ('SIM001234573', 'NOS', 5, NULL, 30.00, 1),
+  ('SIM001234574', 'MEO', 6, NULL, 20.00, 1);
 
 -- Create default notification settings for all users and notification types
 INSERT INTO notification_settings (user_id, type_id, enabled, email_enabled, browser_enabled)

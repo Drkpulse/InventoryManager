@@ -5872,9 +5872,30 @@ tbody tr:hover {
   }
 }
 
-/* Dark Mode Suppor */
+/* Dark Mode Support */
+body[data-theme="dark"] {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #0f1419;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #666;
+  --border-color: #2a2a3e;
+  --shadow-light: rgba(0, 0, 0, 0.2);
+  --shadow-medium: rgba(0, 0, 0, 0.3);
+  --shadow-heavy: rgba(0, 0, 0, 0.4);
+  --accent-primary: #00ff7f;
+  --accent-secondary: #00bfff;
+  --success-color: #00ff7f;
+  --warning-color: #ffd700;
+  --info-color: #00bfff;
+  --primary: #4a90e2;
+  --secondary: #357abd;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  body:not([data-theme="light"]) {
     --bg-primary: #1a1a2e;
     --bg-secondary: #0f1419;
     --text-primary: #ffffff;
@@ -5889,79 +5910,172 @@ tbody tr:hover {
     --success-color: #00ff7f;
     --warning-color: #ffd700;
     --info-color: #00bfff;
-  }
-
-  body {
+    --primary: #4a90e2;
+    --secondary: #357abd;
     background-color: var(--bg-primary);
     color: var(--text-primary);
   }
+}
 
-  .card,
-  .sidebar,
-  .top-header,
-  .page-container,
-  .main-info-panel {
+body[data-theme="dark"] .card,
+body[data-theme="dark"] .sidebar,
+body[data-theme="dark"] .top-header,
+body[data-theme="dark"] .page-container,
+body[data-theme="dark"] .main-info-panel,
+body[data-theme="dark"] .form-container,
+body[data-theme="dark"] .form-section {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-medium);
+}
+
+body[data-theme="dark"] a {
+  color: var(--accent-secondary);
+}
+
+body[data-theme="dark"] .nav-link {
+  color: var(--text-secondary);
+}
+
+body[data-theme="dark"] .nav-link:hover,
+body[data-theme="dark"] .nav-link.active {
+  background-color: rgba(0, 191, 255, 0.1);
+  color: var(--accent-secondary);
+}
+
+body[data-theme="dark"] .btn {
+  background-color: #222c3c;
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+body[data-theme="dark"] .btn:hover {
+  background-color: #2a3648;
+  border-color: #3a445a;
+}
+
+body[data-theme="dark"] .btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+body[data-theme="dark"] .btn-primary:hover {
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+}
+
+body[data-theme="dark"] .dropdown-menu,
+body[data-theme="dark"] .notification-menu,
+body[data-theme="dark"] .user-menu-dropdown {
+  background: #141922;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-heavy);
+  border-color: var(--border-color);
+}
+
+body[data-theme="dark"] .table-container,
+body[data-theme="dark"] .data-table,
+body[data-theme="dark"] table {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+body[data-theme="dark"] th,
+body[data-theme="dark"] td {
+  border-color: var(--border-color);
+}
+
+body[data-theme="dark"] .modal-content {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-heavy);
+}
+
+body[data-theme="dark"] .form-control,
+body[data-theme="dark"] .form-input,
+body[data-theme="dark"] .form-select,
+body[data-theme="dark"] input,
+body[data-theme="dark"] textarea,
+body[data-theme="dark"] select {
+  background-color: #2a2a3e;
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+body[data-theme="dark"] .form-control:focus,
+body[data-theme="dark"] input:focus,
+body[data-theme="dark"] textarea:focus,
+body[data-theme="dark"] select:focus {
+  background-color: #2a2a3e;
+  color: var(--text-primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.25);
+}
+
+body[data-theme="dark"] .alert {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+body[data-theme="dark"] .alert-success {
+  background-color: rgba(42, 157, 143, 0.1);
+  border-color: var(--success-color);
+  color: var(--success-color);
+}
+
+body[data-theme="dark"] .alert-danger {
+  background-color: rgba(230, 57, 70, 0.1);
+  border-color: var(--danger);
+  color: #ff6b6b;
+}
+
+body[data-theme="dark"] .badge {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+body[data-theme="dark"] .badge-info {
+  background-color: var(--info-color);
+  color: var(--bg-primary);
+}
+
+body[data-theme="dark"] .badge-success {
+  background-color: var(--success-color);
+  color: var(--bg-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) .card,
+  body:not([data-theme="light"]) .sidebar,
+  body:not([data-theme="light"]) .top-header,
+  body:not([data-theme="light"]) .page-container,
+  body:not([data-theme="light"]) .main-info-panel,
+  body:not([data-theme="light"]) .form-container,
+  body:not([data-theme="light"]) .form-section {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     box-shadow: var(--shadow-medium);
   }
 
-  a {
+  body:not([data-theme="light"]) a {
     color: var(--accent-secondary);
   }
 
-  .nav-link {
+  body:not([data-theme="light"]) .nav-link {
     color: var(--text-secondary);
   }
 
-  .nav-link:hover,
-  .nav-link.active {
-    background-color: rgba(0, 191, 255, 0.1); /* info-color transparent */
+  body:not([data-theme="light"]) .nav-link:hover,
+  body:not([data-theme="light"]) .nav-link.active {
+    background-color: rgba(0, 191, 255, 0.1);
     color: var(--accent-secondary);
   }
 
-  .btn {
-    background-color: #222c3c;
-    color: var(--text-primary);
-    border-color: var(--border-color);
-  }
-
-  .btn:hover {
-    background-color: #2a3648;
-    border-color: #3a445a;
-  }
-
-  .dropdown-menu,
-  .notification-menu,
-  .user-menu-dropdown {
-    background: #141922;
-    color: var(--text-primary);
-    box-shadow: var(--shadow-heavy);
-  }
-
-  .table-container,
-  .data-table,
-  table {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-  }
-
-  th,
-  td {
-    border-color: var(--border-color);
-  }
-
-  .modal-content {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    box-shadow: var(--shadow-heavy);
-  }
-
-  .form-input,
-  .form-select,
-  input,
-  textarea,
-  select {
+  body:not([data-theme="light"]) .form-control,
+  body:not([data-theme="light"]) input,
+  body:not([data-theme="light"]) textarea,
+  body:not([data-theme="light"]) select {
     background-color: #2a2a3e;
     color: var(--text-primary);
     border-color: var(--border-color);

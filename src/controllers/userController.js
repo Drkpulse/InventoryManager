@@ -1,4 +1,4 @@
-// Add or update these methods in your userController.js
+const db = require('../config/db');
 
 exports.getSettings = async (req, res) => {
   try {
@@ -38,7 +38,7 @@ exports.getSettings = async (req, res) => {
 exports.updateDisplaySettings = async (req, res) => {
   try {
     const userId = req.session.user.id;
-    const { theme, language } = req.body;
+    const { theme, language, timezone, items_per_page } = req.body;
 
     // Make sure settings column exists
     await ensureSettingsColumnExists();
@@ -56,7 +56,9 @@ exports.updateDisplaySettings = async (req, res) => {
     settings = {
       ...settings,
       theme: theme || 'light',
-      language: language || 'en'
+      language: language || 'en',
+      timezone: timezone || 'UTC',
+      items_per_page: items_per_page || '20'
     };
 
     // Save to database
@@ -68,9 +70,58 @@ exports.updateDisplaySettings = async (req, res) => {
       settings
     };
 
+    req.flash('success', 'Display settings updated successfully');
     res.redirect('/users/settings?updated=true');
   } catch (error) {
     console.error('Error updating display settings:', error);
+    res.status(500).send('Server error: ' + error.message);
+  }
+};
+
+exports.updateNotificationSettings = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { 
+      email_notifications, 
+      browser_notifications, 
+      maintenance_alerts, 
+      assignment_notifications 
+    } = req.body;
+
+    // Make sure settings column exists
+    await ensureSettingsColumnExists();
+
+    // Get current settings
+    const userResult = await db.query('SELECT settings FROM users WHERE id = $1', [userId]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).send('User not found');
+    }
+
+    // Update settings
+    let settings = userResult.rows[0].settings || {};
+
+    settings = {
+      ...settings,
+      email_notifications: email_notifications === 'on',
+      browser_notifications: browser_notifications === 'on',
+      maintenance_alerts: maintenance_alerts === 'on',
+      assignment_notifications: assignment_notifications === 'on'
+    };
+
+    // Save to database
+    await db.query('UPDATE users SET settings = $1 WHERE id = $2', [settings, userId]);
+
+    // Update session
+    req.session.user = {
+      ...req.session.user,
+      settings
+    };
+
+    req.flash('success', 'Notification settings updated successfully');
+    res.redirect('/users/settings?updated=true');
+  } catch (error) {
+    console.error('Error updating notification settings:', error);
     res.status(500).send('Server error: ' + error.message);
   }
 };

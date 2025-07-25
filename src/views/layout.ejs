@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body>
+<body data-theme="<%= user && user.settings && user.settings.theme ? user.settings.theme : 'light' %>">
   <div class="app-container <%= locals.isDashboardPage ? 'dashboard-page' : '' %>
                            <%= locals.isReferencePage ? 'reference-page' : '' %>
                            <%= locals.isReportPage ? 'report-page' : '' %>
@@ -151,6 +151,6 @@
   <% } %>
 
   <!-- Theme handler script -->
-  <script src="../../public/js/theme-handler.js"></script>
+  <script src="/js/theme-handler.js"></script>
 </body>
 </html>

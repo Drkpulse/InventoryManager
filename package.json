@@ -11,6 +11,8 @@
     "add-settings": "node database/add-settings-column.js",
     "gen-pwd": "node tools/generate-password.js",
     "reset-admin": "node tools/reset-admin.js",
+    "migrate": "node database/migrations/add-missing-columns.js",
+    "repair-db": "node database/repair-database.js",
     "deploy": "./deploy.sh",
     "docker:build": "docker build -t it-asset-manager .",
     "docker:run": "docker run -p 3000:3000 it-asset-manager",

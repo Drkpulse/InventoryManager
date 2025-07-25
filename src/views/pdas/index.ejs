@@ -1,0 +1,129 @@
+<div class="content-header">
+  <div class="header-title">
+    <h1><i class="fas fa-mobile-alt"></i> PDA Management</h1>
+    <p>Manage client PDAs and SIM card assignments</p>
+  </div>
+  <div class="header-actions">
+    <a href="/pdas/new" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Add New PDA
+    </a>
+  </div>
+</div>
+
+<% if (locals.messages && messages.success) { %>
+  <div class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    <%= messages.success %>
+  </div>
+<% } %>
+
+<div class="table-controls">
+  <div class="table-info">
+    <span>Showing <%= pdas.length %> of <%= totalPDAs %> PDAs</span>
+  </div>
+  <div class="table-filters">
+    <select class="form-control" onchange="filterPDAs('client', this.value)">
+      <option value="">All Clients</option>
+      <% clients.forEach(client => { %>
+        <option value="<%= client.id %>" <%= filters.client == client.id ? 'selected' : '' %>>
+          <%= client.name %>
+        </option>
+      <% }); %>
+    </select>
+    <select class="form-control" onchange="filterPDAs('sim', this.value)">
+      <option value="">All PDAs</option>
+      <option value="with_sim" <%= filters.sim === 'with_sim' ? 'selected' : '' %>>With SIM Card</option>
+      <option value="without_sim" <%= filters.sim === 'without_sim' ? 'selected' : '' %>>Without SIM Card</option>
+    </select>
+  </div>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Serial Number</th>
+        <th>Client</th>
+        <th>SIM Card</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (pdas.length === 0) { %>
+        <tr>
+          <td colspan="5" class="text-center">
+            <div class="empty-state">
+              <i class="fas fa-mobile-alt"></i>
+              <h3>No PDAs found</h3>
+              <p>Start by adding your first PDA.</p>
+              <a href="/pdas/new" class="btn btn-primary">Add New PDA</a>
+            </div>
+          </td>
+        </tr>
+      <% } else { %>
+        <% pdas.forEach(pda => { %>
+          <tr>
+            <td>
+              <a href="/pdas/<%= pda.id %>" class="entity-link">
+                <%= pda.serial_number %>
+              </a>
+            </td>
+            <td>
+              <a href="/clients/<%= pda.client_id %>">
+                <%= pda.client_name %> (<%= pda.client_code %>)
+              </a>
+            </td>
+            <td>
+              <% if (pda.has_sim_card) { %>
+                <span class="badge badge-success">
+                  <i class="fas fa-check"></i> Yes
+                </span>
+              <% } else { %>
+                <span class="badge badge-secondary">
+                  <i class="fas fa-times"></i> No
+                </span>
+              <% } %>
+            </td>
+            <td><%= new Date(pda.created_at).toLocaleDateString() %></td>
+            <td>
+              <div class="action-buttons">
+                <a href="/pdas/<%= pda.id %>" class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <a href="/pdas/<%= pda.id %>/edit" class="btn btn-sm btn-outline-secondary">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<%= pda.id %>', '<%= pda.serial_number %>')">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+function filterPDAs(type, value) {
+  const url = new URL(window.location);
+  if (value) {
+    url.searchParams.set(type, value);
+  } else {
+    url.searchParams.delete(type);
+  }
+  window.location = url;
+}
+
+function confirmDelete(pdaId, serialNumber) {
+  if (confirm(`Are you sure you want to delete PDA "${serialNumber}"? This action cannot be undone.`)) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/pdas/${pdaId}/delete`;
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+</script>

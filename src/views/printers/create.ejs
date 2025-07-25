@@ -1,0 +1,125 @@
+<div class="content-header">
+  <div class="header-title">
+    <h1><i class="fas fa-plus"></i> Add New Printer</h1>
+    <p>Create a new printer record</p>
+  </div>
+  <div class="header-actions">
+    <a href="/printers" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Printers
+    </a>
+  </div>
+</div>
+
+<% if (locals.errors && errors.length > 0) { %>
+  <div class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Please fix the following errors:</strong>
+    <ul class="mb-0 mt-2">
+      <% errors.forEach(error => { %>
+        <li><%= error %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="form-container">
+  <form method="POST" action="/printers" class="needs-validation" novalidate>
+    <div class="form-section">
+      <h3><i class="fas fa-info-circle"></i> Printer Information</h3>
+      
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="supplier" class="required">Supplier</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="supplier" 
+            name="supplier" 
+            value="<%= locals.formData ? formData.supplier : '' %>"
+            placeholder="e.g., HP, Canon, Epson"
+            required
+          >
+          <div class="invalid-feedback">
+            Please provide a supplier name.
+          </div>
+        </div>
+        
+        <div class="form-group col-md-6">
+          <label for="client_id" class="required">Client</label>
+          <select 
+            class="form-control" 
+            id="client_id" 
+            name="client_id" 
+            required
+          >
+            <option value="">Select a client...</option>
+            <% clients.forEach(client => { %>
+              <option value="<%= client.id %>" 
+                <%= (locals.formData && formData.client_id == client.id) || (req.query.client_id == client.id) ? 'selected' : '' %>>
+                <%= client.name %> (<%= client.client_id %>)
+              </option>
+            <% }); %>
+          </select>
+          <div class="invalid-feedback">
+            Please select a client.
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="employee_id">Assigned Employee (Optional)</label>
+        <select 
+          class="form-control" 
+          id="employee_id" 
+          name="employee_id"
+        >
+          <option value="">No employee assigned</option>
+          <% employees.forEach(employee => { %>
+            <option value="<%= employee.id %>" 
+              <%= locals.formData && formData.employee_id == employee.id ? 'selected' : '' %>>
+              <%= employee.name %>
+            </option>
+          <% }); %>
+        </select>
+        <small class="form-text text-muted">
+          Optional: Select an employee who will be responsible for this printer
+        </small>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Create Printer
+      </button>
+      <a href="/printers" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+// Bootstrap form validation
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    var forms = document.getElementsByClassName('needs-validation');
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+
+// Pre-select client if coming from client page
+const urlParams = new URLSearchParams(window.location.search);
+const clientId = urlParams.get('client_id');
+if (clientId) {
+  document.getElementById('client_id').value = clientId;
+}
+</script>

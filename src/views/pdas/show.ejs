@@ -1,0 +1,81 @@
+<div class="content-header">
+  <div class="header-title">
+    <h1><i class="fas fa-mobile-alt"></i> PDA: <%= pda.serial_number %></h1>
+    <p>PDA Details</p>
+  </div>
+  <div class="header-actions">
+    <a href="/pdas" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to PDAs
+    </a>
+    <a href="/pdas/<%= pda.id %>/edit" class="btn btn-primary">
+      <i class="fas fa-edit"></i> Edit PDA
+    </a>
+  </div>
+</div>
+
+<div class="details-container">
+  <div class="info-section">
+    <h3><i class="fas fa-info-circle"></i> PDA Information</h3>
+    <div class="info-grid">
+      <div class="info-item">
+        <label>Serial Number:</label>
+        <span><%= pda.serial_number %></span>
+      </div>
+      <div class="info-item">
+        <label>Client:</label>
+        <span>
+          <% if (pda.client_name) { %>
+            <a href="/clients/<%= pda.client_id %>">
+              <%= pda.client_name %> (<%= pda.client_code %>)
+            </a>
+          <% } else { %>
+            <span class="text-muted">No client assigned</span>
+          <% } %>
+        </span>
+      </div>
+      <div class="info-item">
+        <label>SIM Card:</label>
+        <span>
+          <% if (pda.has_sim_card) { %>
+            <span class="badge badge-success">
+              <i class="fas fa-check"></i> Yes
+            </span>
+          <% } else { %>
+            <span class="badge badge-secondary">
+              <i class="fas fa-times"></i> No
+            </span>
+          <% } %>
+        </span>
+      </div>
+      <div class="info-item">
+        <label>Created:</label>
+        <span><%= new Date(pda.created_at).toLocaleString() %></span>
+      </div>
+      <div class="info-item">
+        <label>Last Updated:</label>
+        <span><%= new Date(pda.updated_at).toLocaleString() %></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-section">
+    <a href="/pdas/<%= pda.id %>/history" class="btn btn-info">
+      <i class="fas fa-history"></i> View History
+    </a>
+    <button class="btn btn-danger" onclick="confirmDelete('<%= pda.id %>', '<%= pda.serial_number %>')">
+      <i class="fas fa-trash"></i> Delete PDA
+    </button>
+  </div>
+</div>
+
+<script>
+function confirmDelete(pdaId, serialNumber) {
+  if (confirm(`Are you sure you want to delete PDA "${serialNumber}"? This action cannot be undone.`)) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/pdas/${pdaId}/delete`;
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+</script>

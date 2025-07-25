@@ -1,0 +1,82 @@
+<div class="content-header">
+  <div class="header-title">
+    <h1><i class="fas fa-edit"></i> Edit Client</h1>
+    <p>Update client information for: <strong><%= client.name %></strong></p>
+  </div>
+  <div class="header-actions">
+    <a href="/clients/<%= client.id %>" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Client
+    </a>
+  </div>
+</div>
+
+<% if (locals.errors && errors.length > 0) { %>
+  <div class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Please fix the following errors:</strong>
+    <ul class="mb-0 mt-2">
+      <% errors.forEach(error => { %>
+        <li><%= error %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="form-container">
+  <form method="POST" action="/clients/<%= client.id %>" class="needs-validation" novalidate>
+    <div class="form-section">
+      <h3><i class="fas fa-info-circle"></i> Client Information</h3>
+      
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="client_id" class="required">Client ID</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="client_id" 
+            name="client_id" 
+            value="<%= client.client_id %>"
+            required
+          >
+          <div class="invalid-feedback">
+            Please provide a valid client ID.
+          </div>
+        </div>
+        
+        <div class="form-group col-md-6">
+          <label for="name" class="required">Client Name</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="name" 
+            name="name" 
+            value="<%= client.name %>"
+            required
+          >
+          <div class="invalid-feedback">
+            Please provide a client name.
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea 
+          class="form-control" 
+          id="description" 
+          name="description" 
+          rows="4"
+        ><%= client.description || '' %></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Update Client
+      </button>
+      <a href="/clients/<%= client.id %>" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    </div>
+  </form>
+</div>

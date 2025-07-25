@@ -1,0 +1,93 @@
+<div class="content-header">
+  <div class="header-title">
+    <h1><i class="fas fa-edit"></i> Edit Printer</h1>
+    <p>Update printer information for: <strong>Printer #<%= printer.id %></strong></p>
+  </div>
+  <div class="header-actions">
+    <a href="/printers/<%= printer.id %>" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Printer
+    </a>
+  </div>
+</div>
+
+<% if (locals.errors && errors.length > 0) { %>
+  <div class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Please fix the following errors:</strong>
+    <ul class="mb-0 mt-2">
+      <% errors.forEach(error => { %>
+        <li><%= error %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="form-container">
+  <form method="POST" action="/printers/<%= printer.id %>" class="needs-validation" novalidate>
+    <div class="form-section">
+      <h3><i class="fas fa-info-circle"></i> Printer Information</h3>
+      
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="supplier" class="required">Supplier</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="supplier" 
+            name="supplier" 
+            value="<%= printer.supplier %>"
+            required
+          >
+          <div class="invalid-feedback">
+            Please provide a supplier name.
+          </div>
+        </div>
+        
+        <div class="form-group col-md-6">
+          <label for="client_id" class="required">Client</label>
+          <select 
+            class="form-control" 
+            id="client_id" 
+            name="client_id" 
+            required
+          >
+            <option value="">Select a client...</option>
+            <% clients.forEach(client => { %>
+              <option value="<%= client.id %>" <%= printer.client_id == client.id ? 'selected' : '' %>>
+                <%= client.name %> (<%= client.client_id %>)
+              </option>
+            <% }); %>
+          </select>
+          <div class="invalid-feedback">
+            Please select a client.
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="employee_id">Assigned Employee (Optional)</label>
+        <select 
+          class="form-control" 
+          id="employee_id" 
+          name="employee_id"
+        >
+          <option value="">No employee assigned</option>
+          <% employees.forEach(employee => { %>
+            <option value="<%= employee.id %>" <%= printer.employee_id == employee.id ? 'selected' : '' %>>
+              <%= employee.name %>
+            </option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Update Printer
+      </button>
+      <a href="/printers/<%= printer.id %>" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    </div>
+  </form>
+</div>

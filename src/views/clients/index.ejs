@@ -1,0 +1,151 @@
+<div class="content-header">
+  <div class="header-title">
+    <h1><i class="fas fa-building"></i> Client Management</h1>
+    <p>Manage client information and their associated equipment</p>
+  </div>
+  <div class="header-actions">
+    <a href="/clients/new" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Add New Client
+    </a>
+  </div>
+</div>
+
+<% if (locals.messages && messages.success) { %>
+  <div class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    <%= messages.success %>
+  </div>
+<% } %>
+
+<% if (locals.messages && messages.error) { %>
+  <div class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i>
+    <%= messages.error %>
+  </div>
+<% } %>
+
+<div class="table-controls">
+  <div class="table-info">
+    <span>Showing <%= clients.length %> of <%= totalClients %> clients</span>
+  </div>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Client ID</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Printers</th>
+        <th>PDAs</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (clients.length === 0) { %>
+        <tr>
+          <td colspan="7" class="text-center">
+            <div class="empty-state">
+              <i class="fas fa-building"></i>
+              <h3>No clients found</h3>
+              <p>Start by adding your first client.</p>
+              <a href="/clients/new" class="btn btn-primary">Add New Client</a>
+            </div>
+          </td>
+        </tr>
+      <% } else { %>
+        <% clients.forEach(client => { %>
+          <tr>
+            <td>
+              <a href="/clients/<%= client.id %>" class="entity-link">
+                <%= client.client_id %>
+              </a>
+            </td>
+            <td><strong><%= client.name %></strong></td>
+            <td>
+              <span class="text-muted">
+                <%= client.description ? (client.description.length > 50 ? client.description.substring(0, 50) + '...' : client.description) : 'No description' %>
+              </span>
+            </td>
+            <td>
+              <span class="badge badge-info">
+                <i class="fas fa-print"></i> <%= client.printer_count || 0 %>
+              </span>
+            </td>
+            <td>
+              <span class="badge badge-secondary">
+                <i class="fas fa-mobile-alt"></i> <%= client.pda_count || 0 %>
+              </span>
+            </td>
+            <td>
+              <span class="text-muted">
+                <%= new Date(client.created_at).toLocaleDateString() %>
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="/clients/<%= client.id %>" class="btn btn-sm btn-outline-primary" title="View Details">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <a href="/clients/<%= client.id %>/edit" class="btn btn-sm btn-outline-secondary" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a href="/clients/<%= client.id %>/history" class="btn btn-sm btn-outline-info" title="View History">
+                  <i class="fas fa-history"></i>
+                </a>
+                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(<%= client.id %>, '<%= client.name %>')" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<% if (totalPages > 1) { %>
+  <div class="pagination-container">
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+        <% if (currentPage > 1) { %>
+          <li class="page-item">
+            <a class="page-link" href="?page=<%= currentPage - 1 %>">
+              <i class="fas fa-chevron-left"></i> Previous
+            </a>
+          </li>
+        <% } %>
+        
+        <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+          <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+          </li>
+        <% } %>
+        
+        <% if (currentPage < totalPages) { %>
+          <li class="page-item">
+            <a class="page-link" href="?page=<%= currentPage + 1 %>">
+              Next <i class="fas fa-chevron-right"></i>
+            </a>
+          </li>
+        <% } %>
+      </ul>
+    </nav>
+  </div>
+<% } %>
+
+<script>
+function confirmDelete(clientId, clientName) {
+  if (confirm(`Are you sure you want to delete the client "${clientName}"? This action cannot be undone.`)) {
+    // Create a form and submit it
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/clients/${clientId}/delete`;
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+</script>

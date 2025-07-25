@@ -1,0 +1,81 @@
+<div class="content-header">
+  <div class="header-title">
+    <h1><i class="fas fa-print"></i> Printer #<%= printer.id %></h1>
+    <p>Printer Details</p>
+  </div>
+  <div class="header-actions">
+    <a href="/printers" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Printers
+    </a>
+    <a href="/printers/<%= printer.id %>/edit" class="btn btn-primary">
+      <i class="fas fa-edit"></i> Edit Printer
+    </a>
+  </div>
+</div>
+
+<div class="details-container">
+  <div class="info-section">
+    <h3><i class="fas fa-info-circle"></i> Printer Information</h3>
+    <div class="info-grid">
+      <div class="info-item">
+        <label>ID:</label>
+        <span>#<%= printer.id %></span>
+      </div>
+      <div class="info-item">
+        <label>Supplier:</label>
+        <span><%= printer.supplier %></span>
+      </div>
+      <div class="info-item">
+        <label>Client:</label>
+        <span>
+          <% if (printer.client_name) { %>
+            <a href="/clients/<%= printer.client_id %>">
+              <%= printer.client_name %> (<%= printer.client_code %>)
+            </a>
+          <% } else { %>
+            <span class="text-muted">No client assigned</span>
+          <% } %>
+        </span>
+      </div>
+      <div class="info-item">
+        <label>Assigned Employee:</label>
+        <span>
+          <% if (printer.employee_name) { %>
+            <%= printer.employee_name %>
+          <% } else { %>
+            <span class="text-muted">Unassigned</span>
+          <% } %>
+        </span>
+      </div>
+      <div class="info-item">
+        <label>Created:</label>
+        <span><%= new Date(printer.created_at).toLocaleString() %></span>
+      </div>
+      <div class="info-item">
+        <label>Last Updated:</label>
+        <span><%= new Date(printer.updated_at).toLocaleString() %></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-section">
+    <a href="/printers/<%= printer.id %>/history" class="btn btn-info">
+      <i class="fas fa-history"></i> View History
+    </a>
+    <button class="btn btn-danger" onclick="confirmDelete(<%= printer.id %>)">
+      <i class="fas fa-trash"></i> Delete Printer
+    </button>
+  </div>
+</div>
+
+<script>
+function confirmDelete(printerId) {
+  if (confirm('Are you sure you want to delete this printer? This action cannot be undone.')) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/printers/${printerId}/delete`;
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+</script>

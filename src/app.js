@@ -4,7 +4,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const routes = require('./routes');
-const i18n = require('./config/i18n');
+// Removed i18n - using custom translation system instead
 const { isAuthenticated } = require('./middleware/auth');
 
 // Import routes
@@ -83,8 +83,11 @@ app.use((req, res, next) => {
 });
 
 
-// Add i18n middleware
-app.use(i18n.init);
+// Note: i18n middleware removed - using custom translation system
+
+// Add test routes for debugging
+const testRoutes = require('./routes/testRoutes');
+app.use('/test', testRoutes);
 
 // Add notification routes BEFORE main routes
 app.use('/notifications', isAuthenticated, notificationRoutes);

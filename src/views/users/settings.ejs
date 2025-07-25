@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const params = new URLSearchParams();
       
       // Convert FormData to URLSearchParams
-      for (let [key, value] of getFormValue("entries")()) {
+      for (let [key, value] of formData.entries()) {
         params.append(key, value);
         console.log(`📝 Form data: ${key} = ${value}`);
       }

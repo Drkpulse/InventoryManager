@@ -111,6 +111,8 @@ function setupContentLoader() {
 }
 
 function loadContent(url, updateHistory = true) {
+  console.log('🔄 Loading content via AJAX:', url);
+  
   // Show loading indicator
   showLoadingIndicator();
 
@@ -123,9 +125,19 @@ function loadContent(url, updateHistory = true) {
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
-    return response.json();
+    console.log('📥 Response received:', response.headers.get('content-type'));
+    
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
+    } else {
+      console.log('⚠️ Non-JSON response, redirecting to:', url);
+      window.location.href = url;
+      return;
+    }
   })
   .then(data => {
+    console.log('📊 AJAX data received:', data);
     // Handle redirects
     if (data.redirect) {
       window.location.href = data.redirect;

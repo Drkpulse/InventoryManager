@@ -11,6 +11,13 @@ function handleAjaxResponse(req, res, next) {
   res.render = function(view, options = {}, callback) {
     // Check if this is an AJAX request
     const isAjax = req.headers['x-requested-with'] === 'XMLHttpRequest';
+    
+    console.log('🔍 AJAX Response Middleware:', {
+      url: req.url,
+      isAjax,
+      view,
+      body: options.body
+    });
 
     if (isAjax) {
       // For AJAX requests, render the content and return JSON

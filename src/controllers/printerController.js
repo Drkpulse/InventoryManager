@@ -11,6 +11,14 @@ const validatePrinterData = (data) => {
     errors.push('Client is required');
   }
 
+  if (!data.status_id) {
+    errors.push('Status is required');
+  }
+
+  if (data.cost && isNaN(parseFloat(data.cost))) {
+    errors.push('Cost must be a valid number');
+  }
+
   return errors;
 };
 
@@ -58,10 +66,12 @@ exports.getAllPrinters = async (req, res) => {
     const printersQuery = `
       SELECT p.*, 
              c.name as client_name, c.client_id as client_code,
-             e.name as employee_name
+             e.name as employee_name,
+             s.name as status_name
       FROM printers p
       LEFT JOIN clients c ON p.client_id = c.id
       LEFT JOIN employees e ON p.employee_id = e.id
+      LEFT JOIN statuses s ON p.status_id = s.id
       ${whereClause}
       ORDER BY p.created_at DESC
       LIMIT ${perPage} OFFSET ${offset}
@@ -102,10 +112,12 @@ exports.getPrinterById = async (req, res) => {
     const printerResult = await db.query(`
       SELECT p.*, 
              c.name as client_name, c.client_id as client_code,
-             e.name as employee_name
+             e.name as employee_name,
+             s.name as status_name
       FROM printers p
       LEFT JOIN clients c ON p.client_id = c.id
       LEFT JOIN employees e ON p.employee_id = e.id
+      LEFT JOIN statuses s ON p.status_id = s.id
       WHERE p.id = $1
     `, [id]);
 
@@ -133,15 +145,17 @@ exports.getPrinterById = async (req, res) => {
 
 exports.createPrinterForm = async (req, res) => {
   try {
-    // Get all clients and employees for dropdowns
+    // Get all clients, employees, and statuses for dropdowns
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
     const employeesResult = await db.query('SELECT id, name FROM employees ORDER BY name');
+    const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
 
     res.render('layout', {
       title: 'Add New Printer',
       body: 'printers/create',
       clients: clientsResult.rows,
       employees: employeesResult.rows,
+      statuses: statusesResult.rows,
       user: req.user
     });
   } catch (error) {
@@ -155,12 +169,13 @@ exports.createPrinterForm = async (req, res) => {
 
 exports.createPrinter = async (req, res) => {
   try {
-    const { supplier, employee_id, client_id } = req.body;
+    const { supplier, model, employee_id, client_id, cost, status_id } = req.body;
     
-    const validationErrors = validatePrinterData({ supplier, client_id });
+    const validationErrors = validatePrinterData({ supplier, client_id, status_id, cost });
     if (validationErrors.length > 0) {
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
       const employeesResult = await db.query('SELECT id, name FROM employees ORDER BY name');
+      const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
       
       return res.status(400).render('layout', {
         title: 'Add New Printer',
@@ -169,23 +184,27 @@ exports.createPrinter = async (req, res) => {
         formData: req.body,
         clients: clientsResult.rows,
         employees: employeesResult.rows,
+        statuses: statusesResult.rows,
         user: req.user
       });
     }
 
     const result = await db.query(`
-      INSERT INTO printers (supplier, employee_id, client_id)
-      VALUES ($1, $2, $3)
+      INSERT INTO printers (supplier, model, employee_id, client_id, cost, status_id)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
-    `, [supplier, employee_id || null, client_id]);
+    `, [supplier, model, employee_id || null, client_id, cost || null, status_id]);
 
     const newPrinter = result.rows[0];
 
     // Log history
     await logPrinterHistory(newPrinter.id, 'created', {
       supplier: supplier,
+      model: model,
       employee_id: employee_id || null,
-      client_id: client_id
+      client_id: client_id,
+      cost: cost || null,
+      status_id: status_id
     }, req.user.id);
 
     req.flash('success', 'Printer created successfully');

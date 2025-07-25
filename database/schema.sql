@@ -226,8 +226,11 @@ CREATE TABLE clients (
 CREATE TABLE printers (
   id SERIAL PRIMARY KEY,
   supplier VARCHAR(255),
+  model VARCHAR(255),
   employee_id INTEGER REFERENCES employees(id),
   client_id INTEGER REFERENCES clients(id),
+  cost DECIMAL(10, 2),
+  status_id INTEGER REFERENCES statuses(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -236,8 +239,23 @@ CREATE TABLE printers (
 CREATE TABLE pdas (
   id SERIAL PRIMARY KEY,
   serial_number VARCHAR(255) UNIQUE NOT NULL,
+  model VARCHAR(255),
   client_id INTEGER REFERENCES clients(id),
-  has_sim_card BOOLEAN DEFAULT FALSE,
+  cost DECIMAL(10, 2),
+  status_id INTEGER REFERENCES statuses(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create sim_cards table
+CREATE TABLE sim_cards (
+  id SERIAL PRIMARY KEY,
+  sim_number VARCHAR(255) UNIQUE NOT NULL,
+  carrier VARCHAR(255),
+  client_id INTEGER REFERENCES clients(id),
+  pda_id INTEGER REFERENCES pdas(id),
+  monthly_cost DECIMAL(10, 2),
+  status_id INTEGER REFERENCES statuses(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -272,6 +290,16 @@ CREATE TABLE pda_history (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create sim_card_history table
+CREATE TABLE sim_card_history (
+  id SERIAL PRIMARY KEY,
+  sim_card_id INTEGER REFERENCES sim_cards(id),
+  action_type VARCHAR(50) NOT NULL,
+  action_details JSONB,
+  performed_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Add indexes for common queries
 CREATE INDEX idx_items_type ON items(type_id);
 CREATE INDEX idx_items_brand ON items(brand_id);
@@ -295,10 +323,16 @@ CREATE INDEX IF NOT EXISTS idx_employee_software_software_id ON employee_softwar
 CREATE INDEX IF NOT EXISTS idx_employee_software_employee_id ON employee_software(employee_id);
 CREATE INDEX IF NOT EXISTS idx_printers_employee ON printers(employee_id);
 CREATE INDEX IF NOT EXISTS idx_printers_client ON printers(client_id);
+CREATE INDEX IF NOT EXISTS idx_printers_status ON printers(status_id);
 CREATE INDEX IF NOT EXISTS idx_pdas_client ON pdas(client_id);
+CREATE INDEX IF NOT EXISTS idx_pdas_status ON pdas(status_id);
+CREATE INDEX IF NOT EXISTS idx_sim_cards_client ON sim_cards(client_id);
+CREATE INDEX IF NOT EXISTS idx_sim_cards_pda ON sim_cards(pda_id);
+CREATE INDEX IF NOT EXISTS idx_sim_cards_status ON sim_cards(status_id);
 CREATE INDEX IF NOT EXISTS idx_client_history_client ON client_history(client_id);
 CREATE INDEX IF NOT EXISTS idx_printer_history_printer ON printer_history(printer_id);
 CREATE INDEX IF NOT EXISTS idx_pda_history_pda ON pda_history(pda_id);
+CREATE INDEX IF NOT EXISTS idx_sim_card_history_sim_card ON sim_card_history(sim_card_id);
 
 -- Create an admin user (password: admin)
 INSERT INTO users (name, email, password, role, last_login)
@@ -423,19 +457,27 @@ INSERT INTO clients (client_id, name, description) VALUES
   ('CLI003', 'Innovation Hub', 'Innovation and development center');
 
 -- Insert sample printers
-INSERT INTO printers (supplier, employee_id, client_id) VALUES
-  ('HP Inc.', 1, 1),
-  ('Canon', 2, 1),
-  ('Epson', NULL, 2),
-  ('Brother', 3, 3);
+INSERT INTO printers (supplier, model, employee_id, client_id, cost, status_id) VALUES
+  ('HP Inc.', 'LaserJet Pro 4000', 1, 1, 299.99, 1),
+  ('Canon', 'PIXMA MG3620', 2, 1, 79.99, 1),
+  ('Epson', 'EcoTank ET-2720', NULL, 2, 199.99, 1),
+  ('Brother', 'HL-L2350DW', 3, 3, 149.99, 2);
 
 -- Insert sample PDAs
-INSERT INTO pdas (serial_number, client_id, has_sim_card) VALUES
-  ('PDA001', 1, true),
-  ('PDA002', 1, false),
-  ('PDA003', 2, true),
-  ('PDA004', 3, false),
-  ('PDA005', 2, true);
+INSERT INTO pdas (serial_number, model, client_id, cost, status_id) VALUES
+  ('PDA001', 'Zebra TC21', 1, 450.00, 1),
+  ('PDA002', 'Honeywell CT30', 1, 380.00, 1),
+  ('PDA003', 'Zebra TC26', 2, 520.00, 1),
+  ('PDA004', 'Datalogic Memor 10', 3, 395.00, 2),
+  ('PDA005', 'Zebra TC21', 2, 450.00, 1);
+
+-- Insert sample SIM cards
+INSERT INTO sim_cards (sim_number, carrier, client_id, pda_id, monthly_cost, status_id) VALUES
+  ('SIM001234567', 'Vodafone', 1, 1, 25.00, 1),
+  ('SIM001234568', 'MEO', 1, NULL, 20.00, 1),
+  ('SIM001234569', 'NOS', 2, 3, 30.00, 1),
+  ('SIM001234570', 'Vodafone', 2, NULL, 25.00, 2),
+  ('SIM001234571', 'MEO', 3, NULL, 20.00, 1);
 
 -- Create default notification settings for all users and notification types
 INSERT INTO notification_settings (user_id, type_id, enabled, email_enabled, browser_enabled)

@@ -1,0 +1,165 @@
+<div class="page-container">
+  <div class="page-header-simple">
+    <h1><i class="fas fa-sim-card"></i> SIM Card Management</h1>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/simcards/new" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add New SIM Card
+        </a>
+      </div>
+    </div>
+  </div>
+
+<% if (locals.messages && messages.success) { %>
+  <div class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    <%= messages.success %>
+  </div>
+<% } %>
+
+<div class="table-controls">
+  <div class="table-info">
+    <span>Showing <%= simCards.length %> of <%= totalSIMCards %> SIM cards</span>
+  </div>
+  <div class="table-filters">
+    <select class="form-control" onchange="filterSIMCards('client', this.value)">
+      <option value="">All Clients</option>
+      <% clients.forEach(client => { %>
+        <option value="<%= client.id %>" <%= filters.client == client.id ? 'selected' : '' %>>
+          <%= client.name %>
+        </option>
+      <% }); %>
+    </select>
+    <select class="form-control" onchange="filterSIMCards('status', this.value)">
+      <option value="">All Statuses</option>
+      <% statuses.forEach(status => { %>
+        <option value="<%= status.id %>" <%= filters.status == status.id ? 'selected' : '' %>>
+          <%= status.name %>
+        </option>
+      <% }); %>
+    </select>
+    <select class="form-control" onchange="filterSIMCards('assignment', this.value)">
+      <option value="">All SIM Cards</option>
+      <option value="assigned" <%= filters.assignment === 'assigned' ? 'selected' : '' %>>Assigned to PDA</option>
+      <option value="unassigned" <%= filters.assignment === 'unassigned' ? 'selected' : '' %>>Unassigned</option>
+    </select>
+  </div>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>SIM Number</th>
+        <th>Carrier</th>
+        <th>Client</th>
+        <th>Monthly Cost</th>
+        <th>Status</th>
+        <th>Assigned PDA</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (simCards.length === 0) { %>
+        <tr>
+          <td colspan="7" class="text-center">
+            <div class="empty-state">
+              <i class="fas fa-sim-card"></i>
+              <h3>No SIM cards found</h3>
+              <p>Start by adding your first SIM card.</p>
+              <a href="/simcards/new" class="btn btn-primary">Add New SIM Card</a>
+            </div>
+          </td>
+        </tr>
+      <% } else { %>
+        <% simCards.forEach(sim => { %>
+          <tr>
+            <td>
+              <a href="/simcards/<%= sim.id %>" class="entity-link">
+                <%= sim.sim_number %>
+              </a>
+            </td>
+            <td><%= sim.carrier %></td>
+            <td>
+              <a href="/clients/<%= sim.client_id %>">
+                <%= sim.client_name %> (<%= sim.client_code %>)
+              </a>
+            </td>
+            <td>
+              <% if (sim.monthly_cost) { %>
+                €<%= parseFloat(sim.monthly_cost).toFixed(2) %>/month
+              <% } else { %>
+                <span class="text-muted">-</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (sim.status_name) { %>
+                <span class="badge badge-info"><%= sim.status_name %></span>
+              <% } else { %>
+                <span class="text-muted">-</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (sim.pda_serial) { %>
+                <%= sim.pda_serial %>
+              <% } else { %>
+                <span class="text-muted">Unassigned</span>
+              <% } %>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="/simcards/<%= sim.id %>" class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-eye"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<% if (totalPages > 1) { %>
+  <div class="pagination-container">
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+        <% if (currentPage > 1) { %>
+          <li class="page-item">
+            <a class="page-link" href="?page=<%= currentPage - 1 %>">
+              <i class="fas fa-chevron-left"></i> Previous
+            </a>
+          </li>
+        <% } %>
+        
+        <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+          <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+          </li>
+        <% } %>
+        
+        <% if (currentPage < totalPages) { %>
+          <li class="page-item">
+            <a class="page-link" href="?page=<%= currentPage + 1 %>">
+              Next <i class="fas fa-chevron-right"></i>
+            </a>
+          </li>
+        <% } %>
+      </ul>
+    </nav>
+  </div>
+<% } %>
+
+<script>
+function filterSIMCards(type, value) {
+  const url = new URL(window.location);
+  if (value) {
+    url.searchParams.set(type, value);
+  } else {
+    url.searchParams.delete(type);
+  }
+  window.location = url;
+}
+</script>
+
+</div> <!-- end page-container -->

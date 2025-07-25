@@ -45,6 +45,20 @@
         </div>
         
         <div class="form-group col-md-6">
+          <label for="model">Model</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="model" 
+            name="model" 
+            value="<%= locals.formData ? formData.model : '' %>"
+            placeholder="e.g., LaserJet Pro 4000"
+          >
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group col-md-6">
           <label for="client_id" class="required">Client</label>
           <select 
             class="form-control" 
@@ -63,6 +77,42 @@
           <div class="invalid-feedback">
             Please select a client.
           </div>
+        </div>
+        
+        <div class="form-group col-md-6">
+          <label for="status_id" class="required">Status</label>
+          <select 
+            class="form-control" 
+            id="status_id" 
+            name="status_id" 
+            required
+          >
+            <option value="">Select a status...</option>
+            <% statuses.forEach(status => { %>
+              <option value="<%= status.id %>" 
+                <%= locals.formData && formData.status_id == status.id ? 'selected' : '' %>>
+                <%= status.name %>
+              </option>
+            <% }); %>
+          </select>
+          <div class="invalid-feedback">
+            Please select a status.
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="cost">Cost (€)</label>
+          <input 
+            type="number" 
+            step="0.01" 
+            class="form-control" 
+            id="cost" 
+            name="cost" 
+            value="<%= locals.formData ? formData.cost : '' %>"
+            placeholder="e.g., 299.99"
+          >
         </div>
       </div>
       

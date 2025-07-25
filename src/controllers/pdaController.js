@@ -11,6 +11,14 @@ const validatePDAData = (data) => {
     errors.push('Client is required');
   }
 
+  if (!data.status_id) {
+    errors.push('Status is required');
+  }
+
+  if (data.cost && isNaN(parseFloat(data.cost))) {
+    errors.push('Cost must be a valid number');
+  }
+
   return errors;
 };
 
@@ -22,7 +30,7 @@ exports.getAllPDAs = async (req, res) => {
 
     // Parse query parameters for filtering
     const clientFilter = req.query.client || '';
-    const simFilter = req.query.sim || '';
+    const statusFilter = req.query.status || '';
 
     // Build the query conditions
     let conditions = [];
@@ -34,10 +42,9 @@ exports.getAllPDAs = async (req, res) => {
       params.push(clientFilter);
     }
 
-    if (simFilter === 'with_sim') {
-      conditions.push(`p.has_sim_card = true`);
-    } else if (simFilter === 'without_sim') {
-      conditions.push(`p.has_sim_card = false`);
+    if (statusFilter) {
+      conditions.push(`p.status_id = $${paramCount++}`);
+      params.push(statusFilter);
     }
 
     // Create the WHERE clause if conditions exist
@@ -57,9 +64,12 @@ exports.getAllPDAs = async (req, res) => {
     // Get the filtered PDAs with pagination
     const pdasQuery = `
       SELECT p.*, 
-             c.name as client_name, c.client_id as client_code
+             c.name as client_name, c.client_id as client_code,
+             s.name as status_name,
+             (SELECT COUNT(*) FROM sim_cards WHERE pda_id = p.id) as sim_count
       FROM pdas p
       LEFT JOIN clients c ON p.client_id = c.id
+      LEFT JOIN statuses s ON p.status_id = s.id
       ${whereClause}
       ORDER BY p.serial_number
       LIMIT ${perPage} OFFSET ${offset}
@@ -67,20 +77,22 @@ exports.getAllPDAs = async (req, res) => {
 
     const pdasResult = await db.query(pdasQuery, params);
 
-    // Get all clients for filter dropdown
+    // Get all clients and statuses for filter dropdown
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
 
     res.render('layout', {
       title: 'PDA Management',
       body: 'pdas/index',
       pdas: pdasResult.rows,
       clients: clientsResult.rows,
+      statuses: statusesResult.rows,
       currentPage: page,
       totalPages: totalPages,
       totalPDAs: totalPDAs,
       filters: {
         client: clientFilter,
-        sim: simFilter
+        status: statusFilter
       },
       user: req.user
     });
@@ -99,9 +111,12 @@ exports.getPDAById = async (req, res) => {
 
     const pdaResult = await db.query(`
       SELECT p.*, 
-             c.name as client_name, c.client_id as client_code
+             c.name as client_name, c.client_id as client_code,
+             s.name as status_name,
+             (SELECT COUNT(*) FROM sim_cards WHERE pda_id = p.id) as sim_count
       FROM pdas p
       LEFT JOIN clients c ON p.client_id = c.id
+      LEFT JOIN statuses s ON p.status_id = s.id
       WHERE p.id = $1
     `, [id]);
 
@@ -129,13 +144,15 @@ exports.getPDAById = async (req, res) => {
 
 exports.createPDAForm = async (req, res) => {
   try {
-    // Get all clients for dropdown
+    // Get all clients and statuses for dropdown
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
 
     res.render('layout', {
       title: 'Add New PDA',
       body: 'pdas/create',
       clients: clientsResult.rows,
+      statuses: statusesResult.rows,
       user: req.user
     });
   } catch (error) {
@@ -149,11 +166,12 @@ exports.createPDAForm = async (req, res) => {
 
 exports.createPDA = async (req, res) => {
   try {
-    const { serial_number, client_id, has_sim_card } = req.body;
+    const { serial_number, model, client_id, cost, status_id } = req.body;
     
-    const validationErrors = validatePDAData({ serial_number, client_id });
+    const validationErrors = validatePDAData({ serial_number, client_id, status_id, cost });
     if (validationErrors.length > 0) {
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+      const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
       
       return res.status(400).render('layout', {
         title: 'Add New PDA',
@@ -161,6 +179,7 @@ exports.createPDA = async (req, res) => {
         errors: validationErrors,
         formData: req.body,
         clients: clientsResult.rows,
+        statuses: statusesResult.rows,
         user: req.user
       });
     }
@@ -173,6 +192,7 @@ exports.createPDA = async (req, res) => {
 
     if (existingPDA.rows.length > 0) {
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+      const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
       
       return res.status(400).render('layout', {
         title: 'Add New PDA',
@@ -180,23 +200,26 @@ exports.createPDA = async (req, res) => {
         errors: ['Serial number already exists'],
         formData: req.body,
         clients: clientsResult.rows,
+        statuses: statusesResult.rows,
         user: req.user
       });
     }
 
     const result = await db.query(`
-      INSERT INTO pdas (serial_number, client_id, has_sim_card)
-      VALUES ($1, $2, $3)
+      INSERT INTO pdas (serial_number, model, client_id, cost, status_id)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
-    `, [serial_number, client_id, has_sim_card === 'on']);
+    `, [serial_number, model, client_id, cost || null, status_id]);
 
     const newPDA = result.rows[0];
 
     // Log history
     await logPDAHistory(newPDA.id, 'created', {
       serial_number: serial_number,
+      model: model,
       client_id: client_id,
-      has_sim_card: has_sim_card === 'on'
+      cost: cost || null,
+      status_id: status_id
     }, req.user.id);
 
     req.flash('success', 'PDA created successfully');

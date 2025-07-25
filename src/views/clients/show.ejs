@@ -128,7 +128,10 @@
           <thead>
             <tr>
               <th>Serial Number</th>
-              <th>SIM Card</th>
+              <th>Model</th>
+              <th>Cost</th>
+              <th>Status</th>
+              <th>SIM Cards</th>
               <th>Created</th>
               <th>Actions</th>
             </tr>
@@ -141,16 +144,25 @@
                     <%= pda.serial_number %>
                   </a>
                 </td>
+                <td><%= pda.model || '-' %></td>
                 <td>
-                  <% if (pda.has_sim_card) { %>
-                    <span class="badge badge-success">
-                      <i class="fas fa-check"></i> Yes
-                    </span>
+                  <% if (pda.cost) { %>
+                    €<%= parseFloat(pda.cost).toFixed(2) %>
                   <% } else { %>
-                    <span class="badge badge-secondary">
-                      <i class="fas fa-times"></i> No
-                    </span>
+                    -
                   <% } %>
+                </td>
+                <td>
+                  <% if (pda.status_name) { %>
+                    <span class="badge badge-info"><%= pda.status_name %></span>
+                  <% } else { %>
+                    -
+                  <% } %>
+                </td>
+                <td>
+                  <span class="badge badge-secondary">
+                    <i class="fas fa-sim-card"></i> <%= pda.sim_count || 0 %>
+                  </span>
                 </td>
                 <td><%= new Date(pda.created_at).toLocaleDateString() %></td>
                 <td>
@@ -169,6 +181,100 @@
         </table>
       </div>
     <% } %>
+  </div>
+
+  <div class="equipment-section">
+    <div class="section-header">
+      <h3><i class="fas fa-sim-card"></i> SIM Cards (<%= simCards.length %>)</h3>
+      <a href="/simcards/new?client_id=<%= client.id %>" class="btn btn-sm btn-primary">
+        <i class="fas fa-plus"></i> Add SIM Card
+      </a>
+    </div>
+    
+    <% if (simCards.length === 0) { %>
+      <div class="empty-state">
+        <i class="fas fa-sim-card"></i>
+        <p>No SIM cards assigned to this client</p>
+        <a href="/simcards/new?client_id=<%= client.id %>" class="btn btn-primary">Add SIM Card</a>
+      </div>
+    <% } else { %>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>SIM Number</th>
+              <th>Carrier</th>
+              <th>Monthly Cost</th>
+              <th>Status</th>
+              <th>Assigned PDA</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% simCards.forEach(sim => { %>
+              <tr>
+                <td>
+                  <a href="/simcards/<%= sim.id %>" class="entity-link">
+                    <%= sim.sim_number %>
+                  </a>
+                </td>
+                <td><%= sim.carrier %></td>
+                <td>
+                  <% if (sim.monthly_cost) { %>
+                    €<%= parseFloat(sim.monthly_cost).toFixed(2) %>/month
+                  <% } else { %>
+                    -
+                  <% } %>
+                </td>
+                <td>
+                  <% if (sim.status_name) { %>
+                    <span class="badge badge-info"><%= sim.status_name %></span>
+                  <% } else { %>
+                    -
+                  <% } %>
+                </td>
+                <td>
+                  <% if (sim.pda_serial) { %>
+                    <%= sim.pda_serial %>
+                  <% } else { %>
+                    <span class="text-muted">Unassigned</span>
+                  <% } %>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="/simcards/<%= sim.id %>" class="btn btn-sm btn-outline-primary">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="cost-summary">
+    <h3><i class="fas fa-calculator"></i> Cost Summary</h3>
+    <div class="cost-grid">
+      <div class="cost-item">
+        <label>Printers Total:</label>
+        <span>€<%= totals.printers.toFixed(2) %></span>
+      </div>
+      <div class="cost-item">
+        <label>PDAs Total:</label>
+        <span>€<%= totals.pdas.toFixed(2) %></span>
+      </div>
+      <div class="cost-item">
+        <label>SIM Cards (Monthly):</label>
+        <span>€<%= totals.simCards.toFixed(2) %>/month</span>
+      </div>
+      <div class="cost-item total">
+        <label>Equipment Total:</label>
+        <span>€<%= totals.total.toFixed(2) %></span>
+      </div>
+    </div>
   </div>
 
   <div class="actions-section">

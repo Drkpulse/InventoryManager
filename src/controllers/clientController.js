@@ -80,18 +80,36 @@ exports.getClientById = async (req, res) => {
     }
 
     const printersResult = await db.query(`
-      SELECT p.*, e.name as employee_name
+      SELECT p.*, e.name as employee_name, s.name as status_name
       FROM printers p
       LEFT JOIN employees e ON p.employee_id = e.id
+      LEFT JOIN statuses s ON p.status_id = s.id
       WHERE p.client_id = $1
       ORDER BY p.created_at DESC
     `, [id]);
 
     const pdasResult = await db.query(`
-      SELECT * FROM pdas
-      WHERE client_id = $1
-      ORDER BY serial_number
+      SELECT p.*, s.name as status_name,
+             (SELECT COUNT(*) FROM sim_cards WHERE pda_id = p.id) as sim_count
+      FROM pdas p
+      LEFT JOIN statuses s ON p.status_id = s.id
+      WHERE p.client_id = $1
+      ORDER BY p.serial_number
     `, [id]);
+
+    const simCardsResult = await db.query(`
+      SELECT sc.*, s.name as status_name, p.serial_number as pda_serial
+      FROM sim_cards sc
+      LEFT JOIN statuses s ON sc.status_id = s.id
+      LEFT JOIN pdas p ON sc.pda_id = p.id
+      WHERE sc.client_id = $1
+      ORDER BY sc.sim_number
+    `, [id]);
+
+    // Calculate totals
+    const printerTotal = printersResult.rows.reduce((sum, p) => sum + (parseFloat(p.cost) || 0), 0);
+    const pdaTotal = pdasResult.rows.reduce((sum, p) => sum + (parseFloat(p.cost) || 0), 0);
+    const simTotal = simCardsResult.rows.reduce((sum, s) => sum + (parseFloat(s.monthly_cost) || 0), 0);
 
     res.render('layout', {
       title: `Client: ${clientResult.rows[0].name}`,
@@ -99,6 +117,13 @@ exports.getClientById = async (req, res) => {
       client: clientResult.rows[0],
       printers: printersResult.rows,
       pdas: pdasResult.rows,
+      simCards: simCardsResult.rows,
+      totals: {
+        printers: printerTotal,
+        pdas: pdaTotal,
+        simCards: simTotal,
+        total: printerTotal + pdaTotal + simTotal
+      },
       user: req.user
     });
   } catch (error) {

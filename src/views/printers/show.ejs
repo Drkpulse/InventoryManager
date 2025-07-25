@@ -26,6 +26,30 @@
         <span><%= printer.supplier %></span>
       </div>
       <div class="info-item">
+        <label>Model:</label>
+        <span><%= printer.model || 'Not specified' %></span>
+      </div>
+      <div class="info-item">
+        <label>Cost:</label>
+        <span>
+          <% if (printer.cost) { %>
+            €<%= parseFloat(printer.cost).toFixed(2) %>
+          <% } else { %>
+            Not specified
+          <% } %>
+        </span>
+      </div>
+      <div class="info-item">
+        <label>Status:</label>
+        <span>
+          <% if (printer.status_name) { %>
+            <span class="badge badge-info"><%= printer.status_name %></span>
+          <% } else { %>
+            <span class="text-muted">No status</span>
+          <% } %>
+        </span>
+      </div>
+      <div class="info-item">
         <label>Client:</label>
         <span>
           <% if (printer.client_name) { %>

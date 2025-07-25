@@ -22,6 +22,30 @@
         <span><%= pda.serial_number %></span>
       </div>
       <div class="info-item">
+        <label>Model:</label>
+        <span><%= pda.model || 'Not specified' %></span>
+      </div>
+      <div class="info-item">
+        <label>Cost:</label>
+        <span>
+          <% if (pda.cost) { %>
+            €<%= parseFloat(pda.cost).toFixed(2) %>
+          <% } else { %>
+            Not specified
+          <% } %>
+        </span>
+      </div>
+      <div class="info-item">
+        <label>Status:</label>
+        <span>
+          <% if (pda.status_name) { %>
+            <span class="badge badge-info"><%= pda.status_name %></span>
+          <% } else { %>
+            <span class="text-muted">No status</span>
+          <% } %>
+        </span>
+      </div>
+      <div class="info-item">
         <label>Client:</label>
         <span>
           <% if (pda.client_name) { %>
@@ -34,17 +58,11 @@
         </span>
       </div>
       <div class="info-item">
-        <label>SIM Card:</label>
+        <label>SIM Cards:</label>
         <span>
-          <% if (pda.has_sim_card) { %>
-            <span class="badge badge-success">
-              <i class="fas fa-check"></i> Yes
-            </span>
-          <% } else { %>
-            <span class="badge badge-secondary">
-              <i class="fas fa-times"></i> No
-            </span>
-          <% } %>
+          <span class="badge badge-secondary">
+            <i class="fas fa-sim-card"></i> <%= pda.sim_count || 0 %> assigned
+          </span>
         </span>
       </div>
       <div class="info-item">

@@ -1,14 +1,14 @@
-<div class="content-header">
-  <div class="header-title">
-    <h1><i class="fas fa-plus"></i> Add New PDA</h1>
-    <p>Create a new PDA record</p>
+<div class="page-container">
+  <div class="page-header-simple">
+    <h1><i class="fas fa-plus"></i> Add New SIM Card</h1>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/simcards" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to SIM Cards
+        </a>
+      </div>
+    </div>
   </div>
-  <div class="header-actions">
-    <a href="/pdas" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> Back to PDAs
-    </a>
-  </div>
-</div>
 
 <% if (locals.errors && errors.length > 0) { %>
   <div class="alert alert-danger">
@@ -23,40 +23,41 @@
 <% } %>
 
 <div class="form-container">
-  <form method="POST" action="/pdas" class="needs-validation" novalidate>
+  <form method="POST" action="/simcards" class="needs-validation" novalidate>
     <div class="form-section">
-      <h3><i class="fas fa-info-circle"></i> PDA Information</h3>
+      <h3><i class="fas fa-info-circle"></i> SIM Card Information</h3>
       
       <div class="form-row">
         <div class="form-group col-md-6">
-          <label for="serial_number" class="required">Serial Number</label>
+          <label for="sim_number" class="required">SIM Number</label>
           <input 
             type="text" 
             class="form-control" 
-            id="serial_number" 
-            name="serial_number" 
-            value="<%= locals.formData ? formData.serial_number : '' %>"
-            placeholder="e.g., PDA001, SN123456"
+            id="sim_number" 
+            name="sim_number" 
+            value="<%= locals.formData ? formData.sim_number : '' %>"
+            placeholder="e.g., SIM001234567"
             required
           >
           <div class="invalid-feedback">
-            Please provide a serial number.
+            Please provide a SIM number.
           </div>
-          <small class="form-text text-muted">
-            Unique serial number for the PDA device
-          </small>
         </div>
         
         <div class="form-group col-md-6">
-          <label for="model">Model</label>
+          <label for="carrier" class="required">Carrier</label>
           <input 
             type="text" 
             class="form-control" 
-            id="model" 
-            name="model" 
-            value="<%= locals.formData ? formData.model : '' %>"
-            placeholder="e.g., Zebra TC21"
+            id="carrier" 
+            name="carrier" 
+            value="<%= locals.formData ? formData.carrier : '' %>"
+            placeholder="e.g., Vodafone, MEO, NOS"
+            required
           >
+          <div class="invalid-feedback">
+            Please provide a carrier name.
+          </div>
         </div>
       </div>
       
@@ -106,25 +107,48 @@
       
       <div class="form-row">
         <div class="form-group col-md-6">
-          <label for="cost">Cost (€)</label>
+          <label for="pda_id">Assigned PDA (Optional)</label>
+          <select 
+            class="form-control" 
+            id="pda_id" 
+            name="pda_id"
+          >
+            <option value="">No PDA assigned</option>
+            <% pdas.forEach(pda => { %>
+              <option value="<%= pda.id %>" 
+                <%= locals.formData && formData.pda_id == pda.id ? 'selected' : '' %>>
+                <%= pda.serial_number %> (<%= pda.client_name %>)
+              </option>
+            <% }); %>
+          </select>
+          <small class="form-text text-muted">
+            Optional: Assign this SIM card to a specific PDA
+          </small>
+        </div>
+        
+        <div class="form-group col-md-6">
+          <label for="monthly_cost">Monthly Cost (€)</label>
           <input 
             type="number" 
             step="0.01" 
             class="form-control" 
-            id="cost" 
-            name="cost" 
-            value="<%= locals.formData ? formData.cost : '' %>"
-            placeholder="e.g., 450.00"
+            id="monthly_cost" 
+            name="monthly_cost" 
+            value="<%= locals.formData ? formData.monthly_cost : '' %>"
+            placeholder="e.g., 25.00"
           >
+          <small class="form-text text-muted">
+            Monthly cost in euros (optional)
+          </small>
         </div>
       </div>
     </div>
 
     <div class="form-actions">
       <button type="submit" class="btn btn-primary">
-        <i class="fas fa-save"></i> Create PDA
+        <i class="fas fa-save"></i> Create SIM Card
       </button>
-      <a href="/pdas" class="btn btn-secondary">
+      <a href="/simcards" class="btn btn-secondary">
         <i class="fas fa-times"></i> Cancel
       </a>
     </div>
@@ -156,3 +180,5 @@ if (clientId) {
   document.getElementById('client_id').value = clientId;
 }
 </script>
+
+</div> <!-- end page-container -->

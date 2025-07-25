@@ -15,6 +15,7 @@ const dashboardRoutes = require('./dashboardRoutes');
 const clientRoutes = require('./clientRoutes');
 const printerRoutes = require('./printerRoutes');
 const pdaRoutes = require('./pdaRoutes');
+const simCardRoutes = require('./simCardRoutes');
 
 // Dashboard route
 const dashboardController = require('../controllers/dashboardController');
@@ -39,6 +40,7 @@ router.use('/api', apiRoutes);
 router.use('/clients', clientRoutes);
 router.use('/printers', printerRoutes);
 router.use('/pdas', pdaRoutes);
+router.use('/simcards', simCardRoutes);
 
 // 404 handling for API routes
 router.all('/api/*', (req, res) => {

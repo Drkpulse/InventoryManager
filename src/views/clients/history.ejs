@@ -1,0 +1,88 @@
+<div class="content-header">
+  <div class="header-title">
+    <h1><i class="fas fa-history"></i> Client History</h1>
+    <p>History for: <strong><%= client.name %></strong> (<%= client.client_id %>)</p>
+  </div>
+  <div class="header-actions">
+    <a href="/clients/<%= client.id %>" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Client
+    </a>
+  </div>
+</div>
+
+<div class="history-container">
+  <% if (history.length === 0) { %>
+    <div class="empty-state">
+      <i class="fas fa-history"></i>
+      <h3>No history found</h3>
+      <p>No actions have been recorded for this client yet.</p>
+    </div>
+  <% } else { %>
+    <div class="timeline">
+      <% history.forEach(entry => { %>
+        <div class="timeline-item">
+          <div class="timeline-marker <%= entry.action_type %>">
+            <% if (entry.action_type === 'created') { %>
+              <i class="fas fa-plus"></i>
+            <% } else if (entry.action_type === 'updated') { %>
+              <i class="fas fa-edit"></i>
+            <% } else if (entry.action_type === 'deleted') { %>
+              <i class="fas fa-trash"></i>
+            <% } else { %>
+              <i class="fas fa-info"></i>
+            <% } %>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <h4><%= entry.action_type.charAt(0).toUpperCase() + entry.action_type.slice(1) %></h4>
+              <span class="timeline-date">
+                <%= new Date(entry.created_at).toLocaleString() %>
+              </span>
+            </div>
+            <div class="timeline-body">
+              <% if (entry.performed_by_name) { %>
+                <p><strong>Performed by:</strong> <%= entry.performed_by_name %></p>
+              <% } %>
+              
+              <% if (entry.action_details) { %>
+                <div class="action-details">
+                  <% if (entry.action_type === 'created') { %>
+                    <p>Client created with the following information:</p>
+                    <ul>
+                      <% if (entry.action_details.client_id) { %>
+                        <li><strong>Client ID:</strong> <%= entry.action_details.client_id %></li>
+                      <% } %>
+                      <% if (entry.action_details.name) { %>
+                        <li><strong>Name:</strong> <%= entry.action_details.name %></li>
+                      <% } %>
+                      <% if (entry.action_details.description) { %>
+                        <li><strong>Description:</strong> <%= entry.action_details.description %></li>
+                      <% } %>
+                    </ul>
+                  <% } else if (entry.action_type === 'updated' && entry.action_details.changes) { %>
+                    <p>The following changes were made:</p>
+                    <ul>
+                      <% Object.keys(entry.action_details.changes).forEach(field => { %>
+                        <% const change = entry.action_details.changes[field]; %>
+                        <li>
+                          <strong><%= field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>:</strong>
+                          <span class="text-muted">"<%= change.from || 'empty' %>"</span>
+                          →
+                          <span class="text-success">"<%= change.to || 'empty' %>"</span>
+                        </li>
+                      <% }); %>
+                    </ul>
+                  <% } else if (entry.action_type === 'deleted') { %>
+                    <p>Client was deleted</p>
+                  <% } else { %>
+                    <pre class="action-data"><%= JSON.stringify(entry.action_details, null, 2) %></pre>
+                  <% } %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+</div>

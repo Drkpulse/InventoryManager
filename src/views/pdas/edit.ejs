@@ -1,0 +1,92 @@
+<div class="content-header">
+  <div class="header-title">
+    <h1><i class="fas fa-edit"></i> Edit PDA</h1>
+    <p>Update PDA information for: <strong><%= pda.serial_number %></strong></p>
+  </div>
+  <div class="header-actions">
+    <a href="/pdas/<%= pda.id %>" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back to PDA
+    </a>
+  </div>
+</div>
+
+<% if (locals.errors && errors.length > 0) { %>
+  <div class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Please fix the following errors:</strong>
+    <ul class="mb-0 mt-2">
+      <% errors.forEach(error => { %>
+        <li><%= error %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<div class="form-container">
+  <form method="POST" action="/pdas/<%= pda.id %>" class="needs-validation" novalidate>
+    <div class="form-section">
+      <h3><i class="fas fa-info-circle"></i> PDA Information</h3>
+      
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="serial_number" class="required">Serial Number</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="serial_number" 
+            name="serial_number" 
+            value="<%= pda.serial_number %>"
+            required
+          >
+          <div class="invalid-feedback">
+            Please provide a serial number.
+          </div>
+        </div>
+        
+        <div class="form-group col-md-6">
+          <label for="client_id" class="required">Client</label>
+          <select 
+            class="form-control" 
+            id="client_id" 
+            name="client_id" 
+            required
+          >
+            <option value="">Select a client...</option>
+            <% clients.forEach(client => { %>
+              <option value="<%= client.id %>" <%= pda.client_id == client.id ? 'selected' : '' %>>
+                <%= client.name %> (<%= client.client_id %>)
+              </option>
+            <% }); %>
+          </select>
+          <div class="invalid-feedback">
+            Please select a client.
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="form-check">
+          <input 
+            class="form-check-input" 
+            type="checkbox" 
+            id="has_sim_card" 
+            name="has_sim_card"
+            <%= pda.has_sim_card ? 'checked' : '' %>
+          >
+          <label class="form-check-label" for="has_sim_card">
+            <i class="fas fa-sim-card"></i> Has SIM Card
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Update PDA
+      </button>
+      <a href="/pdas/<%= pda.id %>" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    </div>
+  </form>
+</div>

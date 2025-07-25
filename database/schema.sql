@@ -212,6 +212,66 @@ CREATE TABLE system_settings (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create clients table
+CREATE TABLE clients (
+  id SERIAL PRIMARY KEY,
+  client_id VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create printers table
+CREATE TABLE printers (
+  id SERIAL PRIMARY KEY,
+  supplier VARCHAR(255),
+  employee_id INTEGER REFERENCES employees(id),
+  client_id INTEGER REFERENCES clients(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create pdas table
+CREATE TABLE pdas (
+  id SERIAL PRIMARY KEY,
+  serial_number VARCHAR(255) UNIQUE NOT NULL,
+  client_id INTEGER REFERENCES clients(id),
+  has_sim_card BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create client_history table
+CREATE TABLE client_history (
+  id SERIAL PRIMARY KEY,
+  client_id INTEGER REFERENCES clients(id),
+  action_type VARCHAR(50) NOT NULL,
+  action_details JSONB,
+  performed_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create printer_history table
+CREATE TABLE printer_history (
+  id SERIAL PRIMARY KEY,
+  printer_id INTEGER REFERENCES printers(id),
+  action_type VARCHAR(50) NOT NULL,
+  action_details JSONB,
+  performed_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create pda_history table
+CREATE TABLE pda_history (
+  id SERIAL PRIMARY KEY,
+  pda_id INTEGER REFERENCES pdas(id),
+  action_type VARCHAR(50) NOT NULL,
+  action_details JSONB,
+  performed_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Add indexes for common queries
 CREATE INDEX idx_items_type ON items(type_id);
 CREATE INDEX idx_items_brand ON items(brand_id);
@@ -233,6 +293,12 @@ CREATE INDEX idx_activity_logs_user ON activity_logs(user_id);
 CREATE INDEX idx_activity_logs_entity ON activity_logs(entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_employee_software_software_id ON employee_software(software_id);
 CREATE INDEX IF NOT EXISTS idx_employee_software_employee_id ON employee_software(employee_id);
+CREATE INDEX IF NOT EXISTS idx_printers_employee ON printers(employee_id);
+CREATE INDEX IF NOT EXISTS idx_printers_client ON printers(client_id);
+CREATE INDEX IF NOT EXISTS idx_pdas_client ON pdas(client_id);
+CREATE INDEX IF NOT EXISTS idx_client_history_client ON client_history(client_id);
+CREATE INDEX IF NOT EXISTS idx_printer_history_printer ON printer_history(printer_id);
+CREATE INDEX IF NOT EXISTS idx_pda_history_pda ON pda_history(pda_id);
 
 -- Create an admin user (password: admin)
 INSERT INTO users (name, email, password, role, last_login)
@@ -349,6 +415,27 @@ INSERT INTO system_settings (setting_key, setting_value, description) VALUES
   ('enable_notifications', 'true', 'Whether to enable system notifications'),
   ('maintenance_mode', 'false', 'Whether the system is in maintenance mode'),
   ('default_language', 'en', 'Default language for the application');
+
+-- Insert sample clients
+INSERT INTO clients (client_id, name, description) VALUES
+  ('CLI001', 'TechCorp Solutions', 'Main technology partner'),
+  ('CLI002', 'Digital Services Ltd', 'Digital transformation services'),
+  ('CLI003', 'Innovation Hub', 'Innovation and development center');
+
+-- Insert sample printers
+INSERT INTO printers (supplier, employee_id, client_id) VALUES
+  ('HP Inc.', 1, 1),
+  ('Canon', 2, 1),
+  ('Epson', NULL, 2),
+  ('Brother', 3, 3);
+
+-- Insert sample PDAs
+INSERT INTO pdas (serial_number, client_id, has_sim_card) VALUES
+  ('PDA001', 1, true),
+  ('PDA002', 1, false),
+  ('PDA003', 2, true),
+  ('PDA004', 3, false),
+  ('PDA005', 2, true);
 
 -- Create default notification settings for all users and notification types
 INSERT INTO notification_settings (user_id, type_id, enabled, email_enabled, browser_enabled)

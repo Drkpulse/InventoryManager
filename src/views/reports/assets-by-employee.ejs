@@ -1,0 +1,41 @@
+<h1><%= t('assets_by_employee') %></h1>
+
+<div class="report-actions">
+  <a href="/reports/export-assets-by-employee" class="btn"><%= t('export_csv') %></a>
+</div>
+
+<% if (employees && employees.length > 0) { %>
+  <table>
+    <thead>
+      <tr>
+        <th><%= t('employee_name') %></th>
+        <th><%= t('employee_id') %></th>
+        <th><%= t('employee_department') %></th>
+        <th><%= t('items') %></th>
+        <th><%= t('total_value') %></th>
+        <th><%= t('asset_types') %></th>
+        <th><%= t('actions') %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% employees.forEach(emp => { %>
+        <tr>
+          <td><%= emp.employee_name %></td>
+          <td><%= emp.employee_cep %></td>
+          <td><%= emp.department || 'N/A' %></td>
+          <td><%= emp.total_items || 0 %></td>
+          <td>$<%= emp.total_value ? parseFloat(emp.total_value).toFixed(2) : '0.00' %></td>
+          <td><%= emp.asset_types || 'N/A' %></td>
+          <td>
+            <a href="/employees/<%= emp.employee_id %>" class="btn"><%= t('view') %></a>
+            <a href="/reports/employee-assets/<%= emp.employee_id %>" class="btn"><%= t('asset_details') %></a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } else { %>
+  <p><%= t('no_employee_asset_data') %></p>
+<% } %>
+
+<link rel="stylesheet" href="/css/styles.css">

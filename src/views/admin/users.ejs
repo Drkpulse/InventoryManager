@@ -1,0 +1,57 @@
+<h1>User Management</h1>
+
+<div class="admin-actions" style="margin-bottom: 1rem;">
+  <a href="/admin/users/new" class="btn">Add New User</a>
+</div>
+
+<% if (typeof users !== 'undefined' && users && users.length > 0) { %>
+  <div class="users-table-container">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Last Login</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(user => { %>
+          <tr>
+            <td><%= user.name %></td>
+            <td><%= user.email %></td>
+            <td>
+              <span class="role-badge <%= user.role === 'admin' ? 'role-admin' : 'role-user' %>">
+                <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
+              </span>
+            </td>
+            <td>
+              <span class="status-badge <%= user.active ? 'status-active' : 'status-inactive' %>">
+                <%= user.active ? 'Active' : 'Inactive' %>
+              </span>
+            </td>
+            <td>
+              <%= user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never' %>
+            </td>
+            <td class="actions-cell">
+              <a href="/admin/users/<%= user.id %>/edit" class="btn btn-small">Edit</a>
+              <% if (user.id !== currentUser.id) { %>
+                <form style="display: inline;" method="POST" action="/admin/users/<%= user.id %>/toggle-status">
+                  <button type="submit" class="btn btn-small <%= user.active ? 'btn-warning' : 'btn-success' %>">
+                    <%= user.active ? 'Deactivate' : 'Activate' %>
+                  </button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } else { %>
+  <p>No users found.</p>
+<% } %>
+
+<link rel="stylesheet" href="/css/styles.css">

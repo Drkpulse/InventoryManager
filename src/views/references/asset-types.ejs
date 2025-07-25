@@ -1,0 +1,284 @@
+<div class="page-container">
+	<div class="page-header-simple">
+	  <div class="header-title-section">
+		<div class="breadcrumb-nav">
+		  <a href="/references" class="breadcrumb-link">
+			<i class="fas fa-cog"></i> References
+		  </a>
+		  <i class="fas fa-chevron-right breadcrumb-separator"></i>
+		  <span class="breadcrumb-current">Asset Types</span>
+		</div>
+		<h1>Asset Types</h1>
+		<div class="types-meta">
+		  <span class="types-count">
+			<i class="fas fa-tags"></i>
+			<%= types ? types.length : 0 %> asset types
+		  </span>
+		</div>
+	  </div>
+	  <div class="header-actions">
+		<div class="action-buttons">
+		  <a href="/references" class="btn btn-secondary">
+			<i class="fas fa-arrow-left"></i> Back to References
+		  </a>
+		  <a href="/references/asset-types/add" class="btn btn-primary">
+			<i class="fas fa-plus"></i> Add New Type
+		  </a>
+		</div>
+	  </div>
+	</div>
+
+	<!-- Flash Messages -->
+	<% if (typeof error !== 'undefined' && error.length > 0) { %>
+	  <div class="alert alert-danger">
+		<% error.forEach(msg => { %>
+		  <p><%= msg %></p>
+		<% }) %>
+	  </div>
+	<% } %>
+
+	<% if (typeof success !== 'undefined' && success.length > 0) { %>
+	  <div class="alert alert-success">
+		<% success.forEach(msg => { %>
+		  <p><%= msg %></p>
+		<% }) %>
+	  </div>
+	<% } %>
+
+	<div class="content-section">
+	  <% if (types && types.length > 0) { %>
+		<div class="table-container">
+		  <table class="data-table">
+			<thead>
+			  <tr>
+				<th class="type-name-col">
+				  <i class="fas fa-tag"></i> Name
+				</th>
+				<th class="description-col">
+				  <i class="fas fa-info-circle"></i> Description
+				</th>
+				<th class="usage-col">
+				  <i class="fas fa-boxes"></i> Assets Using
+				</th>
+				<th class="actions-col">Actions</th>
+			  </tr>
+			</thead>
+			<tbody>
+			  <% types.forEach(type => { %>
+				<tr class="table-row">
+				  <td class="type-name-cell">
+					<div class="type-info">
+					  <div class="type-name">
+						<strong><%= type.name %></strong>
+					  </div>
+					</div>
+				  </td>
+				  <td class="description-cell">
+					<% if (type.description) { %>
+					  <span class="description-text"><%= type.description %></span>
+					<% } else { %>
+					  <span class="text-muted">No description</span>
+					<% } %>
+				  </td>
+				  <td class="usage-cell">
+					<div class="usage-info">
+					  <% if (parseInt(type.item_count) > 0) { %>
+						<span class="usage-badge active">
+						  <i class="fas fa-check-circle"></i>
+						  <%= type.item_count %> assets
+						</span>
+					  <% } else { %>
+						<span class="usage-badge unused">
+						  <i class="fas fa-minus-circle"></i>
+						  Not used
+						</span>
+					  <% } %>
+					</div>
+				  </td>
+				  <td class="actions-cell">
+					<div class="action-buttons-inline">
+					  <a href="/references/asset-types/<%= type.id %>/edit"
+						 class="btn-action btn-edit"
+						 title="Edit Type">
+						<i class="fas fa-edit"></i>
+					  </a>
+					  <% if (parseInt(type.item_count) === 0) { %>
+						<form method="POST"
+							  action="/references/asset-types/<%= type.id %>/delete"
+							  class="inline-form delete-form"
+							  data-type-name="<%= type.name %>">
+						  <button type="submit" class="btn-action btn-delete" title="Delete Type">
+							<i class="fas fa-trash"></i>
+						  </button>
+						</form>
+					  <% } else { %>
+						<button class="btn-action btn-delete" disabled
+								title="Cannot delete: this type is in use by <%= type.item_count %> assets">
+						  <i class="fas fa-trash"></i>
+						</button>
+					  <% } %>
+					</div>
+				  </td>
+				</tr>
+			  <% }) %>
+			</tbody>
+		  </table>
+		</div>
+
+		<!-- Results Summary -->
+		<div class="results-summary-bottom">
+		  <div class="results-stats">
+			<span class="results-count">
+			  <i class="fas fa-tags"></i>
+			  Showing <strong><%= types.length %></strong> asset types
+			</span>
+			<div class="stats-display">
+			  <%
+				const usedTypes = types.filter(t => parseInt(t.item_count) > 0).length;
+				const unusedTypes = types.length - usedTypes;
+			  %>
+			  <div class="stat-item">
+				<span class="stat-number"><%= usedTypes %></span>
+				<span class="stat-label">In Use</span>
+			  </div>
+			  <div class="stat-item">
+				<span class="stat-number"><%= unusedTypes %></span>
+				<span class="stat-label">Unused</span>
+			  </div>
+			</div>
+		  </div>
+		</div>
+	  <% } else { %>
+		<div class="empty-state">
+		  <div class="empty-icon">
+			<i class="fas fa-tags"></i>
+		  </div>
+		  <h3>No Asset Types Found</h3>
+		  <p>Asset types help categorize and organize your assets. Start by adding your first asset type.</p>
+		  <div class="empty-actions">
+			<a href="/references/asset-types/add" class="btn btn-primary">
+			  <i class="fas fa-plus"></i> Add First Type
+			</a>
+			<a href="/references" class="btn btn-secondary">
+			  <i class="fas fa-cog"></i> Manage References
+			</a>
+		  </div>
+		</div>
+	  <% } %>
+	</div>
+  </div>
+
+  <!-- Custom Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal" style="display: none;">
+	<div class="modal-content">
+	  <div class="modal-header">
+		<h3><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h3>
+	  </div>
+	  <div class="modal-body">
+		<p>Are you sure you want to delete the asset type "<span id="deleteTypeName"></span>"?</p>
+		<p><strong>This action cannot be undone.</strong></p>
+	  </div>
+	  <div class="modal-footer">
+		<button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+		<button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+		  <i class="fas fa-trash"></i> Delete
+		</button>
+	  </div>
+	</div>
+  </div>
+
+  <style>
+  .modal {
+	position: fixed;
+	z-index: 1000;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0,0,0,0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+  }
+
+  .modal-content {
+	background-color: #fff;
+	border-radius: 8px;
+	max-width: 400px;
+	width: 90%;
+	box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .modal-header {
+	padding: 20px 20px 10px;
+	border-bottom: 1px solid #e9ecef;
+  }
+
+  .modal-header h3 {
+	margin: 0;
+	color: #dc3545;
+  }
+
+  .modal-body {
+	padding: 20px;
+  }
+
+  .modal-footer {
+	padding: 10px 20px 20px;
+	display: flex;
+	gap: 10px;
+	justify-content: flex-end;
+  }
+
+  .btn-danger {
+	background-color: #dc3545;
+	color: white;
+	border: 1px solid #dc3545;
+  }
+
+  .btn-danger:hover {
+	background-color: #c82333;
+	border-color: #bd2130;
+  }
+  </style>
+
+  <script>
+  let currentDeleteForm = null;
+
+  document.addEventListener('DOMContentLoaded', function() {
+	// Handle delete form submissions
+	const deleteForms = document.querySelectorAll('.delete-form');
+
+	deleteForms.forEach(form => {
+	  form.addEventListener('submit', function(e) {
+		e.preventDefault();
+
+		const typeName = this.dataset.typeName;
+		currentDeleteForm = this;
+
+		document.getElementById('deleteTypeName').textContent = typeName;
+		document.getElementById('deleteModal').style.display = 'flex';
+	  });
+	});
+
+	// Handle confirm delete
+	document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+	  if (currentDeleteForm) {
+		// Actually submit the form
+		currentDeleteForm.submit();
+	  }
+	});
+  });
+
+  function closeDeleteModal() {
+	document.getElementById('deleteModal').style.display = 'none';
+	currentDeleteForm = null;
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('deleteModal').addEventListener('click', function(e) {
+	if (e.target === this) {
+	  closeDeleteModal();
+	}
+  });
+  </script>

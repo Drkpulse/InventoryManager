@@ -3,40 +3,154 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %> - Inventory Manager</title>
+  <title><%= title %> | IT Asset Manager</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-  <header>
-    <nav>
-      <div class="logo">
-        <a href="/">Inventory Manager</a>
-      </div>
-      <ul class="nav-links">
-        <li><a href="/">Home</a></li>
-        <% if (user) { %>
-          <li><a href="/items">Inventory</a></li>
-          <% if (user.role === 'admin') { %>
-            <li><a href="/users">Users</a></li>
-          <% } %>
-          <li><a href="/users/profile">Profile</a></li>
-          <li><a href="/auth/logout">Logout</a></li>
-        <% } else { %>
-          <li><a href="/auth/login">Login</a></li>
-          <li><a href="/auth/register">Register</a></li>
-        <% } %>
-      </ul>
-    </nav>
-  </header>
+  <div class="app-container <%= locals.isDashboardPage ? 'dashboard-page' : '' %>
+                           <%= locals.isReferencePage ? 'reference-page' : '' %>
+                           <%= locals.isReportPage ? 'report-page' : '' %>
+                           <%= locals.isDepartmentPage ? 'department-page' : '' %>">
+    <% if (user) { %>
+      <%- include('partials/sidebar') %>
+    <% } %>
 
-  <main>
-    <%- include(body) %>
-  </main>
+    <div class="main-content <%= user ? 'with-sidebar' : '' %>">
+      <% if (user) { %>
+        <header class="top-header">
+          <div class="breadcrumb">
+            <% if (title === 'Dashboard') { %>
+              <span>Dashboard</span>
+            <% } else { %>
+              <a href="/" data-content-loader>Dashboard</a>
+              <i class="fas fa-chevron-right"></i>
+              <span><%= title %></span>
+            <% } %>
+          </div>
 
-  <footer>
-    <p>&copy; <%= new Date().getFullYear() %> Inventory Manager</p>
-  </footer>
+          <div class="user-menu">
+            <div class="notifications">
+              <div class="dropdown">
+                <button class="icon-button notification-toggle dropdown-toggle" id="notificationToggle">
+                  <i class="far fa-bell"></i>
+                  <span class="badge" id="notificationCount" style="display: none;">0</span>
+                </button>
+                <div class="dropdown-menu notification-menu" id="notificationMenu">
+                  <div class="notification-header">
+                    <h3>Notifications</h3>
+                    <a href="#" class="mark-all-read" id="markAllRead">Mark all as read</a>
+                  </div>
+                  <div class="notification-list" id="notificationList">
+                    <div class="notification-loading">Loading notifications...</div>
+                  </div>
+                  <div class="notification-footer">
+                    <a href="/notifications">View all notifications</a>
+                  </div>
+                </div>
+              </div>
+            </div>
 
+            <!-- User dropdown -->
+            <div class="dropdown user-dropdown">
+              <button class="dropdown-toggle user-toggle">
+                <div class="avatar">
+                  <%= user.name.charAt(0).toUpperCase() %>
+                </div>
+                <span class="user-name"><%= user.name %></span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="dropdown-menu user-menu-dropdown">
+                <div class="user-header">
+                  <div class="avatar-lg">
+                    <%= user.name.charAt(0).toUpperCase() %>
+                  </div>
+                  <div class="user-details">
+                    <h4 class="user-details-name"><%= user.name %></h4>
+                    <p class="user-details-email"><%= user.email %></p>
+                    <span class="role-badge <%= user.role === 'admin' ? 'role-admin' : 'role-user' %>">
+                      <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
+                    </span>
+                  </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a href="/users/profile">
+                  <i class="fas fa-user-circle"></i> My Profile
+                </a>
+                <a href="/users/settings">
+                  <i class="fas fa-cog"></i> Settings
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="/auth/logout" class="logout-link" data-no-ajax>
+                  <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+              </div>
+            </div>
+          </div>
+        </header>
+      <% } %>
+
+      <main id="mainContent">
+        <%- include(body, locals) %>
+      </main>
+
+      <footer>
+        <p>&copy; <%= new Date().getFullYear() %> IT Asset Manager | All rights reserved</p>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Include your scripts -->
   <script src="/js/main.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/content-loader.js"></script>
+
+  <!-- Add initialization script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Sidebar toggle functionality
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const appContainer = document.querySelector('.app-container');
+
+      if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+          appContainer.classList.toggle('sidebar-collapsed');
+
+          // Store preference in localStorage
+          if (appContainer.classList.contains('sidebar-collapsed')) {
+            localStorage.setItem('sidebarCollapsed', 'true');
+          } else {
+            localStorage.setItem('sidebarCollapsed', 'false');
+          }
+        });
+
+        // Apply saved preference
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+          appContainer.classList.add('sidebar-collapsed');
+        }
+      }
+
+      // Setup dropdowns for the sidebar
+      setupDropdowns();
+
+      // Initialize UI elements
+      if (typeof initializeUI === 'function') {
+        initializeUI();
+      }
+
+      // Update active menu items based on current URL
+      updateActiveMenuItems();
+    });
+  </script>
+
+  <!-- User data storage for JS access -->
+  <% if (user) { %>
+  <div id="user-data"
+       data-settings="<%= user.settings ? JSON.stringify(user.settings) : '{}' %>"
+       style="display: none;"></div>
+  <% } %>
+
+  <!-- Theme handler script -->
+  <script src="../../public/js/theme-handler.js"></script>
 </body>
 </html>

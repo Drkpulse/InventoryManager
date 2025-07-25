@@ -1,0 +1,67 @@
+<h1>Assets Assigned to <%= employee.name %></h1>
+<div class="employee-info">
+  <p><strong>Employee ID:</strong> <%= employee.cep %></p>
+  <p><strong>Department:</strong> <%= employee.department_name || 'N/A' %></p>
+  <p><strong>Platform:</strong> <%= employee.platform_name || 'N/A' %></p>
+  <p><strong>Office:</strong> <%= employee.office_name || 'N/A' %></p>
+</div>
+
+<div class="asset-summary">
+  <div class="summary-item">
+    <span class="summary-title">Total Items</span>
+    <span class="summary-value"><%= stats.total_items || 0 %></span>
+  </div>
+  <div class="summary-item">
+    <span class="summary-title">Total Value</span>
+    <span class="summary-value">$<%= stats.total_value ? parseFloat(stats.total_value).toFixed(2) : '0.00' %></span>
+  </div>
+  <div class="summary-item">
+    <span class="summary-title">Asset Types</span>
+    <span class="summary-value"><%= stats.asset_types || 'None' %></span>
+  </div>
+</div>
+
+<div class="actions">
+  <a href="/reports/assets-by-employee" class="btn">Back to Report</a>
+  <a href="/employees/<%= employee.id %>" class="btn">View Employee Profile</a>
+</div>
+
+<h2>Assigned Items</h2>
+
+<% if (items && items.length > 0) { %>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Brand</th>
+        <th>Model</th>
+        <th>Price</th>
+        <th>Date Assigned</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% items.forEach(item => { %>
+        <tr>
+          <td><%= item.cep_brc %></td>
+          <td><%= item.name %></td>
+          <td><%= item.type_name || 'N/A' %></td>
+          <td><%= item.brand_name || 'N/A' %></td>
+          <td><%= item.model || 'N/A' %></td>
+          <td>$<%= item.price ? parseFloat(item.price).toFixed(2) : '0.00' %></td>
+          <td><%= item.date_assigned ? new Date(item.date_assigned).toLocaleDateString() : 'N/A' %></td>
+          <td>
+            <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn">View</a>
+            <a href="/items/<%= item.id %>/<%= item.cep_brc %>/unassign" class="btn btn-danger">Unassign</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } else { %>
+  <p>No items assigned to this employee.</p>
+<% } %>
+
+<link rel="stylesheet" href="/css/styles.css">

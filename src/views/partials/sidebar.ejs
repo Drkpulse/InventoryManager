@@ -1,0 +1,106 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="app-logo">
+      <i class="fas fa-laptop-code"></i>
+      <span>IT Asset Manager</span>
+    </div>
+    <button id="sidebarToggle" class="sidebar-toggle">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-header">Main Menu</div>
+    <a href="/" class="nav-link">
+      <i class="fas fa-tachometer-alt"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="/items" class="nav-link">
+      <i class="fas fa-laptop"></i>
+      <span>Assets</span>
+    </a>
+    <a href="/employees" class="nav-link">
+      <i class="fas fa-users"></i>
+      <span>Employees</span>
+    </a>
+    <a href="/software" class="nav-link">
+      <i class="fas fa-laptop-code"></i>
+      <span>Software</span>
+    </a>
+
+    <div class="nav-header">Reports</div>
+    <a href="/reports/assets" class="nav-link">
+      <i class="fas fa-chart-bar"></i>
+      <span>Asset Reports</span>
+    </a>
+    <a href="/reports/purchase-history" class="nav-link">
+      <i class="fas fa-receipt"></i>
+      <span>Purchase History</span>
+    </a>
+    <a href="/reports/assets-by-employee" class="nav-link">
+      <i class="fas fa-user-tag"></i>
+      <span>Assets by Employee</span>
+    </a>
+
+    <% if (user && user.role === 'admin') { %>
+    <div class="nav-header">Administration</div>
+    <a href="/admin/users" class="nav-link">
+      <i class="fas fa-user-shield"></i>
+      <span>User Management</span>
+    </a>
+    <a href="/admin/settings" class="nav-link">
+      <i class="fas fa-cogs"></i>
+      <span>System Settings</span>
+    </a>
+    <a href="/admin/logs" class="nav-link">
+      <i class="fas fa-list-alt"></i>
+      <span>Activity Logs</span>
+    </a>
+    <a href="/notifications/broadcast" class="nav-link">
+      <i class="fas fa-bullhorn"></i>
+      <span>Send Notification</span>
+    </a>
+    <% } %>
+
+    <!-- Reference Data Section -->
+    <div class="nav-section">
+      <div class="nav-header">Reference Data</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="/references/asset-types" class="nav-link">
+            <i class="fas fa-tags"></i>
+            Asset Types
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/references/brands" class="nav-link">
+            <i class="fas fa-trademark"></i>
+            Brands
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/references/statuses" class="nav-link">
+            <i class="fas fa-flag"></i>
+            Statuses
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/references/locations" class="nav-link">
+            <i class="fas fa-map-marker-alt"></i>
+            Locations
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/departments" class="nav-link">
+            <i class="fas fa-building"></i>
+            Departments
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <small>v1.0.0</small>
+  </div>
+</aside>

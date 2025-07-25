@@ -1,0 +1,173 @@
+// Add or update these methods in your userController.js
+
+exports.getSettings = async (req, res) => {
+  try {
+    // Get user data with settings
+    const userId = req.session.user.id;
+    const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).send('User not found');
+    }
+
+    const user = userResult.rows[0];
+
+    // Check if settings is defined, if not initialize it
+    if (!user.settings) {
+      user.settings = {
+        theme: 'light',
+        language: 'en'
+      };
+    }
+
+    // Pass the showUpdated flag based on query param
+    const showUpdated = req.query.updated === 'true';
+
+    res.render('layout', {
+      title: 'User Settings',
+      body: 'users/settings',
+      user: user,
+      showUpdated: showUpdated
+    });
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+exports.updateDisplaySettings = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { theme, language } = req.body;
+
+    // Make sure settings column exists
+    await ensureSettingsColumnExists();
+
+    // Get current settings
+    const userResult = await db.query('SELECT settings FROM users WHERE id = $1', [userId]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).send('User not found');
+    }
+
+    // Update settings
+    let settings = userResult.rows[0].settings || {};
+
+    settings = {
+      ...settings,
+      theme: theme || 'light',
+      language: language || 'en'
+    };
+
+    // Save to database
+    await db.query('UPDATE users SET settings = $1 WHERE id = $2', [settings, userId]);
+
+    // Update session
+    req.session.user = {
+      ...req.session.user,
+      settings
+    };
+
+    res.redirect('/users/settings?updated=true');
+  } catch (error) {
+    console.error('Error updating display settings:', error);
+    res.status(500).send('Server error: ' + error.message);
+  }
+};
+
+exports.updateSecuritySettings = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { current_password, new_password, confirm_password } = req.body;
+
+    // Validate input
+    if (!current_password || !new_password || !confirm_password) {
+      return res.render('layout', {
+        title: 'User Settings',
+        body: 'users/settings',
+        user: req.session.user,
+        error: 'All password fields are required'
+      });
+    }
+
+    if (new_password !== confirm_password) {
+      return res.render('layout', {
+        title: 'User Settings',
+        body: 'users/settings',
+        user: req.session.user,
+        error: 'New passwords do not match'
+      });
+    }
+
+    // Get user from database to check password
+    const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).send('User not found');
+    }
+
+    const user = userResult.rows[0];
+
+    // Check current password (implement your password verification)
+    const isPasswordValid = await verifyPassword(current_password, user.password);
+
+    if (!isPasswordValid) {
+      return res.render('layout', {
+        title: 'User Settings',
+        body: 'users/settings',
+        user: req.session.user,
+        error: 'Current password is incorrect'
+      });
+    }
+
+    // Hash new password (implement your password hashing)
+    const hashedPassword = await hashPassword(new_password);
+
+    // Update password
+    await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
+
+    res.redirect('/users/settings?updated=true');
+  } catch (error) {
+    console.error('Error updating security settings:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+// Helper function to ensure settings column exists
+async function ensureSettingsColumnExists() {
+  try {
+    await db.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_name = 'users'
+          AND column_name = 'settings'
+        ) THEN
+          ALTER TABLE users ADD COLUMN settings JSONB DEFAULT '{}'::jsonb;
+        END IF;
+      END $$;
+    `);
+  } catch (error) {
+    console.error('Error checking or adding settings column:', error);
+    throw error;
+  }
+}
+
+// Helper functions for password verification and hashing
+// Note: Implement these using bcrypt or another secure method
+async function verifyPassword(plainPassword, hashedPassword) {
+  // Implement your password verification logic
+  // This is a placeholder
+  const bcrypt = require('bcrypt');
+  return await bcrypt.compare(plainPassword, hashedPassword);
+}
+
+async function hashPassword(password) {
+  // Implement your password hashing logic
+  // This is a placeholder
+  const bcrypt = require('bcrypt');
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
+}

@@ -1,43 +1,62 @@
 const express = require('express');
 const router = express.Router();
 const referenceController = require('../controllers/referenceController');
+const { isAuthenticated } = require('../middleware/auth');
 
-// Middleware to check if user is logged in
-const isAuthenticated = (req, res, next) => {
-  if (req.session.user) {
-    return next();
-  }
-  res.redirect('/auth/login');
-};
+// Asset Types routes
+router.get('/asset-types', isAuthenticated, referenceController.assetTypes);
+router.get('/asset-types/add', isAuthenticated, referenceController.showAddAssetTypeForm);
+router.post('/asset-types', isAuthenticated, referenceController.addAssetType);
+router.get('/asset-types/:id/edit', isAuthenticated, referenceController.showEditAssetTypeForm);
+router.post('/asset-types/:id', isAuthenticated, referenceController.editAssetType);
+router.post('/asset-types/:id/delete', isAuthenticated, referenceController.deleteAssetType);
 
-// Brand routes
-router.get('/brands', isAuthenticated, referenceController.getAllBrands);
-router.post('/brands', isAuthenticated, referenceController.createBrand);
-router.post('/brands/:id', isAuthenticated, referenceController.updateBrand);
+// Status routes
+router.get('/statuses', isAuthenticated, referenceController.statuses);
+router.get('/statuses/add', isAuthenticated, referenceController.showAddStatusForm);
+router.post('/statuses', isAuthenticated, referenceController.addStatus);
+router.get('/statuses/:id/edit', isAuthenticated, referenceController.showEditStatusForm);
+router.post('/statuses/:id', isAuthenticated, referenceController.editStatus);
+router.post('/statuses/:id/delete', isAuthenticated, referenceController.deleteStatus);
+
+// Location routes
+router.get('/locations', isAuthenticated, referenceController.locations);
+router.get('/locations/add', isAuthenticated, referenceController.showAddLocationForm);
+router.post('/locations', isAuthenticated, referenceController.addLocation);
+router.get('/locations/:id/edit', isAuthenticated, referenceController.showEditLocationForm);
+router.post('/locations/:id', isAuthenticated, referenceController.editLocation);
+router.post('/locations/:id/delete', isAuthenticated, referenceController.deleteLocation);
+
+// Brands routes
+router.get('/brands', isAuthenticated, referenceController.brands);
+router.get('/brands/add', isAuthenticated, referenceController.showAddBrandForm);
+router.post('/brands', isAuthenticated, referenceController.addBrand);
+router.get('/brands/:id/edit', isAuthenticated, referenceController.showEditBrandForm);
+router.post('/brands/:id', isAuthenticated, referenceController.editBrand);
 router.post('/brands/:id/delete', isAuthenticated, referenceController.deleteBrand);
 
-// Type routes
-router.get('/types', isAuthenticated, referenceController.getAllTypes);
-router.post('/types', isAuthenticated, referenceController.createType);
-router.post('/types/:id', isAuthenticated, referenceController.updateType);
-router.post('/types/:id/delete', isAuthenticated, referenceController.deleteType);
+// Software routes (renamed from offices)
+router.get('/software', isAuthenticated, referenceController.software);
+router.get('/software/add', isAuthenticated, referenceController.showAddSoftwareForm);
+router.post('/software', isAuthenticated, referenceController.addSoftware);
+router.get('/software/:id/edit', isAuthenticated, referenceController.showEditSoftwareForm);
+router.post('/software/:id', isAuthenticated, referenceController.editSoftware);
+router.post('/software/:id/delete', isAuthenticated, referenceController.deleteSoftware);
+router.get('/software/:id/assignments', referenceController.getSoftwareAssignments);
+router.post('/software/:id/assign', referenceController.assignSoftware);
+router.post('/software/:id/unassign', referenceController.unassignSoftware);
 
-// Platform routes
-router.get('/platforms', isAuthenticated, referenceController.getAllPlatforms);
-router.post('/platforms', isAuthenticated, referenceController.createPlatform);
-router.post('/platforms/:id', isAuthenticated, referenceController.updatePlatform);
-router.post('/platforms/:id/delete', isAuthenticated, referenceController.deletePlatform);
-
-// Office software routes
-router.get('/offices', isAuthenticated, referenceController.getAllOffices);
-router.post('/offices', isAuthenticated, referenceController.createOffice);
-router.post('/offices/:id', isAuthenticated, referenceController.updateOffice);
+// Backward compatibility: redirect old office routes to software
+router.get('/offices', isAuthenticated, referenceController.offices);
+router.get('/offices/add', isAuthenticated, referenceController.showAddOfficeForm);
+router.post('/offices', isAuthenticated, referenceController.addOffice);
+router.get('/offices/:id/edit', isAuthenticated, referenceController.showEditOfficeForm);
+router.post('/offices/:id', isAuthenticated, referenceController.editOffice);
 router.post('/offices/:id/delete', isAuthenticated, referenceController.deleteOffice);
 
-// Sales/Receipt routes
-router.get('/sales', isAuthenticated, referenceController.getAllSales);
-router.post('/sales', isAuthenticated, referenceController.createSale);
-router.post('/sales/:receipt', isAuthenticated, referenceController.updateSale);
-router.post('/sales/:receipt/delete', isAuthenticated, referenceController.deleteSale);
+// Index route - redirect to asset types as default
+router.get('/', isAuthenticated, (req, res) => {
+  res.redirect('/references/asset-types');
+});
 
 module.exports = router;

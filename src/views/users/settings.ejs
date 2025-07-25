@@ -1,0 +1,72 @@
+<% if (success && success.length) { %>
+  <div class="alert alert-success">
+    <%= success[0] %>
+  </div>
+<% } %>
+
+<% if (error && error.length) { %>
+  <div class="alert alert-danger">
+    <%= error[0] %>
+  </div>
+<% } %>
+
+<%
+  const theme = (user?.settings?.theme) || 'light';
+  const language = (user?.settings?.language) || 'en';
+%>
+
+
+<div class="settings-container">
+	<h1>User Settings</h1>
+
+  <div class="settings-section">
+    <form method="POST" action="/users/settings/display">
+      <div class="form-group">
+        <label for="theme"><%= t('theme') %></label>
+        <select id="theme" name="theme">
+          <option value="light" <%= (user.settings && user.settings.theme === 'light') ? 'selected' : '' %>><%= t('light_mode') %></option>
+          <option value="dark" <%= (user.settings && user.settings.theme === 'dark') ? 'selected' : '' %>><%= t('dark_mode') %></option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="language"><%= t('language') %></label>
+        <select id="language" name="language">
+          <option value="en" <%= (user.settings && user.settings.language === 'en') ? 'selected' : '' %>>English</option>
+          <option value="pt-PT" <%= (user.settings && user.settings.language === 'pt-PT') ? 'selected' : '' %>>Português (Portugal)</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><%= t('save') %></button>
+      </div>
+    </form>
+  </div>
+
+  <div class="settings-section">
+    <h2><%= t('security_settings') %></h2>
+
+    <form method="POST" action="/users/settings/security">
+      <div class="form-group">
+        <label for="current_password"><%= t('current_password') %></label>
+        <input type="password" id="current_password" name="current_password" required>
+      </div>
+
+      <div class="form-group">
+        <label for="new_password"><%= t('new_password') %></label>
+        <input type="password" id="new_password" name="new_password" required>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm_password"><%= t('confirm_password') %></label>
+        <input type="password" id="confirm_password" name="confirm_password" required>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><%= t('save') %></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/styles.css">

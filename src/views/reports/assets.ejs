@@ -1,0 +1,1181 @@
+<h1>Asset Report</h1>
+
+<div class="report-actions">
+  <a href="/reports/export-assets" class="btn">Export to CSV</a>
+</div>
+
+<div class="page-container">
+  <div class="page-header-simple">
+    <div class="header-title-section">
+      <div class="breadcrumb-nav">
+        <a href="/reports" class="breadcrumb-link">
+          <i class="fas fa-chart-bar"></i> Reports
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <span class="breadcrumb-current">Asset Analytics</span>
+      </div>
+      <h1>Asset Analytics Dashboard</h1>
+      <div class="report-meta">
+        <span class="report-date">
+          <i class="fas fa-calendar"></i>
+          Generated <%= new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }) %>
+        </span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/reports" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Reports
+        </a>
+        <div class="dropdown">
+          <button class="btn btn-success dropdown-toggle" id="exportDropdown">
+            <i class="fas fa-download"></i> Export Data
+          </button>
+          <div class="dropdown-menu" id="exportMenu">
+            <a href="#" onclick="exportReport('summary')" class="dropdown-item">
+              <i class="fas fa-chart-pie"></i> Executive Summary (PDF)
+            </a>
+            <a href="#" onclick="exportReport('detailed')" class="dropdown-item">
+              <i class="fas fa-table"></i> Detailed Assets (CSV)
+            </a>
+            <a href="#" onclick="exportReport('analytics')" class="dropdown-item">
+              <i class="fas fa-chart-bar"></i> Analytics Data (JSON)
+            </a>
+            <a href="#" onclick="exportReport('custom')" class="dropdown-item">
+              <i class="fas fa-cog"></i> Custom Export
+            </a>
+          </div>
+        </div>
+        <button onclick="printReport()" class="btn btn-info">
+          <i class="fas fa-print"></i> Print Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <%
+      // Handle missing items data gracefully
+      const safeItems = (typeof items !== 'undefined' && items) ? items : [];
+      const totalAssets = safeItems.length;
+      const assignedAssets = safeItems.filter(item => item.assigned_to_name).length;
+      const unassignedAssets = totalAssets - assignedAssets;
+      const totalValue = safeItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+      const avgValue = totalAssets > 0 ? totalValue / totalAssets : 0;
+
+      // Asset analytics calculations
+      const typeBreakdown = {};
+      const brandBreakdown = {};
+      const departmentBreakdown = {};
+      const locationBreakdown = {};
+      const conditionBreakdown = { 'active': 0, 'maintenance': 0, 'retired': 0, 'damaged': 0 };
+      const ageBreakdown = { '0-1': 0, '1-3': 0, '3-5': 0, '5+': 0 };
+      const valueRanges = { 'under_500': 0, '500-2000': 0, '2000-5000': 0, 'over_5000': 0 };
+
+      // Process each item for analytics
+      safeItems.forEach(item => {
+        // Type breakdown
+        const type = item.type_name || 'Unknown';
+        typeBreakdown[type] = (typeBreakdown[type] || 0) + 1;
+
+        // Brand breakdown
+        const brand = item.brand_name || 'Unknown';
+        brandBreakdown[brand] = (brandBreakdown[brand] || 0) + 1;
+
+        // Department breakdown (for assigned items)
+        if (item.assigned_to_name && item.department_name) {
+          const dept = item.department_name;
+          departmentBreakdown[dept] = (departmentBreakdown[dept] || 0) + 1;
+        }
+
+        // Location breakdown
+        if (item.location_name) {
+          const location = item.location_name;
+          locationBreakdown[location] = (locationBreakdown[location] || 0) + 1;
+        }
+
+        // Age breakdown
+        if (item.date_acquired) {
+          const years = (new Date() - new Date(item.date_acquired)) / (1000 * 60 * 60 * 24 * 365);
+          if (years < 1) ageBreakdown['0-1']++;
+          else if (years < 3) ageBreakdown['1-3']++;
+          else if (years < 5) ageBreakdown['3-5']++;
+          else ageBreakdown['5+']++;
+        }
+
+        // Value ranges
+        const price = parseFloat(item.price) || 0;
+        if (price < 500) valueRanges['under_500']++;
+        else if (price < 2000) valueRanges['500-2000']++;
+        else if (price < 5000) valueRanges['2000-5000']++;
+        else valueRanges['over_5000']++;
+
+        // Condition breakdown
+        const condition = item.condition || 'active';
+        conditionBreakdown[condition] = (conditionBreakdown[condition] || 0) + 1;
+      });
+
+      // Sort breakdowns by count
+      const topTypes = Object.entries(typeBreakdown).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      const topDepartments = Object.entries(departmentBreakdown).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      const topLocations = Object.entries(locationBreakdown).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+      // Calculate utilization metrics
+      const utilizationRate = totalAssets > 0 ? (assignedAssets / totalAssets * 100) : 0;
+      const maintenanceRate = totalAssets > 0 ? (conditionBreakdown['maintenance'] / totalAssets * 100) : 0;
+      const retiredRate = totalAssets > 0 ? (conditionBreakdown['retired'] / totalAssets * 100) : 0;
+
+      // Risk metrics - only include maintenance and damaged (not retired or unassigned)
+      const highValueAssets = safeItems.filter(item => parseFloat(item.price) > 5000).length;
+      const oldAssets = ageBreakdown['5+'];
+      const unassignedValue = safeItems.filter(item => !item.assigned_to_name).reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+      const itemsNeedingAttention = (conditionBreakdown['maintenance'] || 0) + (conditionBreakdown['damaged'] || 0);
+    %>
+
+    <!-- Executive Summary Cards -->
+    <div class="analytics-summary">
+      <div class="summary-card primary">
+        <div class="summary-icon">
+          <i class="fas fa-boxes"></i>
+        </div>
+        <div class="summary-content">
+          <h3>Total Assets</h3>
+          <div class="summary-number"><%= totalAssets.toLocaleString() %></div>
+          <div class="summary-detail">
+            <span class="trend-indicator <%= totalAssets > 0 ? 'positive' : 'neutral' %>">
+              <i class="fas fa-arrow-up"></i>
+              Inventory managed
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-card success">
+        <div class="summary-icon">
+          <i class="fas fa-euro-sign"></i>
+        </div>
+        <div class="summary-content">
+          <h3>Total Value</h3>
+          <div class="summary-number">€<%= totalValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) %></div>
+          <div class="summary-detail">
+            <span class="trend-indicator neutral">
+              <i class="fas fa-calculator"></i>
+              Avg: €<%= avgValue.toFixed(0) %> per asset
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-card info">
+        <div class="summary-icon">
+          <i class="fas fa-chart-pie"></i>
+        </div>
+        <div class="summary-content">
+          <h3>Utilization Rate</h3>
+          <div class="summary-number"><%= utilizationRate.toFixed(1) %>%</div>
+          <div class="summary-detail">
+            <span class="trend-indicator <%= utilizationRate >= 80 ? 'positive' : utilizationRate >= 60 ? 'neutral' : 'negative' %>">
+              <i class="fas fa-<%= utilizationRate >= 80 ? 'check-circle' : utilizationRate >= 60 ? 'minus-circle' : 'exclamation-triangle' %>"></i>
+              <%= assignedAssets %>/<%= totalAssets %> assigned
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-card warning">
+        <div class="summary-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="summary-content">
+          <h3>Needs Attention</h3>
+          <div class="summary-number">
+            <%= itemsNeedingAttention %>
+          </div>
+          <div class="summary-detail">
+            <span class="trend-indicator negative">
+              <i class="fas fa-wrench"></i>
+              Maintenance or issues
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Charts Grid -->
+    <div class="analytics-grid">
+      <!-- Asset Distribution by Type -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h3><i class="fas fa-tags"></i> Assets by Type</h3>
+          <div class="card-actions">
+            <button onclick="exportChart('typeChart')" class="btn-icon" title="Export Chart">
+              <i class="fas fa-download"></i>
+            </button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <% if (topTypes.length > 0) { %>
+            <div class="donut-chart-wrapper">
+              <canvas id="typeChart" width="300" height="200"></canvas>
+              <div class="chart-legend">
+                <% topTypes.forEach(([type, count], index) => { %>
+                  <div class="legend-item">
+                    <span class="legend-color" style="background-color: hsl(<%= index * 40 %>, 70%, 50%)"></span>
+                    <span class="legend-label"><%= type %></span>
+                    <span class="legend-value"><%= count %> (<%= (count / totalAssets * 100).toFixed(1) %>%)</span>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          <% } else { %>
+            <div class="no-data">
+              <i class="fas fa-chart-pie"></i>
+              <p>No asset type data available</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Value Distribution -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h3><i class="fas fa-euro-sign"></i> Value Distribution</h3>
+          <div class="card-actions">
+            <button onclick="exportChart('valueChart')" class="btn-icon" title="Export Chart">
+              <i class="fas fa-download"></i>
+            </button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div class="bar-chart">
+            <% Object.entries(valueRanges).forEach(([range, count]) => { %>
+              <div class="bar-item">
+                <div class="bar-label">
+                  <% if (range === 'under_500') { %>Under €500<% }
+                     else if (range === '500-2000') { %>€500 - €2,000<% }
+                     else if (range === '2000-5000') { %>€2,000 - €5,000<% }
+                     else { %>Over €5,000<% } %>
+                </div>
+                <div class="bar-container">
+                  <div class="bar-fill value-<%= range %>"
+                       style="width: <%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%"></div>
+                  <span class="bar-value"><%= count %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Age Analysis -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h3><i class="fas fa-clock"></i> Asset Age Distribution</h3>
+          <div class="card-actions">
+            <button onclick="exportChart('ageChart')" class="btn-icon" title="Export Chart">
+              <i class="fas fa-download"></i>
+            </button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div class="horizontal-bar-chart">
+            <% Object.entries(ageBreakdown).forEach(([age, count]) => { %>
+              <div class="bar-item">
+                <div class="bar-label">
+                  <% if (age === '0-1') { %>< 1 year<% }
+                     else if (age === '1-3') { %>1-3 years<% }
+                     else if (age === '3-5') { %>3-5 years<% }
+                     else { %>5+ years<% } %>
+                </div>
+                <div class="bar-container">
+                  <div class="bar-fill age-<%= age %>"
+                       style="width: <%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%"></div>
+                  <span class="bar-value"><%= count %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Department Allocation -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h3><i class="fas fa-building"></i> Department Allocation</h3>
+          <div class="card-actions">
+            <button onclick="exportChart('deptChart')" class="btn-icon" title="Export Chart">
+              <i class="fas fa-download"></i>
+            </button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <% if (topDepartments.length > 0) { %>
+            <div class="department-bars">
+              <% topDepartments.forEach(([dept, count]) => { %>
+                <div class="dept-item">
+                  <div class="dept-info">
+                    <span class="dept-name"><%= dept %></span>
+                    <span class="dept-count"><%= count %> assets</span>
+                  </div>
+                  <div class="dept-bar">
+                    <div class="dept-fill" style="width: <%= assignedAssets > 0 ? (count / assignedAssets * 100).toFixed(1) : 0 %>%"></div>
+                    <span class="dept-percentage"><%= assignedAssets > 0 ? (count / assignedAssets * 100).toFixed(1) : 0 %>%</span>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="no-data">
+              <i class="fas fa-building"></i>
+              <p>No department allocation data available</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Asset Health Status - Fixed Size -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h3><i class="fas fa-heartbeat"></i> Asset Health Status</h3>
+          <div class="card-actions">
+            <button onclick="exportChart('conditionChart')" class="btn-icon" title="Export Chart">
+              <i class="fas fa-download"></i>
+            </button>
+          </div>
+        </div>
+        <div class="chart-container health-chart-container">
+          <div class="asset-health-grid	">
+            <% Object.entries(conditionBreakdown).forEach(([condition, count]) => { %>
+              <div class="health-item <%= condition %>">
+                <div class="health-icon">
+                  <i class="fas fa-<%= condition === 'active' ? 'check-circle' :
+                                     condition === 'maintenance' ? 'wrench' :
+                                     condition === 'retired' ? 'archive' : 'exclamation-triangle' %>"></i>
+                </div>
+                <div class="health-info">
+                  <div class="health-number"><%= count %></div>
+                  <div class="health-label"><%= condition.charAt(0).toUpperCase() + condition.slice(1) %></div>
+                  <div class="health-percentage"><%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%</div>
+                </div>
+                <div class="health-bar">
+                  <div class="health-fill <%= condition %>"
+                       style="width: <%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%"></div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Asset Table with Advanced Filtering -->
+    <div class="detailed-section">
+      <div class="section-header">
+        <h2><i class="fas fa-table"></i> Detailed Asset Inventory</h2>
+        <div class="section-actions">
+          <div class="table-filters">
+            <select id="tableTypeFilter" class="table-filter">
+              <option value="">All Types</option>
+              <% topTypes.forEach(([type, count]) => { %>
+                <option value="<%= type %>"><%= type %> (<%= count %>)</option>
+              <% }) %>
+            </select>
+
+            <select id="tableStatusFilter" class="table-filter">
+              <option value="">All Status</option>
+              <option value="assigned">Assigned</option>
+              <option value="unassigned">Unassigned</option>
+            </select>
+
+            <select id="tableConditionFilter" class="table-filter">
+              <option value="">All Conditions</option>
+              <option value="active">Active</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="retired">Retired</option>
+              <option value="damaged">Damaged</option>
+            </select>
+          </div>
+          <button onclick="exportTableData()" class="btn btn-secondary">
+            <i class="fas fa-download"></i> Export Table
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="analytics-table" id="assetsTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="cep_brc">
+                Asset ID <i class="fas fa-sort"></i>
+              </th>
+              <th class="sortable" data-sort="name">
+                Name <i class="fas fa-sort"></i>
+              </th>
+              <th class="sortable" data-sort="type_name">
+                Type <i class="fas fa-sort"></i>
+              </th>
+              <th class="sortable" data-sort="brand_name">
+                Brand <i class="fas fa-sort"></i>
+              </th>
+              <th class="sortable" data-sort="price">
+                Value <i class="fas fa-sort"></i>
+              </th>
+              <th class="sortable" data-sort="assigned_to_name">
+                Assigned To <i class="fas fa-sort"></i>
+              </th>
+              <th class="sortable" data-sort="department_name">
+                Department <i class="fas fa-sort"></i>
+              </th>
+              <th class="sortable" data-sort="date_acquired">
+                Age <i class="fas fa-sort"></i>
+              </th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (safeItems.length > 0) { %>
+              <% safeItems.forEach(item => { %>
+                <tr data-type="<%= item.type_name || '' %>"
+                    data-status="<%= item.assigned_to_name ? 'assigned' : 'unassigned' %>"
+                    data-condition="<%= item.condition || 'active' %>">
+                  <td>
+                    <span class="asset-id-badge"><%= item.cep_brc %></span>
+                  </td>
+                  <td>
+                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="asset-link">
+                      <%= item.name %>
+                    </a>
+                  </td>
+                  <td>
+                    <% if (item.type_name) { %>
+                      <span class="type-badge"><%= item.type_name %></span>
+                    <% } else { %>
+                      <span class="type-badge unknown">Unknown</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (item.brand_name) { %>
+                      <span class="brand-badge"><%= item.brand_name %></span>
+                    <% } else { %>
+                      <span class="brand-badge unknown">Unknown</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (item.price) { %>
+                      <span class="price-value">€<%= parseFloat(item.price).toLocaleString(undefined, { minimumFractionDigits: 2 }) %></span>
+                    <% } else { %>
+                      <span class="price-value unknown">Not set</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (item.assigned_to_name) { %>
+                      <a href="/employees/<%= item.assigned_to %>" class="employee-link">
+                        <i class="fas fa-user"></i> <%= item.assigned_to_name %>
+                      </a>
+                    <% } else { %>
+                      <span class="unassigned-indicator">
+                        <i class="fas fa-user-slash"></i> Unassigned
+                      </span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (item.department_name) { %>
+                      <span class="dept-badge"><%= item.department_name %></span>
+                    <% } else { %>
+                      <span class="dept-badge unknown">N/A</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (item.date_acquired) { %>
+                      <%
+                        const years = Math.floor((new Date() - new Date(item.date_acquired)) / (1000 * 60 * 60 * 24 * 365));
+                        const months = Math.floor(((new Date() - new Date(item.date_acquired)) % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
+                      %>
+                      <span class="age-display">
+                        <% if (years > 0) { %>
+                          <%= years %>y <%= months %>m
+                        <% } else { %>
+                          <%= months %>m
+                        <% } %>
+                      </span>
+                    <% } else { %>
+                      <span class="age-display unknown">Unknown</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <%
+                      let statusClass = 'status-active';
+                      let statusIcon = 'fas fa-check-circle';
+                      let statusText = 'Active';
+
+                      if (item.condition === 'maintenance') {
+                        statusClass = 'status-maintenance';
+                        statusIcon = 'fas fa-wrench';
+                        statusText = 'Maintenance';
+                      } else if (item.condition === 'retired') {
+                        statusClass = 'status-retired';
+                        statusIcon = 'fas fa-archive';
+                        statusText = 'Retired';
+                      } else if (item.condition === 'damaged') {
+                        statusClass = 'status-damaged';
+                        statusIcon = 'fas fa-exclamation-triangle';
+                        statusText = 'Damaged';
+                      } else if (!item.assigned_to_name) {
+                        statusClass = 'status-available';
+                        statusIcon = 'fas fa-clock';
+                        statusText = 'Available';
+                      }
+                    %>
+                    <span class="status-badge <%= statusClass %>">
+                      <i class="<%= statusIcon %>"></i> <%= statusText %>
+                    </span>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="9" class="no-data">
+                  <div class="empty-table">
+                    <i class="fas fa-boxes"></i>
+                    <p>No assets found</p>
+                    <a href="/items/new" class="btn btn-primary">
+                      <i class="fas fa-plus"></i> Add First Asset
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-pagination">
+        <div class="pagination-info">
+          <span>Showing <span id="visibleRows"><%= safeItems.length %></span> of <%= totalAssets %> assets</span>
+        </div>
+        <div class="pagination-controls">
+          <select id="rowsPerPage">
+            <option value="25">25 per page</option>
+            <option value="50" selected>50 per page</option>
+            <option value="100">100 per page</option>
+            <option value="all">Show all</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Insights Section -->
+    <div class="insights-section">
+      <h2><i class="fas fa-lightbulb"></i> Key Insights & Actionable Recommendations</h2>
+      <div class="insights-grid">
+        <!-- Utilization Analysis -->
+        <% if (utilizationRate < 70) { %>
+          <div class="insight-card warning">
+            <div class="insight-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="insight-content">
+              <h4>Improve Asset Utilization</h4>
+              <p><strong><%= utilizationRate.toFixed(1) %>%</strong> utilization rate is below optimal (70-85%).</p>
+              <div class="insight-actions">
+                <strong>Actions:</strong>
+                <ul>
+                  <li>Review <%= unassignedAssets %> unassigned assets for potential assignment</li>
+                  <li>Consider redistributing underutilized assets</li>
+                  <li>Evaluate disposal of obsolete equipment</li>
+                </ul>
+              </div>
+              <div class="insight-priority high">
+                <i class="fas fa-exclamation-circle"></i> High Priority
+              </div>
+            </div>
+          </div>
+        <% } else if (utilizationRate > 95) { %>
+          <div class="insight-card success">
+            <div class="insight-icon">
+              <i class="fas fa-trophy"></i>
+            </div>
+            <div class="insight-content">
+              <h4>Excellent Utilization Rate</h4>
+              <p><strong><%= utilizationRate.toFixed(1) %>%</strong> utilization is excellent! Consider planning for future growth.</p>
+              <div class="insight-actions">
+                <strong>Recommendations:</strong>
+                <ul>
+                  <li>Plan for additional asset procurement</li>
+                  <li>Monitor for potential over-allocation</li>
+                  <li>Consider backup equipment for critical assets</li>
+                </ul>
+              </div>
+              <div class="insight-priority low">
+                <i class="fas fa-check-circle"></i> Monitoring
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Asset Age Analysis -->
+        <% if (ageBreakdown['5+'] > totalAssets * 0.3) { %>
+          <div class="insight-card info">
+            <div class="insight-icon">
+              <i class="fas fa-calendar-times"></i>
+            </div>
+            <div class="insight-content">
+              <h4>Asset Replacement Planning</h4>
+              <p><strong><%= ageBreakdown['5+'] %> assets</strong> are over 5 years old (<%= (ageBreakdown['5+'] / totalAssets * 100).toFixed(1) %>% of inventory).</p>
+              <div class="insight-actions">
+                <strong>Recommendations:</strong>
+                <ul>
+                  <li>Create a 3-year replacement roadmap</li>
+                  <li>Budget for technology refresh cycles</li>
+                  <li>Prioritize mission-critical aging equipment</li>
+                  <li>Consider maintenance cost vs replacement value</li>
+                </ul>
+              </div>
+              <div class="insight-priority medium">
+                <i class="fas fa-clock"></i> Plan Ahead
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Maintenance Issues -->
+        <% if ((conditionBreakdown['maintenance'] || 0) > 0) { %>
+          <div class="insight-card warning">
+            <div class="insight-icon">
+              <i class="fas fa-tools"></i>
+            </div>
+            <div class="insight-content">
+              <h4>Maintenance Attention Required</h4>
+              <p><strong><%= conditionBreakdown['maintenance'] %> assets</strong> are currently under maintenance (<%= maintenanceRate.toFixed(1) %>%).</p>
+              <div class="insight-actions">
+                <strong>Immediate Actions:</strong>
+                <ul>
+                  <li>Review maintenance tickets for completion timelines</li>
+                  <li>Ensure adequate spare/backup equipment</li>
+                  <% if (maintenanceRate > 15) { %>
+                    <li>Investigate recurring maintenance patterns</li>
+                    <li>Consider equipment upgrade evaluation</li>
+                  <% } %>
+                </ul>
+              </div>
+              <div class="insight-priority high">
+                <i class="fas fa-wrench"></i> Action Required
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Damaged Assets -->
+        <% if ((conditionBreakdown['damaged'] || 0) > 0) { %>
+          <div class="insight-card danger">
+            <div class="insight-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="insight-content">
+              <h4>Damaged Assets Need Resolution</h4>
+              <p><strong><%= conditionBreakdown['damaged'] %> assets</strong> are marked as damaged and require immediate attention.</p>
+              <div class="insight-actions">
+                <strong>Urgent Actions:</strong>
+                <ul>
+                  <li>Assess repair feasibility and costs</li>
+                  <li>Determine replacement vs repair economics</li>
+                  <li>Update insurance claims if applicable</li>
+                  <li>Consider impact on operations</li>
+                </ul>
+              </div>
+              <div class="insight-priority critical">
+                <i class="fas fa-bolt"></i> Critical
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- High Value Assets -->
+        <% if (highValueAssets > 0) { %>
+          <div class="insight-card primary">
+            <div class="insight-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="insight-content">
+              <h4>High-Value Asset Protection</h4>
+              <p><strong><%= highValueAssets %> assets</strong> valued over €5,000 represent significant investment.</p>
+              <div class="insight-actions">
+                <strong>Protection Measures:</strong>
+                <ul>
+                  <li>Verify insurance coverage adequacy</li>
+                  <li>Implement enhanced security protocols</li>
+                  <li>Schedule regular condition assessments</li>
+                  <li>Consider extended warranty options</li>
+                </ul>
+              </div>
+              <div class="insight-priority medium">
+                <i class="fas fa-lock"></i> Risk Management
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Asset Concentration Risk -->
+        <% if (topTypes.length > 0 && topTypes[0][1] > totalAssets * 0.4) { %>
+          <div class="insight-card info">
+            <div class="insight-icon">
+              <i class="fas fa-balance-scale"></i>
+            </div>
+            <div class="insight-content">
+              <h4>Asset Portfolio Diversification</h4>
+              <p><strong><%= topTypes[0][0] %></strong> represents <%= (topTypes[0][1] / totalAssets * 100).toFixed(1) %>% of your inventory.</p>
+              <div class="insight-actions">
+                <strong>Risk Mitigation:</strong>
+                <ul>
+                  <li>Evaluate single-supplier dependency risks</li>
+                  <li>Consider alternative technology options</li>
+                  <li>Develop contingency plans for critical systems</li>
+                  <li>Review standardization vs diversification balance</li>
+                </ul>
+              </div>
+              <div class="insight-priority medium">
+                <i class="fas fa-chart-pie"></i> Portfolio Review
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Unassigned Value Opportunity -->
+        <% if (unassignedValue > 5000) { %>
+          <div class="insight-card warning">
+            <div class="insight-icon">
+              <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="insight-content">
+              <h4>Unlock Asset Value</h4>
+              <p><strong>€<%= unassignedValue.toLocaleString() %></strong> in unassigned assets represents untapped potential.</p>
+              <div class="insight-actions">
+                <strong>Value Optimization:</strong>
+                <ul>
+                  <li>Identify assignment opportunities for idle assets</li>
+                  <li>Consider asset sharing between departments</li>
+                  <li>Evaluate disposal of truly obsolete items</li>
+                  <li>Update asset assignment procedures</li>
+                </ul>
+              </div>
+              <div class="insight-priority medium">
+                <i class="fas fa-chart-line"></i> ROI Opportunity
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Department Imbalance -->
+        <% if (topDepartments.length > 0 && topDepartments[0][1] > assignedAssets * 0.5) { %>
+          <div class="insight-card info">
+            <div class="insight-icon">
+              <i class="fas fa-building"></i>
+            </div>
+            <div class="insight-content">
+              <h4>Department Asset Distribution</h4>
+              <p><strong><%= topDepartments[0][0] %></strong> holds <%= (topDepartments[0][1] / assignedAssets * 100).toFixed(1) %>% of assigned assets.</p>
+              <div class="insight-actions">
+                <strong>Balance Considerations:</strong>
+                <ul>
+                  <li>Review department-specific asset needs</li>
+                  <li>Consider cross-department sharing opportunities</li>
+                  <li>Evaluate budget allocation fairness</li>
+                  <li>Plan for department growth/contraction</li>
+                </ul>
+              </div>
+              <div class="insight-priority low">
+                <i class="fas fa-balance-scale"></i> Review
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Success Story -->
+        <% if (utilizationRate >= 80 && utilizationRate <= 95 && maintenanceRate < 10 && (conditionBreakdown['damaged'] || 0) === 0) { %>
+          <div class="insight-card success">
+            <div class="insight-icon">
+              <i class="fas fa-star"></i>
+            </div>
+            <div class="insight-content">
+              <h4>Excellent Asset Management</h4>
+              <p>Your asset portfolio shows strong management with optimal utilization and low maintenance issues.</p>
+              <div class="insight-actions">
+                <strong>Continue Best Practices:</strong>
+                <ul>
+                  <li>Maintain current assignment processes</li>
+                  <li>Share success metrics with stakeholders</li>
+                  <li>Consider this as a model for other asset categories</li>
+                  <li>Plan for sustainable growth</li>
+                </ul>
+              </div>
+              <div class="insight-priority low">
+                <i class="fas fa-thumbs-up"></i> Keep It Up!
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- No Major Issues -->
+        <% if (utilizationRate >= 70 && maintenanceRate < 10 && (conditionBreakdown['damaged'] || 0) === 0 && ageBreakdown['5+'] <= totalAssets * 0.3) { %>
+          <div class="insight-card success">
+            <div class="insight-icon">
+              <i class="fas fa-check-double"></i>
+            </div>
+            <div class="insight-content">
+              <h4>Healthy Asset Portfolio</h4>
+              <p>Your asset management shows no critical issues. Focus on continuous improvement.</p>
+              <div class="insight-actions">
+                <strong>Optimization Opportunities:</strong>
+                <ul>
+                  <li>Set up automated monitoring alerts</li>
+                  <li>Implement predictive maintenance</li>
+                  <li>Consider asset lifecycle automation</li>
+                  <li>Plan for future technology trends</li>
+                </ul>
+              </div>
+              <div class="insight-priority low">
+                <i class="fas fa-cog"></i> Optimize
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Export Modal -->
+<div class="modal-overlay" id="customExportModal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-icon">
+        <i class="fas fa-cog"></i>
+      </div>
+      <h4 class="modal-title">Custom Export Options</h4>
+    </div>
+    <div class="modal-body">
+      <div class="export-options">
+        <div class="option-group">
+          <h5>Export Format</h5>
+          <div class="radio-option">
+            <input type="radio" id="formatCSV" name="format" value="csv" checked>
+            <label for="formatCSV">CSV (Comma Separated Values)</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="formatExcel" name="format" value="excel">
+            <label for="formatExcel">Excel Spreadsheet</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="formatPDF" name="format" value="pdf">
+            <label for="formatPDF">PDF Report</label>
+          </div>
+        </div>
+
+        <div class="option-group">
+          <h5>Include Data</h5>
+          <div class="checkbox-option">
+            <input type="checkbox" id="includeBasic" value="basic" checked>
+            <label for="includeBasic">Basic Asset Information</label>
+          </div>
+          <div class="checkbox-option">
+            <input type="checkbox" id="includeFinancial" value="financial" checked>
+            <label for="includeFinancial">Financial Data (Price, Value)</label>
+          </div>
+          <div class="checkbox-option">
+            <input type="checkbox" id="includeAssignment" value="assignment" checked>
+            <label for="includeAssignment">Assignment Information</label>
+          </div>
+          <div class="checkbox-option">
+            <input type="checkbox" id="includeHistory" value="history">
+            <label for="includeHistory">History Summary</label>
+          </div>
+          <div class="checkbox-option">
+            <input type="checkbox" id="includeAnalytics" value="analytics">
+            <label for="includeAnalytics">Analytics & Insights</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="executeCustomExport" class="btn btn-primary">
+        <i class="fas fa-download"></i> Export Data
+      </button>
+      <button id="cancelCustomExport" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize charts
+  initializeCharts();
+
+  // Initialize table functionality
+  initializeTable();
+
+  // Initialize export functionality
+  initializeExports();
+
+  // Initialize dropdown
+  const exportDropdown = document.getElementById('exportDropdown');
+  const exportMenu = document.getElementById('exportMenu');
+
+  exportDropdown.addEventListener('click', function(e) {
+    e.preventDefault();
+    exportMenu.classList.toggle('show');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!exportDropdown.contains(e.target) && !exportMenu.contains(e.target)) {
+      exportMenu.classList.remove('show');
+    }
+  });
+});
+
+function initializeCharts() {
+  // Asset Type Donut Chart
+  const typeCtx = document.getElementById('typeChart');
+  if (typeCtx) {
+    const typeData = <%- JSON.stringify(topTypes) %>;
+    const typeColors = typeData.map((_, index) => `hsl(${index * 40}, 70%, 50%)`);
+
+    new Chart(typeCtx, {
+      type: 'doughnut',
+      data: {
+        labels: typeData.map(item => item[0]),
+        datasets: [{
+          data: typeData.map(item => item[1]),
+          backgroundColor: typeColors,
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = ((context.raw / total) * 100).toFixed(1);
+                return `${context.label}: ${context.raw} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+}
+
+function initializeTable() {
+  const table = document.getElementById('assetsTable');
+  const typeFilter = document.getElementById('tableTypeFilter');
+  const statusFilter = document.getElementById('tableStatusFilter');
+  const conditionFilter = document.getElementById('tableConditionFilter');
+
+  function filterTable() {
+    const typeValue = typeFilter.value.toLowerCase();
+    const statusValue = statusFilter.value.toLowerCase();
+    const conditionValue = conditionFilter.value.toLowerCase();
+
+    const rows = table.querySelectorAll('tbody tr');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const type = row.dataset.type.toLowerCase();
+      const status = row.dataset.status.toLowerCase();
+      const condition = row.dataset.condition.toLowerCase();
+
+      const typeMatch = !typeValue || type.includes(typeValue);
+      const statusMatch = !statusValue || status === statusValue;
+      const conditionMatch = !conditionValue || condition === conditionValue;
+
+      if (typeMatch && statusMatch && conditionMatch) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    document.getElementById('visibleRows').textContent = visibleCount;
+  }
+
+  // Add filter event listeners
+  [typeFilter, statusFilter, conditionFilter].forEach(filter => {
+    filter.addEventListener('change', filterTable);
+  });
+
+  // Table sorting
+  const sortableHeaders = table.querySelectorAll('.sortable');
+  sortableHeaders.forEach(header => {
+    header.addEventListener('click', function() {
+      const column = this.dataset.sort;
+      sortTable(column);
+    });
+  });
+}
+
+function sortTable(column) {
+  const table = document.getElementById('assetsTable');
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+
+  // Determine sort direction
+  const currentSort = table.dataset.sortColumn;
+  const currentDirection = table.dataset.sortDirection || 'asc';
+  const newDirection = (currentSort === column && currentDirection === 'asc') ? 'desc' : 'asc';
+
+  // Sort rows
+  rows.sort((a, b) => {
+    const aVal = a.children[getColumnIndex(column)].textContent.trim();
+    const bVal = b.children[getColumnIndex(column)].textContent.trim();
+
+    // Handle numeric sorting for specific columns
+    if (column === 'price') {
+      const aNum = parseFloat(aVal.replace(/[€,]/g, '')) || 0;
+      const bNum = parseFloat(bVal.replace(/[€,]/g, '')) || 0;
+      return newDirection === 'asc' ? aNum - bNum : bNum - aNum;
+    }
+
+    // Handle date sorting
+    if (column === 'date_acquired') {
+      const aDate = new Date(aVal);
+      const bDate = new Date(bVal);
+      return newDirection === 'asc' ? aDate - bDate : bDate - aDate;
+    }
+
+    // Default string sorting
+    return newDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+  });
+
+  // Reorder table
+  rows.forEach(row => tbody.appendChild(row));
+
+  // Update sort indicators
+  table.dataset.sortColumn = column;
+  table.dataset.sortDirection = newDirection;
+
+  // Update header icons
+  table.querySelectorAll('.sortable i').forEach(icon => {
+    icon.className = 'fas fa-sort';
+  });
+
+  const activeHeader = table.querySelector(`[data-sort="${column}"] i`);
+  if (activeHeader) {
+    activeHeader.className = `fas fa-sort-${newDirection === 'asc' ? 'up' : 'down'}`;
+  }
+}
+
+function getColumnIndex(column) {
+  const columns = ['cep_brc', 'name', 'type_name', 'brand_name', 'price', 'assigned_to_name', 'department_name', 'date_acquired', 'status'];
+  return columns.indexOf(column);
+}
+
+function initializeExports() {
+  const customModal = document.getElementById('customExportModal');
+  const executeExport = document.getElementById('executeCustomExport');
+  const cancelExport = document.getElementById('cancelCustomExport');
+
+  executeExport.addEventListener('click', function() {
+    const format = document.querySelector('input[name="format"]:checked').value;
+    const options = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                        .map(cb => cb.value);
+
+    performCustomExport(format, options);
+    customModal.style.display = 'none';
+  });
+
+  cancelExport.addEventListener('click', function() {
+    customModal.style.display = 'none';
+  });
+}
+
+function exportReport(type) {
+  const params = new URLSearchParams();
+  params.append('type', type);
+  params.append('timestamp', new Date().toISOString());
+
+  if (type === 'custom') {
+    document.getElementById('customExportModal').style.display = 'flex';
+    return;
+  }
+
+  // Create hidden iframe for download
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = `/reports/assets/export?${params.toString()}`;
+  document.body.appendChild(iframe);
+
+  setTimeout(() => {
+    document.body.removeChild(iframe);
+  }, 2000);
+}
+
+function performCustomExport(format, options) {
+  const params = new URLSearchParams();
+  params.append('type', 'custom');
+  params.append('format', format);
+  params.append('options', JSON.stringify(options));
+  params.append('timestamp', new Date().toISOString());
+
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = `/reports/assets/export?${params.toString()}`;
+  document.body.appendChild(iframe);
+
+  setTimeout(() => {
+    document.body.removeChild(iframe);
+  }, 2000);
+}
+
+function exportChart(chartId) {
+  const canvas = document.getElementById(chartId);
+  if (canvas) {
+    const link = document.createElement('a');
+    link.download = `${chartId}-${new Date().toISOString().split('T')[0]}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+}
+
+function exportTableData() {
+  const table = document.getElementById('assetsTable');
+  const visibleRows = Array.from(table.querySelectorAll('tbody tr:not([style*="display: none"])'));
+
+  const csvContent = [
+    // Header row
+    Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim().replace(' ', '')),
+    // Data rows
+    ...visibleRows.map(row =>
+      Array.from(row.querySelectorAll('td')).map(td => td.textContent.trim())
+    )
+  ].map(row => row.join(',')).join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `asset-table-${new Date().toISOString().split('T')[0]}.csv`;
+  link.click();
+}
+
+function printReport() {
+  window.print();
+}
+</script>
+

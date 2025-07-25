@@ -1,137 +1,440 @@
-<h1>Add New Item</h1>
-
-<% if (typeof errors !== 'undefined' && errors.length > 0) { %>
-  <div class="alert alert-danger">
-    <ul>
-      <% errors.forEach(error => { %>
-        <li><%= error %></li>
-      <% }) %>
-    </ul>
-  </div>
-<% } %>
-
-<form method="POST" action="/items">
-  <div class="form-section">
-    <h3>Basic Information</h3>
-
-    <div class="form-group">
-      <label for="cep_brc">Item ID (CEP/BRC)</label>
-      <input type="text" id="cep_brc" name="cep_brc" value="<%= typeof formData !== 'undefined' ? formData.cep_brc : '' %>" required>
-      <small>Unique identifier for this item</small>
-    </div>
-
-    <div class="form-group">
-      <label for="name">Name</label>
-      <input type="text" id="name" name="name" value="<%= typeof formData !== 'undefined' ? formData.name : '' %>" required>
-    </div>
-
-    <div class="form-group">
-      <label for="type_id">Type</label>
-      <select id="type_id" name="type_id" required>
-        <option value="">Select Type</option>
-        <% types.forEach(type => { %>
-          <option value="<%= type.id %>" <%= typeof formData !== 'undefined' && formData.type_id == type.id ? 'selected' : '' %>>
-            <%= type.name %>
-          </option>
-        <% }) %>
-      </select>
+<div class="page-container">
+  <div class="page-header-simple">
+    <h1>Add New Asset</h1>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/items" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Assets
+        </a>
+        <a href="/items/new-receipt" class="btn btn-info">
+          <i class="fas fa-receipt"></i> Add with Receipt
+        </a>
+      </div>
     </div>
   </div>
 
-  <div class="form-section">
-    <h3>Product Details</h3>
+  <div class="content-section">
+    <div class="form-container">
+      <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div>
+            <strong>Please fix the following errors:</strong>
+            <ul>
+              <% errors.forEach(error => { %>
+                <li><%= error %></li>
+              <% }) %>
+            </ul>
+          </div>
+        </div>
+      <% } %>
 
-    <div class="form-group">
-      <label for="brand_id">Brand</label>
-      <select id="brand_id" name="brand_id">
-        <option value="">Select Brand</option>
-        <% brands.forEach(brand => { %>
-          <option value="<%= brand.id %>" <%= typeof formData !== 'undefined' && formData.brand_id == brand.id ? 'selected' : '' %>>
-            <%= brand.name %>
-          </option>
-        <% }) %>
-      </select>
-    </div>
+      <form method="POST" action="/items" id="createItemForm" class="modern-form" data-no-ajax="true">
+        <!-- Asset Identification Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="fas fa-tag section-icon"></i>
+            <h3>Asset Identification</h3>
+          </div>
 
-    <div class="form-group">
-      <label for="model">Model</label>
-      <input type="text" id="model" name="model" value="<%= typeof formData !== 'undefined' ? formData.model : '' %>">
-    </div>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="cep_brc" class="required">Asset ID (CEP/BRC)</label>
+              <div class="input-with-validation">
+                <input type="text" id="cep_brc" name="cep_brc"
+                  value="<%= typeof formData !== 'undefined' ? formData.cep_brc : '' %>"
+                  class="form-input" required placeholder="Enter unique asset identifier">
+                <div class="validation-feedback" id="cepValidation"></div>
+                <small class="field-help">
+                  <i class="fas fa-info-circle"></i>
+                  Unique identifier for this asset (e.g., CEP001, BRC-2024-001)
+                </small>
+              </div>
+            </div>
 
-    <div class="form-group">
-      <label for="serial_cod">Serial Number</label>
-      <input type="text" id="serial_cod" name="serial_cod" value="<%= typeof formData !== 'undefined' ? formData.serial_cod : '' %>">
-    </div>
+            <div class="form-group full-width">
+              <label for="name" class="required">Asset Name</label>
+              <input type="text" id="name" name="name"
+                value="<%= typeof formData !== 'undefined' ? formData.name : '' %>"
+                class="form-input" required placeholder="Enter descriptive name for this asset">
+            </div>
 
-    <div class="form-group">
-      <label for="price">Price</label>
-      <input type="number" id="price" name="price" min="0" step="0.01" value="<%= typeof formData !== 'undefined' ? formData.price : '' %>">
+            <div class="form-group full-width">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" class="form-textarea" rows="3"
+                placeholder="Enter detailed description of the asset (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
+              <small class="field-help">
+                <i class="fas fa-info-circle"></i>
+                Provide additional details about the asset, its purpose, or any special characteristics
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="type_id" class="required">Asset Type</label>
+              <select id="type_id" name="type_id" class="form-select" required>
+                <option value="">Select Asset Type</option>
+                <% types.forEach(type => { %>
+                  <option value="<%= type.id %>" <%= typeof formData !== 'undefined' && formData.type_id == type.id ? 'selected' : '' %>>
+                    <%= type.name %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Details Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="fas fa-cog section-icon"></i>
+            <h3>Product Details</h3>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="brand_id">Brand</label>
+              <select id="brand_id" name="brand_id" class="form-select">
+                <option value="">Select Brand</option>
+                <% brands.forEach(brand => { %>
+                  <option value="<%= brand.id %>" <%= typeof formData !== 'undefined' && formData.brand_id == brand.id ? 'selected' : '' %>>
+                    <%= brand.name %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="model">Model</label>
+              <input type="text" id="model" name="model"
+                value="<%= typeof formData !== 'undefined' ? formData.model : '' %>"
+                class="form-input" placeholder="Product model number">
+            </div>
+
+            <div class="form-group">
+              <label for="serial_cod">Serial Number</label>
+              <input type="text" id="serial_cod" name="serial_cod"
+                value="<%= typeof formData !== 'undefined' ? formData.serial_cod : '' %>"
+                class="form-input" placeholder="Unique serial number">
+            </div>
+
+            <div class="form-group">
+              <label for="price">Purchase Price (€)</label>
+              <div class="input-group">
+                <span class="input-group-text">€</span>
+                <input type="number" id="price" name="price" min="0" step="0.01"
+                  value="<%= typeof formData !== 'undefined' ? formData.price : '' %>"
+                  class="form-input" placeholder="0.00">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchase Information Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="fas fa-receipt section-icon"></i>
+            <h3>Purchase Information</h3>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="receipt">Purchase Receipt</label>
+              <select id="receipt" name="receipt" class="form-select">
+                <option value="">Select Receipt (Optional)</option>
+                <% sales.forEach(sale => { %>
+                  <option value="<%= sale.receipt %>" <%= typeof formData !== 'undefined' && formData.receipt === sale.receipt ? 'selected' : '' %>>
+                    <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
+                  </option>
+                <% }) %>
+              </select>
+              <small class="field-help">
+                <i class="fas fa-info-circle"></i>
+                Link this asset to an existing purchase receipt, or leave blank to add later
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="fas fa-user section-icon"></i>
+            <h3>Asset Assignment</h3>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="assigned_to">Assign To Employee</label>
+              <select id="assigned_to" name="assigned_to" class="form-select">
+                <option value="">Leave Unassigned</option>
+                <% employees.forEach(employee => { %>
+                  <option value="<%= employee.id %>" <%= typeof formData !== 'undefined' && formData.assigned_to == employee.id ? 'selected' : '' %>>
+                    <%= employee.name %> (<%= employee.cep %>)
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="date_assigned">Assignment Date</label>
+              <input type="date" id="date_assigned" name="date_assigned" class="form-input"
+                value="<%= typeof formData !== 'undefined' && formData.date_assigned ? formData.date_assigned : '' %>">
+              <small class="field-help">
+                <i class="fas fa-info-circle"></i>
+                Date when asset is assigned to employee (auto-fills when employee is selected)
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus"></i> Create Asset
+          </button>
+          <a href="/items" class="btn btn-secondary btn-lg">
+            <i class="fas fa-times"></i> Cancel
+          </a>
+        </div>
+      </form>
     </div>
   </div>
+</div>
 
-  <div class="form-section">
-    <h3>Purchase Information</h3>
-
-    <div class="form-group">
-      <label for="receipt">Receipt</label>
-      <select id="receipt" name="receipt">
-        <option value="">Select Receipt</option>
-        <% sales.forEach(sale => { %>
-          <option value="<%= sale.receipt %>" <%= typeof formData !== 'undefined' && formData.receipt === sale.receipt ? 'selected' : '' %>>
-            <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
-          </option>
-        <% }) %>
-      </select>
+<!-- Asset ID Availability Check Modal -->
+<div class="modal-overlay" id="duplicateIdModal">
+  <div class="modal-content error-modal">
+    <div class="modal-header">
+      <i class="fas fa-exclamation-circle modal-icon error"></i>
+      <h4>Asset ID Already Exists</h4>
+    </div>
+    <div class="modal-body">
+      <p>This Asset ID is already in use by another asset:</p>
+      <div class="duplicate-asset-info" id="duplicateAssetInfo">
+        <!-- Dynamic content -->
+      </div>
+      <p>Please choose a different Asset ID or review the existing asset.</p>
+    </div>
+    <div class="modal-actions">
+      <button id="viewExistingAsset" class="btn btn-info">
+        <i class="fas fa-eye"></i> View Existing Asset
+      </button>
+      <button id="closeDuplicateModal" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Close
+      </button>
     </div>
   </div>
-
-  <div class="form-section">
-    <h3>Assignment</h3>
-
-    <div class="form-group">
-      <label for="assigned_to">Assigned To</label>
-      <select id="assigned_to" name="assigned_to">
-        <option value="">Unassigned</option>
-        <% employees.forEach(employee => { %>
-          <option value="<%= employee.id %>" <%= typeof formData !== 'undefined' && formData.assigned_to == employee.id ? 'selected' : '' %>>
-            <%= employee.name %> (<%= employee.cep %>)
-          </option>
-        <% }) %>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="date_assigned">Date Assigned</label>
-      <input type="date" id="date_assigned" name="date_assigned"
-        value="<%= typeof formData !== 'undefined' && formData.date_assigned ? formData.date_assigned : '' %>">
-    </div>
-  </div>
-
-  <div class="form-group">
-    <button type="submit" class="btn">Add Item</button>
-    <a href="/items" class="btn">Cancel</a>
-  </div>
-</form>
+</div>
 
 <style>
-  .form-section {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #eee;
-  }
+/* Additional styles for textarea */
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
 
-  .form-section h3 {
-    margin-bottom: 1rem;
-    color: var(--secondary);
-  }
+.form-textarea:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
 
-  .form-section:last-of-type {
-    border-bottom: none;
-  }
-
-  small {
-    color: #666;
-    display: block;
-    margin-top: 0.25rem;
-  }
+.form-textarea::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('createItemForm');
+  const idInput = document.getElementById('cep_brc');
+  const duplicateIdModal = document.getElementById('duplicateIdModal');
+  const cepValidation = document.getElementById('cepValidation');
+
+  let duplicateCheckTimeout;
+  let duplicateAssetData = null;
+
+  // Asset ID validation and duplicate checking
+  if (idInput) {
+    idInput.addEventListener('input', function() {
+      const newValue = this.value.trim();
+
+      // Clear previous timeout
+      clearTimeout(duplicateCheckTimeout);
+
+      // Reset validation state
+      cepValidation.className = 'validation-feedback';
+      cepValidation.innerHTML = '';
+
+      if (newValue.length === 0) {
+        return;
+      }
+
+      if (newValue.length < 3) {
+        cepValidation.className = 'validation-feedback warning';
+        cepValidation.innerHTML = '<i class="fas fa-info-circle"></i> Asset ID should be at least 3 characters';
+        return;
+      }
+
+      // Show checking state
+      cepValidation.className = 'validation-feedback checking';
+      cepValidation.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
+
+      // Check for duplicates after delay
+      duplicateCheckTimeout = setTimeout(() => {
+        checkDuplicateAssetId(newValue);
+      }, 800);
+    });
+  }
+
+  // Check for duplicate Asset ID
+  async function checkDuplicateAssetId(assetId) {
+    try {
+      const response = await fetch(`/api/items/check-duplicate/${encodeURIComponent(assetId)}`);
+      const data = await response.json();
+
+      if (data.exists) {
+        duplicateAssetData = data.asset;
+        cepValidation.className = 'validation-feedback error';
+        cepValidation.innerHTML = `
+          <i class="fas fa-exclamation-triangle"></i>
+          Asset ID already exists -
+          <a href="#" onclick="showDuplicateModal()" class="error-link">View existing asset</a>
+        `;
+      } else {
+        cepValidation.className = 'validation-feedback success';
+        cepValidation.innerHTML = '<i class="fas fa-check"></i> Asset ID available';
+      }
+    } catch (error) {
+      console.error('Error checking duplicate:', error);
+      cepValidation.className = 'validation-feedback error';
+      cepValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error checking availability';
+    }
+  }
+
+  // Show duplicate asset modal
+  window.showDuplicateModal = function() {
+    if (duplicateAssetData) {
+      const duplicateInfo = document.getElementById('duplicateAssetInfo');
+      duplicateInfo.innerHTML = `
+        <div class="asset-card">
+          <div class="asset-header">
+            <span class="entity-id">${duplicateAssetData.cep_brc}</span>
+            <span class="entity-name">${duplicateAssetData.name}</span>
+          </div>
+          <div class="asset-details">
+            <div><strong>Type:</strong> ${duplicateAssetData.type_name || 'N/A'}</div>
+            <div><strong>Brand:</strong> ${duplicateAssetData.brand_name || 'N/A'}</div>
+            <div><strong>Status:</strong> ${duplicateAssetData.assigned_to_name ? 'Assigned to ' + duplicateAssetData.assigned_to_name : 'Unassigned'}</div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('viewExistingAsset').onclick = function() {
+        window.open(`/items/${duplicateAssetData.id}/${duplicateAssetData.cep_brc}`, '_blank');
+      };
+
+      duplicateIdModal.style.display = 'flex';
+    }
+  };
+
+  // Form submission handling
+  form.addEventListener('submit', function(event) {
+    console.log('Form is submitting!');
+
+    // Check for validation errors
+    if (cepValidation.classList.contains('error')) {
+      event.preventDefault();
+      showDuplicateModal();
+      return;
+    }
+
+    // Check required fields are filled
+    const requiredFields = form.querySelectorAll('[required]');
+    let valid = true;
+    let firstInvalidField = null;
+
+    requiredFields.forEach(field => {
+      field.classList.remove('form-error');
+      if (!field.value.trim()) {
+        valid = false;
+        field.classList.add('form-error');
+        if (!firstInvalidField) {
+          firstInvalidField = field;
+        }
+        console.log('Missing required field:', field.name);
+      }
+    });
+
+    if (!valid) {
+      event.preventDefault();
+
+      // Show error message
+      const errorAlert = document.createElement('div');
+      errorAlert.className = 'alert alert-danger';
+      errorAlert.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>Please fill out all required fields</strong>
+          <p>Fields marked with * are required to create an asset.</p>
+        </div>
+      `;
+
+      // Insert error at top of form
+      form.insertBefore(errorAlert, form.firstChild);
+
+      // Scroll to first invalid field
+      if (firstInvalidField) {
+        firstInvalidField.focus();
+        firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // Remove error after 5 seconds
+      setTimeout(() => {
+        if (errorAlert.parentNode) {
+          errorAlert.remove();
+        }
+      }, 5000);
+    } else {
+      console.log('Form validation passed');
+    }
+  });
+
+  // Modal event handlers
+  document.getElementById('closeDuplicateModal')?.addEventListener('click', function() {
+    duplicateIdModal.style.display = 'none';
+  });
+
+  // Close modal when clicking overlay
+  duplicateIdModal?.addEventListener('click', function(e) {
+    if (e.target === duplicateIdModal) {
+      duplicateIdModal.style.display = 'none';
+    }
+  });
+
+  // Assignment date auto-fill
+  const assignedToSelect = document.getElementById('assigned_to');
+  const dateAssignedInput = document.getElementById('date_assigned');
+
+  assignedToSelect.addEventListener('change', function() {
+    if (this.value && !dateAssignedInput.value) {
+      dateAssignedInput.value = new Date().toISOString().split('T')[0];
+    }
+  });
+
+  // Auto-focus first input
+  const firstInput = form.querySelector('input[type="text"]');
+  if (firstInput) {
+    firstInput.focus();
+  }
+});
+</script>

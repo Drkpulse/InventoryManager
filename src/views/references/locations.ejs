@@ -1,0 +1,442 @@
+<div class="page-container">
+  <div class="page-header-simple">
+    <div class="header-title-section">
+      <div class="breadcrumb-nav">
+        <a href="/references" class="breadcrumb-link">
+          <i class="fas fa-cog"></i> References
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <span class="breadcrumb-current">Locations</span>
+      </div>
+      <h1>Locations</h1>
+      <div class="locations-meta">
+        <span class="locations-count">
+          <i class="fas fa-map-marker-alt"></i>
+          <%= locations ? locations.length : 0 %> locations
+        </span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/references" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to References
+        </a>
+        <a href="/references/locations/add" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add New Location
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <% if (locations && locations.length > 0) { %>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="location-name-col">
+                <i class="fas fa-map-marker-alt"></i> Name
+              </th>
+              <th class="address-col">
+                <i class="fas fa-building"></i> Address
+              </th>
+              <th class="description-col">
+                <i class="fas fa-info-circle"></i> Description
+              </th>
+              <th class="usage-col">
+                <i class="fas fa-boxes"></i> Assets Located
+              </th>
+              <th class="actions-col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% locations.forEach(location => { %>
+              <tr class="table-row">
+                <td class="location-name-cell">
+                  <div class="location-info">
+                    <div class="location-name">
+                      <strong><%= location.name %></strong>
+                    </div>
+                    <% if (location.code) { %>
+                      <div class="location-code">
+                        Code: <%= location.code %>
+                      </div>
+                    <% } %>
+                  </div>
+                </td>
+                <td class="address-cell">
+                  <% if (location.address) { %>
+                    <div class="address-text">
+                      <i class="fas fa-map-pin"></i>
+                      <%= location.address %>
+                    </div>
+                  <% } else { %>
+                    <span class="text-muted">No address specified</span>
+                  <% } %>
+                </td>
+                <td class="description-cell">
+                  <% if (location.description) { %>
+                    <span class="description-text"><%= location.description %></span>
+                  <% } else { %>
+                    <span class="text-muted">No description</span>
+                  <% } %>
+                </td>
+                <td class="usage-cell">
+                  <div class="usage-info">
+                    <% if (parseInt(location.item_count) > 0) { %>
+                      <span class="usage-badge active">
+                        <i class="fas fa-check-circle"></i>
+                        <%= location.item_count %> assets
+                      </span>
+                    <% } else { %>
+                      <span class="usage-badge unused">
+                        <i class="fas fa-minus-circle"></i>
+                        Not used
+                      </span>
+                    <% } %>
+                  </div>
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons-inline">
+                    <a href="/references/locations/<%= location.id %>/edit"
+                       class="btn-action btn-edit"
+                       title="Edit Location">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <% if (parseInt(location.item_count) === 0) { %>
+                      <form method="POST" action="/references/locations/<%= location.id %>/delete"
+                            class="inline-form"
+                            onsubmit="return confirmDelete('<%= location.name %>');">
+                        <button type="submit" class="btn-action btn-delete" title="Delete Location">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <button class="btn-action btn-delete" disabled
+                              title="Cannot delete: this location is in use by <%= location.item_count %> assets">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Results Summary -->
+      <div class="results-summary-bottom">
+        <div class="results-stats">
+          <span class="results-count">
+            <i class="fas fa-map-marker-alt"></i>
+            Showing <strong><%= locations.length %></strong> locations
+          </span>
+          <div class="stats-display">
+            <%
+              const usedLocations = locations.filter(l => parseInt(l.item_count) > 0).length;
+              const unusedLocations = locations.length - usedLocations;
+            %>
+            <div class="stat-item">
+              <span class="stat-number"><%= usedLocations %></span>
+              <span class="stat-label">In Use</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number"><%= unusedLocations %></span>
+              <span class="stat-label">Unused</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <h3>No Locations Found</h3>
+        <p>Locations help organize and track where your assets are physically located. Start by adding your first location.</p>
+        <div class="empty-actions">
+          <a href="/references/locations/add" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add First Location
+          </a>
+          <a href="/references" class="btn btn-secondary">
+            <i class="fas fa-cog"></i> Manage References
+          </a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+function confirmDelete(locationName) {
+  return confirm(`Are you sure you want to delete the location "${locationName}"? This action cannot be undone.`);
+}
+</script>
+
+<style>
+/* Locations Page Specific Styles */
+.locations-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.locations-count {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.locations-count i {
+  color: var(--primary);
+}
+
+/* Table Column Widths */
+.location-name-col {
+  width: 20%;
+}
+
+.address-col {
+  width: 30%;
+}
+
+.description-col {
+  width: 25%;
+}
+
+.usage-col {
+  width: 15%;
+}
+
+.actions-col {
+  width: 10%;
+}
+
+/* Location Info */
+.location-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.location-name {
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.location-code {
+  font-size: 0.75rem;
+  color: #666;
+  font-family: 'Courier New', monospace;
+  background: #f8f9fa;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  width: fit-content;
+}
+
+/* Address Cell */
+.address-cell {
+  max-width: 300px;
+}
+
+.address-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.address-text i {
+  color: #666;
+  margin-top: 0.1rem;
+  font-size: 0.9rem;
+}
+
+/* Description Cell */
+.description-cell {
+  max-width: 250px;
+}
+
+.description-text {
+  display: block;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+/* Usage Info */
+.usage-info {
+  display: flex;
+  align-items: center;
+}
+
+.usage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.usage-badge.active {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.usage-badge.unused {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #e9ecef;
+}
+
+.usage-badge i {
+  font-size: 0.8rem;
+}
+
+/* Action Button States */
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-action:disabled:hover {
+  transform: none !important;
+  background: #6c757d !important;
+}
+
+/* Results Summary */
+.results-summary-bottom .stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-number {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Empty State Enhancements */
+.empty-state .empty-icon {
+  width: 64px;
+  height: 64px;
+  background: #f8f9fa;
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 1.5rem;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.empty-state p {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .locations-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .data-table th:nth-child(3),
+  .data-table td:nth-child(3) {
+    display: none;
+  }
+
+  .address-col,
+  .address-cell {
+    width: auto;
+  }
+
+  .action-buttons-inline {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .results-stats {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .stats-display {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-actions .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .data-table th:nth-child(2),
+  .data-table td:nth-child(2) {
+    display: none;
+  }
+
+  .action-buttons-inline {
+    justify-content: center;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .header-actions,
+  .action-buttons-inline {
+    display: none !important;
+  }
+
+  .data-table {
+    border: 1px solid #333 !important;
+  }
+
+  .data-table th,
+  .data-table td {
+    border: 1px solid #333 !important;
+  }
+
+  .page-container {
+    background: white !important;
+  }
+}
+</style>

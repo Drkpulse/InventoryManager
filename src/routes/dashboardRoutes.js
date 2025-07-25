@@ -1,15 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const dashboardController = require('../controllers/dashboardController');
+const { isAuthenticated } = require('../middleware/auth');
 
-// Middleware to check if user is logged in
-const isAuthenticated = (req, res, next) => {
-  if (req.session.user) {
-    return next();
-  }
-  res.redirect('/auth/login');
-};
+// Dashboard search route - Fix: use searchAssets instead of search
+router.get('/search', isAuthenticated, dashboardController.searchAssets);
 
-router.get('/', isAuthenticated, dashboardController.getDashboard);
+// Dashboard assets route
+router.get('/assets', isAuthenticated, dashboardController.getAssets);
 
 module.exports = router;

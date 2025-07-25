@@ -1,0 +1,69 @@
+<div class="page-header">
+	<h1>Edit Asset Type</h1>
+  </div>
+
+  <!-- Flash Messages -->
+  <% if (typeof error !== 'undefined' && error.length > 0) { %>
+	<div class="alert alert-danger">
+	  <% error.forEach(msg => { %>
+		<p><%= msg %></p>
+	  <% }) %>
+	</div>
+  <% } %>
+
+  <% if (typeof success !== 'undefined' && success.length > 0) { %>
+	<div class="alert alert-success">
+	  <% success.forEach(msg => { %>
+		<p><%= msg %></p>
+	  <% }) %>
+	</div>
+  <% } %>
+
+  <form method="POST" action="/references/asset-types/<%= assetType.id %>" id="editAssetTypeForm">
+	<div class="form-group">
+	  <label for="name">Asset Type Name</label>
+	  <input type="text" id="name" name="name" value="<%= assetType.name %>" required>
+	  <small>Name of the asset type (e.g., Laptop, Desktop, Monitor, Printer)</small>
+	</div>
+
+	<div class="form-group">
+	  <label for="description">Description</label>
+	  <textarea id="description" name="description" rows="3"><%= assetType.description || '' %></textarea>
+	  <small>Optional description explaining what this asset type represents</small>
+	</div>
+
+	<div class="form-group">
+	  <button type="submit" class="btn">Update Asset Type</button>
+	  <a href="/references/asset-types" class="btn">Cancel</a>
+	</div>
+  </form>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+	const form = document.getElementById('editAssetTypeForm');
+	const nameField = document.getElementById('name');
+
+	form.addEventListener('submit', function(e) {
+	  console.log('Edit form submitted!');
+	  console.log('Action:', this.action);
+	  console.log('Method:', this.method);
+
+	  const formData = new FormData(this);
+	  console.log('Form data:');
+	  for (let [key, value] of formData.entries()) {
+		console.log(key, ':', value);
+	  }
+
+	  // Basic validation
+	  const name = nameField.value.trim();
+	  if (!name) {
+		e.preventDefault();
+		alert('Asset type name is required!');
+		nameField.focus();
+		return false;
+	  }
+	});
+  });
+  </script>
+
+  <link rel="stylesheet" href="/css/styles.css">

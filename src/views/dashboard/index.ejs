@@ -1,176 +1,1271 @@
-<section class="dashboard">
-  <h1>Dashboard</h1>
-
-  <div class="stats-cards">
-    <div class="stat-card">
-      <h3>Items</h3>
-      <p class="stat-number"><%= stats.itemCount %></p>
-      <p class="stat-label">Total Items</p>
-      <a href="/items" class="card-link">View All</a>
+<section class="modern-dashboard">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>Dashboard Overview</h1>
+      <p class="dashboard-subtitle">Welcome back! Here's what's happening with your IT assets.</p>
     </div>
-
-    <div class="stat-card">
-      <h3>Employees</h3>
-      <p class="stat-number"><%= stats.employeeCount %></p>
-      <p class="stat-label">Active Employees</p>
-      <a href="/employees" class="card-link">View All</a>
-    </div>
-
-    <div class="stat-card">
-      <h3>Departments</h3>
-      <p class="stat-number"><%= stats.departmentCount %></p>
-      <p class="stat-label">Departments</p>
-      <a href="/departments" class="card-link">View All</a>
-    </div>
-
-    <div class="stat-card">
-      <h3>Unassigned</h3>
-      <p class="stat-number"><%= stats.unassignedCount %></p>
-      <p class="stat-label">Unassigned Items</p>
-      <a href="/reports/unassigned-assets" class="card-link">View Report</a>
+    <div class="header-actions">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="globalSearch" placeholder="Search assets, employees...">
+      </div>
+      <div class="dropdown">
+        <button class="btn-primary dropdown-toggle">
+          <i class="fas fa-plus"></i>
+          <span>Quick Add</span>
+        </button>
+        <div class="dropdown-menu">
+          <a href="/items/new"><i class="fas fa-laptop"></i>New Asset</a>
+          <a href="/employees/new"><i class="fas fa-user-plus"></i>New Employee</a>
+          <a href="/items/new-receipt"><i class="fas fa-receipt"></i>Purchase Receipt</a>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="dashboard-row">
-    <div class="dashboard-panel">
-      <h2>Asset Distribution</h2>
-      <div class="chart-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Item Type</th>
-              <th>Count</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% itemsByType.forEach(type => { %>
-              <tr>
-                <td><%= type.name %></td>
-                <td><%= type.count %></td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
+  <!-- Key Metrics -->
+  <div class="metrics-grid">
+    <a href="/items" class="metric-card primary clickable">
+      <div class="metric-icon">
+        <i class="fas fa-server"></i>
+      </div>
+      <div class="metric-content">
+        <span class="metric-value"><%= stats.itemCount %></span>
+        <span class="metric-label">Total Assets</span>
+        <span class="metric-trend positive">Click to view all</span>
+      </div>
+    </a>
+
+    <a href="/employees" class="metric-card success clickable">
+      <div class="metric-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="metric-content">
+        <span class="metric-value"><%= stats.employeeCount %></span>
+        <span class="metric-label">Active Users</span>
+        <span class="metric-trend positive">Click to manage</span>
+      </div>
+    </a>
+
+    <a href="/items?filter=unassigned" class="metric-card warning clickable">
+      <div class="metric-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="metric-content">
+        <span class="metric-value"><%= stats.unassignedCount %></span>
+        <span class="metric-label">Unassigned</span>
+        <span class="metric-trend">Need attention</span>
+      </div>
+    </a>
+
+    <a href="/software" class="metric-card info clickable">
+      <div class="metric-icon">
+        <i class="fas fa-building"></i>
+      </div>
+      <div class="metric-content">
+        <span class="metric-value"><%= stats.departmentCount %></span>
+        <span class="metric-label">Software</span>
+        <span class="metric-trend">Active licenses</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="dashboard-grid">
+    <!-- Asset Distribution Chart -->
+    <div class="dashboard-card chart-card">
+      <div class="card-header">
+        <h3>Asset Distribution</h3>
+        <a href="/items" class="view-all-link">View All Assets</a>
+      </div>
+      <div class="asset-distribution-simple">
+        <% itemsByType.forEach((item, index) => { %>
+          <div class="asset-type-item">
+            <div class="asset-type-info">
+              <span class="asset-type-name"><%= item.name %></span>
+              <span class="asset-type-count"><%= item.count %> items</span>
+            </div>
+            <div class="asset-type-percentage">
+              <% const percentage = Math.round((item.count / stats.itemCount) * 100) %>
+              <span class="percentage-value"><%= percentage %>%</span>
+            </div>
+          </div>
+        <% }) %>
       </div>
     </div>
 
-    <div class="dashboard-panel">
-      <h2>Recent Items</h2>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Assigned To</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% recentItems.forEach(item => { %>
-            <tr>
-              <td><%= item.cep_brc %></td>
-              <td>
-                <a href="/items/<%= item.id %>/<%= item.cep_brc %>"><%= item.name %></a>
-              </td>
-              <td><%= item.type_name || 'N/A' %></td>
-              <td><%= item.assigned_to_name || 'Unassigned' %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-      <a href="/items" class="view-all">View All Items →</a>
+    <!-- Recent Activity -->
+    <div class="dashboard-card activity-card">
+      <div class="card-header">
+        <h3>Recent Activity</h3>
+        <a href="/items" class="view-all-link">View All</a>
+      </div>
+      <div class="activity-list">
+        <% recentItems.slice(0, 5).forEach(item => { %>
+          <div class="activity-item">
+            <div class="activity-icon">
+              <i class="fas fa-laptop"></i>
+            </div>
+            <div class="activity-content">
+              <h4><%= item.name %></h4>
+              <p><%= item.type_name || 'Asset' %> •
+                <% if (item.assigned_to_name) { %>
+                  Assigned to <%= item.assigned_to_name %>
+                <% } else { %>
+                  Unassigned
+                <% } %>
+              </p>
+            </div>
+            <div class="activity-status">
+              <span class="status-dot <%= item.assigned_to ? 'active' : 'inactive' %>"></span>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <!-- System Overview -->
+    <div class="dashboard-card system-overview-card">
+      <div class="card-header">
+        <h3>System Overview</h3>
+        <span class="status-indicator online">ONLINE</span>
+      </div>
+      <div class="system-stats">
+        <div class="stat-row">
+          <span class="stat-label">Total Assets</span>
+          <span class="stat-value"><%= stats.itemCount %></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Active Employees</span>
+          <span class="stat-value"><%= stats.employeeCount %></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Assigned Assets</span>
+          <span class="stat-value"><%= stats.itemCount - stats.unassignedCount %></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Assignment Rate</span>
+          <span class="stat-value success">
+            <%= stats.itemCount > 0 ? Math.round(((stats.itemCount - stats.unassignedCount) / stats.itemCount) * 100) : 0 %>%
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Insights -->
+    <div class="dashboard-card insights-card">
+      <div class="card-header">
+        <h3>Quick Insights</h3>
+        <button class="btn-icon" onclick="refreshInsights()">
+          <i class="fas fa-refresh"></i>
+        </button>
+      </div>
+      <div class="insights-list">
+        <div class="insight-item">
+          <div class="insight-icon success">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="insight-content">
+            <h4>System Health</h4>
+            <p>All systems operational and running smoothly</p>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-icon info">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Recent Activity</h4>
+            <p><%= recentItems.length %> assets updated in the last 30 days</p>
+          </div>
+        </div>
+        <% if (stats.unassignedCount > 0) { %>
+        <div class="insight-item">
+          <div class="insight-icon warning">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Attention Required</h4>
+            <p><%= stats.unassignedCount %> assets need to be assigned</p>
+          </div>
+        </div>
+        <% } %>
+      </div>
     </div>
   </div>
 
-  <div class="action-buttons">
-    <a href="/items/new" class="btn">Add New Item</a>
-    <a href="/employees/new" class="btn">Add New Employee</a>
-    <a href="/reports/export-assets" class="btn">Export Inventory</a>
+  <!-- Quick Actions -->
+  <div class="quick-actions-bar">
+    <a href="/items/new" class="action-btn primary">
+      <i class="fas fa-plus"></i>
+      <span>Add Asset</span>
+    </a>
+    <a href="/employees/new" class="action-btn">
+      <i class="fas fa-user-plus"></i>
+      <span>Add Employee</span>
+    </a>
+    <a href="/reports/export-assets" class="action-btn">
+      <i class="fas fa-download"></i>
+      <span>Export Data</span>
+    </a>
+    <a href="/items" class="action-btn">
+      <i class="fas fa-list"></i>
+      <span>View All Assets</span>
+    </a>
   </div>
 </section>
 
 <style>
-  .stats-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+/* CSS Variables for Dark Mode Support */
+/* Base: Light Theme */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --text-primary: #1a1a2e;
+  --text-secondary: #666;
+  --text-muted: #999;
+  --border-color: #f0f0f0;
+  --shadow-light: rgba(0, 0, 0, 0.05);
+  --shadow-medium: rgba(0, 0, 0, 0.1);
+  --shadow-heavy: rgba(0, 0, 0, 0.15);
+  --accent-primary: #1a1a2e;
+  --accent-secondary: #0f3460;
+  --success-color: #00ff7f;
+  --warning-color: #ffd700;
+  --info-color: #00bfff;
+}
+
+/* Override: Dark Theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #0f1419;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --text-muted: #666;
+    --border-color: #2a2a3e;
+    --shadow-light: rgba(0, 0, 0, 0.2);
+    --shadow-medium: rgba(0, 0, 0, 0.3);
+    --shadow-heavy: rgba(0, 0, 0, 0.4);
+    --accent-primary: #00ff7f;
+    --accent-secondary: #00bfff;
+  }
+}
+
+
+/* Modern Dashboard Styles */
+.modern-dashboard {
+  min-height: 100vh;
+  background: var(--bg-secondary);
+  padding: 2rem;
+  animation: fadeIn 0.6s ease-out;
+  color: var(--text-primary);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Section */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  background: var(--bg-primary);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px var(--shadow-light);
+}
+
+.header-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dashboard-subtitle {
+  color: var(--text-secondary);
+  margin: 0.5rem 0 0 0;
+  font-size: 1.1rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-muted);
+  z-index: 2;
+}
+
+#globalSearch {
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  width: 300px;
+  transition: all 0.3s ease;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+#globalSearch:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.1);
+}
+
+.dropdown {
+  position: relative;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px var(--shadow-medium);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px var(--shadow-heavy);
+  padding: 0.5rem;
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.dropdown:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-menu a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.dropdown-menu a:hover {
+  background: var(--bg-secondary);
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: var(--bg-primary);
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 4px 20px var(--shadow-light);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+
+.metric-card.clickable:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px var(--shadow-medium);
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accent-color);
+}
+
+.metric-card.primary { --accent-color: var(--accent-primary); }
+.metric-card.success { --accent-color: var(--success-color); }
+.metric-card.warning { --accent-color: var(--warning-color); }
+.metric-card.info { --accent-color: var(--info-color); }
+
+.metric-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  background: var(--accent-color);
+}
+
+.metric-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.metric-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0.25rem 0;
+}
+
+.metric-trend {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.metric-trend.positive {
+  color: var(--success-color);
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-card {
+  background: var(--bg-primary);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px var(--shadow-light);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 8px 30px var(--shadow-medium);
+}
+
+.card-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.view-all-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+}
+
+/* Asset Distribution Simple */
+.asset-distribution-simple {
+  padding: 2rem;
+}
+
+.asset-type-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.asset-type-item:last-child {
+  border-bottom: none;
+}
+
+.asset-type-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.asset-type-count {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  display: block;
+}
+
+.percentage-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+/* Activity List */
+.activity-list {
+  padding: 1rem 2rem 2rem;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.activity-content h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.activity-content p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.status-dot.active {
+  background: var(--success-color);
+  box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.2);
+}
+
+/* System Overview */
+.system-overview-card .card-header {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+.system-overview-card .card-header h3 {
+  color: white;
+}
+
+.status-indicator {
+  background: var(--success-color);
+  color: var(--accent-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.system-stats {
+  padding: 2rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.stat-value.success {
+  color: var(--success-color);
+}
+
+/* Insights Card */
+.insights-list {
+  padding: 1rem 2rem 2rem;
+}
+
+.insight-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.insight-item:last-child {
+  border-bottom: none;
+}
+
+.insight-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.insight-icon.success { background: var(--success-color); }
+.insight-icon.info { background: var(--info-color); }
+.insight-icon.warning { background: var(--warning-color); }
+
+.insight-content h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.insight-content p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Quick Actions Bar */
+.quick-actions-bar {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px var(--shadow-light);
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px var(--shadow-heavy);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
   }
 
-  .stat-card {
-    background-color: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .modern-dashboard {
+    padding: 1rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
     text-align: center;
   }
 
-  .stat-number {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--primary);
-    margin: 0.5rem 0;
-  }
-
-  .stat-label {
-    color: #666;
-    margin-bottom: 1rem;
-  }
-
-  .card-link {
-    display: inline-block;
-    font-size: 0.9rem;
-  }
-
-  .dashboard-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  .dashboard-panel {
-    background-color: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-
-  .dashboard-panel h2 {
-    margin-bottom: 1rem;
-    color: var(--dark);
-    font-size: 1.2rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.5rem;
-  }
-
-  .data-table {
+  .header-actions {
     width: 100%;
-    font-size: 0.9rem;
-  }
-
-  .data-table th {
-    text-align: left;
-    font-weight: 600;
-  }
-
-  .view-all {
-    display: block;
-    text-align: right;
-    margin-top: 1rem;
-    font-size: 0.9rem;
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 1rem;
     justify-content: center;
-    margin-top: 2rem;
   }
 
-  @media (max-width: 768px) {
-    .dashboard-row {
-      grid-template-columns: 1fr;
+  #globalSearch {
+    width: 250px;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+</style>
+
+<script>
+  function refreshInsights() {
+    console.log('Refreshing insights...');
+    // Add refresh functionality here
+  }
+
+  // Global search functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const globalSearch = document.getElementById('globalSearch');
+    const searchResults = document.createElement('div');
+    searchResults.className = 'global-search-results';
+    searchResults.style.display = 'none';
+    globalSearch.parentNode.appendChild(searchResults);
+
+    let searchTimeout;
+    let isSearching = false;
+
+    globalSearch.addEventListener('input', function(e) {
+      const searchTerm = e.target.value.trim();
+
+      // Clear previous timeout
+      clearTimeout(searchTimeout);
+
+      if (searchTerm.length < 2) {
+        hideSearchResults();
+        return;
+      }
+
+      // Show loading state
+      showLoadingState();
+
+      // Debounce search requests
+      searchTimeout = setTimeout(() => {
+        performSearch(searchTerm);
+      }, 300);
+    });
+
+    globalSearch.addEventListener('focus', function() {
+      if (this.value.trim().length >= 2) {
+        searchResults.style.display = 'block';
+      }
+    });
+
+    // Hide results when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!globalSearch.contains(e.target) && !searchResults.contains(e.target)) {
+        hideSearchResults();
+      }
+    });
+
+    // Handle keyboard navigation
+    globalSearch.addEventListener('keydown', function(e) {
+      const resultItems = searchResults.querySelectorAll('.search-result-item');
+      const currentActive = searchResults.querySelector('.search-result-item.active');
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        navigateResults(resultItems, currentActive, 'down');
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateResults(resultItems, currentActive, 'up');
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const activeItem = searchResults.querySelector('.search-result-item.active');
+        if (activeItem) {
+          window.location.href = activeItem.dataset.url;
+        }
+      } else if (e.key === 'Escape') {
+        hideSearchResults();
+        globalSearch.blur();
+      }
+    });
+
+    function performSearch(query) {
+      if (isSearching) return;
+
+      isSearching = true;
+
+      fetch(`/api/search?query=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+          displaySearchResults(data.results || {});
+        })
+        .catch(error => {
+          console.error('Search error:', error);
+          showErrorState();
+        })
+        .finally(() => {
+          isSearching = false;
+        });
+    }
+
+    function showLoadingState() {
+      searchResults.innerHTML = `
+        <div class="search-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>Searching...</span>
+        </div>
+      `;
+      searchResults.style.display = 'block';
+    }
+
+    function showErrorState() {
+      searchResults.innerHTML = `
+        <div class="search-error">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>Search temporarily unavailable</span>
+        </div>
+      `;
+    }
+
+    function displaySearchResults(results) {
+      let html = '';
+      let totalResults = 0;
+
+      // Count total results
+      Object.values(results).forEach(category => {
+        totalResults += category.length;
+      });
+
+      if (totalResults === 0) {
+        html = `
+          <div class="search-no-results">
+            <i class="fas fa-search"></i>
+            <span>No results found</span>
+          </div>
+        `;
+      } else {
+        // Display results by category
+        Object.entries(results).forEach(([category, items]) => {
+          if (items.length > 0) {
+            html += `<div class="search-category">
+              <div class="search-category-header">
+                <i class="fas fa-${getCategoryIcon(category)}"></i>
+                <span>${category}</span>
+                <span class="result-count">${items.length}</span>
+              </div>
+            `;
+
+            items.slice(0, 5).forEach(item => { // Limit to 5 results per category
+              html += `
+                <div class="search-result-item" data-url="${item.url}" data-category="${category}">
+                  <div class="result-icon">
+                    <i class="fas fa-${item.icon || getCategoryIcon(category)}"></i>
+                  </div>
+                  <div class="result-content">
+                    <div class="result-title">${highlightSearchTerm(item.title, globalSearch.value)}</div>
+                    <div class="result-subtitle">${item.subtitle}</div>
+                    ${item.identifier ? `<div class="result-identifier">${item.identifier}</div>` : ''}
+                  </div>
+                  <div class="result-category-badge">${category}</div>
+                </div>
+              `;
+            });
+
+            if (items.length > 5) {
+              html += `
+                <div class="search-show-more">
+                  <a href="/search?q=${encodeURIComponent(globalSearch.value)}&category=${category.toLowerCase()}">
+                    Show ${items.length - 5} more ${category.toLowerCase()}...
+                  </a>
+                </div>
+              `;
+            }
+
+            html += '</div>';
+          }
+        });
+
+        // Add "View All Results" link
+        if (totalResults > 10) {
+          html += `
+            <div class="search-view-all">
+              <a href="/search?q=${encodeURIComponent(globalSearch.value)}">
+                <i class="fas fa-external-link-alt"></i>
+                View all ${totalResults} results
+              </a>
+            </div>
+          `;
+        }
+      }
+
+      searchResults.innerHTML = html;
+      searchResults.style.display = 'block';
+
+      // Add click handlers to result items
+      searchResults.querySelectorAll('.search-result-item').forEach(item => {
+        item.addEventListener('click', function() {
+          window.location.href = this.dataset.url;
+        });
+
+        item.addEventListener('mouseenter', function() {
+          searchResults.querySelectorAll('.search-result-item.active').forEach(active => {
+            active.classList.remove('active');
+          });
+          this.classList.add('active');
+        });
+      });
+    }
+
+    function navigateResults(items, currentActive, direction) {
+      if (items.length === 0) return;
+
+      let newIndex = 0;
+
+      if (currentActive) {
+        const currentIndex = Array.from(items).indexOf(currentActive);
+        currentActive.classList.remove('active');
+
+        if (direction === 'down') {
+          newIndex = currentIndex + 1 >= items.length ? 0 : currentIndex + 1;
+        } else {
+          newIndex = currentIndex - 1 < 0 ? items.length - 1 : currentIndex - 1;
+        }
+      }
+
+      items[newIndex].classList.add('active');
+      items[newIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    function getCategoryIcon(category) {
+      const icons = {
+        'Items': 'laptop',
+        'Employees': 'users',
+        'Locations': 'map-marker-alt',
+        'Departments': 'building'
+      };
+      return icons[category] || 'search';
+    }
+
+    function highlightSearchTerm(text, term) {
+      if (!term) return text;
+      const regex = new RegExp(`(${term})`, 'gi');
+      return text.replace(regex, '<mark>$1</mark>');
+    }
+
+    function hideSearchResults() {
+      searchResults.style.display = 'none';
+      searchResults.querySelectorAll('.search-result-item.active').forEach(item => {
+        item.classList.remove('active');
+      });
+    }
+  });
+  </script>
+
+  <style>
+  /* Add these styles to the existing style block */
+
+  /* Global Search Results */
+  .global-search-results {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px var(--shadow-heavy);
+    max-height: 500px;
+    overflow-y: auto;
+    z-index: 1000;
+    animation: searchResultsSlideIn 0.2s ease-out;
+  }
+
+  @keyframes searchResultsSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
-</style>
+
+  .search-loading,
+  .search-error,
+  .search-no-results {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .search-loading i {
+    font-size: 1.5rem;
+    color: var(--accent-primary);
+  }
+
+  .search-error i {
+    font-size: 1.5rem;
+    color: var(--warning-color);
+  }
+
+  .search-no-results i {
+    font-size: 1.5rem;
+    color: var(--text-muted);
+  }
+
+  .search-category {
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-category:last-child {
+    border-bottom: none;
+  }
+
+  .search-category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .result-count {
+    margin-left: auto;
+    background: var(--accent-primary);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+  }
+
+  .search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .search-result-item:hover,
+  .search-result-item.active {
+    background: var(--bg-secondary);
+  }
+
+  .search-result-item:last-child {
+    border-bottom: none;
+  }
+
+  .result-icon {
+    width: 35px;
+    height: 35px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .result-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .result-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+    line-height: 1.3;
+  }
+
+  .result-title mark {
+    background: var(--warning-color);
+    color: var(--text-primary);
+    padding: 0.1rem 0.2rem;
+    border-radius: 3px;
+  }
+
+  .result-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+
+  .result-identifier {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-family: monospace;
+    margin-top: 0.2rem;
+  }
+
+  .result-category-badge {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .search-show-more,
+  .search-view-all {
+    padding: 0.75rem 1rem;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .search-show-more a,
+  .search-view-all a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .search-show-more a:hover,
+  .search-view-all a:hover {
+    text-decoration: underline;
+  }
+
+  /* Search container positioning */
+  .search-container {
+    position: relative;
+  }
+
+  /* Custom scrollbar for search results */
+  .global-search-results::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .global-search-results::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 3px;
+  }
+
+  .global-search-results::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+
+  .global-search-results::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+
+  /* Responsive adjustments for search */
+  @media (max-width: 768px) {
+    .global-search-results {
+      max-height: 300px;
+      left: -1rem;
+      right: -1rem;
+    }
+
+    .search-result-item {
+      padding: 1rem;
+    }
+
+    .result-icon {
+      width: 30px;
+      height: 30px;
+      font-size: 0.8rem;
+    }
+  }
+  </style>

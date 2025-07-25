@@ -8,15 +8,20 @@
     "dev": "nodemon src/app.js",
     "build:css": "tailwindcss -i ./src/input.css -o ./public/css/styles.css --watch",
     "init-db": "node database/init-db.js",
+    "add-settings": "node database/add-settings-column.js",
     "gen-pwd": "node tools/generate-password.js",
     "reset-admin": "node tools/reset-admin.js"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
+    "connect-flash": "^0.1.1",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
+    "i18n": "^0.15.1",
+    "method-override": "^3.0.0",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4"
   },

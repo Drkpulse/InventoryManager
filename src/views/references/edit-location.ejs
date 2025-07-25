@@ -1,0 +1,38 @@
+<h1>Edit Location</h1>
+
+<% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul>
+      <% errors.forEach(error => { %>
+        <li><%= error %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="POST" action="/references/locations/<%= location.id %>">
+  <div class="form-group">
+    <label for="id">Location ID</label>
+    <input type="text" id="id" name="id" value="<%= location.id %>" required>
+    <small>Unique identifier for the location (e.g., 971, 972, 973)</small>
+  </div>
+
+  <div class="form-group">
+    <label for="name">Location Name</label>
+    <input type="text" id="name" name="name" value="<%= location.name %>" required>
+    <small>Descriptive name for the location (e.g., Braga, Porto, Lisboa)</small>
+  </div>
+
+  <div class="form-group">
+    <label for="address">Address</label>
+    <textarea id="address" name="address" rows="3"><%= location.address || '' %></textarea>
+    <small>Optional address or additional details about this location</small>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn">Update Location</button>
+    <a href="/references/locations" class="btn">Cancel</a>
+  </div>
+</form>
+
+<link rel="stylesheet" href="/css/styles.css">

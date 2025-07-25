@@ -1,0 +1,226 @@
+<div class="broadcast-container">
+  <div class="card">
+    <div class="card-header">
+      <h2><i class="fas fa-bullhorn"></i> Send Notification to All Users</h2>
+    </div>
+    <div class="card-body">
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle"></i> <%= error %>
+        </div>
+      <% } %>
+
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success">
+          <i class="fas fa-check-circle"></i> <%= success %>
+        </div>
+      <% } %>
+
+      <form method="POST" action="/notifications/broadcast" class="broadcast-form">
+        <div class="form-group">
+          <label for="title">
+            <i class="fas fa-heading"></i> Notification Title
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            placeholder="Enter notification title..."
+            maxlength="255"
+            required
+          >
+          <small>Maximum 255 characters</small>
+        </div>
+
+        <div class="form-group">
+          <label for="message">
+            <i class="fas fa-comment"></i> Message
+          </label>
+          <textarea
+            id="message"
+            name="message"
+            rows="5"
+            placeholder="Enter your message here..."
+            maxlength="1000"
+            required
+          ></textarea>
+          <small>Maximum 1000 characters</small>
+        </div>
+
+        <div class="form-group">
+          <label for="url">
+            <i class="fas fa-link"></i> Link (Optional)
+          </label>
+          <input
+            type="url"
+            id="url"
+            name="url"
+            placeholder="https://example.com/page"
+          >
+          <small>Optional: Add a link users can click on</small>
+        </div>
+
+        <div class="form-group preview-section">
+          <label>Preview:</label>
+          <div class="notification-preview" id="notificationPreview">
+            <div class="notification-item preview">
+              <div class="notification-icon">
+                <i class="fas fa-bullhorn"></i>
+              </div>
+              <div class="notification-content">
+                <p class="notification-text" id="previewText">Your message will appear here...</p>
+                <span class="notification-time">Just now</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-paper-plane"></i> Send to All Users
+          </button>
+          <a href="/dashboard" class="btn">
+            <i class="fas fa-times"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+.broadcast-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.broadcast-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.broadcast-form label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+.broadcast-form label i {
+  color: var(--primary);
+}
+
+.broadcast-form textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.preview-section {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.notification-preview {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-top: 1rem;
+}
+
+.notification-item.preview {
+  border-left: 3px solid #dc3545;
+  background-color: rgba(220, 53, 69, 0.05);
+}
+
+.notification-item.preview .notification-icon {
+  background-color: #dc3545;
+  color: white;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.form-actions .btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.form-actions .btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+/* Character counters */
+small {
+  color: #6c757d;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Dark mode support */
+body.dark-mode .preview-section {
+  background-color: #252525;
+  border-color: #444;
+}
+
+body.dark-mode .notification-preview {
+  background-color: #1a1a1a;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const titleInput = document.getElementById('title');
+  const messageInput = document.getElementById('message');
+  const previewText = document.getElementById('previewText');
+
+  function updatePreview() {
+    const title = titleInput.value.trim();
+    const message = messageInput.value.trim();
+
+    if (title && message) {
+      previewText.innerHTML = `<strong>${title}</strong><br>${message}`;
+    } else if (title) {
+      previewText.textContent = title;
+    } else if (message) {
+      previewText.textContent = message;
+    } else {
+      previewText.textContent = 'Your message will appear here...';
+    }
+  }
+
+  titleInput.addEventListener('input', updatePreview);
+  messageInput.addEventListener('input', updatePreview);
+
+  // Character counters
+  function addCharacterCounter(input, maxLength) {
+    const counter = document.createElement('div');
+    counter.className = 'character-counter';
+    counter.style.cssText = 'text-align: right; font-size: 0.8rem; color: #6c757d; margin-top: 0.25rem;';
+
+    function updateCounter() {
+      const remaining = maxLength - input.value.length;
+      counter.textContent = `${input.value.length}/${maxLength} characters`;
+      counter.style.color = remaining < 50 ? '#dc3545' : '#6c757d';
+    }
+
+    updateCounter();
+    input.addEventListener('input', updateCounter);
+    input.parentNode.appendChild(counter);
+  }
+
+  addCharacterCounter(titleInput, 255);
+  addCharacterCounter(messageInput, 1000);
+});
+</script>

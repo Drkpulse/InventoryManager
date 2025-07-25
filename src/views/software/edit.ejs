@@ -1,0 +1,644 @@
+<div class="page-container">
+  <div class="page-header-simple">
+    <div class="header-title-section">
+      <div class="breadcrumb-nav">
+        <a href="" class="breadcrumb-link">
+          <i class="fas fa-cog"></i> References
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <a href="/software" class="breadcrumb-link">
+          Software
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <span class="breadcrumb-current">Edit</span>
+      </div>
+      <h1>Edit Software</h1>
+      <div class="software-meta">
+        <span class="software-name-display">
+          <i class="fas fa-laptop-code"></i>
+          <%= software.name %>
+        </span>
+        <% if (software.version) { %>
+          <span class="software-version-display">v<%= software.version %></span>
+        <% } %>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/software" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Software
+        </a>
+        <% if (typeof software.employee_count !== 'undefined' && parseInt(software.employee_count) > 0) { %>
+          <a href="/software/<%= software.id %>/assignments" class="btn btn-info">
+            <i class="fas fa-users"></i> View Assignments (<%= software.employee_count %>)
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <div class="form-container">
+      <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div>
+            <strong>Please fix the following errors:</strong>
+            <ul>
+              <% errors.forEach(error => { %>
+                <li><%= error %></li>
+              <% }) %>
+            </ul>
+          </div>
+        </div>
+      <% } %>
+
+      <form method="POST" action="/software/<%= software.id %>" id="editSoftwareForm" class="modern-form" data-no-ajax="true">
+        <!-- Software Information Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <i class="fas fa-laptop-code section-icon"></i>
+            <h3>Software Information</h3>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="name" class="required">Software Name</label>
+              <input type="text" id="name" name="name" value="<%= software.name %>"
+                     class="form-input" required placeholder="e.g., Microsoft Office, Adobe Creative Suite">
+              <small class="field-help">
+                <i class="fas fa-info-circle"></i>
+                The official name of the software product
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="version">Version</label>
+              <input type="text" id="version" name="version" value="<%= software.version || '' %>"
+                     class="form-input" placeholder="e.g., 2024, 365, CC 2024">
+              <small class="field-help">
+                <i class="fas fa-tag"></i>
+                Software version or edition (optional)
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="vendor">Vendor/Publisher</label>
+              <input type="text" id="vendor" name="vendor" value="<%= software.vendor || '' %>"
+                     class="form-input" placeholder="e.g., Microsoft, Adobe, Google">
+              <small class="field-help">
+                <i class="fas fa-building"></i>
+                Software vendor or publisher (optional)
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="license_type">License Type</label>
+              <select id="license_type" name="license_type" class="form-select">
+                <option value="">Select License Type</option>
+                <option value="commercial" <%= software.license_type === 'commercial' ? 'selected' : '' %>>Commercial</option>
+                <option value="subscription" <%= software.license_type === 'subscription' ? 'selected' : '' %>>Subscription</option>
+                <option value="freeware" <%= software.license_type === 'freeware' ? 'selected' : '' %>>Freeware</option>
+                <option value="open-source" <%= software.license_type === 'open-source' ? 'selected' : '' %>>Open Source</option>
+                <option value="trial" <%= software.license_type === 'trial' ? 'selected' : '' %>>Trial</option>
+              </select>
+              <small class="field-help">
+                <i class="fas fa-certificate"></i>
+                Type of software license
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="max_licenses">Maximum Licenses</label>
+              <input type="number" id="max_licenses" name="max_licenses" min="1" max="999"
+                     value="<%= software.max_licenses || 1 %>" class="form-input" required>
+              <small class="field-help">
+                <i class="fas fa-users"></i>
+                Maximum number of users that can use this software simultaneously
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="cost_per_license">Cost per License (€)</label>
+              <div class="input-group">
+                <span class="input-group-text">€</span>
+                <input type="number" id="cost_per_license" name="cost_per_license"
+                       step="0.01" min="0" value="<%= software.cost_per_license || '' %>"
+                       class="form-input" placeholder="0.00">
+              </div>
+              <small class="field-help">
+                <i class="fas fa-euro-sign"></i>
+                Cost per license in euros (optional)
+              </small>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" rows="4" class="form-input"
+                        placeholder="Brief description of the software and its purpose..."><%= software.description || '' %></textarea>
+              <small class="field-help">
+                <i class="fas fa-sticky-note"></i>
+                Optional description of the software's purpose and features
+              </small>
+            </div>
+        </div>
+
+        <!-- Current Usage Information -->
+        <% if (typeof software.employee_count !== 'undefined') { %>
+          <div class="form-section">
+            <div class="section-header">
+              <i class="fas fa-chart-pie section-icon"></i>
+              <h3>Current Usage</h3>
+            </div>
+
+            <div class="usage-overview">
+              <%
+                const maxLicenses = parseInt(software.max_licenses) || 1;
+                const usedCount = parseInt(software.employee_count) || 0;
+                const availableCount = maxLicenses - usedCount;
+                const usagePercentage = (usedCount / maxLicenses * 100).toFixed(0);
+
+                let statusClass = 'available';
+                if (usedCount >= maxLicenses) {
+                  statusClass = 'at-limit';
+                } else if (usedCount > maxLicenses * 0.8) {
+                  statusClass = 'near-limit';
+                } else if (usedCount === 0) {
+                  statusClass = 'unused';
+                }
+              %>
+
+              <div class="usage-stats">
+                <div class="usage-stat">
+                  <div class="stat-number primary"><%= usedCount %></div>
+                  <div class="stat-label">Currently Used</div>
+                </div>
+                <div class="usage-stat">
+                  <div class="stat-number <%= availableCount > 0 ? 'success' : 'danger' %>"><%= availableCount %></div>
+                  <div class="stat-label"><%= availableCount >= 0 ? 'Available' : 'Over Limit' %></div>
+                </div>
+                <div class="usage-stat">
+                  <div class="stat-number info"><%= maxLicenses %></div>
+                  <div class="stat-label">Total Licenses</div>
+                </div>
+              </div>
+
+              <div class="usage-progress">
+                <div class="usage-bar">
+                  <div class="usage-fill <%= statusClass %>"
+                       style="width: <%= Math.min(usagePercentage, 100) %>%"
+                       title="<%= usagePercentage %>% used">
+                  </div>
+                </div>
+                <div class="usage-percentage"><%= usagePercentage %>% utilized</div>
+              </div>
+
+              <% if (usedCount > 0) { %>
+                <div class="usage-actions">
+                  <a href="/software/<%= software.id %>/assignments" class="btn btn-info btn-sm">
+                    <i class="fas fa-users"></i> View Current Assignments
+                  </a>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-save"></i> Update Software
+          </button>
+          <a href="/software" class="btn btn-secondary btn-lg">
+            <i class="fas fa-times"></i> Cancel Changes
+          </a>
+          <% if (typeof software.employee_count !== 'undefined' && parseInt(software.employee_count) === 0) { %>
+            <button type="button" class="btn btn-danger btn-lg" onclick="confirmDelete()">
+              <i class="fas fa-trash"></i> Delete Software
+            </button>
+          <% } %>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal" style="display: none;">
+  <div class="modal-content warning-modal">
+    <div class="modal-header">
+      <i class="fas fa-exclamation-triangle modal-icon warning"></i>
+      <h4>Confirm Software Deletion</h4>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <strong><%= software.name %></strong>?</p>
+      <p>This action cannot be undone and will remove all related data.</p>
+      <div class="software-info-summary">
+        <div class="info-item">
+          <span class="label">Software:</span>
+          <span class="value"><%= software.name %> <% if (software.version) { %>v<%= software.version %><% } %></span>
+        </div>
+        <% if (software.vendor) { %>
+          <div class="info-item">
+            <span class="label">Vendor:</span>
+            <span class="value"><%= software.vendor %></span>
+          </div>
+        <% } %>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="confirmDeleteBtn" class="btn btn-danger">
+        <i class="fas fa-trash"></i> Delete Software
+      </button>
+      <button id="cancelDeleteBtn" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('editSoftwareForm');
+  const maxLicensesInput = document.getElementById('max_licenses');
+  const deleteModal = document.getElementById('deleteModal');
+
+  // Auto-focus the software name field
+  const nameInput = document.getElementById('name');
+  if (nameInput) {
+    nameInput.focus();
+  }
+
+  // License limit validation
+  if (maxLicensesInput) {
+    const currentUsage = <%= parseInt(software.employee_count) || 0 %>;
+
+    maxLicensesInput.addEventListener('input', function() {
+      const newLimit = parseInt(this.value) || 0;
+
+      if (newLimit < currentUsage && currentUsage > 0) {
+        this.style.borderColor = '#e63946';
+
+        // Show warning
+        let warning = this.parentNode.querySelector('.license-warning');
+        if (!warning) {
+          warning = document.createElement('div');
+          warning.className = 'license-warning alert alert-warning';
+          warning.style.marginTop = '0.5rem';
+          warning.innerHTML = `
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Warning:</strong> This software is currently assigned to ${currentUsage} users.
+            Reducing the limit below ${currentUsage} may cause licensing issues.
+          `;
+          this.parentNode.appendChild(warning);
+        }
+      } else {
+        this.style.borderColor = '';
+        const warning = this.parentNode.querySelector('.license-warning');
+        if (warning) {
+          warning.remove();
+        }
+      }
+    });
+  }
+
+  // Form validation
+  form.addEventListener('submit', function(event) {
+    const requiredFields = form.querySelectorAll('[required]');
+    let valid = true;
+
+    requiredFields.forEach(field => {
+      if (!field.value.trim()) {
+        valid = false;
+        field.style.borderColor = '#e63946';
+      } else {
+        field.style.borderColor = '';
+      }
+    });
+
+    if (!valid) {
+      event.preventDefault();
+
+      // Show error alert
+      const errorAlert = document.createElement('div');
+      errorAlert.className = 'alert alert-danger';
+      errorAlert.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>Please fill out all required fields</strong>
+          <p>Software name and maximum licenses are required.</p>
+        </div>
+      `;
+
+      // Insert at top of form
+      form.insertBefore(errorAlert, form.firstChild);
+
+      // Remove after 5 seconds
+      setTimeout(() => {
+        if (errorAlert.parentNode) {
+          errorAlert.remove();
+        }
+      }, 5000);
+
+      // Focus first invalid field
+      const firstInvalid = form.querySelector('[required][style*="border-color: rgb(230, 57, 70)"]');
+      if (firstInvalid) {
+        firstInvalid.focus();
+      }
+    }
+  });
+
+  // Delete confirmation
+  window.confirmDelete = function() {
+    deleteModal.style.display = 'flex';
+  };
+
+  document.getElementById('cancelDeleteBtn')?.addEventListener('click', () => {
+    deleteModal.style.display = 'none';
+  });
+
+  document.getElementById('confirmDeleteBtn')?.addEventListener('click', () => {
+    // Create delete form
+    const deleteForm = document.createElement('form');
+    deleteForm.method = 'POST';
+    deleteForm.action = `/software/<%= software.id %>/delete`;
+    document.body.appendChild(deleteForm);
+    deleteForm.submit();
+  });
+
+  // Close modal when clicking overlay
+  deleteModal?.addEventListener('click', function(e) {
+    if (e.target === deleteModal) {
+      deleteModal.style.display = 'none';
+    }
+  });
+
+  // Calculate total cost when cost per license changes
+  const costInput = document.getElementById('cost_per_license');
+  if (costInput && maxLicensesInput) {
+    function updateTotalCost() {
+      const costPerLicense = parseFloat(costInput.value) || 0;
+      const maxLicenses = parseInt(maxLicensesInput.value) || 1;
+      const totalCost = costPerLicense * maxLicenses;
+
+      let totalCostDisplay = document.getElementById('totalCostDisplay');
+      if (!totalCostDisplay && costPerLicense > 0) {
+        totalCostDisplay = document.createElement('div');
+        totalCostDisplay.id = 'totalCostDisplay';
+        totalCostDisplay.className = 'total-cost-display';
+        totalCostDisplay.style.marginTop = '0.5rem';
+        totalCostDisplay.style.fontWeight = '600';
+        totalCostDisplay.style.color = '#28a745';
+        costInput.parentNode.appendChild(totalCostDisplay);
+      }
+
+      if (totalCostDisplay) {
+        if (costPerLicense > 0) {
+          totalCostDisplay.innerHTML = `
+            <i class="fas fa-calculator"></i>
+            Total cost for ${maxLicenses} licenses: €${totalCost.toFixed(2)}
+          `;
+          totalCostDisplay.style.display = 'block';
+        } else {
+          totalCostDisplay.style.display = 'none';
+        }
+      }
+    }
+
+    costInput.addEventListener('input', updateTotalCost);
+    maxLicensesInput.addEventListener('input', updateTotalCost);
+
+    // Initial calculation
+    updateTotalCost();
+  }
+});
+</script>
+
+<style>
+/* Edit Software Page Specific Styles */
+.software-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.software-name-display {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.software-version-display {
+  background: #e9ecef;
+  color: #495057;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Usage Overview Styles */
+.usage-overview {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.usage-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.usage-stat {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-number.primary { color: var(--primary); }
+.stat-number.success { color: var(--success); }
+.stat-number.danger { color: var(--danger); }
+.stat-number.info { color: var(--info); }
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.usage-progress {
+  margin-bottom: 1.5rem;
+}
+
+.usage-bar {
+  width: 100%;
+  height: 12px;
+  background: #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.usage-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.usage-fill.available {
+  background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.usage-fill.near-limit {
+  background: linear-gradient(90deg, #ffc107, #fd7e14);
+}
+
+.usage-fill.at-limit {
+  background: linear-gradient(90deg, #dc3545, #e63946);
+}
+
+.usage-fill.unused {
+  background: linear-gradient(90deg, #6c757d, #495057);
+}
+
+.usage-percentage {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.usage-actions {
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+  text-align: center;
+}
+
+/* License Warning Styles */
+.license-warning {
+  font-size: 0.85rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Software Info Summary in Modal */
+.software-info-summary {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.software-info-summary .info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.software-info-summary .info-item:last-child {
+  margin-bottom: 0;
+}
+
+.software-info-summary .label {
+  font-weight: 600;
+  color: #666;
+}
+
+.software-info-summary .value {
+  color: #333;
+  font-weight: 500;
+}
+
+/* Total Cost Display */
+.total-cost-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .software-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .usage-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .usage-stats {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .header-actions .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .header-actions,
+  .form-actions,
+  .usage-actions {
+    display: none !important;
+  }
+
+  .form-container {
+    box-shadow: none !important;
+    border: 1px solid #333 !important;
+  }
+
+  .section-header {
+    color: #333 !important;
+  }
+}
+</style>

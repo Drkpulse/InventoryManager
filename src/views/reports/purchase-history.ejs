@@ -4,7 +4,7 @@
   <a href="/reports/export-assets" class="btn">Export to CSV</a>
 </div>
 
-<% if (history && history.length > 0) { %>
+<% if (typeof history !== 'undefined' && history && history.length > 0) { %>
   <table>
     <thead>
       <tr>

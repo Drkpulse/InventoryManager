@@ -1,49 +1,368 @@
-<h1>Assign Item</h1>
+<div class="page-container">
+  <div class="page-header-simple">
+    <div class="header-title-section">
+      <div class="breadcrumb-nav">
+        <a href="/items" class="breadcrumb-link">
+          <i class="fas fa-boxes"></i> Assets
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="breadcrumb-link">
+          <%= item.cep_brc %>
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <span class="breadcrumb-current">Assign</span>
+      </div>
+      <h1>Assign Asset</h1>
+    </div>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to Asset
+        </a>
+        <a href="/items" class="btn btn-info">
+          <i class="fas fa-list"></i> All Assets
+        </a>
+      </div>
+    </div>
+  </div>
 
-<div class="item-summary">
-  <h3><%= item.name %></h3>
-  <p class="item-id"><%= item.cep_brc %></p>
-  <p><strong>Type:</strong> <%= item.type_name || 'N/A' %></p>
-  <p><strong>Brand:</strong> <%= item.brand_name || 'N/A' %></p>
-  <p><strong>Model:</strong> <%= item.model || 'N/A' %></p>
+  <div class="content-section">
+    <div class="assign-layout">
+      <!-- Asset Summary Panel -->
+      <div class="asset-summary-panel">
+        <div class="asset-summary-header">
+          <h2 class="section-title">
+            <i class="fas fa-info-circle"></i>
+            Asset Details
+          </h2>
+        </div>
+
+        <div class="asset-summary-content">
+          <div class="asset-primary">
+            <span class="asset-id-display"><%= item.cep_brc %></span>
+            <h3 class="asset-name"><%= item.name %></h3>
+          </div>
+
+          <div class="asset-specs">
+            <div class="spec-item">
+              <dt>Type</dt>
+              <dd>
+                <% if (item.type_name) { %>
+                  <span class="category-badge">
+                    <i class="fas fa-tag"></i> <%= item.type_name %>
+                  </span>
+                <% } else { %>
+                  <span class="info-value muted">Not specified</span>
+                <% } %>
+              </dd>
+            </div>
+
+            <div class="spec-item">
+              <dt>Brand</dt>
+              <dd>
+                <% if (item.brand_name) { %>
+                  <span class="brand-badge">
+                    <i class="fas fa-building"></i> <%= item.brand_name %>
+                  </span>
+                <% } else { %>
+                  <span class="info-value muted">Not specified</span>
+                <% } %>
+              </dd>
+            </div>
+
+            <div class="spec-item">
+              <dt>Model</dt>
+              <dd>
+                <span class="info-value"><%= item.model || 'Not specified' %></span>
+              </dd>
+            </div>
+
+            <% if (item.serial_cod) { %>
+            <div class="spec-item">
+              <dt>Serial Number</dt>
+              <dd>
+                <span class="info-value code"><%= item.serial_cod %></span>
+              </dd>
+            </div>
+            <% } %>
+
+            <% if (item.price) { %>
+            <div class="spec-item">
+              <dt>Value</dt>
+              <dd>
+                <span class="info-value price">€<%= parseFloat(item.price).toFixed(2) %></span>
+              </dd>
+            </div>
+            <% } %>
+          </div>
+
+          <div class="current-status">
+            <div class="status-indicator unassigned">
+              <i class="fas fa-user-slash"></i>
+              <span>Currently Unassigned</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assignment Form Panel -->
+      <div class="assignment-form-panel">
+        <div class="form-container">
+          <form method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/assign" id="assignForm" class="modern-form" data-no-ajax="true">
+            <div class="form-section">
+              <div class="section-header">
+                <i class="fas fa-user-plus section-icon"></i>
+                <h3>Assignment Details</h3>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label for="assigned_to" class="required">Assign To Employee</label>
+                  <select id="assigned_to" name="assigned_to" class="form-select" required>
+                    <option value="">Select Employee</option>
+                    <% employees.forEach(employee => { %>
+                      <option value="<%= employee.id %>" data-department="<%= employee.dept_name || '' %>">
+                        <%= employee.name %> (<%= employee.cep %>)
+                        <% if (employee.dept_name) { %> - <%= employee.dept_name %><% } %>
+                      </option>
+                    <% }) %>
+                  </select>
+                  <small class="field-help">
+                    <i class="fas fa-info-circle"></i>
+                    Select the employee who will be responsible for this asset
+                  </small>
+                </div>
+
+                <div class="form-group">
+                  <label for="date_assigned" class="required">Assignment Date</label>
+                  <input type="date" id="date_assigned" name="date_assigned" class="form-input"
+                    value="<%= new Date().toISOString().split('T')[0] %>" required>
+                  <small class="field-help">
+                    <i class="fas fa-calendar"></i>
+                    Date when the asset is officially assigned
+                  </small>
+                </div>
+
+                <div class="form-group">
+                  <label for="assignment_notes">Notes (Optional)</label>
+                  <textarea id="assignment_notes" name="assignment_notes" class="form-input" rows="3"
+                    placeholder="Any additional notes about this assignment..."></textarea>
+                  <small class="field-help">
+                    <i class="fas fa-sticky-note"></i>
+                    Optional notes about the assignment purpose or conditions
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Assignment Preview -->
+            <div class="assignment-preview" id="assignmentPreview" style="display: none;">
+              <div class="preview-header">
+                <h4><i class="fas fa-eye"></i> Assignment Preview</h4>
+              </div>
+              <div class="preview-content">
+                <div class="preview-item">
+                  <strong>Asset:</strong>
+                  <span><%= item.name %> (<%= item.cep_brc %>)</span>
+                </div>
+                <div class="preview-item">
+                  <strong>Employee:</strong>
+                  <span id="previewEmployee">-</span>
+                </div>
+                <div class="preview-item">
+                  <strong>Department:</strong>
+                  <span id="previewDepartment">-</span>
+                </div>
+                <div class="preview-item">
+                  <strong>Assignment Date:</strong>
+                  <span id="previewDate">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-lg" id="assignButton">
+                <i class="fas fa-user-plus"></i> Assign Asset
+              </button>
+              <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn btn-secondary btn-lg">
+                <i class="fas fa-times"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<form method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/assign">
-  <div class="form-group">
-    <label for="assigned_to">Assign To Employee</label>
-    <select id="assigned_to" name="assigned_to" required>
-      <option value="">Select Employee</option>
-      <% employees.forEach(employee => { %>
-        <option value="<%= employee.id %>">
-          <%= employee.name %> (<%= employee.cep %>)
-        </option>
-      <% }) %>
-    </select>
+<!-- Success Preview Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-content success-modal">
+    <div class="modal-header">
+      <i class="fas fa-check-circle modal-icon success"></i>
+      <h4>Confirm Assignment</h4>
+    </div>
+    <div class="modal-body">
+      <p>You are about to assign this asset:</p>
+      <div class="assignment-summary">
+        <div class="summary-row">
+          <strong>Asset:</strong> <%= item.name %> (<%= item.cep_brc %>)
+        </div>
+        <div class="summary-row">
+          <strong>To Employee:</strong> <span id="confirmEmployee">-</span>
+        </div>
+        <div class="summary-row">
+          <strong>Department:</strong> <span id="confirmDepartment">-</span>
+        </div>
+        <div class="summary-row">
+          <strong>Date:</strong> <span id="confirmDate">-</span>
+        </div>
+      </div>
+      <p>Are you sure you want to proceed with this assignment?</p>
+    </div>
+    <div class="modal-actions">
+      <button id="confirmAssign" class="btn btn-primary">
+        <i class="fas fa-check"></i> Confirm Assignment
+      </button>
+      <button id="cancelConfirm" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+    </div>
   </div>
+</div>
 
-  <div class="form-group">
-    <label for="date_assigned">Date Assigned</label>
-    <input type="date" id="date_assigned" name="date_assigned"
-      value="<%= new Date().toISOString().split('T')[0] %>" required>
-  </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('assignForm');
+  const assignedToSelect = document.getElementById('assigned_to');
+  const dateAssignedInput = document.getElementById('date_assigned');
+  const notesInput = document.getElementById('assignment_notes');
+  const assignmentPreview = document.getElementById('assignmentPreview');
+  const confirmModal = document.getElementById('confirmModal');
+  const assignButton = document.getElementById('assignButton');
 
-  <div class="form-group">
-    <button type="submit" class="btn">Assign Item</button>
-    <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn">Cancel</a>
-  </div>
-</form>
+  // Update preview when form values change
+  function updatePreview() {
+    const selectedEmployee = assignedToSelect.options[assignedToSelect.selectedIndex];
+    const selectedDate = dateAssignedInput.value;
 
-<style>
-  .item-summary {
-    background-color: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    if (assignedToSelect.value && selectedDate) {
+      // Show preview
+      assignmentPreview.style.display = 'block';
+
+      // Update preview content
+      document.getElementById('previewEmployee').textContent = selectedEmployee.text.split(' (')[0];
+      document.getElementById('previewDepartment').textContent = selectedEmployee.dataset.department || 'Not specified';
+      document.getElementById('previewDate').textContent = new Date(selectedDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      // Enable assign button
+      assignButton.disabled = false;
+      assignButton.classList.remove('btn-disabled');
+    } else {
+      // Hide preview
+      assignmentPreview.style.display = 'none';
+
+      // Disable assign button
+      assignButton.disabled = true;
+      assignButton.classList.add('btn-disabled');
+    }
   }
 
-  .item-id {
-    color: #666;
-    margin-bottom: 1rem;
-  }
-</style>
+  // Add event listeners
+  assignedToSelect.addEventListener('change', updatePreview);
+  dateAssignedInput.addEventListener('change', updatePreview);
+
+  // Form submission with confirmation
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const assignedTo = assignedToSelect.value;
+    const dateAssigned = dateAssignedInput.value;
+
+    if (!assignedTo || !dateAssigned) {
+      // Show error alert
+      const errorAlert = document.createElement('div');
+      errorAlert.className = 'alert alert-danger';
+      errorAlert.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>Please fill out all required fields</strong>
+          <p>Both employee selection and assignment date are required.</p>
+        </div>
+      `;
+
+      // Insert error at top of form
+      form.insertBefore(errorAlert, form.firstChild);
+
+      // Remove error after 5 seconds
+      setTimeout(() => {
+        if (errorAlert.parentNode) {
+          errorAlert.remove();
+        }
+      }, 5000);
+
+      return false;
+    }
+
+    // Show confirmation modal
+    const selectedEmployee = assignedToSelect.options[assignedToSelect.selectedIndex];
+    document.getElementById('confirmEmployee').textContent = selectedEmployee.text.split(' (')[0];
+    document.getElementById('confirmDepartment').textContent = selectedEmployee.dataset.department || 'Not specified';
+    document.getElementById('confirmDate').textContent = new Date(dateAssigned).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    confirmModal.style.display = 'flex';
+  });
+
+  // Confirm assignment
+  document.getElementById('confirmAssign').addEventListener('click', function() {
+    confirmModal.style.display = 'none';
+
+    // Show loading state
+    assignButton.disabled = true;
+    assignButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+
+    // Submit form
+    form.submit();
+  });
+
+  // Cancel confirmation
+  document.getElementById('cancelConfirm').addEventListener('click', function() {
+    confirmModal.style.display = 'none';
+  });
+
+  // Close modal when clicking overlay
+  confirmModal.addEventListener('click', function(e) {
+    if (e.target === confirmModal) {
+      confirmModal.style.display = 'none';
+    }
+  });
+
+  // Initial preview update
+  updatePreview();
+
+  // Auto-focus employee select
+  assignedToSelect.focus();
+
+  // Add keyboard shortcuts
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      confirmModal.style.display = 'none';
+    }
+
+    if (e.ctrlKey && e.key === 'Enter') {
+      if (assignedToSelect.value && dateAssignedInput.value) {
+        form.dispatchEvent(new Event('submit'));
+      }
+    }
+  });
+});
+</script>

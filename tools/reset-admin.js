@@ -1,53 +1,63 @@
-const { Pool } = require('pg');
-const bcrypt = require('bcryptjs');
-const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+/**
+ * Reset Admin User
+ * Creates or resets the admin user with a default password
+ */
+require('dotenv').config();
+const db = require('../src/config/db');
+const bcrypt = require('bcrypt');
 
-async function resetAdminPassword() {
-  const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT || 5432,
-  });
-
+async function resetAdmin() {
   try {
-    // Generate a new hash for the admin123 password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash('admin123', salt);
+    console.log('===== Admin Reset Tool =====');
 
-    // Update the admin user's password
-    const result = await pool.query(
-      "UPDATE users SET password = $1 WHERE email = 'admin@example.com'",
-      [hashedPassword]
-    );
+    // Hash the password
+    const hashedPassword = await bcrypt.hash('admin', 10);
 
-    if (result.rowCount > 0) {
-      console.log('Admin password has been reset successfully.');
-      console.log('You can now login with:');
-      console.log('Email: admin@example.com');
-      console.log('Password: admin123');
-    } else {
-      console.log('Admin user not found. Creating admin user...');
+    // Check if admin exists
+    const { rows } = await db.query('SELECT * FROM users WHERE email = $1', ['admin@example.com']);
 
-      // Insert admin user if it doesn't exist
-      await pool.query(
-        "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
+    if (rows.length === 0) {
+      // Admin doesn't exist, create it
+      console.log('Creating new admin user...');
+
+      await db.query(
+        'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)',
         ['Admin User', 'admin@example.com', hashedPassword, 'admin']
       );
 
       console.log('Admin user created successfully.');
-      console.log('You can now login with:');
-      console.log('Email: admin@example.com');
-      console.log('Password: admin123');
+    } else {
+      // Admin exists, update password
+      console.log('Resetting admin password...');
+
+      await db.query(
+        'UPDATE users SET password = $1 WHERE email = $2',
+        [hashedPassword, 'admin@example.com']
+      );
+
+      console.log('Admin password reset successfully.');
     }
 
+    console.log('\nAdmin login details:');
+    console.log('  Email: admin@example.com');
+    console.log('  Password: admin');
+    console.log('\nReset completed.');
   } catch (error) {
-    console.error('Error resetting admin password:', error);
+    console.error('Error resetting admin:', error);
   } finally {
-    await pool.end();
+    // Check if the db object has a pool property with an end method
+    if (db.pool && typeof db.pool.end === 'function') {
+      await db.pool.end();
+    }
+    // Or check if db has a client property with an end method
+    else if (db.client && typeof db.client.end === 'function') {
+      await db.client.end();
+    }
+    // Otherwise, log that we couldn't close the connection
+    else {
+      console.log('Note: Could not close database connection automatically.');
+    }
   }
 }
 
-resetAdminPassword();
+resetAdmin();

@@ -1,0 +1,52 @@
+<h1>Add Status</h1>
+
+<% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul>
+      <% errors.forEach(error => { %>
+        <li><%= error %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="POST" action="/references/statuses">
+  <div class="form-group">
+    <label for="name">Status Name</label>
+    <input type="text" id="name" name="name" value="<%= typeof formData !== 'undefined' ? formData.name : '' %>" required>
+    <small>Name of the status (e.g., Active, Inactive, Under Repair, Retired)</small>
+  </div>
+
+  <div class="form-group">
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="3"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
+    <small>Optional description explaining what this status represents</small>
+  </div>
+
+  <div class="form-group">
+    <label for="color">Status Color</label>
+    <select id="color" name="color">
+      <option value="green" <%= typeof formData !== 'undefined' && formData.color === 'green' ? 'selected' : '' %>>Green (Active/Good)</option>
+      <option value="yellow" <%= typeof formData !== 'undefined' && formData.color === 'yellow' ? 'selected' : '' %>>Yellow (Warning/Attention)</option>
+      <option value="red" <%= typeof formData !== 'undefined' && formData.color === 'red' ? 'selected' : '' %>>Red (Problem/Inactive)</option>
+      <option value="blue" <%= typeof formData !== 'undefined' && formData.color === 'blue' ? 'selected' : '' %>>Blue (Information)</option>
+      <option value="gray" <%= typeof formData !== 'undefined' && formData.color === 'gray' ? 'selected' : '' %>>Gray (Neutral)</option>
+    </select>
+    <small>Color coding for this status in reports and displays</small>
+  </div>
+
+  <div class="form-group">
+    <label>
+      <input type="checkbox" name="is_active" value="true" <%= typeof formData !== 'undefined' && formData.is_active ? 'checked' : 'checked' %>>
+      Active Status
+    </label>
+    <small>Whether items with this status are considered active/in-use</small>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn">Add Status</button>
+    <a href="/references/statuses" class="btn">Cancel</a>
+  </div>
+</form>
+
+<link rel="stylesheet" href="/css/styles.css">

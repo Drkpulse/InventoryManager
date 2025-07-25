@@ -1,0 +1,63 @@
+<h1>System Logs</h1>
+
+<div class="logs-container">
+  <div class="log-filters">
+    <form class="filter-form">
+      <div class="filter-group">
+        <label for="logLevel">Log Level:</label>
+        <select id="logLevel" name="level">
+          <option value="">All Levels</option>
+          <option value="error">Error</option>
+          <option value="warn">Warning</option>
+          <option value="info">Info</option>
+          <option value="debug">Debug</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="startDate">From:</label>
+        <input type="datetime-local" id="startDate" name="startDate">
+      </div>
+
+      <div class="filter-group">
+        <label for="endDate">To:</label>
+        <input type="datetime-local" id="endDate" name="endDate">
+      </div>
+
+      <button type="submit" class="btn">Filter</button>
+    </form>
+  </div>
+
+  <div class="logs-content">
+    <% if (typeof logs !== 'undefined' && logs && logs.length > 0) { %>
+      <table class="logs-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Level</th>
+            <th>Message</th>
+            <th>User</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% logs.forEach(log => { %>
+            <tr class="log-<%= log.level || 'info' %>">
+              <td><%= new Date(log.timestamp).toLocaleString() %></td>
+              <td>
+                <span class="log-level <%= log.level || 'info' %>">
+                  <%= (log.level || 'info').toUpperCase() %>
+                </span>
+              </td>
+              <td><%= log.message || 'No message' %></td>
+              <td><%= log.user_name || 'System' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p class="no-logs">No logs found for the selected criteria.</p>
+    <% } %>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/styles.css">

@@ -1,0 +1,76 @@
+<h1>Manage Locations</h1>
+
+<% if (user.role === 'admin') { %>
+  <div class="reference-form">
+    <h3>Add Location</h3>
+    <form method="POST" action="/references/platforms">
+      <div class="form-group">
+        <label for="id">Location ID</label>
+        <input type="text" id="id" name="id" placeholder="e.g. 973" required>
+        <small>Numeric code for the location</small>
+      </div>
+
+      <div class="form-group">
+        <label for="name">Location Name</label>
+        <input type="text" id="name" name="name" placeholder="e.g. Porto" required>
+        <small>City or site name</small>
+      </div>
+
+      <div class="form-group">
+        <button type="submit" class="btn">Add Location</button>
+      </div>
+    </form>
+  </div>
+<% } else { %>
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> Location management is restricted to administrators only.
+  </div>
+<% } %>
+
+<div class="reference-list">
+  <h3>Existing Locations</h3>
+
+  <% if (platforms && platforms.length > 0) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Employees</th>
+          <% if (user.role === 'admin') { %>
+            <th>Actions</th>
+          <% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <% platforms.forEach(platform => { %>
+          <tr>
+            <td><%= platform.id %></td>
+            <td>
+              <% if (user.role === 'admin') { %>
+                <form class="inline-edit-form" method="POST" action="/references/platforms/<%= platform.id %>">
+                  <input type="text" name="name" value="<%= platform.name %>" required>
+                  <button type="submit" class="btn">Update</button>
+                </form>
+              <% } else { %>
+                <%= platform.name %>
+              <% } %>
+            </td>
+            <td class="text-center"><%= platform.employee_count || 0 %></td>
+            <% if (user.role === 'admin') { %>
+              <td>
+                <form method="POST" action="/references/platforms/<%= platform.id %>/delete" style="display: inline;">
+                  <button type="submit" class="btn btn-danger delete-btn">Delete</button>
+                </form>
+              </td>
+            <% } %>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p>No locations found.</p>
+  <% } %>
+</div>
+
+<link rel="stylesheet" href="/css/styles.css">

@@ -1,0 +1,391 @@
+<div class="page-container">
+  <div class="page-header-simple">
+    <div class="header-title-section">
+      <div class="breadcrumb-nav">
+        <a href="/references" class="breadcrumb-link">
+          <i class="fas fa-cog"></i> References
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <span class="breadcrumb-current">Status Options</span>
+      </div>
+      <h1>Status Options</h1>
+      <div class="status-meta">
+        <span class="status-count">
+          <i class="fas fa-toggle-on"></i>
+          <%= statuses ? statuses.length : 0 %> status options
+        </span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <a href="/references" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Back to References
+        </a>
+        <a href="/references/statuses/add" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add New Status
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <% if (statuses && statuses.length > 0) { %>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="status-name-col">
+                <i class="fas fa-toggle-on"></i> Name
+              </th>
+              <th class="description-col">
+                <i class="fas fa-info-circle"></i> Description
+              </th>
+              <th class="usage-col">
+                <i class="fas fa-boxes"></i> Items Using
+              </th>
+              <th class="actions-col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% statuses.forEach(status => { %>
+              <tr class="table-row">
+                <td class="status-name-cell">
+                  <div class="status-info">
+                    <div class="status-name">
+                      <strong><%= status.name %></strong>
+                    </div>
+                  </div>
+                </td>
+                <td class="description-cell">
+                  <% if (status.description) { %>
+                    <span class="description-text"><%= status.description %></span>
+                  <% } else { %>
+                    <span class="text-muted">No description</span>
+                  <% } %>
+                </td>
+                <td class="usage-cell">
+                  <div class="usage-info">
+                    <% if (parseInt(status.item_count) > 0) { %>
+                      <span class="usage-badge active">
+                        <i class="fas fa-check-circle"></i>
+                        <%= status.item_count %> items
+                      </span>
+                    <% } else { %>
+                      <span class="usage-badge unused">
+                        <i class="fas fa-minus-circle"></i>
+                        Not used
+                      </span>
+                    <% } %>
+                  </div>
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons-inline">
+                    <a href="/references/statuses/<%= status.id %>/edit"
+                       class="btn-action btn-edit"
+                       title="Edit Status">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <% if (parseInt(status.item_count) === 0) { %>
+                      <form method="POST" action="/references/statuses/<%= status.id %>/delete"
+                            class="inline-form"
+                            onsubmit="return confirmDelete('<%= status.name %>');">
+                        <button type="submit" class="btn-action btn-delete" title="Delete Status">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <button class="btn-action btn-delete" disabled
+                              title="Cannot delete: this status is in use by <%= status.item_count %> items">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Results Summary -->
+      <div class="results-summary-bottom">
+        <div class="results-stats">
+          <span class="results-count">
+            <i class="fas fa-toggle-on"></i>
+            Showing <strong><%= statuses.length %></strong> status options
+          </span>
+          <div class="stats-display">
+            <%
+              const usedStatuses = statuses.filter(s => parseInt(s.item_count) > 0).length;
+              const unusedStatuses = statuses.length - usedStatuses;
+            %>
+            <div class="stat-item">
+              <span class="stat-number"><%= usedStatuses %></span>
+              <span class="stat-label">In Use</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number"><%= unusedStatuses %></span>
+              <span class="stat-label">Unused</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-toggle-on"></i>
+        </div>
+        <h3>No Status Options Found</h3>
+        <p>Status options help categorize and organize your assets. Start by adding your first status option.</p>
+        <div class="empty-actions">
+          <a href="/references/statuses/add" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add First Status
+          </a>
+          <a href="/references" class="btn btn-secondary">
+            <i class="fas fa-cog"></i> Manage References
+          </a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+function confirmDelete(statusName) {
+  return confirm(`Are you sure you want to delete the status "${statusName}"? This action cannot be undone.`);
+}
+</script>
+
+<style>
+/* Status Page Specific Styles */
+.status-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.status-count {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-count i {
+  color: var(--primary);
+}
+
+/* Table Column Widths */
+.status-name-col {
+  width: 25%;
+}
+
+.description-col {
+  width: 40%;
+}
+
+.usage-col {
+  width: 20%;
+}
+
+.actions-col {
+  width: 15%;
+}
+
+/* Status Info */
+.status-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.status-name {
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+/* Description Cell */
+.description-cell {
+  max-width: 300px;
+}
+
+.description-text {
+  display: block;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+/* Usage Info */
+.usage-info {
+  display: flex;
+  align-items: center;
+}
+
+.usage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.usage-badge.active {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.usage-badge.unused {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #e9ecef;
+}
+
+.usage-badge i {
+  font-size: 0.8rem;
+}
+
+/* Action Button States */
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-action:disabled:hover {
+  transform: none !important;
+  background: #6c757d !important;
+}
+
+/* Results Summary */
+.results-summary-bottom .stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-number {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Empty State Enhancements */
+.empty-state .empty-icon {
+  width: 64px;
+  height: 64px;
+  background: #f8f9fa;
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 1.5rem;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.empty-state p {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .status-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .data-table th:nth-child(2),
+  .data-table td:nth-child(2) {
+    display: none;
+  }
+
+  .usage-col,
+  .usage-cell {
+    width: auto;
+  }
+
+  .action-buttons-inline {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .results-stats {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .stats-display {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-actions .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .data-table th:nth-child(3),
+  .data-table td:nth-child(3) {
+    display: none;
+  }
+
+  .action-buttons-inline {
+    justify-content: center;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .header-actions,
+  .action-buttons-inline {
+    display: none !important;
+  }
+
+  .data-table {
+    border: 1px solid #333 !important;
+  }
+
+  .data-table th,
+  .data-table td {
+    border: 1px solid #333 !important;
+  }
+
+  .page-container {
+    background: white !important;
+  }
+}
+</style>

@@ -1,0 +1,171 @@
+<h1>Edit User</h1>
+
+<% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+  <div class="alert alert-danger">
+    <ul>
+      <% errors.forEach(error => { %>
+        <li><%= error %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="POST" action="/admin/users/<%= editUser.id %>/edit">
+  <div class="form-group">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" value="<%= editUser.name %>" required>
+  </div>
+
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="<%= editUser.email %>" required>
+  </div>
+
+  <div class="form-group">
+    <label for="role">Role</label>
+    <select id="role" name="role" required>
+      <option value="user" <%= editUser.role === 'user' ? 'selected' : '' %>>User</option>
+      <option value="admin" <%= editUser.role === 'admin' ? 'selected' : '' %>>Admin</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="password">New Password (leave blank to keep current)</label>
+    <input type="password" id="password" name="password">
+    <small>Only enter a password if you want to change it</small>
+  </div>
+
+  <div class="form-group">
+    <label for="confirm_password">Confirm New Password</label>
+    <input type="password" id="confirm_password" name="confirm_password">
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn">Update User</button>
+    <a href="/admin/users" class="btn">Cancel</a>
+  </div>
+</form>
+
+<link rel="stylesheet" href="/css/styles.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const passwordField = document.getElementById('password');
+  const confirmPasswordField = document.getElementById('confirm_password');
+  const nameField = document.getElementById('name');
+  const emailField = document.getElementById('email');
+  const form = document.querySelector('form');
+
+  form.addEventListener('submit', function(e) {
+    // Reset any previous error styling
+    clearErrorStyling();
+
+    let hasErrors = false;
+
+    // Validate name
+    if (!nameField.value || nameField.value.trim() === '') {
+      e.preventDefault();
+      showFieldError(nameField, 'Name is required');
+      hasErrors = true;
+    }
+
+    // Validate email
+    if (!emailField.value || emailField.value.trim() === '') {
+      e.preventDefault();
+      showFieldError(emailField, 'Email is required');
+      hasErrors = true;
+    } else if (!isValidEmail(emailField.value.trim())) {
+      e.preventDefault();
+      showFieldError(emailField, 'Please enter a valid email address');
+      hasErrors = true;
+    }
+
+    const password = passwordField.value;
+    const confirmPassword = confirmPasswordField.value;
+
+    // Password validation (only if password is being changed)
+    if (password && password !== confirmPassword) {
+      e.preventDefault();
+      showFieldError(confirmPasswordField, 'Passwords do not match!');
+      hasErrors = true;
+    }
+
+    if (password && password.length < 6) {
+      e.preventDefault();
+      showFieldError(passwordField, 'Password must be at least 6 characters long!');
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      return false;
+    }
+  });
+
+  // Clear confirm password when password is cleared
+  passwordField.addEventListener('input', function() {
+    if (!this.value) {
+      confirmPasswordField.value = '';
+    }
+  });
+
+  // Real-time validation for name and email
+  nameField.addEventListener('blur', function() {
+    if (!this.value || this.value.trim() === '') {
+      showFieldError(this, 'Name is required');
+    } else {
+      clearFieldError(this);
+    }
+  });
+
+  emailField.addEventListener('blur', function() {
+    if (!this.value || this.value.trim() === '') {
+      showFieldError(this, 'Email is required');
+    } else if (!isValidEmail(this.value.trim())) {
+      showFieldError(this, 'Please enter a valid email address');
+    } else {
+      clearFieldError(this);
+    }
+  });
+
+  function showFieldError(field, message) {
+    field.classList.add('error');
+    field.style.borderColor = '#dc3545';
+
+    // Remove existing error message
+    const existingError = field.parentNode.querySelector('.error-message');
+    if (existingError) {
+      existingError.remove();
+    }
+
+    // Add error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.style.color = '#dc3545';
+    errorDiv.style.fontSize = '0.875rem';
+    errorDiv.style.marginTop = '0.25rem';
+    errorDiv.textContent = message;
+    field.parentNode.appendChild(errorDiv);
+
+    field.focus();
+  }
+
+  function clearFieldError(field) {
+    field.classList.remove('error');
+    field.style.borderColor = '';
+    const errorMessage = field.parentNode.querySelector('.error-message');
+    if (errorMessage) {
+      errorMessage.remove();
+    }
+  }
+
+  function clearErrorStyling() {
+    const errorFields = document.querySelectorAll('.error');
+    errorFields.forEach(field => clearFieldError(field));
+  }
+
+  function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+});
+</script>

@@ -1,0 +1,50 @@
+<div class="page-header">
+  <h1>Add New Software</h1>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="POST" action="/software">
+      <div class="form-group">
+        <label for="name">Software Name</label>
+        <input type="text" id="name" name="name" required>
+        <small>Enter the software name (e.g., Microsoft Office, LibreOffice, Google Workspace)</small>
+      </div>
+
+      <div class="form-group">
+        <label for="version">Version</label>
+        <input type="text" id="version" name="version">
+        <small>Enter the software version (optional)</small>
+      </div>
+
+      <div class="form-group">
+        <label for="license_type">License Type</label>
+        <input type="text" id="license_type" name="license_type">
+        <small>e.g., Per User, Site License, Enterprise, etc.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="cost_per_license">Cost per License</label>
+        <input type="number" id="cost_per_license" name="cost_per_license" step="0.01" min="0">
+        <small>Cost in dollars per license (optional)</small>
+      </div>
+
+      <div class="form-group">
+        <label for="vendor">Vendor</label>
+        <input type="text" id="vendor" name="vendor">
+        <small>Software vendor/manufacturer (optional)</small>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add Software
+        </button>
+        <a href="/software" class="btn btn-outline">
+          <i class="fas fa-arrow-left"></i> Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<link rel="stylesheet" href="/css/styles.css">

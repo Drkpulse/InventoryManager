@@ -90,10 +90,10 @@ exports.getAllItems = async (req, res) => {
 
     // Get all types for the filter dropdown
     const typesResult = await db.query('SELECT id, name FROM types ORDER BY name');
-    
+
     // Get all brands for the filter dropdown
     const brandsResult = await db.query('SELECT id, name FROM brands ORDER BY name');
-    
+
     // Get all departments for the filter dropdown
     const departmentsResult = await db.query('SELECT id, name FROM departments ORDER BY name');
 
@@ -368,10 +368,23 @@ exports.updateItem = async (req, res) => {
       const sales = await db.query('SELECT * FROM sales ORDER BY date_acquired DESC');
       const employees = await db.query('SELECT * FROM employees WHERE left_date IS NULL ORDER BY name');
 
+      const itemResult = await db.query('SELECT * FROM items WHERE id = $1 AND cep_brc = $2', [id, cep_brc]);
+      const oldItem = itemResult.rows[0] || {};
+      const mergedItem = {
+        ...oldItem,
+        ...req.body,
+        id,
+        cep_brc: req.body.cep_brc ? req.body.cep_brc : oldItem.cep_brc
+      };
+      // Fallback: blank field? use old value
+      if (!mergedItem.cep_brc || mergedItem.cep_brc.trim() === '') mergedItem.cep_brc = oldItem.cep_brc;
+      if (!mergedItem.name || mergedItem.name.trim() === '') mergedItem.name = oldItem.name;
+      if (!mergedItem.type_id) mergedItem.type_id = oldItem.type_id;
+
       return res.render('layout', {
         title: 'Edit Item',
         body: 'items/edit',
-        item: { ...req.body, id, cep_brc },
+        item: mergedItem,
         types: types.rows,
         brands: brands.rows,
         sales: sales.rows,
@@ -379,17 +392,41 @@ exports.updateItem = async (req, res) => {
         errors: validationErrors,
         user: req.session.user
       });
+
     }
 
     // Use a transaction when changing the ID
     let client = null;
 
     if (idChanged) {
-      client = await db.getClient();
+      // Backend duplicate check (case-insensitive, ignore current row)
+      const existing = await db.query(
+        'SELECT 1 FROM items WHERE LOWER(cep_brc) = LOWER($1) AND id <> $2',
+        [new_cep_brc, id]
+      );
+      if (existing.rows.length > 0) {
+        // Get reference data for the form to re-populate select/dropdowns
+        const types = await db.query('SELECT * FROM types ORDER BY name');
+        const brands = await db.query('SELECT * FROM brands ORDER BY name');
+        const sales = await db.query('SELECT * FROM sales ORDER BY date_acquired DESC');
+        const employees = await db.query('SELECT * FROM employees WHERE left_date IS NULL ORDER BY name');
+        return res.render('layout', {
+          title: 'Edit Item',
+          body: 'items/edit',
+          item: { ...req.body, id, cep_brc }, // Keep old id and cep_brc in form
+          types: types.rows,
+          brands: brands.rows,
+          sales: sales.rows,
+          employees: employees.rows,
+          errors: ['This Asset ID is already in use by another asset. Please choose a different Asset ID.'],
+          user: req.session.user
+        });
+      }
+
+      // Continue with transaction as before
+      let client = await db.getClient();
       try {
         await client.query('BEGIN');
-
-        // 1. Create a new record with the new ID
         await client.query(`
           INSERT INTO items (
             id, cep_brc, name, type_id, price, brand_id, model, serial_cod,
@@ -404,10 +441,8 @@ exports.updateItem = async (req, res) => {
           model || null, serial_cod || null, receipt || null,
           date_assigned || null, assigned_to || null, description || null, id, cep_brc
         ]);
-
         // 2. Delete the old record
         await client.query('DELETE FROM items WHERE id = $1 AND cep_brc = $2', [id, cep_brc]);
-
         await client.query('COMMIT');
       } catch (error) {
         await client.query('ROLLBACK');
@@ -415,9 +450,9 @@ exports.updateItem = async (req, res) => {
       } finally {
         client.release();
       }
-
       return res.redirect(`/items/${id}/${new_cep_brc}`);
     }
+
 
     // Normal update (no ID change)
     await db.query(`
@@ -513,6 +548,7 @@ exports.assignItemForm = async (req, res) => {
     // Get employees for dropdown
     const employees = await db.query('SELECT * FROM employees WHERE left_date IS NULL ORDER BY name');
     console.log('Employees loaded:', employees.rows.length);
+
 
     res.render('layout', {
       title: 'Assign Item',

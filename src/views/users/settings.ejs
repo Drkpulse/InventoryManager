@@ -1,4 +1,4 @@
-<div class="page-container">
+<div class="page-container settings-page">
   <div class="page-header-simple">
     <h1><i class="fas fa-cog"></i> User Settings</h1>
     <div class="header-actions">
@@ -113,7 +113,7 @@
         <div class="form-row">
           <div class="form-group col-md-6">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" 
+              <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications"
                      <%= (!user.settings || user.settings.email_notifications !== false) ? 'checked' : '' %>>
               <label class="form-check-label" for="email_notifications">
                 <i class="fas fa-envelope"></i> Email Notifications
@@ -124,7 +124,7 @@
 
           <div class="form-group col-md-6">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="browser_notifications" name="browser_notifications" 
+              <input class="form-check-input" type="checkbox" id="browser_notifications" name="browser_notifications"
                      <%= (!user.settings || user.settings.browser_notifications !== false) ? 'checked' : '' %>>
               <label class="form-check-label" for="browser_notifications">
                 <i class="fas fa-desktop"></i> Browser Notifications
@@ -137,7 +137,7 @@
         <div class="form-row">
           <div class="form-group col-md-6">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="maintenance_alerts" name="maintenance_alerts" 
+              <input class="form-check-input" type="checkbox" id="maintenance_alerts" name="maintenance_alerts"
                      <%= (!user.settings || user.settings.maintenance_alerts !== false) ? 'checked' : '' %>>
               <label class="form-check-label" for="maintenance_alerts">
                 <i class="fas fa-tools"></i> Maintenance Alerts
@@ -148,7 +148,7 @@
 
           <div class="form-group col-md-6">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="assignment_notifications" name="assignment_notifications" 
+              <input class="form-check-input" type="checkbox" id="assignment_notifications" name="assignment_notifications"
                      <%= (!user.settings || user.settings.assignment_notifications !== false) ? 'checked' : '' %>>
               <label class="form-check-label" for="assignment_notifications">
                 <i class="fas fa-user-plus"></i> Assignment Notifications
@@ -202,7 +202,7 @@
         <div class="form-row">
           <div class="form-group col-md-6">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="session_timeout" name="session_timeout" 
+              <input class="form-check-input" type="checkbox" id="session_timeout" name="session_timeout"
                      <%= (user.settings && user.settings.session_timeout) ? 'checked' : '' %>>
               <label class="form-check-label" for="session_timeout">
                 <i class="fas fa-clock"></i> Auto-logout after inactivity
@@ -213,7 +213,7 @@
 
           <div class="form-group col-md-6">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="two_factor_auth" name="two_factor_auth" 
+              <input class="form-check-input" type="checkbox" id="two_factor_auth" name="two_factor_auth"
                      <%= (user.settings && user.settings.two_factor_auth) ? 'checked' : '' %>>
               <label class="form-check-label" for="two_factor_auth">
                 <i class="fas fa-lock"></i> Two-Factor Authentication
@@ -255,7 +255,7 @@
 document.getElementById('confirm_password').addEventListener('input', function() {
   const password = document.getElementById('new_password').value;
   const confirmPassword = this.value;
-  
+
   if (password !== confirmPassword) {
     this.setCustomValidity('Passwords do not match');
   } else {

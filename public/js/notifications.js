@@ -144,37 +144,9 @@ class NotificationManager {
   }
 
   setupEventListeners() {
-    // Dropdown toggle functionality
-    const notificationToggle = document.getElementById('notificationToggle');
-    const notificationMenu = document.getElementById('notificationMenu');
-
-    if (notificationToggle && notificationMenu) {
-      notificationToggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Toggle the dropdown
-        const isOpen = notificationMenu.classList.contains('show');
-
-        // Close all other dropdowns first
-        document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
-          menu.classList.remove('show');
-        });
-
-        if (!isOpen) {
-          notificationMenu.classList.add('show');
-          // Load fresh notifications when opening
-          this.loadNotifications();
-        }
-      });
-
-      // Close dropdown when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!notificationToggle.contains(e.target) && !notificationMenu.contains(e.target)) {
-          notificationMenu.classList.remove('show');
-        }
-      });
-    }
+    document.getElementById('notificationToggle').addEventListener('click', () => {
+      this.loadNotifications();
+    });
 
     // Mark all as read
     const markAllReadBtn = document.getElementById('markAllRead');

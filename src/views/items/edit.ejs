@@ -385,10 +385,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Form submission handling
   form.addEventListener('submit', function(event) {
+    // Validate required fields by name
+    const requiredFieldNames = ['cep_brc', 'name', 'type_id'];
+    let valid = true;
+    let firstInvalidField = null;
+
+    requiredFieldNames.forEach(fieldName => {
+      let field = form.querySelector(`[name="${fieldName}"]:not([disabled])`);
+      let fieldType = 'enabled';
+      if (!field) {
+        field = form.querySelector(`input[type="hidden"][name="${fieldName}"]`);
+        fieldType = field ? 'hidden' : 'not found';
+      }
+      console.log(`[DEBUG] Field: ${fieldName}, Type: ${fieldType}, Value:`, field ? `"${field.value}"` : 'FIELD NOT FOUND');
+      if (!field || !field.value || !field.value.trim()) {
+        valid = false;
+        const visibleField = form.querySelector(`[name="${fieldName}"]:not([type="hidden"])`);
+        if (visibleField) {
+          visibleField.classList.add('form-error');
+          console.log(`[DEBUG] Field ${fieldName} is invalid (visible)`);
+        } else {
+          console.log(`[DEBUG] Field ${fieldName} is invalid (not visible)`);
+        }
+        if (!firstInvalidField && visibleField) firstInvalidField = visibleField;
+      } else {
+        const visibleField = form.querySelector(`[name="${fieldName}"]:not([type="hidden"])`);
+        if (visibleField) visibleField.classList.remove('form-error');
+        console.log(`[DEBUG] Field ${fieldName} is valid`);
+      }
+    });
+
+    if (!valid) {
+      event.preventDefault();
+      if (firstInvalidField) firstInvalidField.focus();
+      console.log('Form validation failed. Preventing submit.');
+      return;
+    }
+
     // Check for validation errors
     if (cepValidation && cepValidation.classList.contains('error')) {
       event.preventDefault();
       showDuplicateModal();
+      console.log('CEP validation error. Preventing submit.');
       return;
     }
 
@@ -397,6 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
       event.preventDefault();
       document.getElementById('newIdDisplay').textContent = idInput.value;
       idChangeModal.style.display = 'flex';
+      console.log('Asset ID changed. Showing confirmation modal.');
     }
   });
 

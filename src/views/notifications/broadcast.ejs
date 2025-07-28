@@ -1,72 +1,40 @@
-<div class="broadcast-container">
-  <div class="card">
-    <div class="card-header">
-      <h2><i class="fas fa-bullhorn"></i> Send Notification to All Users</h2>
+<div class="broadcast-page">
+  <div class="broadcast-card">
+    <div class="broadcast-header">
+      <h1><i class="fas fa-bullhorn"></i> Broadcast Notification</h1>
+      <p>Send a message to all users instantly. Use this for important announcements or system-wide alerts.</p>
     </div>
-    <div class="card-body">
+    <div class="broadcast-body">
       <% if (typeof error !== 'undefined' && error) { %>
-        <div class="alert alert-danger">
+        <div class="alert alert-danger auto-hide">
           <i class="fas fa-exclamation-triangle"></i> <%= error %>
         </div>
       <% } %>
-
       <% if (typeof success !== 'undefined' && success) { %>
-        <div class="alert alert-success">
+        <div class="alert alert-success auto-hide">
           <i class="fas fa-check-circle"></i> <%= success %>
         </div>
       <% } %>
-
-      <form method="POST" action="/notifications/broadcast" class="broadcast-form">
+      <form method="POST" action="/notifications/broadcast" class="broadcast-form" id="broadcastForm">
         <div class="form-group">
-          <label for="title">
-            <i class="fas fa-heading"></i> Notification Title
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            placeholder="Enter notification title..."
-            maxlength="255"
-            required
-          >
-          <small>Maximum 255 characters</small>
+          <label for="title"><i class="fas fa-heading"></i> Title</label>
+          <input type="text" id="title" name="title" maxlength="255" required placeholder="Enter a short title...">
+          <div class="char-counter" id="titleCounter"></div>
         </div>
-
         <div class="form-group">
-          <label for="message">
-            <i class="fas fa-comment"></i> Message
-          </label>
-          <textarea
-            id="message"
-            name="message"
-            rows="5"
-            placeholder="Enter your message here..."
-            maxlength="1000"
-            required
-          ></textarea>
-          <small>Maximum 1000 characters</small>
+          <label for="message"><i class="fas fa-comment"></i> Message</label>
+          <textarea id="message" name="message" rows="4" maxlength="1000" required placeholder="Enter your message..."></textarea>
+          <div class="char-counter" id="messageCounter"></div>
         </div>
-
         <div class="form-group">
-          <label for="url">
-            <i class="fas fa-link"></i> Link (Optional)
-          </label>
-          <input
-            type="url"
-            id="url"
-            name="url"
-            placeholder="https://example.com/page"
-          >
-          <small>Optional: Add a link users can click on</small>
+          <label for="url"><i class="fas fa-link"></i> Link (optional)</label>
+          <input type="url" id="url" name="url" placeholder="https://example.com/page">
         </div>
-
         <div class="form-group preview-section">
-          <label>Preview:</label>
-          <div class="notification-preview" id="notificationPreview">
+          <label>Live Preview:</label>
+          <div class="notification-preview">
             <div class="notification-item preview">
-              <div class="notification-icon">
-                <i class="fas fa-bullhorn"></i>
-              </div>
+              <div class="notification-icon"><i class="fas fa-bullhorn"></i></div>
               <div class="notification-content">
                 <p class="notification-text" id="previewText">Your message will appear here...</p>
                 <span class="notification-time">Just now</span>
@@ -74,121 +42,182 @@
             </div>
           </div>
         </div>
-
         <div class="form-actions">
-          <button type="submit" class="btn btn-danger">
+          <button type="submit" class="btn btn-danger" id="broadcastSubmit">
+            <span id="broadcastSpinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
             <i class="fas fa-paper-plane"></i> Send to All Users
           </button>
-          <a href="/dashboard" class="btn">
-            <i class="fas fa-times"></i> Cancel
-          </a>
+          <a href="/dashboard" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
         </div>
       </form>
     </div>
   </div>
 </div>
-
 <style>
-.broadcast-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
+.broadcast-page {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(74,111,165,0.07);
+  padding: 0;
 }
-
-.broadcast-form .form-group {
-  margin-bottom: 1.5rem;
+.broadcast-card {
+  padding: 2rem 2.5rem;
 }
-
-.broadcast-form label {
+.broadcast-header h1 {
+  font-size: 2rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+.broadcast-header p {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+.broadcast-form .form-group {
+  margin-bottom: 1.5rem;
+}
+.broadcast-form label {
   font-weight: 600;
-  margin-bottom: 0.5rem;
   color: #495057;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-
-.broadcast-form label i {
-  color: var(--primary);
-}
-
+.broadcast-form input,
 .broadcast-form textarea {
-  resize: vertical;
-  min-height: 120px;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-top: 0.25rem;
+  background: #f8f9fa;
+  transition: border-color 0.2s;
 }
-
+.broadcast-form input:focus,
+.broadcast-form textarea:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+.char-counter {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
 .preview-section {
-  background-color: #f8f9fa;
-  padding: 1.5rem;
+  background: #f8f9fa;
   border-radius: 8px;
   border: 1px solid #dee2e6;
+  padding: 1.25rem;
 }
-
 .notification-preview {
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-top: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  margin-top: 0.5rem;
 }
-
 .notification-item.preview {
   border-left: 3px solid #dc3545;
-  background-color: rgba(220, 53, 69, 0.05);
+  background: rgba(220,53,69,0.05);
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
-
 .notification-item.preview .notification-icon {
-  background-color: #dc3545;
+  background: #dc3545;
   color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
 }
-
+.notification-content {
+  flex: 1;
+}
 .form-actions {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
-  padding-top: 1rem;
+  margin-top: 1.5rem;
   border-top: 1px solid #dee2e6;
+  padding-top: 1.25rem;
 }
-
-.form-actions .btn-danger {
-  background-color: #dc3545;
-  border-color: #dc3545;
+.btn-danger {
+  background: #dc3545;
   color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: background 0.2s;
 }
-
-.form-actions .btn-danger:hover {
-  background-color: #c82333;
-  border-color: #bd2130;
+.btn-danger:hover {
+  background: #c82333;
 }
-
-/* Character counters */
-small {
-  color: #6c757d;
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-  display: block;
+.btn-secondary {
+  background: #f8f9fa;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: background 0.2s;
 }
-
-/* Dark mode support */
-body.dark-mode .preview-section {
-  background-color: #252525;
-  border-color: #444;
+.btn-secondary:hover {
+  background: #e9ecef;
 }
-
-body.dark-mode .notification-preview {
-  background-color: #1a1a1a;
+.alert {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.alert-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+.alert-danger {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+.auto-hide {
+  animation: fadeOut 0.5s ease-out 4.5s forwards;
+}
+@keyframes fadeOut {
+  to { opacity: 0; height: 0; margin: 0; padding: 0; }
 }
 </style>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const titleInput = document.getElementById('title');
   const messageInput = document.getElementById('message');
   const previewText = document.getElementById('previewText');
+  const titleCounter = document.getElementById('titleCounter');
+  const messageCounter = document.getElementById('messageCounter');
+  const broadcastForm = document.getElementById('broadcastForm');
+  const broadcastSubmit = document.getElementById('broadcastSubmit');
+  const broadcastSpinner = document.getElementById('broadcastSpinner');
 
   function updatePreview() {
     const title = titleInput.value.trim();
     const message = messageInput.value.trim();
-
     if (title && message) {
       previewText.innerHTML = `<strong>${title}</strong><br>${message}`;
     } else if (title) {
@@ -199,28 +228,25 @@ document.addEventListener('DOMContentLoaded', function() {
       previewText.textContent = 'Your message will appear here...';
     }
   }
-
-  titleInput.addEventListener('input', updatePreview);
-  messageInput.addEventListener('input', updatePreview);
-
-  // Character counters
-  function addCharacterCounter(input, maxLength) {
-    const counter = document.createElement('div');
-    counter.className = 'character-counter';
-    counter.style.cssText = 'text-align: right; font-size: 0.8rem; color: #6c757d; margin-top: 0.25rem;';
-
-    function updateCounter() {
-      const remaining = maxLength - input.value.length;
-      counter.textContent = `${input.value.length}/${maxLength} characters`;
-      counter.style.color = remaining < 50 ? '#dc3545' : '#6c757d';
-    }
-
-    updateCounter();
-    input.addEventListener('input', updateCounter);
-    input.parentNode.appendChild(counter);
+  function updateCounter(input, counter, max) {
+    counter.textContent = `${input.value.length}/${max} characters`;
+    counter.style.color = (max - input.value.length) < 50 ? '#dc3545' : '#6c757d';
   }
+  titleInput.addEventListener('input', function() {
+    updatePreview();
+    updateCounter(titleInput, titleCounter, 255);
+  });
+  messageInput.addEventListener('input', function() {
+    updatePreview();
+    updateCounter(messageInput, messageCounter, 1000);
+  });
+  updatePreview();
+  updateCounter(titleInput, titleCounter, 255);
+  updateCounter(messageInput, messageCounter, 1000);
 
-  addCharacterCounter(titleInput, 255);
-  addCharacterCounter(messageInput, 1000);
+  broadcastForm.addEventListener('submit', function() {
+    broadcastSubmit.disabled = true;
+    broadcastSpinner.style.display = 'inline-block';
+  });
 });
 </script>

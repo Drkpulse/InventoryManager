@@ -1,5 +1,23 @@
-// Add or modify the login function in your authController.js
-// To ensure it responds appropriately to both regular and AJAX requests
+const db = require('../config/db');
+
+exports.loginForm = async (req, res) => {
+  // Fetch real stats from the database
+  const [{ count: assetCount }] = (await db.query('SELECT COUNT(*) as count FROM items')).rows;
+  const [{ count: employeeCount }] = (await db.query('SELECT COUNT(*) as count FROM employees WHERE left_date IS NULL')).rows;
+  // Example uptime calculation (replace with real uptime logic if available)
+  const uptimeResult = await db.query('SELECT value FROM system_stats WHERE key = $1', ['uptime']);
+  const uptime = uptimeResult.rows[0]?.value || '99.98%';
+
+  res.render('auth/login', {
+    error: req.flash('error'),
+    email: req.body.email || '',
+    stats: {
+      assetCount,
+      employeeCount,
+      uptime
+    }
+  });
+};
 
 exports.login = async (req, res) => {
   try {

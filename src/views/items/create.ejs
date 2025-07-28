@@ -42,7 +42,7 @@
               <label for="cep_brc" class="required">Asset ID (CEP/BRC)</label>
               <div class="input-with-validation">
                 <input type="text" id="cep_brc" name="cep_brc"
-                  value="<%= typeof formData !== 'undefined' ? formData.cep_brc : '' %>"
+                  value="<%= typeof formData !== 'undefined' ? formData.cep_brc : 'CEXPT' %>"
                   class="form-input" required placeholder="Enter unique asset identifier">
                 <div class="validation-feedback" id="cepValidation"></div>
                 <small class="field-help">

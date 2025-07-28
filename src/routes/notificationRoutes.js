@@ -14,7 +14,7 @@ router.get('/', isAuthenticated, async (req, res) => {
         SELECT n.*, nt.name as type_name, nt.icon
         FROM notifications n
         JOIN notification_types nt ON n.type_id = nt.id
-        WHERE n.user_id = $1
+        WHERE n.user_id = $1 OR n.user_id IS NULL
         ORDER BY n.created_at DESC
         LIMIT 20
       `, [userId]);
@@ -71,7 +71,7 @@ router.put('/:id/read', isAuthenticated, async (req, res) => {
       await db.query(`
         UPDATE notifications
         SET is_read = true, read_at = NOW()
-        WHERE id = $1 AND user_id = $2
+        WHERE id = $1 AND (user_id = $2 OR user_id IS NULL)
       `, [notificationId, userId]);
     } catch (dbError) {
       console.log('Database update not available, simulating success');
@@ -96,7 +96,7 @@ router.put('/mark-all-read', isAuthenticated, async (req, res) => {
       await db.query(`
         UPDATE notifications
         SET is_read = true, read_at = NOW()
-        WHERE user_id = $1 AND is_read = false
+        WHERE (user_id = $1 OR user_id IS NULL) AND is_read = false
       `, [userId]);
     } catch (dbError) {
       console.log('Database update not available, simulating success');
@@ -158,7 +158,7 @@ router.post('/broadcast', isAdmin, async (req, res) => {
     const { title, message, url } = req.body;
     const senderId = req.session.user.id;
 
-    if (!title || !message) {
+    if (!title || !title.trim() || !message || !message.trim()) {
       return res.render('layout', {
         title: 'Send Notification',
         body: 'notifications/broadcast',
@@ -167,59 +167,47 @@ router.post('/broadcast', isAdmin, async (req, res) => {
       });
     }
 
-    try {
-      // Get all users except the sender
-      const usersResult = await db.query('SELECT id FROM users WHERE id != $1', [senderId]);
+    // Get all users except the sender
+    const usersResult = await db.query('SELECT id FROM users WHERE id != $1', [senderId]);
 
-      if (usersResult.rows.length > 0) {
-        // Get or create notification type for admin broadcasts
-        let typeResult = await db.query(`
-          SELECT id FROM notification_types WHERE name = 'admin_broadcast'
-        `);
-
-        if (typeResult.rows.length === 0) {
-          typeResult = await db.query(`
-            INSERT INTO notification_types (name, description, icon, color)
-            VALUES ('admin_broadcast', 'Admin Broadcast Messages', 'fas fa-bullhorn', '#dc3545')
-            RETURNING id
-          `);
-        }
-
-        const typeId = typeResult.rows[0].id;
-
-        // Create notifications for all users
-        for (const user of usersResult.rows) {
-          await db.query(`
-            INSERT INTO notifications (type_id, user_id, title, message, url)
-            VALUES ($1, $2, $3, $4, $5)
-          `, [typeId, user.id, title, message, url || null]);
-        }
-
-        res.render('layout', {
-          title: 'Send Notification',
-          body: 'notifications/broadcast',
-          user: req.session.user,
-          success: `Notification sent to ${usersResult.rows.length} users successfully!`
-        });
-      } else {
-        res.render('layout', {
-          title: 'Send Notification',
-          body: 'notifications/broadcast',
-          user: req.session.user,
-          error: 'No users found to send notification to'
-        });
-      }
-
-    } catch (dbError) {
-      console.error('Database error:', dbError);
-      res.render('layout', {
+    if (usersResult.rows.length === 0) {
+      return res.render('layout', {
         title: 'Send Notification',
         body: 'notifications/broadcast',
         user: req.session.user,
-        success: 'Notification broadcast completed (simulated - database not ready)'
+        error: 'No users found to send notification to'
       });
     }
 
+    // Get or create notification type for admin broadcasts
+    let typeResult = await db.query(`
+      SELECT id FROM notification_types WHERE name = 'admin_broadcast'
+    `);
+
+    if (typeResult.rows.length === 0) {
+      typeResult = await db.query(`
+        INSERT INTO notification_types (name, description, icon, color)
+        VALUES ('admin_broadcast', 'Admin Broadcast Messages', 'fas fa-bullhorn', '#dc3545')
+        RETURNING id
+      `);
+    }
+
+    const typeId = typeResult.rows[0].id;
+
+    // Create notifications for all users
+    for (const user of usersResult.rows) {
+      await db.query(`
+        INSERT INTO notifications (type_id, user_id, title, message, url)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [typeId, user.id, title, message, url || null]);
+    }
+
+    res.render('layout', {
+      title: 'Send Notification',
+      body: 'notifications/broadcast',
+      user: req.session.user,
+      success: `Notification sent to ${usersResult.rows.length} users successfully!`
+    });
   } catch (error) {
     console.error('Error broadcasting notification:', error);
     res.render('layout', {
@@ -227,6 +215,37 @@ router.post('/broadcast', isAdmin, async (req, res) => {
       body: 'notifications/broadcast',
       user: req.session.user,
       error: 'Failed to broadcast notification. Please try again.'
+    });
+  }
+});
+
+// Get notification history
+router.get('/history', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const result = await db.query(`
+      SELECT n.*, nt.icon
+      FROM notifications n
+      JOIN notification_types nt ON n.type_id = nt.id
+      WHERE n.user_id = $1 OR n.user_id IS NULL
+      ORDER BY n.created_at DESC
+      LIMIT 100
+    `, [userId]);
+
+    res.render('layout', {
+      title: 'Notifications History',
+      body: 'notifications/history',
+      notifications: result.rows,
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error('Error loading notifications history:', error);
+    res.status(500).render('layout', {
+      title: 'Notifications History',
+      body: 'notifications/history',
+      notifications: [],
+      user: req.session.user,
+      error: 'Failed to load notifications history'
     });
   }
 });

@@ -1,0 +1,39 @@
+<div class="page-container">
+  <div class="page-header-simple">
+    <h1><i class="fas fa-bell"></i> Notifications History</h1>
+  </div>
+  <div class="content-section">
+    <% if (notifications && notifications.length > 0) { %>
+      <div class="notification-history-list">
+        <% notifications.forEach(notification => { %>
+          <div class="notification-history-item <%= notification.is_read ? '' : 'unread' %>">
+            <div class="notification-history-icon">
+              <i class="<%= notification.icon || 'fas fa-bell' %>"></i>
+            </div>
+            <div class="notification-history-content">
+              <div class="notification-history-title">
+                <%= notification.title %>
+              </div>
+              <div class="notification-history-message">
+                <%= notification.message %>
+              </div>
+              <div class="notification-history-meta">
+                <span class="notification-history-date">
+                  <%= new Date(notification.created_at).toLocaleString() %>
+                </span>
+                <% if (!notification.is_read) { %>
+                  <span class="badge badge-warning">Unread</span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="notification-empty">
+        <i class="fas fa-bell-slash"></i>
+        <h3>No notifications found</h3>
+      </div>
+    <% } %>
+  </div>
+</div>

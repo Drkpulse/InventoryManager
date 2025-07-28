@@ -882,10 +882,6 @@ footer {
 }
 
 /* Forms */
-form {
-  max-width: 800px;
-}
-
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -5911,6 +5907,102 @@ tbody tr:hover {
   }
 }
 
+/* --- User Settings Page Custom Styles --- */
+.settings-page .form-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+}
+
+.settings-page .form-section {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.settings-page .form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.settings-page h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.settings-page .form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.settings-page .alert {
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .settings-page .form-container {
+    padding: 1rem;
+  }
+  .settings-page .form-section {
+    padding-bottom: 1rem;
+  }
+}
+
+/* --- Notification Settings Custom Styles --- */
+.settings-page .form-section h3 .fa-bell {
+  color: var(--primary);
+}
+
+.settings-page .form-check {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.settings-page .form-check-input {
+  margin-top: 0;
+  accent-color: var(--primary);
+  width: 1.2em;
+  height: 1.2em;
+}
+
+.settings-page .form-check-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.settings-page .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.settings-page .form-text.text-muted {
+  margin-left: 2.2em;
+  font-size: 0.95em;
+  color: var(--text-muted, #6c757d);
+}
+
+@media (max-width: 768px) {
+  .settings-page .form-row {
+    flex-direction: column;
+  }
+  .settings-page .form-group {
+    width: 100%;
+  }
+}
 /* Dark Mode Support */
 body[data-theme="dark"] {
   --bg-primary: #1a1a2e;

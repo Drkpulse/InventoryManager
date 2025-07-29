@@ -2092,8 +2092,6 @@ tbody tr:hover {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
-  margin-top: 2rem;
-  padding-top: 2rem;
   border-top: 1px solid #f0f0f0;
 }
 

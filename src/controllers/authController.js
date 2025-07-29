@@ -1,21 +1,16 @@
 const db = require('../config/db');
+const bcrypt = require('bcrypt');
+const express = require('express');
+const router = express.Router();
+
 
 exports.loginForm = async (req, res) => {
-  // Fetch real stats from the database
-  const [{ count: assetCount }] = (await db.query('SELECT COUNT(*) as count FROM items')).rows;
-  const [{ count: employeeCount }] = (await db.query('SELECT COUNT(*) as count FROM employees WHERE left_date IS NULL')).rows;
-  // Example uptime calculation (replace with real uptime logic if available)
-  const uptimeResult = await db.query('SELECT value FROM system_stats WHERE key = $1', ['uptime']);
-  const uptime = uptimeResult.rows[0]?.value || '99.98%';
-
-  res.render('auth/login', {
+  res.render('layout', {
+    title: 'Login',
+    body: 'auth/login',
     error: req.flash('error'),
     email: req.body.email || '',
-    stats: {
-      assetCount,
-      employeeCount,
-      uptime
-    }
+    user: null
   });
 };
 
@@ -32,10 +27,12 @@ exports.login = async (req, res) => {
         });
       }
 
-      return res.render('auth/login', {
+      return res.render('layout', {
         title: 'Login',
+        body: 'auth/login',
         error: 'Email and password are required',
-        email
+        email,
+        user: null
       });
     }
 
@@ -52,10 +49,12 @@ exports.login = async (req, res) => {
         });
       }
 
-      return res.render('auth/login', {
+      return res.render('layout', {
         title: 'Login',
+        body: 'auth/login',
         error: 'Invalid email or password',
-        email
+        email,
+        user: null
       });
     }
 
@@ -74,10 +73,12 @@ exports.login = async (req, res) => {
         });
       }
 
-      return res.render('auth/login', {
+      return res.render('layout', {
         title: 'Login',
+        body: 'auth/login',
         error: 'Invalid email or password',
-        email
+        email,
+        user: null
       });
     }
 
@@ -110,10 +111,12 @@ exports.login = async (req, res) => {
       });
     }
 
-    res.render('auth/login', {
+    res.render('layout', {
       title: 'Login',
+      body: 'auth/login',
       error: 'An error occurred during login',
-      email: req.body.email
+      email: req.body.email,
+      user: null
     });
   }
 };

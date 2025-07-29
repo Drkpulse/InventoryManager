@@ -7,6 +7,9 @@ const routes = require('./routes');
 const i18n = require('./config/i18n');
 const { isAuthenticated } = require('./middleware/auth');
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
 // Import routes
 const authRoutes = require('./routes/authRoutes');
 const itemRoutes = require('./routes/itemRoutes');
@@ -16,6 +19,10 @@ const referenceRoutes = require('./routes/referenceRoutes');
 const softwareRoutes = require('./routes/softwareRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const translations = require('./utils/translations');
+const { loadUserPermissions, addPermissionHelpers } = require('./middleware/permissions');
+
+app.use(loadUserPermissions);  // Load user permissions into session
+app.use(addPermissionHelpers); // Add permission helper functions to templates
 
 // Add AJAX response middleware
 const handleAjaxResponse = require('./middleware/ajaxResponse');
@@ -23,9 +30,6 @@ const handleAjaxResponse = require('./middleware/ajaxResponse');
 // Add notification routes BEFORE the main routes
 const notificationRoutes = require('./routes/notificationRoutes');
 const apiRoutes = require('./routes/apiRoutes');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Set up view engine
 app.set('views', path.join(__dirname, 'views'));

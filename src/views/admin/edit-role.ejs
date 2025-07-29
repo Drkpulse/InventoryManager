@@ -1,0 +1,226 @@
+<div class="container mx-auto px-4 py-8">
+	<div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+	  <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2">
+		<i class="fas fa-edit"></i> Edit Role
+		<% if (editRole.is_system_role) { %>
+		  <span class="inline-flex items-center px-2 py-1 rounded text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
+			<i class="fas fa-lock mr-1"></i> System Role
+		  </span>
+		<% } %>
+	  </h1>
+
+	  <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+		<div class="mb-6 flex flex-col gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
+		  <div class="flex items-center gap-2">
+			<i class="fas fa-exclamation-triangle"></i>
+			<strong>Please fix the following errors:</strong>
+		  </div>
+		  <ul class="list-disc pl-6">
+			<% errors.forEach(error => { %>
+			  <li><%= error %></li>
+			<% }) %>
+		  </ul>
+		</div>
+	  <% } %>
+
+	  <form method="POST" action="/admin/roles/<%= editRole.id %>/edit" class="space-y-6">
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+		  <div>
+			<label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">
+			  Role Name <span class="text-red-500">*</span>
+			  <% if (editRole.is_system_role) { %>
+				<span class="text-xs font-normal text-gray-500">(Read-only for system roles)</span>
+			  <% } %>
+			</label>
+			<input type="text" id="name" name="name"
+			  value="<%= editRole.name %>"
+			  <%= editRole.is_system_role ? 'readonly' : 'required' %>
+			  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition <%= editRole.is_system_role ? 'opacity-60 cursor-not-allowed' : '' %>"
+			  placeholder="e.g., content_manager">
+			<% if (!editRole.is_system_role) { %>
+			  <small class="text-gray-500 dark:text-gray-400">Unique identifier for the role (lowercase, underscores allowed)</small>
+			<% } %>
+		  </div>
+
+		  <div>
+			<label for="display_name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Display Name <span class="text-red-500">*</span></label>
+			<input type="text" id="display_name" name="display_name"
+			  value="<%= editRole.display_name %>"
+			  required
+			  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+			  placeholder="e.g., Content Manager">
+			<small class="text-gray-500 dark:text-gray-400">Human-readable name for the role</small>
+		  </div>
+		</div>
+
+		<div>
+		  <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Description</label>
+		  <textarea id="description" name="description" rows="3"
+			class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+			placeholder="Describe what this role can do..."><%= editRole.description || '' %></textarea>
+		</div>
+
+		<div>
+		  <label class="block font-semibold mb-3 text-gray-700 dark:text-gray-200">Assign Permissions</label>
+		  <div class="border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 p-4">
+			<% if (typeof permissionsByModule !== 'undefined' && Object.keys(permissionsByModule).length > 0) { %>
+			  <div class="mb-4 flex items-center gap-4">
+				<button type="button" id="selectAll" class="text-sm px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
+				  Select All
+				</button>
+				<button type="button" id="selectNone" class="text-sm px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded transition">
+				  Select None
+				</button>
+				<span class="text-sm text-gray-600 dark:text-gray-400">
+				  <span id="selectedCount">0</span> permissions selected
+				</span>
+			  </div>
+
+			  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				<% Object.keys(permissionsByModule).forEach(module => { %>
+				  <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+					<h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
+					  <i class="fas fa-folder"></i>
+					  <%= module.charAt(0).toUpperCase() + module.slice(1).replace('_', ' ') %>
+					  <button type="button" class="module-toggle text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition" data-module="<%= module %>">
+						Toggle All
+					  </button>
+					</h3>
+					<div class="space-y-2 max-h-48 overflow-y-auto">
+					  <% permissionsByModule[module].forEach(permission => { %>
+						<div class="flex items-start gap-2">
+						  <input type="checkbox" id="perm_<%= permission.id %>" name="selectedPermissions" value="<%= permission.id %>"
+							class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded permission-checkbox"
+							data-module="<%= module %>"
+							<%= rolePermissionIds.includes(permission.id) ? 'checked' : '' %>>
+						  <div class="flex-1">
+							<label for="perm_<%= permission.id %>" class="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+							  <%= permission.display_name %>
+							</label>
+							<% if (permission.description) { %>
+							  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= permission.description %></p>
+							<% } %>
+						  </div>
+						</div>
+					  <% }) %>
+					</div>
+				  </div>
+				<% }) %>
+			  </div>
+			<% } else { %>
+			  <p class="text-gray-500 dark:text-gray-400 text-sm">No permissions available</p>
+			<% } %>
+		  </div>
+		  <small class="text-gray-500 dark:text-gray-400">Select the permissions this role should have</small>
+		</div>
+
+		<div class="flex gap-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+		  <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+			<i class="fas fa-save"></i> Update Role
+		  </button>
+		  <a href="/admin/roles" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+			<i class="fas fa-times"></i> Cancel
+		  </a>
+		</div>
+	  </form>
+	</div>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+	const selectAllBtn = document.getElementById('selectAll');
+	const selectNoneBtn = document.getElementById('selectNone');
+	const moduleToggleBtns = document.querySelectorAll('.module-toggle');
+	const allCheckboxes = document.querySelectorAll('.permission-checkbox');
+	const selectedCountEl = document.getElementById('selectedCount');
+
+	// Update selected count
+	function updateSelectedCount() {
+	  const selectedCount = document.querySelectorAll('.permission-checkbox:checked').length;
+	  selectedCountEl.textContent = selectedCount;
+	}
+
+	// Initial count
+	updateSelectedCount();
+
+	// Listen for checkbox changes
+	allCheckboxes.forEach(checkbox => {
+	  checkbox.addEventListener('change', updateSelectedCount);
+	});
+
+	// Select all permissions
+	selectAllBtn?.addEventListener('click', function() {
+	  allCheckboxes.forEach(checkbox => checkbox.checked = true);
+	  updateSelectedCount();
+	});
+
+	// Select no permissions
+	selectNoneBtn?.addEventListener('click', function() {
+	  allCheckboxes.forEach(checkbox => checkbox.checked = false);
+	  updateSelectedCount();
+	});
+
+	// Toggle module permissions
+	moduleToggleBtns.forEach(btn => {
+	  btn.addEventListener('click', function() {
+		const module = this.dataset.module;
+		const moduleCheckboxes = document.querySelectorAll(`input[data-module="${module}"]`);
+		const allChecked = Array.from(moduleCheckboxes).every(cb => cb.checked);
+
+		moduleCheckboxes.forEach(checkbox => {
+		  checkbox.checked = !allChecked;
+		});
+		updateSelectedCount();
+	  });
+	});
+
+	// Form validation
+	const form = document.querySelector('form');
+	const nameField = document.getElementById('name');
+	const displayNameField = document.getElementById('display_name');
+	const isSystemRole = <%= editRole.is_system_role ? 'true' : 'false' %>;
+
+	form.addEventListener('submit', function(e) {
+	  let hasErrors = false;
+
+	  // Validate name (only for non-system roles)
+	  if (!isSystemRole) {
+		if (!nameField.value || nameField.value.trim() === '') {
+		  e.preventDefault();
+		  showFieldError(nameField, 'Role name is required');
+		  hasErrors = true;
+		} else if (!/^[a-z_]+$/.test(nameField.value.trim())) {
+		  e.preventDefault();
+		  showFieldError(nameField, 'Role name must be lowercase letters and underscores only');
+		  hasErrors = true;
+		}
+	  }
+
+	  // Validate display name
+	  if (!displayNameField.value || displayNameField.value.trim() === '') {
+		e.preventDefault();
+		showFieldError(displayNameField, 'Display name is required');
+		hasErrors = true;
+	  }
+
+	  if (hasErrors) {
+		return false;
+	  }
+	});
+
+	function showFieldError(field, message) {
+	  field.classList.add('border-red-500', 'focus:ring-red-500');
+	  // Remove existing error message
+	  const existingError = field.parentNode.querySelector('.error-message');
+	  if (existingError) {
+		existingError.remove();
+	  }
+	  // Add error message
+	  const errorDiv = document.createElement('div');
+	  errorDiv.className = 'error-message text-red-600 dark:text-red-400 text-xs mt-1';
+	  errorDiv.textContent = message;
+	  field.parentNode.appendChild(errorDiv);
+	  field.focus();
+	}
+  });
+  </script>

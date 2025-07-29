@@ -34,15 +34,6 @@
       </div>
 
       <div>
-        <label for="role" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Role <span class="text-red-500">*</span></label>
-        <select id="role" name="role" required
-          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-          <option value="user" <%= editUser.role === 'user' ? 'selected' : '' %>>User</option>
-          <option value="admin" <%= editUser.role === 'admin' ? 'selected' : '' %>>Admin</option>
-        </select>
-      </div>
-
-      <div>
         <label for="password" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">New Password</label>
         <input type="password" id="password" name="password"
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -56,6 +47,39 @@
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           placeholder="Re-enter new password">
       </div>
+
+      <% if (can('users.manage_roles')) { %>
+        <div>
+          <label class="block font-semibold mb-3 text-gray-700 dark:text-gray-200">Assign Roles</label>
+          <div class="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-md p-3 bg-gray-50 dark:bg-gray-900">
+            <% if (typeof roles !== 'undefined' && roles.length > 0) { %>
+              <% roles.forEach(role => { %>
+                <div class="flex items-start gap-2 mb-2">
+                  <input type="checkbox" id="role_<%= role.id %>" name="selectedRoles" value="<%= role.id %>"
+                    class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    <%= userRoleIds.includes(role.id) ? 'checked' : '' %>>
+                  <div class="flex-1">
+                    <label for="role_<%= role.id %>" class="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                      <%= role.display_name %>
+                      <% if (role.is_system_role) { %>
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 ml-1">
+                          System
+                        </span>
+                      <% } %>
+                    </label>
+                    <% if (role.description) { %>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= role.description %></p>
+                    <% } %>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p class="text-gray-500 dark:text-gray-400 text-sm">No roles available</p>
+            <% } %>
+          </div>
+          <small class="text-gray-500 dark:text-gray-400">Select one or more roles for this user.</small>
+        </div>
+      <% } %>
 
       <div class="flex gap-2 mt-4">
         <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">

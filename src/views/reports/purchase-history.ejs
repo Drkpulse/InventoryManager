@@ -1,30 +1,44 @@
-<h1>Purchase History</h1>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8 flex items-center gap-2">
+    <i class="fas fa-shopping-cart"></i> Purchase History
+  </h1>
 
-<div class="report-actions">
-  <a href="/reports/export-assets" class="btn">Export to CSV</a>
+  <div class="mb-6 flex justify-end">
+    <a href="/reports/export-assets" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+      <i class="fas fa-file-csv mr-2"></i> Export to CSV
+    </a>
+  </div>
+
+  <% if (typeof history !== 'undefined' && history && history.length > 0) { %>
+    <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-900">
+          <tr>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Month</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Items Purchased</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Total Spent</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Suppliers</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <% history.forEach(entry => { %>
+            <tr>
+              <td class="px-4 py-3 text-gray-800 dark:text-gray-100"><%= new Date(entry.month).toLocaleDateString(undefined, { year: 'numeric', month: 'long' }) %></td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-200"><%= entry.items_purchased %></td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-200">$<%= parseFloat(entry.total_spent).toFixed(2) %></td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-200"><%= entry.suppliers %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950 mt-8">
+      <div class="text-4xl text-blue-500 mb-2">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No purchase history available</h3>
+      <p class="text-gray-500 dark:text-gray-400">There are no purchase records to display.</p>
+    </div>
+  <% } %>
 </div>
-
-<% if (typeof history !== 'undefined' && history && history.length > 0) { %>
-  <table>
-    <thead>
-      <tr>
-        <th>Month</th>
-        <th>Items Purchased</th>
-        <th>Total Spent</th>
-        <th>Suppliers</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% history.forEach(entry => { %>
-        <tr>
-          <td><%= new Date(entry.month).toLocaleDateString(undefined, { year: 'numeric', month: 'long' }) %></td>
-          <td><%= entry.items_purchased %></td>
-          <td>$<%= parseFloat(entry.total_spent).toFixed(2) %></td>
-          <td><%= entry.suppliers %></td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
-<% } else { %>
-  <p>No purchase history available.</p>
-<% } %>

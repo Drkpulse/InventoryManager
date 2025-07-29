@@ -1,94 +1,92 @@
-<section class="modern-dashboard">
+<section class="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 text-gray-900 dark:text-white animate-fadeIn">
   <!-- Header Section -->
-  <div class="dashboard-header">
-    <div class="header-content">
-      <h1>Dashboard Overview</h1>
-      <p class="dashboard-subtitle">Welcome back! Here's what's happening with your IT assets.</p>
+  <div class="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
+    <div>
+      <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-900 to-blue-700 bg-clip-text text-transparent">Dashboard Overview</h1>
+      <p class="text-gray-500 dark:text-gray-300 mt-2 text-lg">Welcome back! Here's what's happening with your IT assets.</p>
     </div>
-    <div class="header-actions">
-      <div class="search-container">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" id="globalSearch" placeholder="Search assets, employees...">
+    <div class="flex gap-4 items-center">
+      <div class="relative flex items-center">
+        <i class="fas fa-search absolute left-4 text-gray-400"></i>
+        <input type="text" id="globalSearch" placeholder="Search assets, employees..."
+          class="pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-base w-72 transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
       </div>
-      <div class="dropdown">
-        <button class="btn-primary dropdown-toggle">
+      <div class="relative group">
+        <button class="bg-gradient-to-r from-indigo-900 to-blue-700 text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
           <i class="fas fa-plus"></i>
           <span>Quick Add</span>
         </button>
-        <div class="dropdown-menu">
-          <a href="/items/new"><i class="fas fa-laptop"></i>New Asset</a>
-          <a href="/employees/new"><i class="fas fa-user-plus"></i>New Employee</a>
-          <a href="/items/new-receipt"><i class="fas fa-receipt"></i>Purchase Receipt</a>
+        <div class="absolute top-full right-0 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-2 min-w-[200px] opacity-0 group-hover:opacity-100 group-hover:visible invisible transition z-10 border border-gray-100 dark:border-gray-700">
+          <a href="/items/new" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-900 dark:text-white"><i class="fas fa-laptop"></i>New Asset</a>
+          <a href="/employees/new" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-900 dark:text-white"><i class="fas fa-user-plus"></i>New Employee</a>
+          <a href="/items/new-receipt" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-900 dark:text-white"><i class="fas fa-receipt"></i>Purchase Receipt</a>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Key Metrics -->
-  <div class="metrics-grid">
-    <a href="/items" class="metric-card primary clickable">
-      <div class="metric-icon">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <a href="/items" class="bg-white dark:bg-gray-800 rounded-2xl p-8 flex items-center gap-6 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden text-inherit no-underline border-t-4 border-indigo-900">
+      <div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl text-white bg-indigo-900">
         <i class="fas fa-server"></i>
       </div>
-      <div class="metric-content">
-        <span class="metric-value"><%= stats.itemCount %></span>
-        <span class="metric-label">Total Assets</span>
-        <span class="metric-trend positive">Click to view all</span>
+      <div>
+        <span class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.itemCount %></span>
+        <span class="block text-gray-500 dark:text-gray-300 text-sm">Total Assets</span>
+        <span class="block text-green-500 text-xs">Click to view all</span>
       </div>
     </a>
-
-    <a href="/employees" class="metric-card success clickable">
-      <div class="metric-icon">
+    <a href="/employees" class="bg-white dark:bg-gray-800 rounded-2xl p-8 flex items-center gap-6 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden text-inherit no-underline border-t-4 border-green-400">
+      <div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl text-white bg-green-400">
         <i class="fas fa-users"></i>
       </div>
-      <div class="metric-content">
-        <span class="metric-value"><%= stats.employeeCount %></span>
-        <span class="metric-label">Active Users</span>
-        <span class="metric-trend positive">Click to manage</span>
+      <div>
+        <span class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.employeeCount %></span>
+        <span class="block text-gray-500 dark:text-gray-300 text-sm">Active Users</span>
+        <span class="block text-green-500 text-xs">Click to manage</span>
       </div>
     </a>
-
-    <a href="/items?filter=unassigned" class="metric-card warning clickable">
-      <div class="metric-icon">
+    <a href="/items?filter=unassigned" class="bg-white dark:bg-gray-800 rounded-2xl p-8 flex items-center gap-6 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden text-inherit no-underline border-t-4 border-yellow-400">
+      <div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl text-white bg-yellow-400">
         <i class="fas fa-exclamation-triangle"></i>
       </div>
-      <div class="metric-content">
-        <span class="metric-value"><%= stats.unassignedCount %></span>
-        <span class="metric-label">Unassigned</span>
-        <span class="metric-trend">Need attention</span>
+      <div>
+        <span class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.unassignedCount %></span>
+        <span class="block text-gray-500 dark:text-gray-300 text-sm">Unassigned</span>
+        <span class="block text-yellow-500 text-xs">Need attention</span>
       </div>
     </a>
-
-    <a href="/software" class="metric-card info clickable">
-      <div class="metric-icon">
+    <a href="/software" class="bg-white dark:bg-gray-800 rounded-2xl p-8 flex items-center gap-6 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden text-inherit no-underline border-t-4 border-blue-400">
+      <div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl text-white bg-blue-400">
         <i class="fas fa-building"></i>
       </div>
-      <div class="metric-content">
-        <span class="metric-value"><%= stats.departmentCount %></span>
-        <span class="metric-label">Software</span>
-        <span class="metric-trend">Active licenses</span>
+      <div>
+        <span class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.departmentCount %></span>
+        <span class="block text-gray-500 dark:text-gray-300 text-sm">Software</span>
+        <span class="block text-blue-500 text-xs">Active licenses</span>
       </div>
     </a>
   </div>
 
   <!-- Main Content Grid -->
-  <div class="dashboard-grid">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
     <!-- Asset Distribution Chart -->
-    <div class="dashboard-card chart-card">
-      <div class="card-header">
-        <h3>Asset Distribution</h3>
-        <a href="/items" class="view-all-link">View All Assets</a>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition">
+      <div class="flex justify-between items-center px-8 py-6 border-b border-gray-100 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Asset Distribution</h3>
+        <a href="/items" class="text-indigo-900 dark:text-indigo-400 text-sm font-medium hover:underline">View All Assets</a>
       </div>
-      <div class="asset-distribution-simple">
+      <div class="px-8 py-6">
         <% itemsByType.forEach((item, index) => { %>
-          <div class="asset-type-item">
-            <div class="asset-type-info">
-              <span class="asset-type-name"><%= item.name %></span>
-              <span class="asset-type-count"><%= item.count %> items</span>
+          <div class="flex justify-between items-center py-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+            <div>
+              <span class="font-semibold text-gray-900 dark:text-white text-base"><%= item.name %></span>
+              <span class="block text-gray-500 dark:text-gray-300 text-xs"><%= item.count %> items</span>
             </div>
-            <div class="asset-type-percentage">
+            <div>
               <% const percentage = Math.round((item.count / stats.itemCount) * 100) %>
-              <span class="percentage-value"><%= percentage %>%</span>
+              <span class="text-lg font-bold text-indigo-900 dark:text-indigo-400"><%= percentage %>%</span>
             </div>
           </div>
         <% }) %>
@@ -96,20 +94,21 @@
     </div>
 
     <!-- Recent Activity -->
-    <div class="dashboard-card activity-card">
-      <div class="card-header">
-        <h3>Recent Activity</h3>
-        <a href="/items" class="view-all-link">View All</a>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition">
+      <div class="flex justify-between items-center px-8 py-6 border-b border-gray-100 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
+        <a href="/items" class="text-indigo-900 dark:text-indigo-400 text-sm font-medium hover:underline">View All</a>
       </div>
-      <div class="activity-list">
+      <div class="px-8 py-6">
         <% recentItems.slice(0, 5).forEach(item => { %>
-          <div class="activity-item">
-            <div class="activity-icon">
+          <div class="flex items-center gap-4 py-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+            <div class="w-10 h-10 bg-gradient-to-r from-indigo-900 to-blue-700 rounded-lg flex items-center justify-center text-white text-lg">
               <i class="fas fa-laptop"></i>
             </div>
-            <div class="activity-content">
-              <h4><%= item.name %></h4>
-              <p><%= item.type_name || 'Asset' %> •
+            <div class="flex-1 min-w-0">
+              <h4 class="font-semibold text-gray-900 dark:text-white text-base mb-1"><%= item.name %></h4>
+              <p class="text-gray-500 dark:text-gray-300 text-xs m-0">
+                <%= item.type_name || 'Asset' %> •
                 <% if (item.assigned_to_name) { %>
                   Assigned to <%= item.assigned_to_name %>
                 <% } else { %>
@@ -117,8 +116,8 @@
                 <% } %>
               </p>
             </div>
-            <div class="activity-status">
-              <span class="status-dot <%= item.assigned_to ? 'active' : 'inactive' %>"></span>
+            <div>
+              <span class="inline-block w-3 h-3 rounded-full <%= item.assigned_to ? 'bg-green-400 shadow-green-200' : 'bg-gray-400' %>"></span>
             </div>
           </div>
         <% }) %>
@@ -126,27 +125,27 @@
     </div>
 
     <!-- System Overview -->
-    <div class="dashboard-card system-overview-card">
-      <div class="card-header">
-        <h3>System Overview</h3>
-        <span class="status-indicator online">ONLINE</span>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition">
+      <div class="flex justify-between items-center px-8 py-6 bg-gradient-to-r from-indigo-900 to-blue-700 text-white">
+        <h3 class="text-lg font-semibold">System Overview</h3>
+        <span class="bg-green-400 text-indigo-900 px-3 py-1 rounded-full text-xs font-semibold">ONLINE</span>
       </div>
-      <div class="system-stats">
-        <div class="stat-row">
-          <span class="stat-label">Total Assets</span>
-          <span class="stat-value"><%= stats.itemCount %></span>
+      <div class="px-8 py-6">
+        <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-gray-500 dark:text-gray-300 text-sm">Total Assets</span>
+          <span class="font-semibold text-gray-900 dark:text-white"><%= stats.itemCount %></span>
         </div>
-        <div class="stat-row">
-          <span class="stat-label">Active Employees</span>
-          <span class="stat-value"><%= stats.employeeCount %></span>
+        <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-gray-500 dark:text-gray-300 text-sm">Active Employees</span>
+          <span class="font-semibold text-gray-900 dark:text-white"><%= stats.employeeCount %></span>
         </div>
-        <div class="stat-row">
-          <span class="stat-label">Assigned Assets</span>
-          <span class="stat-value"><%= stats.itemCount - stats.unassignedCount %></span>
+        <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
+          <span class="text-gray-500 dark:text-gray-300 text-sm">Assigned Assets</span>
+          <span class="font-semibold text-gray-900 dark:text-white"><%= stats.itemCount - stats.unassignedCount %></span>
         </div>
-        <div class="stat-row">
-          <span class="stat-label">Assignment Rate</span>
-          <span class="stat-value success">
+        <div class="flex justify-between items-center py-3">
+          <span class="text-gray-500 dark:text-gray-300 text-sm">Assignment Rate</span>
+          <span class="font-semibold text-green-400">
             <%= stats.itemCount > 0 ? Math.round(((stats.itemCount - stats.unassignedCount) / stats.itemCount) * 100) : 0 %>%
           </span>
         </div>
@@ -154,40 +153,40 @@
     </div>
 
     <!-- Quick Insights -->
-    <div class="dashboard-card insights-card">
-      <div class="card-header">
-        <h3>Quick Insights</h3>
-        <button class="btn-icon" onclick="refreshInsights()">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition">
+      <div class="flex justify-between items-center px-8 py-6 border-b border-gray-100 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Insights</h3>
+        <button class="bg-transparent border-none text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 p-2 rounded-lg transition" onclick="refreshInsights()">
           <i class="fas fa-refresh"></i>
         </button>
       </div>
-      <div class="insights-list">
-        <div class="insight-item">
-          <div class="insight-icon success">
+      <div class="px-8 py-6">
+        <div class="flex items-center gap-4 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white bg-green-400 text-lg">
             <i class="fas fa-check-circle"></i>
           </div>
-          <div class="insight-content">
-            <h4>System Health</h4>
-            <p>All systems operational and running smoothly</p>
+          <div>
+            <h4 class="font-semibold text-gray-900 dark:text-white text-base mb-1">System Health</h4>
+            <p class="text-gray-500 dark:text-gray-300 text-xs m-0">All systems operational and running smoothly</p>
           </div>
         </div>
-        <div class="insight-item">
-          <div class="insight-icon info">
+        <div class="flex items-center gap-4 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white bg-blue-400 text-lg">
             <i class="fas fa-info-circle"></i>
           </div>
-          <div class="insight-content">
-            <h4>Recent Activity</h4>
-            <p><%= recentItems.length %> assets updated in the last 30 days</p>
+          <div>
+            <h4 class="font-semibold text-gray-900 dark:text-white text-base mb-1">Recent Activity</h4>
+            <p class="text-gray-500 dark:text-gray-300 text-xs m-0"><%= recentItems.length %> assets updated in the last 30 days</p>
           </div>
         </div>
         <% if (stats.unassignedCount > 0) { %>
-        <div class="insight-item">
-          <div class="insight-icon warning">
+        <div class="flex items-center gap-4 py-4">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white bg-yellow-400 text-lg">
             <i class="fas fa-exclamation-triangle"></i>
           </div>
-          <div class="insight-content">
-            <h4>Attention Required</h4>
-            <p><%= stats.unassignedCount %> assets need to be assigned</p>
+          <div>
+            <h4 class="font-semibold text-gray-900 dark:text-white text-base mb-1">Attention Required</h4>
+            <p class="text-gray-500 dark:text-gray-300 text-xs m-0"><%= stats.unassignedCount %> assets need to be assigned</p>
           </div>
         </div>
         <% } %>
@@ -196,605 +195,25 @@
   </div>
 
   <!-- Quick Actions -->
-  <div class="quick-actions-bar">
-    <a href="/items/new" class="action-btn primary">
+  <div class="flex flex-wrap gap-4 justify-center">
+    <a href="/items/new" class="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-900 to-blue-700 text-white rounded-xl font-medium shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
       <i class="fas fa-plus"></i>
       <span>Add Asset</span>
     </a>
-    <a href="/employees/new" class="action-btn">
+    <a href="/employees/new" class="flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl font-medium shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
       <i class="fas fa-user-plus"></i>
       <span>Add Employee</span>
     </a>
-    <a href="/reports/export-assets" class="action-btn">
+    <a href="/reports/export-assets" class="flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl font-medium shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
       <i class="fas fa-download"></i>
       <span>Export Data</span>
     </a>
-    <a href="/items" class="action-btn">
+    <a href="/items" class="flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl font-medium shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
       <i class="fas fa-list"></i>
       <span>View All Assets</span>
     </a>
   </div>
 </section>
-
-<style>
-/* CSS Variables for Dark Mode Support */
-/* Base: Light Theme */
-:root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --text-primary: #1a1a2e;
-  --text-secondary: #666;
-  --text-muted: #999;
-  --border-color: #f0f0f0;
-  --shadow-light: rgba(0, 0, 0, 0.05);
-  --shadow-medium: rgba(0, 0, 0, 0.1);
-  --shadow-heavy: rgba(0, 0, 0, 0.15);
-  --accent-primary: #1a1a2e;
-  --accent-secondary: #0f3460;
-  --success-color: #00ff7f;
-  --warning-color: #ffd700;
-  --info-color: #00bfff;
-}
-
-/* Override: Dark Theme */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #1a1a2e;
-    --bg-secondary: #0f1419;
-    --text-primary: #ffffff;
-    --text-secondary: #a0a0a0;
-    --text-muted: #666;
-    --border-color: #2a2a3e;
-    --shadow-light: rgba(0, 0, 0, 0.2);
-    --shadow-medium: rgba(0, 0, 0, 0.3);
-    --shadow-heavy: rgba(0, 0, 0, 0.4);
-    --accent-primary: #00ff7f;
-    --accent-secondary: #00bfff;
-  }
-}
-
-
-/* Modern Dashboard Styles */
-.modern-dashboard {
-  min-height: 100vh;
-  background: var(--bg-secondary);
-  padding: 2rem;
-  animation: fadeIn 0.6s ease-out;
-  color: var(--text-primary);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Header Section */
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  background: var(--bg-primary);
-  padding: 2rem;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px var(--shadow-light);
-}
-
-.header-content h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dashboard-subtitle {
-  color: var(--text-secondary);
-  margin: 0.5rem 0 0 0;
-  font-size: 1.1rem;
-}
-
-.header-actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.search-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: 1rem;
-  color: var(--text-muted);
-  z-index: 2;
-}
-
-#globalSearch {
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  font-size: 0.9rem;
-  width: 300px;
-  transition: all 0.3s ease;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-#globalSearch:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.1);
-}
-
-.dropdown {
-  position: relative;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--shadow-medium);
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  right: 0;
-  background: var(--bg-primary);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px var(--shadow-heavy);
-  padding: 0.5rem;
-  min-width: 200px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-color);
-}
-
-.dropdown:hover .dropdown-menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.dropdown-menu a {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  color: var(--text-primary);
-  text-decoration: none;
-  border-radius: 8px;
-  transition: background 0.2s ease;
-}
-
-.dropdown-menu a:hover {
-  background: var(--bg-secondary);
-}
-
-/* Metrics Grid */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.metric-card {
-  background: var(--bg-primary);
-  border-radius: 20px;
-  padding: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  box-shadow: 0 4px 20px var(--shadow-light);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  text-decoration: none;
-  color: inherit;
-}
-
-.metric-card.clickable:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 30px var(--shadow-medium);
-}
-
-.metric-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--accent-color);
-}
-
-.metric-card.primary { --accent-color: var(--accent-primary); }
-.metric-card.success { --accent-color: var(--success-color); }
-.metric-card.warning { --accent-color: var(--warning-color); }
-.metric-card.info { --accent-color: var(--info-color); }
-
-.metric-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: white;
-  background: var(--accent-color);
-}
-
-.metric-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.metric-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.metric-label {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin: 0.25rem 0;
-}
-
-.metric-trend {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.metric-trend.positive {
-  color: var(--success-color);
-}
-
-/* Dashboard Grid */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.dashboard-card {
-  background: var(--bg-primary);
-  border-radius: 20px;
-  box-shadow: 0 4px 20px var(--shadow-light);
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.dashboard-card:hover {
-  box-shadow: 0 8px 30px var(--shadow-medium);
-}
-
-.card-header {
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.btn-icon:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.view-all-link {
-  color: var(--accent-primary);
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.view-all-link:hover {
-  text-decoration: underline;
-}
-
-/* Asset Distribution Simple */
-.asset-distribution-simple {
-  padding: 2rem;
-}
-
-.asset-type-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.asset-type-item:last-child {
-  border-bottom: none;
-}
-
-.asset-type-name {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 0.95rem;
-}
-
-.asset-type-count {
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-  display: block;
-}
-
-.percentage-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--accent-primary);
-}
-
-/* Activity List */
-.activity-list {
-  padding: 1rem 2rem 2rem;
-}
-
-.activity-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-}
-
-.activity-icon {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 0.9rem;
-}
-
-.activity-content h4 {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.activity-content p {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.status-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--text-muted);
-}
-
-.status-dot.active {
-  background: var(--success-color);
-  box-shadow: 0 0 0 3px rgba(0, 255, 127, 0.2);
-}
-
-/* System Overview */
-.system-overview-card .card-header {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: white;
-}
-
-.system-overview-card .card-header h3 {
-  color: white;
-}
-
-.status-indicator {
-  background: var(--success-color);
-  color: var(--accent-primary);
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.system-stats {
-  padding: 2rem;
-}
-
-.stat-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.stat-row:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.stat-value {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 1rem;
-}
-
-.stat-value.success {
-  color: var(--success-color);
-}
-
-/* Insights Card */
-.insights-list {
-  padding: 1rem 2rem 2rem;
-}
-
-.insight-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.insight-item:last-child {
-  border-bottom: none;
-}
-
-.insight-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  color: white;
-}
-
-.insight-icon.success { background: var(--success-color); }
-.insight-icon.info { background: var(--info-color); }
-.insight-icon.warning { background: var(--warning-color); }
-
-.insight-content h4 {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.insight-content p {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-/* Quick Actions Bar */
-.quick-actions-bar {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 2rem;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  text-decoration: none;
-  border-radius: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px var(--shadow-light);
-}
-
-.action-btn.primary {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: white;
-}
-
-.action-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 30px var(--shadow-heavy);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .metrics-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .modern-dashboard {
-    padding: 1rem;
-  }
-
-  .dashboard-header {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: center;
-  }
-
-  #globalSearch {
-    width: 250px;
-  }
-
-  .metrics-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .quick-actions-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-</style>
 
 <script>
   function refreshInsights() {

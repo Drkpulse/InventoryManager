@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
+const multer = require('multer');
+const upload = multer(); // Use memory storage for form-data parsing
 
 // Login form
 router.get('/login', (req, res) => {
@@ -23,12 +25,18 @@ router.get('/register', (req, res) => {
   });
 });
 
-// Login process - FIXED VERSION
-router.post('/login', async (req, res) => {
+// Login process - FIXED VERSION WITH BETTER DEBUGGING
+router.post('/login', upload.none(), async (req, res) => {
   try {
+    console.log('=== LOGIN ROUTE CALLED ===');
+    console.log('Request body:', req.body);
+    console.log('Request headers:', req.headers);
+    console.log('Content-Type:', req.get('Content-Type'));
+
     const { email, password } = req.body;
 
-    console.log('Login attempt for:', email);
+    console.log('Extracted email:', email);
+    console.log('Extracted password:', password ? '[PRESENT]' : '[MISSING]');
 
     // Validate input
     if (!email || !password) {

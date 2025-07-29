@@ -1,365 +1,294 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <div class="header-title-section">
-      <div class="breadcrumb-nav">
-        <a href="/employees" class="breadcrumb-link">
+<div class="container mx-auto px-4 py-8">
+  <!-- Header & Breadcrumb -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+        <a href="/employees" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
           <i class="fas fa-users"></i> Employees
         </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-current"><%= employee.name %></span>
-      </div>
-      <h1><%= employee.name %></h1>
-      <div class="employee-meta">
-        <span class="employee-id-display">ID: <%= employee.cep %></span>
+        <i class="fas fa-chevron-right mx-2"></i>
+        <span class="text-gray-700 dark:text-gray-200"><%= employee.name %></span>
+      </nav>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2"><%= employee.name %></h1>
+      <div class="flex items-center gap-3 mt-2">
+        <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">ID: <%= employee.cep %></span>
         <%
-          let statusClass = 'status-active';
+          let statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700';
           let statusIcon = 'fas fa-check-circle';
           let statusText = 'Active';
-
           if (employee.left_date) {
-            statusClass = 'status-inactive';
+            statusClass = 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700';
             statusIcon = 'fas fa-user-times';
             statusText = 'Former Employee';
           }
         %>
-        <span class="employee-status <%= statusClass %>">
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full border text-xs font-semibold <%= statusClass %>">
           <i class="<%= statusIcon %>"></i> <%= statusText %>
         </span>
       </div>
     </div>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/employees" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Employees
-        </a>
-        <a href="/employees/<%= employee.id %>/edit" class="btn btn-warning">
-          <i class="fas fa-edit"></i> Edit
-        </a>
-        <a href="/employees/<%= employee.id %>/history" class="btn btn-info">
-          <i class="fas fa-history"></i> History
-        </a>
-        <button onclick="printEmployeeCard()" class="btn btn-success">
-          <i class="fas fa-print"></i> Print Card
-        </button>
-        <button type="button" class="btn btn-danger" id="deleteEmployeeBtn">
-          <i class="fas fa-trash"></i> Delete
-        </button>
-      </div>
+    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+      <a href="/employees" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Employees
+      </a>
+      <a href="/employees/<%= employee.id %>/edit" class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition">
+        <i class="fas fa-edit mr-2"></i> Edit
+      </a>
+      <a href="/employees/<%= employee.id %>/history" class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md transition">
+        <i class="fas fa-history mr-2"></i> History
+      </a>
+      <button onclick="printEmployeeCard()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-print mr-2"></i> Print Card
+      </button>
+      <button type="button" class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition" id="deleteEmployeeBtn">
+        <i class="fas fa-trash mr-2"></i> Delete
+      </button>
     </div>
   </div>
 
-  <div class="content-section">
-    <div class="employee-details-layout">
-      <!-- Main Information Panel -->
-      <div class="main-info-panel">
-        <div class="info-section">
-          <h2 class="section-title">
-            <i class="fas fa-user"></i>
-            Employee Information
-          </h2>
-
-          <div class="info-grid">
-            <div class="info-item">
-              <dt>Employee ID</dt>
-              <dd>
-                <span class="info-value code"><%= employee.cep %></span>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Email Address</dt>
-              <dd>
-                <span class="info-value">
-                  <i class="fas fa-envelope"></i>
-                  <a href="mailto:<%= employee.email %>"><%= employee.email %></a>
-                </span>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Department</dt>
-              <dd>
-                <% if (employee.department_name) { %>
-                  <span class="info-value primary">
-                    <i class="fas fa-building"></i> <%= employee.department_name %>
-                  </span>
-                <% } else { %>
-                  <span class="info-value muted">Not assigned</span>
-                <% } %>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Location</dt>
-              <dd>
-                <% if (employee.location_name) { %>
-                  <span class="info-value">
-                    <i class="fas fa-map-marker-alt"></i> <%= employee.location_name %>
-                  </span>
-                <% } else { %>
-                  <span class="info-value muted">Not assigned</span>
-                <% } %>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Start Date</dt>
-              <dd>
-                <span class="info-value">
-                  <i class="fas fa-calendar-plus"></i>
-                  <%= new Date(employee.joined_date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  }) %>
-                </span>
-              </dd>
-            </div>
-
-            <% if (employee.left_date) { %>
-            <div class="info-item">
-              <dt>End Date</dt>
-              <dd>
-                <span class="info-value">
-                  <i class="fas fa-calendar-times"></i>
-                  <%= new Date(employee.left_date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  }) %>
-                </span>
-              </dd>
-            </div>
-            <% } %>
-
-            <% if (employee.job_title) { %>
-            <div class="info-item">
-              <dt>Job Title</dt>
-              <dd>
-                <span class="info-value">
-                  <i class="fas fa-user-tie"></i> <%= employee.job_title %>
-                </span>
-              </dd>
-            </div>
-            <% } %>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Info Panel -->
+    <div class="lg:col-span-2 flex flex-col gap-8">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-6">
+          <i class="fas fa-user"></i> Employee Information
+        </h2>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Employee ID</dt>
+            <dd class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-1 rounded text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 inline-block"><%= employee.cep %></dd>
           </div>
-        </div>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Email Address</dt>
+            <dd>
+              <a href="mailto:<%= employee.email %>" class="text-gray-700 dark:text-gray-200 hover:underline flex items-center gap-1">
+                <i class="fas fa-envelope"></i> <%= employee.email %>
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Department</dt>
+            <dd>
+              <% if (employee.department_name) { %>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
+                  <i class="fas fa-building"></i> <%= employee.department_name %>
+                </span>
+              <% } else { %>
+                <span class="text-gray-400 dark:text-gray-500 text-xs">Not assigned</span>
+              <% } %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Location</dt>
+            <dd>
+              <% if (employee.location_name) { %>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-semibold">
+                  <i class="fas fa-map-marker-alt"></i> <%= employee.location_name %>
+                </span>
+              <% } else { %>
+                <span class="text-gray-400 dark:text-gray-500 text-xs">Not assigned</span>
+              <% } %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Start Date</dt>
+            <dd class="flex items-center gap-1">
+              <i class="fas fa-calendar-plus"></i>
+              <span>
+                <%= new Date(employee.joined_date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                }) %>
+              </span>
+            </dd>
+          </div>
+          <% if (employee.left_date) { %>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">End Date</dt>
+            <dd class="flex items-center gap-1">
+              <i class="fas fa-calendar-times"></i>
+              <span>
+                <%= new Date(employee.left_date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                }) %>
+              </span>
+            </dd>
+          </div>
+          <% } %>
+          <% if (employee.job_title) { %>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Job Title</dt>
+            <dd class="flex items-center gap-1">
+              <i class="fas fa-user-tie"></i> <span><%= employee.job_title %></span>
+            </dd>
+          </div>
+          <% } %>
+        </dl>
+      </div>
 
-        <!-- Software Assignments Section -->
-        <div class="info-section">
-          <h2 class="section-title">
-            <i class="fas fa-laptop-code"></i>
-            Software Assignments
-          </h2>
-
-          <% if (software && software.length > 0) { %>
-            <div class="software-assignments-grid">
-              <% software.forEach(sw => { %>
-                <div class="software-assignment-card">
-                  <div class="software-header">
-                    <div class="software-name"><%= sw.name %></div>
-                    <% if (sw.version) { %>
-                      <span class="version">v<%= sw.version %></span>
-                    <% } %>
-                  </div>
-
-                  <div class="software-details">
-                    <% if (sw.vendor) { %>
-                      <span class="vendor">
-                        <i class="fas fa-building"></i> <%= sw.vendor %>
-                      </span>
-                    <% } %>
-                    <% if (sw.license_type) { %>
-                      <span class="license-type">
-                        <i class="fas fa-certificate"></i> <%= sw.license_type %>
-                      </span>
-                    <% } %>
-                  </div>
-
-                  <% if (sw.assigned_date) { %>
-                    <div class="assignment-date">
-                      <i class="fas fa-calendar-check"></i>
-                      Assigned <%= new Date(sw.assigned_date).toLocaleDateString() %>
-                    </div>
-                  <% } %>
-
-                  <% if (sw.license_key) { %>
-                    <div class="license-key">
-                      <i class="fas fa-key"></i>
-                      <span class="key-value"><%= sw.license_key %></span>
-                    </div>
+      <!-- Software Assignments -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-6">
+          <i class="fas fa-laptop-code"></i> Software Assignments
+        </h2>
+        <% if (software && software.length > 0) { %>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <% software.forEach(sw => { %>
+              <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="font-semibold text-gray-800 dark:text-gray-100"><%= sw.name %></span>
+                  <% if (sw.version) { %>
+                    <span class="bg-gray-200 dark:bg-gray-700 text-xs rounded px-2 py-0.5">v<%= sw.version %></span>
                   <% } %>
                 </div>
-              <% }) %>
-            </div>
-          <% } else { %>
-            <div class="empty-state-inline">
-              <div class="empty-icon">
-                <i class="fas fa-laptop-code"></i>
+                <div class="flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <% if (sw.vendor) { %>
+                    <span><i class="fas fa-building"></i> <%= sw.vendor %></span>
+                  <% } %>
+                  <% if (sw.license_type) { %>
+                    <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded px-2 py-0.5"><i class="fas fa-certificate"></i> <%= sw.license_type %></span>
+                  <% } %>
+                </div>
+                <% if (sw.assigned_date) { %>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    <i class="fas fa-calendar-check"></i>
+                    Assigned <%= new Date(sw.assigned_date).toLocaleDateString() %>
+                  </div>
+                <% } %>
+                <% if (sw.license_key) { %>
+                  <div class="text-xs text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                    <i class="fas fa-key"></i>
+                    <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded"><%= sw.license_key %></span>
+                  </div>
+                <% } %>
               </div>
-              <div class="empty-text">
-                <h4>No Software Assigned</h4>
-                <p>This employee doesn't have any software licenses assigned yet.</p>
-              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+            <div class="text-4xl text-blue-500 mb-2">
+              <i class="fas fa-laptop-code"></i>
             </div>
+            <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No Software Assigned</h4>
+            <p class="text-gray-500 dark:text-gray-400">This employee doesn't have any software licenses assigned yet.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Assets Panel & Quick Actions -->
+    <div class="flex flex-col gap-8">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-6">
+          <i class="fas fa-boxes"></i> Assigned Assets
+          <% if (items && items.length > 0) { %>
+            <span class="ml-2 bg-blue-600 text-white px-2 py-0.5 rounded text-xs font-semibold"><%= items.length %></span>
+          <% } %>
+        </h2>
+        <% if (items && items.length > 0) { %>
+          <div class="flex flex-col gap-4">
+            <% items.forEach(item => { %>
+              <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-mono bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-semibold"><%= item.cep_brc %></span>
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="inline-flex items-center px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition" title="View Asset">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-800 dark:text-gray-100"><a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="hover:underline"><%= item.name %></a></h4>
+                  <div class="grid grid-cols-1 gap-1 text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    <div><span class="font-semibold">Type:</span> <%= item.type_name || 'N/A' %></div>
+                    <% if (item.brand_name) { %>
+                      <div><span class="font-semibold">Brand:</span> <%= item.brand_name %></div>
+                    <% } %>
+                    <% if (item.model) { %>
+                      <div><span class="font-semibold">Model:</span> <%= item.model %></div>
+                    <% } %>
+                    <% if (item.date_assigned) { %>
+                      <div><span class="font-semibold">Assigned:</span> <i class="fas fa-calendar"></i> <%= new Date(item.date_assigned).toLocaleDateString() %></div>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+          <div class="mt-6 flex gap-8">
+            <div>
+              <span class="block text-2xl font-bold text-blue-700 dark:text-blue-300"><%= items.length %></span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400">Total Assets</span>
+            </div>
+            <div>
+              <span class="block text-2xl font-bold text-blue-700 dark:text-blue-300"><%= [...new Set(items.map(item => item.type_name).filter(Boolean))].length %></span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400">Asset Types</span>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+            <div class="text-4xl text-blue-500 mb-2">
+              <i class="fas fa-box-open"></i>
+            </div>
+            <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No Assets Assigned</h4>
+            <p class="text-gray-500 dark:text-gray-400">This employee doesn't have any assets assigned currently.</p>
+          </div>
+        <% } %>
+      </div>
+      <!-- Quick Actions -->
+      <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Quick Actions</h3>
+        <div class="flex flex-col gap-2">
+          <a href="/employees/<%= employee.id %>/edit" class="inline-flex items-center gap-2 px-3 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white font-semibold transition">
+            <i class="fas fa-edit"></i> Edit Employee
+          </a>
+          <a href="/employees/<%= employee.id %>/history" class="inline-flex items-center gap-2 px-3 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white font-semibold transition">
+            <i class="fas fa-history"></i> View History
+          </a>
+          <button onclick="printEmployeeCard()" class="inline-flex items-center gap-2 px-3 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold transition">
+            <i class="fas fa-print"></i> Print Card
+          </button>
+          <% if (items && items.length > 0) { %>
+            <button onclick="generateAssetReport()" class="inline-flex items-center gap-2 px-3 py-2 rounded bg-purple-600 hover:bg-purple-700 text-white font-semibold transition">
+              <i class="fas fa-file-alt"></i> Asset Report
+            </button>
           <% } %>
         </div>
       </div>
-
-      <!-- Assets Panel -->
-      <div class="assets-panel">
-        <div class="assets-section">
-          <h2 class="section-title">
-            <i class="fas fa-boxes"></i>
-            Assigned Assets
-            <% if (items && items.length > 0) { %>
-              <span class="count-badge"><%= items.length %></span>
-            <% } %>
-          </h2>
-
-          <div class="assets-info">
-            <% if (items && items.length > 0) { %>
-              <div class="assets-list">
-                <% items.forEach(item => { %>
-                  <div class="asset-item-card">
-                    <div class="asset-header">
-                      <div class="asset-id">
-                        <span class="asset-id-badge"><%= item.cep_brc %></span>
-                      </div>
-                      <div class="asset-actions">
-                        <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn-view" title="View Asset">
-                          <i class="fas fa-eye"></i>
-                        </a>
-                      </div>
-                    </div>
-
-                    <div class="asset-content">
-                      <h4 class="asset-name">
-                        <a href="/items/<%= item.id %>/<%= item.cep_brc %>"><%= item.name %></a>
-                      </h4>
-
-                      <div class="asset-details">
-                        <div class="asset-detail">
-                          <span class="detail-label">Type:</span>
-                          <span class="detail-value"><%= item.type_name || 'N/A' %></span>
-                        </div>
-                        <% if (item.brand_name) { %>
-                          <div class="asset-detail">
-                            <span class="detail-label">Brand:</span>
-                            <span class="detail-value"><%= item.brand_name %></span>
-                          </div>
-                        <% } %>
-                        <% if (item.model) { %>
-                          <div class="asset-detail">
-                            <span class="detail-label">Model:</span>
-                            <span class="detail-value"><%= item.model %></span>
-                          </div>
-                        <% } %>
-                        <% if (item.date_assigned) { %>
-                          <div class="asset-detail">
-                            <span class="detail-label">Assigned:</span>
-                            <span class="detail-value">
-                              <i class="fas fa-calendar"></i>
-                              <%= new Date(item.date_assigned).toLocaleDateString() %>
-                            </span>
-                          </div>
-                        <% } %>
-                      </div>
-                    </div>
-                  </div>
-                <% }) %>
-              </div>
-
-              <div class="assets-summary">
-                <div class="summary-stats">
-                  <div class="stat-item">
-                    <span class="stat-number"><%= items.length %></span>
-                    <span class="stat-label">Total Assets</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-number">
-                      <%= [...new Set(items.map(item => item.type_name).filter(Boolean))].length %>
-                    </span>
-                    <span class="stat-label">Asset Types</span>
-                  </div>
-                </div>
-              </div>
-            <% } else { %>
-              <div class="unassigned-assets">
-                <div class="unassigned-icon">
-                  <i class="fas fa-box-open"></i>
-                </div>
-                <div class="unassigned-text">
-                  <h4>No Assets Assigned</h4>
-                  <p>This employee doesn't have any assets assigned currently.</p>
-                </div>
-              </div>
-            <% } %>
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="quick-actions-section">
-          <h3 class="actions-title">Quick Actions</h3>
-          <div class="actions-list">
-            <a href="/employees/<%= employee.id %>/edit" class="action-item">
-              <i class="fas fa-edit"></i>
-              <span>Edit Employee</span>
-            </a>
-            <a href="/employees/<%= employee.id %>/history" class="action-item">
-              <i class="fas fa-history"></i>
-              <span>View History</span>
-            </a>
-            <button onclick="printEmployeeCard()" class="action-item action-button">
-              <i class="fas fa-print"></i>
-              <span>Print Card</span>
-            </button>
-            <% if (items && items.length > 0) { %>
-              <button onclick="generateAssetReport()" class="action-item action-button">
-                <i class="fas fa-file-alt"></i>
-                <span>Asset Report</span>
-              </button>
-            <% } %>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
-</div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal-overlay" id="deleteEmployeeModal">
-  <div class="modal-content warning-modal">
-    <div class="modal-header">
-      <i class="fas fa-exclamation-triangle modal-icon warning"></i>
-      <h4>Confirm Employee Deletion</h4>
-    </div>
-
-    <div class="modal-body">
-      <div id="noAssignedItems" style="display: none;">
-        <p>Are you sure you want to delete <strong><%= employee.name %></strong>?</p>
-        <p>This action cannot be undone.</p>
+  <!-- Delete Confirmation Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" id="deleteEmployeeModal" style="display:none;">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 text-2xl"></i>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Confirm Employee Deletion</h4>
       </div>
-
-      <div id="hasAssignedItems" style="display: none;">
-        <p>This employee has assigned assets that will be unassigned:</p>
-        <div class="modal-assets-container">
-          <div class="assets-preview" id="assignedAssetsList"></div>
+      <div class="mb-4">
+        <div id="noAssignedItems" style="display: none;">
+          <p>Are you sure you want to delete <strong><%= employee.name %></strong>? This action cannot be undone.</p>
         </div>
-        <div class="warning-message">
-          <i class="fas fa-exclamation-triangle"></i>
-          <span>All these assets will be unassigned and the employee will be deleted. This cannot be undone.</span>
+        <div id="hasAssignedItems" style="display: none;">
+          <p>This employee has assigned assets that will be unassigned:</p>
+          <div class="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 my-3">
+            <div id="assignedAssetsList" class="p-3"></div>
+          </div>
+          <div class="flex items-center gap-2 px-3 py-2 bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded text-yellow-800 dark:text-yellow-200 text-sm">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>All these assets will be unassigned and the employee will be deleted. This cannot be undone.</span>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div class="modal-actions">
-      <button type="button" class="btn btn-danger" id="confirmDelete">
-        <i class="fas fa-trash"></i> Delete Employee
-      </button>
-      <button type="button" class="btn btn-secondary" id="cancelDelete">
-        <i class="fas fa-times"></i> Cancel
-      </button>
+      <div class="flex gap-2 justify-end">
+        <button type="button" class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition" id="confirmDelete">
+          <i class="fas fa-trash mr-2"></i> Delete Employee
+        </button>
+        <button type="button" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition" id="cancelDelete">
+          <i class="fas fa-times mr-2"></i> Cancel
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -374,29 +303,24 @@ document.addEventListener('DOMContentLoaded', function() {
   const hasAssignedItems = document.getElementById('hasAssignedItems');
   const assignedAssetsList = document.getElementById('assignedAssetsList');
 
-  // When the delete button is clicked, check for assigned items
   deleteButton.addEventListener('click', function() {
     fetchAssignedItems();
   });
 
-  // Close the modal when Cancel is clicked
   cancelButton.addEventListener('click', function() {
     modal.style.display = 'none';
   });
 
-  // Handle the confirmation of deletion
   confirmButton.addEventListener('click', function() {
     unassignAndDeleteEmployee();
   });
 
-  // Close when clicking outside the modal
   modal.addEventListener('click', function(event) {
     if (event.target === modal) {
       modal.style.display = 'none';
     }
   });
 
-  // Fetch assigned items
   function fetchAssignedItems() {
     fetch('/employees/<%= employee.id %>/delete', {
       method: 'POST',
@@ -408,64 +332,34 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(response => response.json())
     .then(data => {
       if (data.hasAssignedItems) {
-        // Display the assigned items in the modal
         hasAssignedItems.style.display = 'block';
         noAssignedItems.style.display = 'none';
-
-        // Clear and populate the items list
         assignedAssetsList.innerHTML = '';
         data.items.forEach(item => {
           const assetCard = document.createElement('div');
-          assetCard.className = 'modal-asset-card';
+          assetCard.className = 'flex items-center justify-between bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-3 py-2 mb-2';
           assetCard.innerHTML = `
-            <div class="modal-asset-header">
-              <span class="modal-asset-id">${item.cep_brc}</span>
-              <span class="modal-asset-name">${item.name}</span>
-            </div>
-            <div class="modal-asset-details">
-              <span class="modal-asset-type">${item.type_name || 'N/A'}</span>
-            </div>
+            <span class="font-mono bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-semibold">${item.cep_brc}</span>
+            <span class="font-semibold text-gray-800 dark:text-gray-100">${item.name}</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">${item.type_name || 'N/A'}</span>
           `;
           assignedAssetsList.appendChild(assetCard);
         });
       } else {
-        // No assigned items, show simple confirmation
         hasAssignedItems.style.display = 'none';
         noAssignedItems.style.display = 'block';
       }
-
-      // Show the modal
       modal.style.display = 'flex';
     })
     .catch(error => {
       console.error('Error fetching assigned items:', error);
-
-      // Show error alert
-      const errorAlert = document.createElement('div');
-      errorAlert.className = 'alert alert-danger';
-      errorAlert.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <div>
-          <strong>Error checking assigned items</strong>
-          <p>Please try again or contact support if the problem persists.</p>
-        </div>
-      `;
-
-      document.querySelector('.content-section').insertBefore(errorAlert, document.querySelector('.employee-details-layout'));
-
-      setTimeout(() => {
-        if (errorAlert.parentNode) {
-          errorAlert.remove();
-        }
-      }, 5000);
+      alert('Error checking assigned items. Please try again.');
     });
   }
 
-  // Unassign all items and delete the employee
   function unassignAndDeleteEmployee() {
     confirmButton.disabled = true;
     confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
     fetch('/employees/<%= employee.id %>/unassign-and-delete', {
       method: 'POST',
       headers: {
@@ -482,30 +376,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     })
     .catch(error => {
-      console.error('Error deleting employee:', error);
-
-      // Show error in modal
-      const errorDiv = document.createElement('div');
-      errorDiv.className = 'alert alert-danger';
-      errorDiv.style.marginTop = '1rem';
-      errorDiv.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <div>
-          <strong>Error deleting employee</strong>
-          <p>${error.message}</p>
-        </div>
-      `;
-
-      document.querySelector('.modal-body').appendChild(errorDiv);
-
+      alert('Error deleting employee: ' + error.message);
       confirmButton.disabled = false;
-      confirmButton.innerHTML = '<i class="fas fa-trash"></i> Delete Employee';
-
-      setTimeout(() => {
-        if (errorDiv.parentNode) {
-          errorDiv.remove();
-        }
-      }, 5000);
+      confirmButton.innerHTML = '<i class="fas fa-trash mr-2"></i> Delete Employee';
     });
   }
 });
@@ -518,51 +391,15 @@ function printEmployeeCard() {
       <head>
         <title>Employee Card - <%= employee.name %></title>
         <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            margin: 0;
-            background: white;
-          }
-          .employee-card {
-            border: 2px solid #333;
-            padding: 20px;
-            width: 400px;
-            background: white;
-            border-radius: 8px;
-          }
-          .employee-header {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-          }
-          .employee-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 8px;
-          }
-          .employee-id {
-            font-size: 18px;
-            font-family: 'Courier New', monospace;
-            color: #666;
-          }
-          .employee-details {
-            font-size: 14px;
-            line-height: 1.8;
-          }
-          .detail-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-          }
-          .detail-label {
-            font-weight: bold;
-            color: #333;
-          }
-          .detail-value {
-            color: #666;
-          }
+          body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background: white; }
+          .employee-card { border: 2px solid #333; padding: 20px; width: 400px; background: white; border-radius: 8px; }
+          .employee-header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+          .employee-name { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+          .employee-id { font-size: 18px; font-family: 'Courier New', monospace; color: #666; }
+          .employee-details { font-size: 14px; line-height: 1.8; }
+          .detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+          .detail-label { font-weight: bold; color: #333; }
+          .detail-value { color: #666; }
         </style>
       </head>
       <body>
@@ -610,16 +447,11 @@ function generateAssetReport() {
   params.append('employee_id', '<%= employee.id %>');
   params.append('report_type', 'employee_assets');
   params.append('export_timestamp', new Date().toISOString());
-
-  // Create hidden iframe for download
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = `/reports/employee-assets?${params.toString()}`;
   document.body.appendChild(iframe);
-
-  setTimeout(() => {
-    document.body.removeChild(iframe);
-  }, 2000);
+  setTimeout(() => { document.body.removeChild(iframe); }, 2000);
 }
 </script>
 

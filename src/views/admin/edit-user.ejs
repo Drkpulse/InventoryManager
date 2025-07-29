@@ -1,52 +1,73 @@
-<h1>Edit User</h1>
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2">
+      <i class="fas fa-user-edit"></i> Edit User
+    </h1>
 
-<% if (typeof errors !== 'undefined' && errors.length > 0) { %>
-  <div class="alert alert-danger">
-    <ul>
-      <% errors.forEach(error => { %>
-        <li><%= error %></li>
-      <% }) %>
-    </ul>
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <div class="mb-6 flex flex-col gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>Please fix the following errors:</strong>
+        </div>
+        <ul class="list-disc pl-6">
+          <% errors.forEach(error => { %>
+            <li><%= error %></li>
+          <% }) %>
+        </ul>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/admin/users/<%= editUser.id %>/edit" class="space-y-6" autocomplete="off">
+      <div>
+        <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Name <span class="text-red-500">*</span></label>
+        <input type="text" id="name" name="name" value="<%= editUser.name %>" required
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          placeholder="Enter user name">
+      </div>
+
+      <div>
+        <label for="email" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Email <span class="text-red-500">*</span></label>
+        <input type="email" id="email" name="email" value="<%= editUser.email %>" required
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          placeholder="Enter email address">
+      </div>
+
+      <div>
+        <label for="role" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Role <span class="text-red-500">*</span></label>
+        <select id="role" name="role" required
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          <option value="user" <%= editUser.role === 'user' ? 'selected' : '' %>>User</option>
+          <option value="admin" <%= editUser.role === 'admin' ? 'selected' : '' %>>Admin</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="password" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">New Password</label>
+        <input type="password" id="password" name="password"
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          placeholder="Leave blank to keep current password">
+        <small class="text-gray-500 dark:text-gray-400">Only enter a password if you want to change it (min 6 chars)</small>
+      </div>
+
+      <div>
+        <label for="confirm_password" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Confirm New Password</label>
+        <input type="password" id="confirm_password" name="confirm_password"
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          placeholder="Re-enter new password">
+      </div>
+
+      <div class="flex gap-2 mt-4">
+        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-save"></i> Update User
+        </button>
+        <a href="/admin/users" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-times"></i> Cancel
+        </a>
+      </div>
+    </form>
   </div>
-<% } %>
-
-<form method="POST" action="/admin/users/<%= editUser.id %>/edit">
-  <div class="form-group">
-    <label for="name">Name</label>
-    <input type="text" id="name" name="name" value="<%= editUser.name %>" required>
-  </div>
-
-  <div class="form-group">
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" value="<%= editUser.email %>" required>
-  </div>
-
-  <div class="form-group">
-    <label for="role">Role</label>
-    <select id="role" name="role" required>
-      <option value="user" <%= editUser.role === 'user' ? 'selected' : '' %>>User</option>
-      <option value="admin" <%= editUser.role === 'admin' ? 'selected' : '' %>>Admin</option>
-    </select>
-  </div>
-
-  <div class="form-group">
-    <label for="password">New Password (leave blank to keep current)</label>
-    <input type="password" id="password" name="password">
-    <small>Only enter a password if you want to change it</small>
-  </div>
-
-  <div class="form-group">
-    <label for="confirm_password">Confirm New Password</label>
-    <input type="password" id="confirm_password" name="confirm_password">
-  </div>
-
-  <div class="form-group">
-    <button type="submit" class="btn">Update User</button>
-    <a href="/admin/users" class="btn">Cancel</a>
-  </div>
-</form>
-
-<link rel="stylesheet" href="/css/styles.css">
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -57,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const form = document.querySelector('form');
 
   form.addEventListener('submit', function(e) {
-    // Reset any previous error styling
     clearErrorStyling();
 
     let hasErrors = false;
@@ -101,14 +121,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Clear confirm password when password is cleared
   passwordField.addEventListener('input', function() {
     if (!this.value) {
       confirmPasswordField.value = '';
     }
   });
 
-  // Real-time validation for name and email
   nameField.addEventListener('blur', function() {
     if (!this.value || this.value.trim() === '') {
       showFieldError(this, 'Name is required');
@@ -128,30 +146,22 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   function showFieldError(field, message) {
-    field.classList.add('error');
-    field.style.borderColor = '#dc3545';
-
+    field.classList.add('border-red-500', 'focus:ring-red-500');
     // Remove existing error message
     const existingError = field.parentNode.querySelector('.error-message');
     if (existingError) {
       existingError.remove();
     }
-
     // Add error message
     const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.style.color = '#dc3545';
-    errorDiv.style.fontSize = '0.875rem';
-    errorDiv.style.marginTop = '0.25rem';
+    errorDiv.className = 'error-message text-red-600 dark:text-red-400 text-xs mt-1';
     errorDiv.textContent = message;
     field.parentNode.appendChild(errorDiv);
-
     field.focus();
   }
 
   function clearFieldError(field) {
-    field.classList.remove('error');
-    field.style.borderColor = '';
+    field.classList.remove('border-red-500', 'focus:ring-red-500');
     const errorMessage = field.parentNode.querySelector('.error-message');
     if (errorMessage) {
       errorMessage.remove();
@@ -159,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function clearErrorStyling() {
-    const errorFields = document.querySelectorAll('.error');
+    const errorFields = document.querySelectorAll('.border-red-500');
     errorFields.forEach(field => clearFieldError(field));
   }
 

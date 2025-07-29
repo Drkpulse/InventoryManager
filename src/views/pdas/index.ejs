@@ -1,149 +1,159 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <h1><i class="fas fa-mobile-alt"></i> PDA Management</h1>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/pdas/new" class="btn btn-primary">
-          <i class="fas fa-plus"></i> Add New PDA
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+        <i class="fas fa-mobile-alt"></i> PDA Management
+      </h1>
+      <div class="flex gap-2">
+        <a href="/pdas/new" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+          <i class="fas fa-plus mr-2"></i> Add New PDA
         </a>
-        <a href="/simcards/new" class="btn btn-secondary">
-          <i class="fas fa-sim-card"></i> Add SIM Card
+        <a href="/simcards/new" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+          <i class="fas fa-sim-card mr-2"></i> Add SIM Card
         </a>
       </div>
     </div>
-  </div>
 
-<% if (locals.messages && messages.success) { %>
-  <div class="alert alert-success">
-    <i class="fas fa-check-circle"></i>
-    <%= messages.success %>
-  </div>
-<% } %>
+    <% if (locals.messages && messages.success) { %>
+      <div class="mb-6 bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 rounded-lg p-4 flex items-center gap-2">
+        <i class="fas fa-check-circle"></i>
+        <span><%= messages.success %></span>
+      </div>
+    <% } %>
 
-<div class="table-controls">
-  <div class="table-info">
-    <span>Showing <%= pdas.length %> of <%= totalPDAs %> PDAs</span>
-  </div>
-  <div class="table-filters">
-    <select class="form-control" onchange="filterPDAs('client', this.value)">
-      <option value="">All Clients</option>
-      <% clients.forEach(client => { %>
-        <option value="<%= client.id %>" <%= filters.client == client.id ? 'selected' : '' %>>
-          <%= client.name %>
-        </option>
-      <% }); %>
-    </select>
-    <select class="form-control" onchange="filterPDAs('status', this.value)">
-      <option value="">All Statuses</option>
-      <% statuses.forEach(status => { %>
-        <option value="<%= status.id %>" <%= filters.status == status.id ? 'selected' : '' %>>
-          <%= status.name %>
-        </option>
-      <% }); %>
-    </select>
-  </div>
-</div>
+    <!-- Table Controls -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+      <span class="text-gray-700 dark:text-gray-200 text-sm">
+        Showing <%= pdas.length %> of <%= totalPDAs %> PDAs
+      </span>
+      <div class="flex flex-wrap gap-2">
+        <select class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          onchange="filterPDAs('client', this.value)">
+          <option value="">All Clients</option>
+          <% clients.forEach(client => { %>
+            <option value="<%= client.id %>" <%= filters.client == client.id ? 'selected' : '' %>>
+              <%= client.name %>
+            </option>
+          <% }); %>
+        </select>
+        <select class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          onchange="filterPDAs('status', this.value)">
+          <option value="">All Statuses</option>
+          <% statuses.forEach(status => { %>
+            <option value="<%= status.id %>" <%= filters.status == status.id ? 'selected' : '' %>>
+              <%= status.name %>
+            </option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
 
-<div class="table-container">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Serial Number</th>
-        <th>Model</th>
-        <th>Client</th>
-        <th>Cost</th>
-        <th>Status</th>
-        <th>SIM Cards</th>
-        <th>Created</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% if (pdas.length === 0) { %>
-        <tr>
-          <td colspan="8" class="text-center">
-            <div class="empty-state">
-              <i class="fas fa-mobile-alt"></i>
-              <h3>No PDAs found</h3>
-              <p>Start by adding your first PDA.</p>
-              <a href="/pdas/new" class="btn btn-primary">Add New PDA</a>
-            </div>
-          </td>
-        </tr>
-      <% } else { %>
-        <% pdas.forEach(pda => { %>
+    <!-- Table -->
+    <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-900">
           <tr>
-            <td>
-              <a href="/pdas/<%= pda.id %>" class="entity-link">
-                <%= pda.serial_number %>
-              </a>
-            </td>
-            <td><%= pda.model || '-' %></td>
-            <td>
-              <a href="/clients/<%= pda.client_id %>">
-                <%= pda.client_name %> (<%= pda.client_code %>)
-              </a>
-            </td>
-            <td>
-              <% if (pda.cost) { %>
-                €<%= parseFloat(pda.cost).toFixed(2) %>
-              <% } else { %>
-                <span class="text-muted">-</span>
-              <% } %>
-            </td>
-            <td>
-              <% if (pda.status_name) { %>
-                <span class="badge badge-info"><%= pda.status_name %></span>
-              <% } else { %>
-                <span class="text-muted">-</span>
-              <% } %>
-            </td>
-            <td>
-              <span class="badge badge-secondary">
-                <i class="fas fa-sim-card"></i> <%= pda.sim_count || 0 %>
-              </span>
-            </td>
-            <td><%= new Date(pda.created_at).toLocaleDateString() %></td>
-            <td>
-              <div class="action-buttons">
-                <a href="/pdas/<%= pda.id %>" class="btn btn-sm btn-outline-primary">
-                  <i class="fas fa-eye"></i>
-                </a>
-                <a href="/pdas/<%= pda.id %>/edit" class="btn btn-sm btn-outline-secondary">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<%= pda.id %>', '<%= pda.serial_number %>')">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </td>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Serial Number</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Model</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Client</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Cost</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Status</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">SIM Cards</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Created</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Actions</th>
           </tr>
-        <% }); %>
-      <% } %>
-    </tbody>
-  </table>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <% if (pdas.length === 0) { %>
+            <tr>
+              <td colspan="8" class="text-center py-12">
+                <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+                  <div class="text-4xl text-blue-500 mb-2">
+                    <i class="fas fa-mobile-alt"></i>
+                  </div>
+                  <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No PDAs found</h3>
+                  <p class="text-gray-500 dark:text-gray-400">Start by adding your first PDA.</p>
+                  <a href="/pdas/new" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Add New PDA
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% pdas.forEach(pda => { %>
+              <tr>
+                <td class="px-4 py-3">
+                  <a href="/pdas/<%= pda.id %>" class="text-blue-600 dark:text-blue-300 hover:underline font-mono">
+                    <%= pda.serial_number %>
+                  </a>
+                </td>
+                <td class="px-4 py-3 text-gray-800 dark:text-gray-100"><%= pda.model || '-' %></td>
+                <td class="px-4 py-3">
+                  <a href="/clients/<%= pda.client_id %>" class="text-purple-700 dark:text-purple-300 hover:underline">
+                    <%= pda.client_name %> (<%= pda.client_code %>)
+                  </a>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (pda.cost) { %>
+                    <span class="text-gray-800 dark:text-gray-100">€<%= parseFloat(pda.cost).toFixed(2) %></span>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500 italic">-</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (pda.status_name) { %>
+                    <span class="inline-block px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-semibold"><%= pda.status_name %></span>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500 italic">-</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 text-xs font-semibold">
+                    <i class="fas fa-sim-card"></i> <%= pda.sim_count || 0 %>
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-gray-700 dark:text-gray-200"><%= new Date(pda.created_at).toLocaleDateString() %></td>
+                <td class="px-4 py-3">
+                  <div class="flex gap-2">
+                    <a href="/pdas/<%= pda.id %>" class="inline-flex items-center px-3 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" title="View">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="/pdas/<%= pda.id %>/edit" class="inline-flex items-center px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900 hover:bg-yellow-200 dark:hover:bg-yellow-800 text-yellow-700 dark:text-yellow-200 rounded-md transition" title="Edit">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <button class="inline-flex items-center px-3 py-1.5 bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-200 rounded-md transition" onclick="confirmDelete('<%= pda.id %>', '<%= pda.serial_number %>')" title="Delete">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      function filterPDAs(type, value) {
+        const url = new URL(window.location);
+        if (value) {
+          url.searchParams.set(type, value);
+        } else {
+          url.searchParams.delete(type);
+        }
+        window.location = url;
+      }
+
+      function confirmDelete(pdaId, serialNumber) {
+        if (confirm(`Are you sure you want to delete PDA "${serialNumber}"? This action cannot be undone.`)) {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = `/pdas/${pdaId}/delete`;
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
+    </script>
+  </div>
 </div>
-
-<script>
-function filterPDAs(type, value) {
-  const url = new URL(window.location);
-  if (value) {
-    url.searchParams.set(type, value);
-  } else {
-    url.searchParams.delete(type);
-  }
-  window.location = url;
-}
-
-function confirmDelete(pdaId, serialNumber) {
-  if (confirm(`Are you sure you want to delete PDA "${serialNumber}"? This action cannot be undone.`)) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/pdas/${pdaId}/delete`;
-    document.body.appendChild(form);
-    form.submit();
-  }
-}
-</script>
-
-</div> <!-- end page-container -->

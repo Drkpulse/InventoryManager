@@ -1,88 +1,96 @@
-<div class="content-header">
-  <div class="header-title">
-    <h1><i class="fas fa-mobile-alt"></i> PDA: <%= pda.serial_number %></h1>
-    <p>PDA Details</p>
-  </div>
-  <div class="header-actions">
-    <a href="/pdas" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> Back to PDAs
-    </a>
-    <a href="/pdas/<%= pda.id %>/edit" class="btn btn-primary">
-      <i class="fas fa-edit"></i> Edit PDA
-    </a>
-  </div>
-</div>
-
-<div class="details-container">
-  <div class="info-section">
-    <h3><i class="fas fa-info-circle"></i> PDA Information</h3>
-    <div class="info-grid">
-      <div class="info-item">
-        <label>Serial Number:</label>
-        <span><%= pda.serial_number %></span>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+  <div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+          <i class="fas fa-mobile-alt"></i> PDA: <%= pda.serial_number %>
+        </h1>
+        <p class="text-gray-600 dark:text-gray-300 mt-1">PDA Details</p>
       </div>
-      <div class="info-item">
-        <label>Model:</label>
-        <span><%= pda.model || 'Not specified' %></span>
-      </div>
-      <div class="info-item">
-        <label>Cost:</label>
-        <span>
-          <% if (pda.cost) { %>
-            €<%= parseFloat(pda.cost).toFixed(2) %>
-          <% } else { %>
-            Not specified
-          <% } %>
-        </span>
-      </div>
-      <div class="info-item">
-        <label>Status:</label>
-        <span>
-          <% if (pda.status_name) { %>
-            <span class="badge badge-info"><%= pda.status_name %></span>
-          <% } else { %>
-            <span class="text-muted">No status</span>
-          <% } %>
-        </span>
-      </div>
-      <div class="info-item">
-        <label>Client:</label>
-        <span>
-          <% if (pda.client_name) { %>
-            <a href="/clients/<%= pda.client_id %>">
-              <%= pda.client_name %> (<%= pda.client_code %>)
-            </a>
-          <% } else { %>
-            <span class="text-muted">No client assigned</span>
-          <% } %>
-        </span>
-      </div>
-      <div class="info-item">
-        <label>SIM Cards:</label>
-        <span>
-          <span class="badge badge-secondary">
-            <i class="fas fa-sim-card"></i> <%= pda.sim_count || 0 %> assigned
-          </span>
-        </span>
-      </div>
-      <div class="info-item">
-        <label>Created:</label>
-        <span><%= new Date(pda.created_at).toLocaleString() %></span>
-      </div>
-      <div class="info-item">
-        <label>Last Updated:</label>
-        <span><%= new Date(pda.updated_at).toLocaleString() %></span>
+      <div class="flex gap-2">
+        <a href="/pdas" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md font-semibold transition">
+          <i class="fas fa-arrow-left mr-2"></i> Back to PDAs
+        </a>
+        <a href="/pdas/<%= pda.id %>/edit" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+          <i class="fas fa-edit mr-2"></i> Edit PDA
+        </a>
       </div>
     </div>
-  </div>
 
-  <div class="actions-section">
-    <a href="/pdas/<%= pda.id %>/history" class="btn btn-info">
-      <i class="fas fa-history"></i> View History
-    </a>
-    <button class="btn btn-danger" onclick="confirmDelete('<%= pda.id %>', '<%= pda.serial_number %>')">
-      <i class="fas fa-trash"></i> Delete PDA
-    </button>
+    <!-- PDA Info -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i class="fas fa-info-circle"></i> PDA Information
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Serial Number</span>
+          <span class="text-gray-800 dark:text-gray-100"><%= pda.serial_number %></span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Model</span>
+          <span class="text-gray-800 dark:text-gray-100"><%= pda.model || 'Not specified' %></span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Cost</span>
+          <span class="text-gray-800 dark:text-gray-100">
+            <% if (pda.cost) { %>
+              €<%= parseFloat(pda.cost).toFixed(2) %>
+            <% } else { %>
+              <span class="text-gray-400 dark:text-gray-500 italic">Not specified</span>
+            <% } %>
+          </span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Status</span>
+          <span>
+            <% if (pda.status_name) { %>
+              <span class="inline-block px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-semibold"><%= pda.status_name %></span>
+            <% } else { %>
+              <span class="text-gray-400 dark:text-gray-500 italic">No status</span>
+            <% } %>
+          </span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Client</span>
+          <span>
+            <% if (pda.client_name) { %>
+              <a href="/clients/<%= pda.client_id %>" class="text-purple-700 dark:text-purple-300 hover:underline">
+                <%= pda.client_name %> (<%= pda.client_code %>)
+              </a>
+            <% } else { %>
+              <span class="text-gray-400 dark:text-gray-500 italic">No client assigned</span>
+            <% } %>
+          </span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">SIM Cards</span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 text-xs font-semibold">
+            <i class="fas fa-sim-card"></i> <%= pda.sim_count || 0 %> assigned
+          </span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Created</span>
+          <span class="text-gray-800 dark:text-gray-100"><%= new Date(pda.created_at).toLocaleString() %></span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Last Updated</span>
+          <span class="text-gray-800 dark:text-gray-100"><%= new Date(pda.updated_at).toLocaleString() %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-wrap gap-4 mb-8">
+      <a href="/pdas/<%= pda.id %>/history" class="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 font-semibold rounded-md transition hover:bg-blue-200 dark:hover:bg-blue-800">
+        <i class="fas fa-history mr-2"></i> View History
+      </a>
+      <button class="inline-flex items-center px-4 py-2 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 font-semibold rounded-md transition hover:bg-red-200 dark:hover:bg-red-800"
+        onclick="confirmDelete('<%= pda.id %>', '<%= pda.serial_number %>')">
+        <i class="fas fa-trash mr-2"></i> Delete PDA
+      </button>
+    </div>
   </div>
 </div>
 

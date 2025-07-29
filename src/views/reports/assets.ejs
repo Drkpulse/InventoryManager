@@ -1,913 +1,780 @@
-<h1>Asset Report</h1>
-
-<div class="report-actions">
-  <a href="/reports/export-assets" class="btn">Export to CSV</a>
-</div>
-
-<div class="page-container">
-  <div class="page-header-simple">
-    <div class="header-title-section">
-      <div class="breadcrumb-nav">
-        <a href="/reports" class="breadcrumb-link">
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
+        <a href="/reports" class="hover:underline flex items-center gap-1">
           <i class="fas fa-chart-bar"></i> Reports
         </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-current">Asset Analytics</span>
+        <i class="fas fa-chevron-right"></i>
+        <span class="font-semibold text-gray-700 dark:text-gray-200">Asset Analytics</span>
       </div>
-      <h1>Asset Analytics Dashboard</h1>
-      <div class="report-meta">
-        <span class="report-date">
-          <i class="fas fa-calendar"></i>
-          Generated <%= new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          }) %>
-        </span>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+        <i class="fas fa-boxes"></i> Asset Analytics Dashboard
+      </h1>
+      <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <i class="fas fa-calendar"></i>
+        Generated <%= new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }) %>
       </div>
     </div>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/reports" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Reports
-        </a>
-        <div class="dropdown">
-          <button class="btn btn-success dropdown-toggle" id="exportDropdown">
-            <i class="fas fa-download"></i> Export Data
-          </button>
-          <div class="dropdown-menu" id="exportMenu">
-            <a href="#" onclick="exportReport('summary')" class="dropdown-item">
-              <i class="fas fa-chart-pie"></i> Executive Summary (PDF)
-            </a>
-            <a href="#" onclick="exportReport('detailed')" class="dropdown-item">
-              <i class="fas fa-table"></i> Detailed Assets (CSV)
-            </a>
-            <a href="#" onclick="exportReport('analytics')" class="dropdown-item">
-              <i class="fas fa-chart-bar"></i> Analytics Data (JSON)
-            </a>
-            <a href="#" onclick="exportReport('custom')" class="dropdown-item">
-              <i class="fas fa-cog"></i> Custom Export
-            </a>
-          </div>
-        </div>
-        <button onclick="printReport()" class="btn btn-info">
-          <i class="fas fa-print"></i> Print Report
+    <div class="flex flex-wrap gap-2">
+      <a href="/reports" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+      </a>
+      <div class="relative">
+        <button class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition" id="exportDropdown">
+          <i class="fas fa-download mr-2"></i> Export Data
         </button>
+        <div class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10 hidden" id="exportMenu">
+          <a href="#" onclick="exportReport('summary')" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100">
+            <i class="fas fa-chart-pie mr-2"></i> Executive Summary (PDF)
+          </a>
+          <a href="#" onclick="exportReport('detailed')" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100">
+            <i class="fas fa-table mr-2"></i> Detailed Assets (CSV)
+          </a>
+          <a href="#" onclick="exportReport('analytics')" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100">
+            <i class="fas fa-chart-bar mr-2"></i> Analytics Data (JSON)
+          </a>
+          <a href="#" onclick="exportReport('custom')" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100">
+            <i class="fas fa-cog mr-2"></i> Custom Export
+          </a>
+        </div>
+      </div>
+      <button onclick="printReport()" class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition">
+        <i class="fas fa-print mr-2"></i> Print Report
+      </button>
+    </div>
+  </div>
+
+  <!-- Executive Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div class="bg-blue-100 dark:bg-blue-900 rounded-lg shadow p-6 flex flex-col items-center">
+      <div class="text-3xl text-blue-600 dark:text-blue-300 mb-2"><i class="fas fa-boxes"></i></div>
+      <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">Total Assets</div>
+      <div class="text-2xl font-bold text-gray-900 dark:text-gray-100"><%= totalAssets.toLocaleString() %></div>
+      <div class="text-xs text-blue-700 dark:text-blue-300 mt-1 flex items-center gap-1">
+        <i class="fas fa-arrow-up"></i> Inventory managed
+      </div>
+    </div>
+    <div class="bg-green-100 dark:bg-green-900 rounded-lg shadow p-6 flex flex-col items-center">
+      <div class="text-3xl text-green-600 dark:text-green-300 mb-2"><i class="fas fa-euro-sign"></i></div>
+      <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">Total Value</div>
+      <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">€<%= totalValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) %></div>
+      <div class="text-xs text-green-700 dark:text-green-300 mt-1 flex items-center gap-1">
+        <i class="fas fa-calculator"></i> Avg: €<%= avgValue.toFixed(0) %> per asset
+      </div>
+    </div>
+    <div class="bg-blue-50 dark:bg-blue-950 rounded-lg shadow p-6 flex flex-col items-center">
+      <div class="text-3xl text-blue-500 dark:text-blue-400 mb-2"><i class="fas fa-chart-pie"></i></div>
+      <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">Utilization Rate</div>
+      <div class="text-2xl font-bold text-gray-900 dark:text-gray-100"><%= utilizationRate.toFixed(1) %>%</div>
+      <div class="text-xs mt-1 flex items-center gap-1
+        <%= utilizationRate >= 80 ? 'text-green-700 dark:text-green-300' : utilizationRate >= 60 ? 'text-yellow-700 dark:text-yellow-300' : 'text-red-700 dark:text-red-300' %>">
+        <i class="fas fa-<%= utilizationRate >= 80 ? 'check-circle' : utilizationRate >= 60 ? 'minus-circle' : 'exclamation-triangle' %>"></i>
+        <%= assignedAssets %>/<%= totalAssets %> assigned
+      </div>
+    </div>
+    <div class="bg-yellow-100 dark:bg-yellow-900 rounded-lg shadow p-6 flex flex-col items-center">
+      <div class="text-3xl text-yellow-600 dark:text-yellow-300 mb-2"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">Needs Attention</div>
+      <div class="text-2xl font-bold text-gray-900 dark:text-gray-100"><%= itemsNeedingAttention %></div>
+      <div class="text-xs text-yellow-700 dark:text-yellow-300 mt-1 flex items-center gap-1">
+        <i class="fas fa-wrench"></i> Maintenance or issues
       </div>
     </div>
   </div>
 
-  <div class="content-section">
-    <%
-      // Handle missing items data gracefully
-      const safeItems = (typeof items !== 'undefined' && items) ? items : [];
-      const totalAssets = safeItems.length;
-      const assignedAssets = safeItems.filter(item => item.assigned_to_name).length;
-      const unassignedAssets = totalAssets - assignedAssets;
-      const totalValue = safeItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
-      const avgValue = totalAssets > 0 ? totalValue / totalAssets : 0;
-
-      // Asset analytics calculations
-      const typeBreakdown = {};
-      const brandBreakdown = {};
-      const departmentBreakdown = {};
-      const locationBreakdown = {};
-      const conditionBreakdown = { 'active': 0, 'maintenance': 0, 'retired': 0, 'damaged': 0 };
-      const ageBreakdown = { '0-1': 0, '1-3': 0, '3-5': 0, '5+': 0 };
-      const valueRanges = { 'under_500': 0, '500-2000': 0, '2000-5000': 0, 'over_5000': 0 };
-
-      // Process each item for analytics
-      safeItems.forEach(item => {
-        // Type breakdown
-        const type = item.type_name || 'Unknown';
-        typeBreakdown[type] = (typeBreakdown[type] || 0) + 1;
-
-        // Brand breakdown
-        const brand = item.brand_name || 'Unknown';
-        brandBreakdown[brand] = (brandBreakdown[brand] || 0) + 1;
-
-        // Department breakdown (for assigned items)
-        if (item.assigned_to_name && item.department_name) {
-          const dept = item.department_name;
-          departmentBreakdown[dept] = (departmentBreakdown[dept] || 0) + 1;
-        }
-
-        // Location breakdown
-        if (item.location_name) {
-          const location = item.location_name;
-          locationBreakdown[location] = (locationBreakdown[location] || 0) + 1;
-        }
-
-        // Age breakdown
-        if (item.date_acquired) {
-          const years = (new Date() - new Date(item.date_acquired)) / (1000 * 60 * 60 * 24 * 365);
-          if (years < 1) ageBreakdown['0-1']++;
-          else if (years < 3) ageBreakdown['1-3']++;
-          else if (years < 5) ageBreakdown['3-5']++;
-          else ageBreakdown['5+']++;
-        }
-
-        // Value ranges
-        const price = parseFloat(item.price) || 0;
-        if (price < 500) valueRanges['under_500']++;
-        else if (price < 2000) valueRanges['500-2000']++;
-        else if (price < 5000) valueRanges['2000-5000']++;
-        else valueRanges['over_5000']++;
-
-        // Condition breakdown
-        const condition = item.condition || 'active';
-        conditionBreakdown[condition] = (conditionBreakdown[condition] || 0) + 1;
-      });
-
-      // Sort breakdowns by count
-      const topTypes = Object.entries(typeBreakdown).sort((a, b) => b[1] - a[1]).slice(0, 10);
-      const topDepartments = Object.entries(departmentBreakdown).sort((a, b) => b[1] - a[1]).slice(0, 8);
-      const topLocations = Object.entries(locationBreakdown).sort((a, b) => b[1] - a[1]).slice(0, 8);
-
-      // Calculate utilization metrics
-      const utilizationRate = totalAssets > 0 ? (assignedAssets / totalAssets * 100) : 0;
-      const maintenanceRate = totalAssets > 0 ? (conditionBreakdown['maintenance'] / totalAssets * 100) : 0;
-      const retiredRate = totalAssets > 0 ? (conditionBreakdown['retired'] / totalAssets * 100) : 0;
-
-      // Risk metrics - only include maintenance and damaged (not retired or unassigned)
-      const highValueAssets = safeItems.filter(item => parseFloat(item.price) > 5000).length;
-      const oldAssets = ageBreakdown['5+'];
-      const unassignedValue = safeItems.filter(item => !item.assigned_to_name).reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
-      const itemsNeedingAttention = (conditionBreakdown['maintenance'] || 0) + (conditionBreakdown['damaged'] || 0);
-    %>
-
-    <!-- Executive Summary Cards -->
-    <div class="analytics-summary">
-      <div class="summary-card primary">
-        <div class="summary-icon">
-          <i class="fas fa-boxes"></i>
-        </div>
-        <div class="summary-content">
-          <h3>Total Assets</h3>
-          <div class="summary-number"><%= totalAssets.toLocaleString() %></div>
-          <div class="summary-detail">
-            <span class="trend-indicator <%= totalAssets > 0 ? 'positive' : 'neutral' %>">
-              <i class="fas fa-arrow-up"></i>
-              Inventory managed
-            </span>
-          </div>
-        </div>
+  <!-- Analytics Charts Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
+    <!-- Asset Distribution by Type -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+          <i class="fas fa-tags"></i> Assets by Type
+        </h3>
+        <button onclick="exportChart('typeChart')" class="text-blue-600 dark:text-blue-400 hover:underline text-sm flex items-center gap-1">
+          <i class="fas fa-download"></i> Export
+        </button>
       </div>
-
-      <div class="summary-card success">
-        <div class="summary-icon">
-          <i class="fas fa-euro-sign"></i>
-        </div>
-        <div class="summary-content">
-          <h3>Total Value</h3>
-          <div class="summary-number">€<%= totalValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) %></div>
-          <div class="summary-detail">
-            <span class="trend-indicator neutral">
-              <i class="fas fa-calculator"></i>
-              Avg: €<%= avgValue.toFixed(0) %> per asset
-            </span>
+      <% if (topTypes.length > 0) { %>
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <canvas id="typeChart" width="300" height="200"></canvas>
+          </div>
+          <div class="flex-1 flex flex-col gap-2">
+            <% topTypes.forEach(([type, count], index) => { %>
+              <div class="flex items-center gap-2">
+                <span class="inline-block w-4 h-4 rounded" style="background-color: hsl(<%= index * 40 %>, 70%, 50%)"></span>
+                <span class="text-gray-700 dark:text-gray-200"><%= type %></span>
+                <span class="ml-auto text-xs text-gray-500 dark:text-gray-400"><%= count %> (<%= (count / totalAssets * 100).toFixed(1) %>%)</span>
+              </div>
+            <% }) %>
           </div>
         </div>
+      <% } else { %>
+        <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+          <div class="text-3xl text-blue-500 mb-2">
+            <i class="fas fa-chart-pie"></i>
+          </div>
+          <p class="text-gray-500 dark:text-gray-400">No asset type data available</p>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Value Distribution -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+          <i class="fas fa-euro-sign"></i> Value Distribution
+        </h3>
+        <button onclick="exportChart('valueChart')" class="text-blue-600 dark:text-blue-400 hover:underline text-sm flex items-center gap-1">
+          <i class="fas fa-download"></i> Export
+        </button>
       </div>
-
-      <div class="summary-card info">
-        <div class="summary-icon">
-          <i class="fas fa-chart-pie"></i>
-        </div>
-        <div class="summary-content">
-          <h3>Utilization Rate</h3>
-          <div class="summary-number"><%= utilizationRate.toFixed(1) %>%</div>
-          <div class="summary-detail">
-            <span class="trend-indicator <%= utilizationRate >= 80 ? 'positive' : utilizationRate >= 60 ? 'neutral' : 'negative' %>">
-              <i class="fas fa-<%= utilizationRate >= 80 ? 'check-circle' : utilizationRate >= 60 ? 'minus-circle' : 'exclamation-triangle' %>"></i>
-              <%= assignedAssets %>/<%= totalAssets %> assigned
+      <div>
+        <% Object.entries(valueRanges).forEach(([range, count]) => { %>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-32 text-xs text-gray-700 dark:text-gray-200">
+              <% if (range === 'under_500') { %>Under €500<% }
+                 else if (range === '500-2000') { %>€500 - €2,000<% }
+                 else if (range === '2000-5000') { %>€2,000 - €5,000<% }
+                 else { %>Over €5,000<% } %>
             </span>
+            <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+              <div class="absolute left-0 top-0 h-3 rounded bg-blue-500 dark:bg-blue-400" style="width: <%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%"></div>
+            </div>
+            <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= count %></span>
           </div>
-        </div>
-      </div>
-
-      <div class="summary-card warning">
-        <div class="summary-icon">
-          <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <div class="summary-content">
-          <h3>Needs Attention</h3>
-          <div class="summary-number">
-            <%= itemsNeedingAttention %>
-          </div>
-          <div class="summary-detail">
-            <span class="trend-indicator negative">
-              <i class="fas fa-wrench"></i>
-              Maintenance or issues
-            </span>
-          </div>
-        </div>
+        <% }) %>
       </div>
     </div>
 
-    <!-- Analytics Charts Grid -->
-    <div class="analytics-grid">
-      <!-- Asset Distribution by Type -->
-      <div class="analytics-card">
-        <div class="card-header">
-          <h3><i class="fas fa-tags"></i> Assets by Type</h3>
-          <div class="card-actions">
-            <button onclick="exportChart('typeChart')" class="btn-icon" title="Export Chart">
-              <i class="fas fa-download"></i>
-            </button>
-          </div>
-        </div>
-        <div class="chart-container">
-          <% if (topTypes.length > 0) { %>
-            <div class="donut-chart-wrapper">
-              <canvas id="typeChart" width="300" height="200"></canvas>
-              <div class="chart-legend">
-                <% topTypes.forEach(([type, count], index) => { %>
-                  <div class="legend-item">
-                    <span class="legend-color" style="background-color: hsl(<%= index * 40 %>, 70%, 50%)"></span>
-                    <span class="legend-label"><%= type %></span>
-                    <span class="legend-value"><%= count %> (<%= (count / totalAssets * 100).toFixed(1) %>%)</span>
-                  </div>
-                <% }) %>
-              </div>
-            </div>
-          <% } else { %>
-            <div class="no-data">
-              <i class="fas fa-chart-pie"></i>
-              <p>No asset type data available</p>
-            </div>
-          <% } %>
-        </div>
+    <!-- Age Analysis -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+          <i class="fas fa-clock"></i> Asset Age Distribution
+        </h3>
+        <button onclick="exportChart('ageChart')" class="text-blue-600 dark:text-blue-400 hover:underline text-sm flex items-center gap-1">
+          <i class="fas fa-download"></i> Export
+        </button>
       </div>
-
-      <!-- Value Distribution -->
-      <div class="analytics-card">
-        <div class="card-header">
-          <h3><i class="fas fa-euro-sign"></i> Value Distribution</h3>
-          <div class="card-actions">
-            <button onclick="exportChart('valueChart')" class="btn-icon" title="Export Chart">
-              <i class="fas fa-download"></i>
-            </button>
-          </div>
-        </div>
-        <div class="chart-container">
-          <div class="bar-chart">
-            <% Object.entries(valueRanges).forEach(([range, count]) => { %>
-              <div class="bar-item">
-                <div class="bar-label">
-                  <% if (range === 'under_500') { %>Under €500<% }
-                     else if (range === '500-2000') { %>€500 - €2,000<% }
-                     else if (range === '2000-5000') { %>€2,000 - €5,000<% }
-                     else { %>Over €5,000<% } %>
-                </div>
-                <div class="bar-container">
-                  <div class="bar-fill value-<%= range %>"
-                       style="width: <%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%"></div>
-                  <span class="bar-value"><%= count %></span>
-                </div>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-      </div>
-
-      <!-- Age Analysis -->
-      <div class="analytics-card">
-        <div class="card-header">
-          <h3><i class="fas fa-clock"></i> Asset Age Distribution</h3>
-          <div class="card-actions">
-            <button onclick="exportChart('ageChart')" class="btn-icon" title="Export Chart">
-              <i class="fas fa-download"></i>
-            </button>
-          </div>
-        </div>
-        <div class="chart-container">
-          <div class="horizontal-bar-chart">
-            <% Object.entries(ageBreakdown).forEach(([age, count]) => { %>
-              <div class="bar-item">
-                <div class="bar-label">
-                  <% if (age === '0-1') { %>< 1 year<% }
-                     else if (age === '1-3') { %>1-3 years<% }
-                     else if (age === '3-5') { %>3-5 years<% }
-                     else { %>5+ years<% } %>
-                </div>
-                <div class="bar-container">
-                  <div class="bar-fill age-<%= age %>"
-                       style="width: <%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%"></div>
-                  <span class="bar-value"><%= count %></span>
-                </div>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-      </div>
-
-      <!-- Department Allocation -->
-      <div class="analytics-card">
-        <div class="card-header">
-          <h3><i class="fas fa-building"></i> Department Allocation</h3>
-          <div class="card-actions">
-            <button onclick="exportChart('deptChart')" class="btn-icon" title="Export Chart">
-              <i class="fas fa-download"></i>
-            </button>
-          </div>
-        </div>
-        <div class="chart-container">
-          <% if (topDepartments.length > 0) { %>
-            <div class="department-bars">
-              <% topDepartments.forEach(([dept, count]) => { %>
-                <div class="dept-item">
-                  <div class="dept-info">
-                    <span class="dept-name"><%= dept %></span>
-                    <span class="dept-count"><%= count %> assets</span>
-                  </div>
-                  <div class="dept-bar">
-                    <div class="dept-fill" style="width: <%= assignedAssets > 0 ? (count / assignedAssets * 100).toFixed(1) : 0 %>%"></div>
-                    <span class="dept-percentage"><%= assignedAssets > 0 ? (count / assignedAssets * 100).toFixed(1) : 0 %>%</span>
-                  </div>
-                </div>
-              <% }) %>
+      <div>
+        <% Object.entries(ageBreakdown).forEach(([age, count]) => { %>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-24 text-xs text-gray-700 dark:text-gray-200">
+              <% if (age === '0-1') { %>< 1 year<% }
+                 else if (age === '1-3') { %>1-3 years<% }
+                 else if (age === '3-5') { %>3-5 years<% }
+                 else { %>5+ years<% } %>
+            </span>
+            <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+              <div class="absolute left-0 top-0 h-3 rounded bg-green-500 dark:bg-green-400" style="width: <%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%"></div>
             </div>
-          <% } else { %>
-            <div class="no-data">
-              <i class="fas fa-building"></i>
-              <p>No department allocation data available</p>
-            </div>
-          <% } %>
-        </div>
-      </div>
-
-      <!-- Asset Health Status - Fixed Size -->
-      <div class="analytics-card">
-        <div class="card-header">
-          <h3><i class="fas fa-heartbeat"></i> Asset Health Status</h3>
-          <div class="card-actions">
-            <button onclick="exportChart('conditionChart')" class="btn-icon" title="Export Chart">
-              <i class="fas fa-download"></i>
-            </button>
+            <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= count %></span>
           </div>
-        </div>
-        <div class="chart-container health-chart-container">
-          <div class="asset-health-grid	">
-            <% Object.entries(conditionBreakdown).forEach(([condition, count]) => { %>
-              <div class="health-item <%= condition %>">
-                <div class="health-icon">
-                  <i class="fas fa-<%= condition === 'active' ? 'check-circle' :
-                                     condition === 'maintenance' ? 'wrench' :
-                                     condition === 'retired' ? 'archive' : 'exclamation-triangle' %>"></i>
-                </div>
-                <div class="health-info">
-                  <div class="health-number"><%= count %></div>
-                  <div class="health-label"><%= condition.charAt(0).toUpperCase() + condition.slice(1) %></div>
-                  <div class="health-percentage"><%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%</div>
-                </div>
-                <div class="health-bar">
-                  <div class="health-fill <%= condition %>"
-                       style="width: <%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%"></div>
-                </div>
-              </div>
-            <% }) %>
-          </div>
-        </div>
+        <% }) %>
       </div>
     </div>
 
-    <!-- Detailed Asset Table with Advanced Filtering -->
-    <div class="detailed-section">
-      <div class="section-header">
-        <h2><i class="fas fa-table"></i> Detailed Asset Inventory</h2>
-        <div class="section-actions">
-          <div class="table-filters">
-            <select id="tableTypeFilter" class="table-filter">
-              <option value="">All Types</option>
-              <% topTypes.forEach(([type, count]) => { %>
-                <option value="<%= type %>"><%= type %> (<%= count %>)</option>
-              <% }) %>
-            </select>
-
-            <select id="tableStatusFilter" class="table-filter">
-              <option value="">All Status</option>
-              <option value="assigned">Assigned</option>
-              <option value="unassigned">Unassigned</option>
-            </select>
-
-            <select id="tableConditionFilter" class="table-filter">
-              <option value="">All Conditions</option>
-              <option value="active">Active</option>
-              <option value="maintenance">Maintenance</option>
-              <option value="retired">Retired</option>
-              <option value="damaged">Damaged</option>
-            </select>
-          </div>
-          <button onclick="exportTableData()" class="btn btn-secondary">
-            <i class="fas fa-download"></i> Export Table
-          </button>
-        </div>
+    <!-- Department Allocation -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+          <i class="fas fa-building"></i> Department Allocation
+        </h3>
+        <button onclick="exportChart('deptChart')" class="text-blue-600 dark:text-blue-400 hover:underline text-sm flex items-center gap-1">
+          <i class="fas fa-download"></i> Export
+        </button>
       </div>
+      <% if (topDepartments.length > 0) { %>
+        <div>
+          <% topDepartments.forEach(([dept, count]) => { %>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-32 text-xs text-gray-700 dark:text-gray-200"><%= dept %></span>
+              <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+                <div class="absolute left-0 top-0 h-3 rounded bg-purple-500 dark:bg-purple-400" style="width: <%= assignedAssets > 0 ? (count / assignedAssets * 100).toFixed(1) : 0 %>%"></div>
+              </div>
+              <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= count %> assets (<%= assignedAssets > 0 ? (count / assignedAssets * 100).toFixed(1) : 0 %>%)</span>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+          <div class="text-3xl text-blue-500 mb-2">
+            <i class="fas fa-building"></i>
+          </div>
+          <p class="text-gray-500 dark:text-gray-400">No department allocation data available</p>
+        </div>
+      <% } %>
+    </div>
 
-      <div class="table-container">
-        <table class="analytics-table" id="assetsTable">
-          <thead>
-            <tr>
-              <th class="sortable" data-sort="cep_brc">
-                Asset ID <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="name">
-                Name <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="type_name">
-                Type <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="brand_name">
-                Brand <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="price">
-                Value <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="assigned_to_name">
-                Assigned To <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="department_name">
-                Department <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="date_acquired">
-                Age <i class="fas fa-sort"></i>
-              </th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% if (safeItems.length > 0) { %>
-              <% safeItems.forEach(item => { %>
-                <tr data-type="<%= item.type_name || '' %>"
-                    data-status="<%= item.assigned_to_name ? 'assigned' : 'unassigned' %>"
-                    data-condition="<%= item.condition || 'active' %>">
-                  <td>
-                    <span class="asset-id-badge"><%= item.cep_brc %></span>
-                  </td>
-                  <td>
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="asset-link">
-                      <%= item.name %>
+    <!-- Asset Health Status -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+          <i class="fas fa-heartbeat"></i> Asset Health Status
+        </h3>
+        <button onclick="exportChart('conditionChart')" class="text-blue-600 dark:text-blue-400 hover:underline text-sm flex items-center gap-1">
+          <i class="fas fa-download"></i> Export
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <% Object.entries(conditionBreakdown).forEach(([condition, count]) => { %>
+          <div class="flex items-center gap-3 p-3 rounded bg-gray-50 dark:bg-gray-900">
+            <div class="text-xl
+              <%= condition === 'active' ? 'text-green-600 dark:text-green-300' :
+                  condition === 'maintenance' ? 'text-yellow-600 dark:text-yellow-300' :
+                  condition === 'retired' ? 'text-gray-600 dark:text-gray-300' :
+                  'text-red-600 dark:text-red-300' %>">
+              <i class="fas fa-<%= condition === 'active' ? 'check-circle' :
+                                 condition === 'maintenance' ? 'wrench' :
+                                 condition === 'retired' ? 'archive' : 'exclamation-triangle' %>"></i>
+            </div>
+            <div>
+              <div class="font-bold text-gray-800 dark:text-gray-100"><%= count %></div>
+              <div class="text-xs text-gray-500 dark:text-gray-400"><%= condition.charAt(0).toUpperCase() + condition.slice(1) %></div>
+              <div class="text-xs text-gray-400 dark:text-gray-500"><%= totalAssets > 0 ? (count / totalAssets * 100).toFixed(1) : 0 %>%</div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Asset Table with Advanced Filtering -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-10">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+      <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+        <i class="fas fa-table"></i> Detailed Asset Inventory
+      </h2>
+      <div class="flex flex-wrap gap-2">
+        <select id="tableTypeFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          <option value="">All Types</option>
+          <% topTypes.forEach(([type, count]) => { %>
+            <option value="<%= type %>"><%= type %> (<%= count %>)</option>
+          <% }) %>
+        </select>
+        <select id="tableStatusFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          <option value="">All Status</option>
+          <option value="assigned">Assigned</option>
+          <option value="unassigned">Unassigned</option>
+        </select>
+        <select id="tableConditionFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          <option value="">All Conditions</option>
+          <option value="active">Active</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="retired">Retired</option>
+          <option value="damaged">Damaged</option>
+        </select>
+        <button onclick="exportTableData()" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition">
+          <i class="fas fa-download mr-2"></i> Export Table
+        </button>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" id="assetsTable">
+        <thead class="bg-gray-50 dark:bg-gray-900">
+          <tr>
+            <th class="sortable px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200" data-sort="cep_brc">
+              Asset ID <i class="fas fa-sort"></i>
+            </th>
+            <th class="sortable px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200" data-sort="name">
+              Name <i class="fas fa-sort"></i>
+            </th>
+            <th class="sortable px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200" data-sort="type_name">
+              Type <i class="fas fa-sort"></i>
+            </th>
+            <th class="sortable px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200" data-sort="brand_name">
+              Brand <i class="fas fa-sort"></i>
+            </th>
+            <th class="sortable px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200" data-sort="price">
+              Value <i class="fas fa-sort"></i>
+            </th>
+            <th class="sortable px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200" data-sort="assigned_to_name">
+              Assigned To <i class="fas fa-sort"></i>
+            </th>
+            <th class="sortable px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200" data-sort="department_name">
+              Department <i class="fas fa-sort"></i>
+            </th>
+            <th class="sortable px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200" data-sort="date_acquired">
+              Age <i class="fas fa-sort"></i>
+            </th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (safeItems.length > 0) { %>
+            <% safeItems.forEach(item => { %>
+              <tr data-type="<%= item.type_name || '' %>"
+                  data-status="<%= item.assigned_to_name ? 'assigned' : 'unassigned' %>"
+                  data-condition="<%= item.condition || 'active' %>">
+                <td class="px-4 py-3 font-mono text-blue-700 dark:text-blue-300"><%= item.cep_brc %></td>
+                <td class="px-4 py-3">
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="text-blue-600 dark:text-blue-300 hover:underline">
+                    <%= item.name %>
+                  </a>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (item.type_name) { %>
+                    <span class="inline-block px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-semibold"><%= item.type_name %></span>
+                  <% } else { %>
+                    <span class="inline-block px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">Unknown</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (item.brand_name) { %>
+                    <span class="inline-block px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 text-xs font-semibold"><%= item.brand_name %></span>
+                  <% } else { %>
+                    <span class="inline-block px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">Unknown</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (item.price) { %>
+                    <span class="text-gray-800 dark:text-gray-100">€<%= parseFloat(item.price).toLocaleString(undefined, { minimumFractionDigits: 2 }) %></span>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500 italic">Not set</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (item.assigned_to_name) { %>
+                    <a href="/employees/<%= item.assigned_to %>" class="text-blue-600 dark:text-blue-300 hover:underline flex items-center gap-1">
+                      <i class="fas fa-user"></i> <%= item.assigned_to_name %>
                     </a>
-                  </td>
-                  <td>
-                    <% if (item.type_name) { %>
-                      <span class="type-badge"><%= item.type_name %></span>
-                    <% } else { %>
-                      <span class="type-badge unknown">Unknown</span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <% if (item.brand_name) { %>
-                      <span class="brand-badge"><%= item.brand_name %></span>
-                    <% } else { %>
-                      <span class="brand-badge unknown">Unknown</span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <% if (item.price) { %>
-                      <span class="price-value">€<%= parseFloat(item.price).toLocaleString(undefined, { minimumFractionDigits: 2 }) %></span>
-                    <% } else { %>
-                      <span class="price-value unknown">Not set</span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <% if (item.assigned_to_name) { %>
-                      <a href="/employees/<%= item.assigned_to %>" class="employee-link">
-                        <i class="fas fa-user"></i> <%= item.assigned_to_name %>
-                      </a>
-                    <% } else { %>
-                      <span class="unassigned-indicator">
-                        <i class="fas fa-user-slash"></i> Unassigned
-                      </span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <% if (item.department_name) { %>
-                      <span class="dept-badge"><%= item.department_name %></span>
-                    <% } else { %>
-                      <span class="dept-badge unknown">N/A</span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <% if (item.date_acquired) { %>
-                      <%
-                        const years = Math.floor((new Date() - new Date(item.date_acquired)) / (1000 * 60 * 60 * 24 * 365));
-                        const months = Math.floor(((new Date() - new Date(item.date_acquired)) % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
-                      %>
-                      <span class="age-display">
-                        <% if (years > 0) { %>
-                          <%= years %>y <%= months %>m
-                        <% } else { %>
-                          <%= months %>m
-                        <% } %>
-                      </span>
-                    <% } else { %>
-                      <span class="age-display unknown">Unknown</span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <%
-                      let statusClass = 'status-active';
-                      let statusIcon = 'fas fa-check-circle';
-                      let statusText = 'Active';
-
-                      if (item.condition === 'maintenance') {
-                        statusClass = 'status-maintenance';
-                        statusIcon = 'fas fa-wrench';
-                        statusText = 'Maintenance';
-                      } else if (item.condition === 'retired') {
-                        statusClass = 'status-retired';
-                        statusIcon = 'fas fa-archive';
-                        statusText = 'Retired';
-                      } else if (item.condition === 'damaged') {
-                        statusClass = 'status-damaged';
-                        statusIcon = 'fas fa-exclamation-triangle';
-                        statusText = 'Damaged';
-                      } else if (!item.assigned_to_name) {
-                        statusClass = 'status-available';
-                        statusIcon = 'fas fa-clock';
-                        statusText = 'Available';
-                      }
-                    %>
-                    <span class="status-badge <%= statusClass %>">
-                      <i class="<%= statusIcon %>"></i> <%= statusText %>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500 italic flex items-center gap-1">
+                      <i class="fas fa-user-slash"></i> Unassigned
                     </span>
-                  </td>
-                </tr>
-              <% }) %>
-            <% } else { %>
-              <tr>
-                <td colspan="9" class="no-data">
-                  <div class="empty-table">
-                    <i class="fas fa-boxes"></i>
-                    <p>No assets found</p>
-                    <a href="/items/new" class="btn btn-primary">
-                      <i class="fas fa-plus"></i> Add First Asset
-                    </a>
-                  </div>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (item.department_name) { %>
+                    <span class="inline-block px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-200 text-xs font-semibold"><%= item.department_name %></span>
+                  <% } else { %>
+                    <span class="inline-block px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">N/A</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (item.date_acquired) { %>
+                    <%
+                      const years = Math.floor((new Date() - new Date(item.date_acquired)) / (1000 * 60 * 60 * 24 * 365));
+                      const months = Math.floor(((new Date() - new Date(item.date_acquired)) % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
+                    %>
+                    <span class="text-gray-700 dark:text-gray-200">
+                      <% if (years > 0) { %>
+                        <%= years %>y <%= months %>m
+                      <% } else { %>
+                        <%= months %>m
+                      <% } %>
+                    </span>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500 italic">Unknown</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <%
+                    let statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200';
+                    let statusIcon = 'fas fa-check-circle';
+                    let statusText = 'Active';
+
+                    if (item.condition === 'maintenance') {
+                      statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200';
+                      statusIcon = 'fas fa-wrench';
+                      statusText = 'Maintenance';
+                    } else if (item.condition === 'retired') {
+                      statusClass = 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200';
+                      statusIcon = 'fas fa-archive';
+                      statusText = 'Retired';
+                    } else if (item.condition === 'damaged') {
+                      statusClass = 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200';
+                      statusIcon = 'fas fa-exclamation-triangle';
+                      statusText = 'Damaged';
+                    } else if (!item.assigned_to_name) {
+                      statusClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200';
+                      statusIcon = 'fas fa-clock';
+                      statusText = 'Available';
+                    }
+                  %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold <%= statusClass %>">
+                    <i class="<%= statusIcon %> mr-1"></i> <%= statusText %>
+                  </span>
                 </td>
               </tr>
-            <% } %>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="table-pagination">
-        <div class="pagination-info">
-          <span>Showing <span id="visibleRows"><%= safeItems.length %></span> of <%= totalAssets %> assets</span>
-        </div>
-        <div class="pagination-controls">
-          <select id="rowsPerPage">
-            <option value="25">25 per page</option>
-            <option value="50" selected>50 per page</option>
-            <option value="100">100 per page</option>
-            <option value="all">Show all</option>
-          </select>
-        </div>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="9" class="text-center py-8">
+                <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+                  <div class="text-4xl text-blue-500 mb-2">
+                    <i class="fas fa-boxes"></i>
+                  </div>
+                  <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No assets found</h3>
+                  <a href="/items/new" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2 mt-4">
+                    <i class="fas fa-plus"></i> Add First Asset
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-4">
+      <span class="text-gray-700 dark:text-gray-200 text-sm">
+        Showing <span id="visibleRows"><%= safeItems.length %></span> of <%= totalAssets %> assets
+      </span>
+      <div>
+        <select id="rowsPerPage" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          <option value="25">25 per page</option>
+          <option value="50" selected>50 per page</option>
+          <option value="100">100 per page</option>
+          <option value="all">Show all</option>
+        </select>
       </div>
     </div>
+  </div>
 
-    <!-- Key Insights Section -->
-    <div class="insights-section">
-      <h2><i class="fas fa-lightbulb"></i> Key Insights & Actionable Recommendations</h2>
-      <div class="insights-grid">
-        <!-- Utilization Analysis -->
-        <% if (utilizationRate < 70) { %>
-          <div class="insight-card warning">
-            <div class="insight-icon">
-              <i class="fas fa-chart-line"></i>
+  <!-- Key Insights Section -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-10">
+    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2 mb-4">
+      <i class="fas fa-lightbulb"></i> Key Insights & Actionable Recommendations
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <!-- Utilization Analysis -->
+      <% if (utilizationRate < 70) { %>
+        <div class="insight-card warning">
+          <div class="insight-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Improve Asset Utilization</h4>
+            <p><strong><%= utilizationRate.toFixed(1) %>%</strong> utilization rate is below optimal (70-85%).</p>
+            <div class="insight-actions">
+              <strong>Actions:</strong>
+              <ul>
+                <li>Review <%= unassignedAssets %> unassigned assets for potential assignment</li>
+                <li>Consider redistributing underutilized assets</li>
+                <li>Evaluate disposal of obsolete equipment</li>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>Improve Asset Utilization</h4>
-              <p><strong><%= utilizationRate.toFixed(1) %>%</strong> utilization rate is below optimal (70-85%).</p>
-              <div class="insight-actions">
-                <strong>Actions:</strong>
-                <ul>
-                  <li>Review <%= unassignedAssets %> unassigned assets for potential assignment</li>
-                  <li>Consider redistributing underutilized assets</li>
-                  <li>Evaluate disposal of obsolete equipment</li>
-                </ul>
-              </div>
-              <div class="insight-priority high">
-                <i class="fas fa-exclamation-circle"></i> High Priority
-              </div>
+            <div class="insight-priority high">
+              <i class="fas fa-exclamation-circle"></i> High Priority
             </div>
           </div>
-        <% } else if (utilizationRate > 95) { %>
-          <div class="insight-card success">
-            <div class="insight-icon">
-              <i class="fas fa-trophy"></i>
+        </div>
+      <% } else if (utilizationRate > 95) { %>
+        <div class="insight-card success">
+          <div class="insight-icon">
+            <i class="fas fa-trophy"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Excellent Utilization Rate</h4>
+            <p><strong><%= utilizationRate.toFixed(1) %>%</strong> utilization is excellent! Consider planning for future growth.</p>
+            <div class="insight-actions">
+              <strong>Recommendations:</strong>
+              <ul>
+                <li>Plan for additional asset procurement</li>
+                <li>Monitor for potential over-allocation</li>
+                <li>Consider backup equipment for critical assets</li>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>Excellent Utilization Rate</h4>
-              <p><strong><%= utilizationRate.toFixed(1) %>%</strong> utilization is excellent! Consider planning for future growth.</p>
-              <div class="insight-actions">
-                <strong>Recommendations:</strong>
-                <ul>
-                  <li>Plan for additional asset procurement</li>
-                  <li>Monitor for potential over-allocation</li>
-                  <li>Consider backup equipment for critical assets</li>
-                </ul>
-              </div>
-              <div class="insight-priority low">
-                <i class="fas fa-check-circle"></i> Monitoring
-              </div>
+            <div class="insight-priority low">
+              <i class="fas fa-check-circle"></i> Monitoring
             </div>
           </div>
-        <% } %>
+        </div>
+      <% } %>
 
-        <!-- Asset Age Analysis -->
-        <% if (ageBreakdown['5+'] > totalAssets * 0.3) { %>
-          <div class="insight-card info">
-            <div class="insight-icon">
-              <i class="fas fa-calendar-times"></i>
+      <!-- Asset Age Analysis -->
+      <% if (ageBreakdown['5+'] > totalAssets * 0.3) { %>
+        <div class="insight-card info">
+          <div class="insight-icon">
+            <i class="fas fa-calendar-times"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Asset Replacement Planning</h4>
+            <p><strong><%= ageBreakdown['5+'] %> assets</strong> are over 5 years old (<%= (ageBreakdown['5+'] / totalAssets * 100).toFixed(1) %>% of inventory).</p>
+            <div class="insight-actions">
+              <strong>Recommendations:</strong>
+              <ul>
+                <li>Create a 3-year replacement roadmap</li>
+                <li>Budget for technology refresh cycles</li>
+                <li>Prioritize mission-critical aging equipment</li>
+                <li>Consider maintenance cost vs replacement value</li>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>Asset Replacement Planning</h4>
-              <p><strong><%= ageBreakdown['5+'] %> assets</strong> are over 5 years old (<%= (ageBreakdown['5+'] / totalAssets * 100).toFixed(1) %>% of inventory).</p>
-              <div class="insight-actions">
-                <strong>Recommendations:</strong>
-                <ul>
-                  <li>Create a 3-year replacement roadmap</li>
-                  <li>Budget for technology refresh cycles</li>
-                  <li>Prioritize mission-critical aging equipment</li>
-                  <li>Consider maintenance cost vs replacement value</li>
-                </ul>
-              </div>
-              <div class="insight-priority medium">
-                <i class="fas fa-clock"></i> Plan Ahead
-              </div>
+            <div class="insight-priority medium">
+              <i class="fas fa-clock"></i> Plan Ahead
             </div>
           </div>
-        <% } %>
+        </div>
+      <% } %>
 
-        <!-- Maintenance Issues -->
-        <% if ((conditionBreakdown['maintenance'] || 0) > 0) { %>
-          <div class="insight-card warning">
-            <div class="insight-icon">
-              <i class="fas fa-tools"></i>
+      <!-- Maintenance Issues -->
+      <% if ((conditionBreakdown['maintenance'] || 0) > 0) { %>
+        <div class="insight-card warning">
+          <div class="insight-icon">
+            <i class="fas fa-tools"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Maintenance Attention Required</h4>
+            <p><strong><%= conditionBreakdown['maintenance'] %> assets</strong> are currently under maintenance (<%= maintenanceRate.toFixed(1) %>%).</p>
+            <div class="insight-actions">
+              <strong>Immediate Actions:</strong>
+              <ul>
+                <li>Review maintenance tickets for completion timelines</li>
+                <li>Ensure adequate spare/backup equipment</li>
+                <% if (maintenanceRate > 15) { %>
+                  <li>Investigate recurring maintenance patterns</li>
+                  <li>Consider equipment upgrade evaluation</li>
+                <% } %>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>Maintenance Attention Required</h4>
-              <p><strong><%= conditionBreakdown['maintenance'] %> assets</strong> are currently under maintenance (<%= maintenanceRate.toFixed(1) %>%).</p>
-              <div class="insight-actions">
-                <strong>Immediate Actions:</strong>
-                <ul>
-                  <li>Review maintenance tickets for completion timelines</li>
-                  <li>Ensure adequate spare/backup equipment</li>
-                  <% if (maintenanceRate > 15) { %>
-                    <li>Investigate recurring maintenance patterns</li>
-                    <li>Consider equipment upgrade evaluation</li>
-                  <% } %>
-                </ul>
-              </div>
-              <div class="insight-priority high">
-                <i class="fas fa-wrench"></i> Action Required
-              </div>
+            <div class="insight-priority high">
+              <i class="fas fa-wrench"></i> Action Required
             </div>
           </div>
-        <% } %>
+        </div>
+      <% } %>
 
-        <!-- Damaged Assets -->
-        <% if ((conditionBreakdown['damaged'] || 0) > 0) { %>
-          <div class="insight-card danger">
-            <div class="insight-icon">
-              <i class="fas fa-exclamation-triangle"></i>
+      <!-- Damaged Assets -->
+      <% if ((conditionBreakdown['damaged'] || 0) > 0) { %>
+        <div class="insight-card danger">
+          <div class="insight-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Damaged Assets Need Resolution</h4>
+            <p><strong><%= conditionBreakdown['damaged'] %> assets</strong> are marked as damaged and require immediate attention.</p>
+            <div class="insight-actions">
+              <strong>Urgent Actions:</strong>
+              <ul>
+                <li>Assess repair feasibility and costs</li>
+                <li>Determine replacement vs repair economics</li>
+                <li>Update insurance claims if applicable</li>
+                <li>Consider impact on operations</li>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>Damaged Assets Need Resolution</h4>
-              <p><strong><%= conditionBreakdown['damaged'] %> assets</strong> are marked as damaged and require immediate attention.</p>
-              <div class="insight-actions">
-                <strong>Urgent Actions:</strong>
-                <ul>
-                  <li>Assess repair feasibility and costs</li>
-                  <li>Determine replacement vs repair economics</li>
-                  <li>Update insurance claims if applicable</li>
-                  <li>Consider impact on operations</li>
-                </ul>
-              </div>
-              <div class="insight-priority critical">
-                <i class="fas fa-bolt"></i> Critical
-              </div>
+            <div class="insight-priority critical">
+              <i class="fas fa-bolt"></i> Critical
             </div>
           </div>
-        <% } %>
+        </div>
+      <% } %>
 
-        <!-- High Value Assets -->
-        <% if (highValueAssets > 0) { %>
-          <div class="insight-card primary">
-            <div class="insight-icon">
-              <i class="fas fa-shield-alt"></i>
+      <!-- High Value Assets -->
+      <% if (highValueAssets > 0) { %>
+        <div class="insight-card primary">
+          <div class="insight-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="insight-content">
+            <h4>High-Value Asset Protection</h4>
+            <p><strong><%= highValueAssets %> assets</strong> valued over €5,000 represent significant investment.</p>
+            <div class="insight-actions">
+              <strong>Protection Measures:</strong>
+              <ul>
+                <li>Verify insurance coverage adequacy</li>
+                <li>Implement enhanced security protocols</li>
+                <li>Schedule regular condition assessments</li>
+                <li>Consider extended warranty options</li>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>High-Value Asset Protection</h4>
-              <p><strong><%= highValueAssets %> assets</strong> valued over €5,000 represent significant investment.</p>
-              <div class="insight-actions">
-                <strong>Protection Measures:</strong>
-                <ul>
-                  <li>Verify insurance coverage adequacy</li>
-                  <li>Implement enhanced security protocols</li>
-                  <li>Schedule regular condition assessments</li>
-                  <li>Consider extended warranty options</li>
-                </ul>
-              </div>
-              <div class="insight-priority medium">
-                <i class="fas fa-lock"></i> Risk Management
-              </div>
+            <div class="insight-priority medium">
+              <i class="fas fa-lock"></i> Risk Management
             </div>
           </div>
-        <% } %>
+        </div>
+      <% } %>
 
-        <!-- Asset Concentration Risk -->
-        <% if (topTypes.length > 0 && topTypes[0][1] > totalAssets * 0.4) { %>
-          <div class="insight-card info">
-            <div class="insight-icon">
-              <i class="fas fa-balance-scale"></i>
+      <!-- Asset Concentration Risk -->
+      <% if (topTypes.length > 0 && topTypes[0][1] > totalAssets * 0.4) { %>
+        <div class="insight-card info">
+          <div class="insight-icon">
+            <i class="fas fa-balance-scale"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Asset Portfolio Diversification</h4>
+            <p><strong><%= topTypes[0][0] %></strong> represents <%= (topTypes[0][1] / totalAssets * 100).toFixed(1) %>% of your inventory.</p>
+            <div class="insight-actions">
+              <strong>Risk Mitigation:</strong>
+              <ul>
+                <li>Evaluate single-supplier dependency risks</li>
+                <li>Consider alternative technology options</li>
+                <li>Develop contingency plans for critical systems</li>
+                <li>Review standardization vs diversification balance</li>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>Asset Portfolio Diversification</h4>
-              <p><strong><%= topTypes[0][0] %></strong> represents <%= (topTypes[0][1] / totalAssets * 100).toFixed(1) %>% of your inventory.</p>
-              <div class="insight-actions">
-                <strong>Risk Mitigation:</strong>
-                <ul>
-                  <li>Evaluate single-supplier dependency risks</li>
-                  <li>Consider alternative technology options</li>
-                  <li>Develop contingency plans for critical systems</li>
-                  <li>Review standardization vs diversification balance</li>
-                </ul>
-              </div>
-              <div class="insight-priority medium">
-                <i class="fas fa-chart-pie"></i> Portfolio Review
-              </div>
+            <div class="insight-priority medium">
+              <i class="fas fa-chart-pie"></i> Portfolio Review
             </div>
           </div>
-        <% } %>
+        </div>
+      <% } %>
 
-        <!-- Unassigned Value Opportunity -->
-        <% if (unassignedValue > 5000) { %>
-          <div class="insight-card warning">
-            <div class="insight-icon">
-              <i class="fas fa-money-bill-wave"></i>
+      <!-- Unassigned Value Opportunity -->
+      <% if (unassignedValue > 5000) { %>
+        <div class="insight-card warning">
+          <div class="insight-icon">
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Unlock Asset Value</h4>
+            <p><strong>€<%= unassignedValue.toLocaleString() %></strong> in unassigned assets represents untapped potential.</p>
+            <div class="insight-actions">
+              <strong>Value Optimization:</strong>
+              <ul>
+                <li>Identify assignment opportunities for idle assets</li>
+                <li>Consider asset sharing between departments</li>
+                <li>Evaluate disposal of truly obsolete items</li>
+                <li>Update asset assignment procedures</li>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>Unlock Asset Value</h4>
-              <p><strong>€<%= unassignedValue.toLocaleString() %></strong> in unassigned assets represents untapped potential.</p>
-              <div class="insight-actions">
-                <strong>Value Optimization:</strong>
-                <ul>
-                  <li>Identify assignment opportunities for idle assets</li>
-                  <li>Consider asset sharing between departments</li>
-                  <li>Evaluate disposal of truly obsolete items</li>
-                  <li>Update asset assignment procedures</li>
-                </ul>
-              </div>
-              <div class="insight-priority medium">
-                <i class="fas fa-chart-line"></i> ROI Opportunity
-              </div>
+            <div class="insight-priority medium">
+              <i class="fas fa-chart-line"></i> ROI Opportunity
             </div>
           </div>
-        <% } %>
+        </div>
+      <% } %>
 
-        <!-- Department Imbalance -->
-        <% if (topDepartments.length > 0 && topDepartments[0][1] > assignedAssets * 0.5) { %>
-          <div class="insight-card info">
-            <div class="insight-icon">
-              <i class="fas fa-building"></i>
+      <!-- Department Imbalance -->
+      <% if (topDepartments.length > 0 && topDepartments[0][1] > assignedAssets * 0.5) { %>
+        <div class="insight-card info">
+          <div class="insight-icon">
+            <i class="fas fa-building"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Department Asset Distribution</h4>
+            <p><strong><%= topDepartments[0][0] %></strong> holds <%= (topDepartments[0][1] / assignedAssets * 100).toFixed(1) %>% of assigned assets.</p>
+            <div class="insight-actions">
+              <strong>Balance Considerations:</strong>
+              <ul>
+                <li>Review department-specific asset needs</li>
+                <li>Consider cross-department sharing opportunities</li>
+                <li>Evaluate budget allocation fairness</li>
+                <li>Plan for department growth/contraction</li>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>Department Asset Distribution</h4>
-              <p><strong><%= topDepartments[0][0] %></strong> holds <%= (topDepartments[0][1] / assignedAssets * 100).toFixed(1) %>% of assigned assets.</p>
-              <div class="insight-actions">
-                <strong>Balance Considerations:</strong>
-                <ul>
-                  <li>Review department-specific asset needs</li>
-                  <li>Consider cross-department sharing opportunities</li>
-                  <li>Evaluate budget allocation fairness</li>
-                  <li>Plan for department growth/contraction</li>
-                </ul>
-              </div>
-              <div class="insight-priority low">
-                <i class="fas fa-balance-scale"></i> Review
-              </div>
+            <div class="insight-priority low">
+              <i class="fas fa-balance-scale"></i> Review
             </div>
           </div>
-        <% } %>
+        </div>
+      <% } %>
 
-        <!-- Success Story -->
-        <% if (utilizationRate >= 80 && utilizationRate <= 95 && maintenanceRate < 10 && (conditionBreakdown['damaged'] || 0) === 0) { %>
-          <div class="insight-card success">
-            <div class="insight-icon">
-              <i class="fas fa-star"></i>
+      <!-- Success Story -->
+      <% if (utilizationRate >= 80 && utilizationRate <= 95 && maintenanceRate < 10 && (conditionBreakdown['damaged'] || 0) === 0) { %>
+        <div class="insight-card success">
+          <div class="insight-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Excellent Asset Management</h4>
+            <p>Your asset portfolio shows strong management with optimal utilization and low maintenance issues.</p>
+            <div class="insight-actions">
+              <strong>Continue Best Practices:</strong>
+              <ul>
+                <li>Maintain current assignment processes</li>
+                <li>Share success metrics with stakeholders</li>
+                <li>Consider this as a model for other asset categories</li>
+                <li>Plan for sustainable growth</li>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>Excellent Asset Management</h4>
-              <p>Your asset portfolio shows strong management with optimal utilization and low maintenance issues.</p>
-              <div class="insight-actions">
-                <strong>Continue Best Practices:</strong>
-                <ul>
-                  <li>Maintain current assignment processes</li>
-                  <li>Share success metrics with stakeholders</li>
-                  <li>Consider this as a model for other asset categories</li>
-                  <li>Plan for sustainable growth</li>
-                </ul>
-              </div>
-              <div class="insight-priority low">
-                <i class="fas fa-thumbs-up"></i> Keep It Up!
-              </div>
+            <div class="insight-priority low">
+              <i class="fas fa-thumbs-up"></i> Keep It Up!
             </div>
           </div>
-        <% } %>
+        </div>
+      <% } %>
 
-        <!-- No Major Issues -->
-        <% if (utilizationRate >= 70 && maintenanceRate < 10 && (conditionBreakdown['damaged'] || 0) === 0 && ageBreakdown['5+'] <= totalAssets * 0.3) { %>
-          <div class="insight-card success">
-            <div class="insight-icon">
-              <i class="fas fa-check-double"></i>
+      <!-- No Major Issues -->
+      <% if (utilizationRate >= 70 && maintenanceRate < 10 && (conditionBreakdown['damaged'] || 0) === 0 && ageBreakdown['5+'] <= totalAssets * 0.3) { %>
+        <div class="insight-card success">
+          <div class="insight-icon">
+            <i class="fas fa-check-double"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Healthy Asset Portfolio</h4>
+            <p>Your asset management shows no critical issues. Focus on continuous improvement.</p>
+            <div class="insight-actions">
+              <strong>Optimization Opportunities:</strong>
+              <ul>
+                <li>Set up automated monitoring alerts</li>
+                <li>Implement predictive maintenance</li>
+                <li>Consider asset lifecycle automation</li>
+                <li>Plan for future technology trends</li>
+              </ul>
             </div>
-            <div class="insight-content">
-              <h4>Healthy Asset Portfolio</h4>
-              <p>Your asset management shows no critical issues. Focus on continuous improvement.</p>
-              <div class="insight-actions">
-                <strong>Optimization Opportunities:</strong>
-                <ul>
-                  <li>Set up automated monitoring alerts</li>
-                  <li>Implement predictive maintenance</li>
-                  <li>Consider asset lifecycle automation</li>
-                  <li>Plan for future technology trends</li>
-                </ul>
-              </div>
-              <div class="insight-priority low">
-                <i class="fas fa-cog"></i> Optimize
-              </div>
+            <div class="insight-priority low">
+              <i class="fas fa-cog"></i> Optimize
             </div>
           </div>
-        <% } %>
-      </div>
+        </div>
+      <% } %>
     </div>
   </div>
 </div>
 
 <!-- Custom Export Modal -->
-<div class="modal-overlay" id="customExportModal" style="display: none;">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-icon">
-        <i class="fas fa-cog"></i>
-      </div>
-      <h4 class="modal-title">Custom Export Options</h4>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden" id="customExportModal">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+    <div class="flex items-center gap-2 mb-4">
+      <div class="text-2xl text-blue-600 dark:text-blue-300"><i class="fas fa-cog"></i></div>
+      <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Custom Export Options</h4>
     </div>
-    <div class="modal-body">
-      <div class="export-options">
-        <div class="option-group">
-          <h5>Export Format</h5>
-          <div class="radio-option">
-            <input type="radio" id="formatCSV" name="format" value="csv" checked>
-            <label for="formatCSV">CSV (Comma Separated Values)</label>
-          </div>
-          <div class="radio-option">
-            <input type="radio" id="formatExcel" name="format" value="excel">
-            <label for="formatExcel">Excel Spreadsheet</label>
-          </div>
-          <div class="radio-option">
-            <input type="radio" id="formatPDF" name="format" value="pdf">
-            <label for="formatPDF">PDF Report</label>
-          </div>
-        </div>
-
-        <div class="option-group">
-          <h5>Include Data</h5>
-          <div class="checkbox-option">
-            <input type="checkbox" id="includeBasic" value="basic" checked>
-            <label for="includeBasic">Basic Asset Information</label>
-          </div>
-          <div class="checkbox-option">
-            <input type="checkbox" id="includeFinancial" value="financial" checked>
-            <label for="includeFinancial">Financial Data (Price, Value)</label>
-          </div>
-          <div class="checkbox-option">
-            <input type="checkbox" id="includeAssignment" value="assignment" checked>
-            <label for="includeAssignment">Assignment Information</label>
-          </div>
-          <div class="checkbox-option">
-            <input type="checkbox" id="includeHistory" value="history">
-            <label for="includeHistory">History Summary</label>
-          </div>
-          <div class="checkbox-option">
-            <input type="checkbox" id="includeAnalytics" value="analytics">
-            <label for="includeAnalytics">Analytics & Insights</label>
-          </div>
-        </div>
+    <div class="mb-4">
+      <h5 class="font-semibold text-gray-700 dark:text-gray-200 mb-2">Export Format</h5>
+      <div class="flex flex-col gap-2">
+        <label class="flex items-center gap-2">
+          <input type="radio" id="formatCSV" name="format" value="csv" checked class="form-radio text-blue-600">
+          <span>CSV (Comma Separated Values)</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="radio" id="formatExcel" name="format" value="excel" class="form-radio text-blue-600">
+          <span>Excel Spreadsheet</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="radio" id="formatPDF" name="format" value="pdf" class="form-radio text-blue-600">
+          <span>PDF Report</span>
+        </label>
       </div>
     </div>
-    <div class="modal-actions">
-      <button id="executeCustomExport" class="btn btn-primary">
-        <i class="fas fa-download"></i> Export Data
+    <div class="mb-4">
+      <h5 class="font-semibold text-gray-700 dark:text-gray-200 mb-2">Include Data</h5>
+      <div class="flex flex-col gap-2">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="includeBasic" value="basic" checked class="form-checkbox text-blue-600">
+          <span>Basic Asset Information</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="includeFinancial" value="financial" checked class="form-checkbox text-blue-600">
+          <span>Financial Data (Price, Value)</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="includeAssignment" value="assignment" checked class="form-checkbox text-blue-600">
+          <span>Assignment Information</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="includeHistory" value="history" class="form-checkbox text-blue-600">
+          <span>History Summary</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" id="includeAnalytics" value="analytics" class="form-checkbox text-blue-600">
+          <span>Analytics & Insights</span>
+        </label>
+      </div>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button id="executeCustomExport" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-download mr-2"></i> Export Data
       </button>
-      <button id="cancelCustomExport" class="btn btn-secondary">
-        <i class="fas fa-times"></i> Cancel
+      <button id="cancelCustomExport" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-times mr-2"></i> Cancel
       </button>
     </div>
   </div>

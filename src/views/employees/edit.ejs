@@ -1,268 +1,241 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <div class="header-title-section">
-      <div class="breadcrumb-nav">
-        <a href="/employees" class="breadcrumb-link">
+<div class="container mx-auto px-4 py-8">
+  <!-- Header & Breadcrumb -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+        <a href="/employees" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
           <i class="fas fa-users"></i> Employees
         </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <a href="/employees/<%= employee.id %>" class="breadcrumb-link">
+        <i class="fas fa-chevron-right mx-2"></i>
+        <a href="/employees/<%= employee.id %>" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
           <%= employee.name %>
         </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-current">Edit</span>
-      </div>
-      <h1>Edit Employee</h1>
+        <i class="fas fa-chevron-right mx-2"></i>
+        <span class="text-gray-700 dark:text-gray-200">Edit</span>
+      </nav>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Edit Employee</h1>
     </div>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/employees/<%= employee.id %>" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Employee
-        </a>
-        <a href="/employees/<%= employee.id %>/history" class="btn btn-info">
-          <i class="fas fa-history"></i> View History
-        </a>
-      </div>
+    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+      <a href="/employees/<%= employee.id %>" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Employee
+      </a>
+      <a href="/employees/<%= employee.id %>/history" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-history mr-2"></i> View History
+      </a>
     </div>
   </div>
 
-  <div class="content-section">
-    <div class="form-container">
-      <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
-        <div class="alert alert-danger">
-          <i class="fas fa-exclamation-triangle"></i>
-          <div>
-            <strong>Please fix the following errors:</strong>
-            <ul>
-              <% errors.forEach(error => { %>
-                <li><%= error %></li>
-              <% }) %>
-            </ul>
-          </div>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>Please fix the following errors:</strong>
+          <ul class="list-disc ml-6">
+            <% errors.forEach(error => { %>
+              <li><%= error %></li>
+            <% }) %>
+          </ul>
         </div>
-      <% } %>
+      </div>
+    <% } %>
 
-      <form method="POST" action="/employees/<%= employee.id %>" id="editEmployeeForm" class="modern-form" data-no-ajax="true">
-        <!-- Employee Information Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-user section-icon"></i>
-            <h3>Employee Information</h3>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="name" class="required">Full Name</label>
-              <input type="text" id="name" name="name" value="<%= employee.name %>"
-                class="form-input" required placeholder="Enter employee's full name">
-              <small class="field-help">
-                <i class="fas fa-info-circle"></i>
-                Enter the employee's complete legal name
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label for="cep" class="required">Employee ID</label>
-              <div class="input-with-validation">
-                <input type="text" id="cep" name="cep" value="<%= employee.cep %>"
-                  class="form-input" required placeholder="e.g., EMP001, CEP123">
-                <div class="validation-feedback" id="cepValidation"></div>
-                <small class="field-help">
-                  <i class="fas fa-id-badge"></i>
-                  Unique identifier for this employee
-                </small>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="email" class="required">Email Address</label>
-              <input type="email" id="email" name="email" value="<%= employee.email %>"
-                class="form-input" required placeholder="employee@company.com">
-              <small class="field-help">
-                <i class="fas fa-envelope"></i>
-                Corporate email address for communications
-              </small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Employment Details Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-briefcase section-icon"></i>
-            <h3>Employment Details</h3>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="dept_id" class="required">Department</label>
-              <select id="dept_id" name="dept_id" class="form-select" required>
-                <option value="">Select Department</option>
-                <% departments.forEach(dept => { %>
-                  <option value="<%= dept.id %>" <%= employee.dept_id === dept.id ? 'selected' : '' %>>
-                    <%= dept.name %>
-                  </option>
-                <% }) %>
-              </select>
-              <small class="field-help">
-                <i class="fas fa-building"></i>
-                Employee's primary department or team
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label for="location_id" class="required">Location</label>
-              <select id="location_id" name="location_id" class="form-select" required>
-                <option value="">Select Location</option>
-                <% locations.forEach(location => { %>
-                  <option value="<%= location.id %>" <%= employee.location_id === location.id ? 'selected' : '' %>>
-                    <%= location.name %>
-                  </option>
-                <% }) %>
-              </select>
-              <small class="field-help">
-                <i class="fas fa-map-marker-alt"></i>
-                Physical location where the employee is based
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label for="joined_date" class="required">Start Date</label>
-              <input type="date" id="joined_date" name="joined_date"
-                value="<%= employee.joined_date ? new Date(employee.joined_date).toISOString().split('T')[0] : '' %>"
-                class="form-input" required>
-              <small class="field-help">
-                <i class="fas fa-calendar-plus"></i>
-                Official start date of employment
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label for="left_date">End Date</label>
-              <input type="date" id="left_date" name="left_date"
-                value="<%= employee.left_date ? new Date(employee.left_date).toISOString().split('T')[0] : '' %>"
-                class="form-input" placeholder="Leave blank if still employed">
-              <small class="field-help">
-                <i class="fas fa-calendar-times"></i>
-                Leave blank if employee is still active
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label for="job_title">Job Title</label>
-              <input type="text" id="job_title" name="job_title"
-                value="<%= employee.job_title || '' %>"
-                class="form-input" placeholder="e.g., Software Developer, Manager">
-              <small class="field-help">
-                <i class="fas fa-user-tie"></i>
-                Employee's official job title (optional)
-              </small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Software Assignments Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-laptop-code section-icon"></i>
-            <h3>Software Assignments</h3>
-          </div>
-
-          <div class="software-assignment-container">
-            <div class="software-selection">
-              <% if (software && software.length > 0) { %>
-                <% software.forEach(sw => { %>
-                  <div class="software-option">
-                    <label class="checkbox-label">
-                      <input type="checkbox"
-                             name="software_assignments"
-                             value="<%= sw.id %>"
-                             <%= assignedSoftwareIds.includes(sw.id) ? 'checked' : '' %>>
-                      <span class="checkmark"></span>
-                      <div class="software-info">
-                        <div class="software-header">
-                          <strong class="software-name"><%= sw.name %></strong>
-                          <% if (sw.version) { %>
-                            <span class="version">v<%= sw.version %></span>
-                          <% } %>
-                        </div>
-                        <div class="software-details">
-                          <% if (sw.vendor) { %>
-                            <span class="vendor">
-                              <i class="fas fa-building"></i>
-                              <%= sw.vendor %>
-                            </span>
-                          <% } %>
-                          <% if (sw.license_type) { %>
-                            <span class="license-type">
-                              <i class="fas fa-certificate"></i>
-                              <%= sw.license_type %>
-                            </span>
-                          <% } %>
-                          <% if (sw.cost_per_license) { %>
-                            <span class="cost">
-                              <i class="fas fa-euro-sign"></i>
-                              €<%= parseFloat(sw.cost_per_license).toFixed(2) %>/license
-                            </span>
-                          <% } %>
-                        </div>
-                        <% if (sw.description) { %>
-                          <div class="software-description">
-                            <%= sw.description %>
-                          </div>
-                        <% } %>
-                      </div>
-                    </label>
-                  </div>
-                <% }) %>
-              <% } else { %>
-                <div class="no-software-available">
-                  <div class="empty-icon">
-                    <i class="fas fa-laptop-code"></i>
-                  </div>
-                  <p>No software licenses available for assignment</p>
-                  <small>Software licenses can be managed separately</small>
-                </div>
-              <% } %>
-            </div>
-            <small class="field-help">
+    <form method="POST" action="/employees/<%= employee.id %>" id="editEmployeeForm" class="space-y-10" data-no-ajax="true">
+      <!-- Employee Information Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-user"></i> Employee Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2">
+            <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Full Name <span class="text-red-500">*</span></label>
+            <input type="text" id="name" name="name" value="<%= employee.name %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              required placeholder="Enter employee's full name">
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
               <i class="fas fa-info-circle"></i>
-              Select software licenses to assign to this employee. Changes will be logged in the employee's history.
+              Enter the employee's complete legal name
+            </small>
+          </div>
+          <div>
+            <label for="cep" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Employee ID <span class="text-red-500">*</span></label>
+            <input type="text" id="cep" name="cep" value="<%= employee.cep %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              required placeholder="e.g., EMP001, CEP123">
+            <div class="text-xs mt-1" id="cepValidation"></div>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-id-badge"></i>
+              Unique identifier for this employee
+            </small>
+          </div>
+          <div>
+            <label for="email" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Email Address <span class="text-red-500">*</span></label>
+            <input type="email" id="email" name="email" value="<%= employee.email %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              required placeholder="employee@company.com">
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-envelope"></i>
+              Corporate email address for communications
             </small>
           </div>
         </div>
+      </div>
 
-        <!-- Additional Information Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-sticky-note section-icon"></i>
-            <h3>Additional Information</h3>
+      <!-- Employment Details Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-briefcase"></i> Employment Details
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="dept_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Department <span class="text-red-500">*</span></label>
+            <select id="dept_id" name="dept_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
+              <option value="">Select Department</option>
+              <% departments.forEach(dept => { %>
+                <option value="<%= dept.id %>" <%= employee.dept_id === dept.id ? 'selected' : '' %>>
+                  <%= dept.name %>
+                </option>
+              <% }) %>
+            </select>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-building"></i>
+              Employee's primary department or team
+            </small>
           </div>
+          <div>
+            <label for="location_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Location <span class="text-red-500">*</span></label>
+            <select id="location_id" name="location_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
+              <option value="">Select Location</option>
+              <% locations.forEach(location => { %>
+                <option value="<%= location.id %>" <%= employee.location_id === location.id ? 'selected' : '' %>>
+                  <%= location.name %>
+                </option>
+              <% }) %>
+            </select>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-map-marker-alt"></i>
+              Physical location where the employee is based
+            </small>
+          </div>
+          <div>
+            <label for="joined_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Start Date <span class="text-red-500">*</span></label>
+            <input type="date" id="joined_date" name="joined_date"
+              value="<%= employee.joined_date ? new Date(employee.joined_date).toISOString().split('T')[0] : '' %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              required>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-calendar-plus"></i>
+              Official start date of employment
+            </small>
+          </div>
+          <div>
+            <label for="left_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">End Date</label>
+            <input type="date" id="left_date" name="left_date"
+              value="<%= employee.left_date ? new Date(employee.left_date).toISOString().split('T')[0] : '' %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="Leave blank if still employed">
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-calendar-times"></i>
+              Leave blank if employee is still active
+            </small>
+          </div>
+          <div>
+            <label for="job_title" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Job Title</label>
+            <input type="text" id="job_title" name="job_title"
+              value="<%= employee.job_title || '' %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="e.g., Software Developer, Manager">
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-user-tie"></i>
+              Employee's official job title (optional)
+            </small>
+          </div>
+        </div>
+      </div>
 
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="notes">Notes</label>
-              <textarea id="notes" name="notes" rows="4" class="form-textarea"
-                placeholder="Any additional information or notes about the employee"><%= employee.notes || '' %></textarea>
-              <small class="field-help">
-                <i class="fas fa-info-circle"></i>
-                Optional notes or comments about the employee
-              </small>
+      <!-- Software Assignments Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-laptop-code"></i> Software Assignments
+        </h3>
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 p-4 max-h-80 overflow-y-auto mb-2">
+          <% if (software && software.length > 0) { %>
+            <% software.forEach(sw => { %>
+              <div class="mb-4 pb-4 border-b border-gray-100 dark:border-gray-800 last:border-b-0 last:mb-0 last:pb-0">
+                <label class="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox"
+                         name="software_assignments"
+                         value="<%= sw.id %>"
+                         class="mt-1 accent-blue-600"
+                         <%= assignedSoftwareIds.includes(sw.id) ? 'checked' : '' %>>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                      <strong class="text-gray-800 dark:text-gray-100"><%= sw.name %></strong>
+                      <% if (sw.version) { %>
+                        <span class="bg-gray-200 dark:bg-gray-700 text-xs rounded px-2 py-0.5">v<%= sw.version %></span>
+                      <% } %>
+                    </div>
+                    <div class="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400 mt-1">
+                      <% if (sw.vendor) { %>
+                        <span><i class="fas fa-building"></i> <%= sw.vendor %></span>
+                      <% } %>
+                      <% if (sw.license_type) { %>
+                        <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded px-2 py-0.5"><i class="fas fa-certificate"></i> <%= sw.license_type %></span>
+                      <% } %>
+                      <% if (sw.cost_per_license) { %>
+                        <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded px-2 py-0.5"><i class="fas fa-euro-sign"></i> €<%= parseFloat(sw.cost_per_license).toFixed(2) %>/license</span>
+                      <% } %>
+                    </div>
+                    <% if (sw.description) { %>
+                      <div class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= sw.description %></div>
+                    <% } %>
+                  </div>
+                </label>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+              <div class="text-4xl text-blue-500 mb-2">
+                <i class="fas fa-laptop-code"></i>
+              </div>
+              <p class="text-gray-700 dark:text-gray-200 mb-1">No software licenses available for assignment</p>
+              <small class="text-gray-500 dark:text-gray-400">Software licenses can be managed separately</small>
             </div>
-          </div>
+          <% } %>
         </div>
+        <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+          <i class="fas fa-info-circle"></i>
+          Select software licenses to assign to this employee. Changes will be logged in the employee's history.
+        </small>
+      </div>
 
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary btn-lg">
-            <i class="fas fa-save"></i> Update Employee
-          </button>
-          <a href="/employees/<%= employee.id %>" class="btn btn-secondary btn-lg">
-            <i class="fas fa-times"></i> Cancel
-          </a>
+      <!-- Additional Information Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-sticky-note"></i> Additional Information
+        </h3>
+        <div>
+          <label for="notes" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Notes</label>
+          <textarea id="notes" name="notes" rows="4"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            placeholder="Any additional information or notes about the employee"><%= employee.notes || '' %></textarea>
+          <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+            <i class="fas fa-info-circle"></i>
+            Optional notes or comments about the employee
+          </small>
         </div>
-      </form>
-    </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex flex-wrap gap-2 mt-8">
+        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-save"></i> Update Employee
+        </button>
+        <a href="/employees/<%= employee.id %>" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-times"></i> Cancel
+        </a>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -286,23 +259,23 @@ document.addEventListener('DOMContentLoaded', function() {
       clearTimeout(duplicateCheckTimeout);
 
       // Reset validation state
-      cepValidation.className = 'validation-feedback';
+      cepValidation.className = 'text-xs mt-1';
       cepValidation.innerHTML = '';
 
       if (newValue === originalCep) {
-        cepValidation.className = 'validation-feedback success';
+        cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
         cepValidation.innerHTML = '<i class="fas fa-check"></i> Current Employee ID';
         return;
       }
 
       if (newValue.length < 3) {
-        cepValidation.className = 'validation-feedback warning';
+        cepValidation.className = 'text-xs mt-1 text-yellow-700 dark:text-yellow-300';
         cepValidation.innerHTML = '<i class="fas fa-info-circle"></i> Employee ID should be at least 3 characters';
         return;
       }
 
       // Show checking state
-      cepValidation.className = 'validation-feedback checking';
+      cepValidation.className = 'text-xs mt-1 text-blue-700 dark:text-blue-300';
       cepValidation.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
 
       // Check for duplicates after delay
@@ -319,19 +292,19 @@ document.addEventListener('DOMContentLoaded', function() {
       const data = await response.json();
 
       if (data.exists && data.employee.id !== <%= employee.id %>) {
-        cepValidation.className = 'validation-feedback error';
+        cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
         cepValidation.innerHTML = `
           <i class="fas fa-exclamation-triangle"></i>
           Employee ID already exists -
-          <a href="/employees/${data.employee.id}" target="_blank" class="error-link">View existing employee</a>
+          <a href="/employees/${data.employee.id}" target="_blank" class="underline text-blue-700 dark:text-blue-300">View existing employee</a>
         `;
       } else {
-        cepValidation.className = 'validation-feedback success';
+        cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
         cepValidation.innerHTML = '<i class="fas fa-check"></i> Employee ID available';
       }
     } catch (error) {
       console.error('Error checking duplicate:', error);
-      cepValidation.className = 'validation-feedback error';
+      cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
       cepValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error checking availability';
     }
   }
@@ -343,10 +316,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (joinedDateInput.value && leftDateInput.value && leftDate <= joinedDate) {
       leftDateInput.setCustomValidity('End date must be after start date');
-      leftDateInput.classList.add('form-error');
+      leftDateInput.classList.add('border-red-500');
     } else {
       leftDateInput.setCustomValidity('');
-      leftDateInput.classList.remove('form-error');
+      leftDateInput.classList.remove('border-red-500');
     }
   }
 
@@ -358,12 +331,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // Form submission handling
   form.addEventListener('submit', function(event) {
     // Check for validation errors
-    if (cepValidation.classList.contains('error')) {
+    if (cepValidation.className.includes('text-red-700')) {
       event.preventDefault();
 
       // Show error message
       const errorAlert = document.createElement('div');
-      errorAlert.className = 'alert alert-danger';
+      errorAlert.className = 'mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700';
       errorAlert.innerHTML = `
         <i class="fas fa-exclamation-triangle"></i>
         <div>
@@ -391,10 +364,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let firstInvalidField = null;
 
     requiredFields.forEach(field => {
-      field.classList.remove('form-error');
+      field.classList.remove('border-red-500');
       if (!field.value.trim()) {
         valid = false;
-        field.classList.add('form-error');
+        field.classList.add('border-red-500');
         if (!firstInvalidField) {
           firstInvalidField = field;
         }
@@ -406,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Show error message
       const errorAlert = document.createElement('div');
-      errorAlert.className = 'alert alert-danger';
+      errorAlert.className = 'mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700';
       errorAlert.innerHTML = `
         <i class="fas fa-exclamation-triangle"></i>
         <div>
@@ -466,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (hasChanges && !changesWarningShown) {
         const warningAlert = document.createElement('div');
-        warningAlert.className = 'alert alert-info software-changes-warning';
+        warningAlert.className = 'mb-4 flex items-center gap-2 px-4 py-3 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700';
         warningAlert.innerHTML = `
           <i class="fas fa-info-circle"></i>
           <div>
@@ -476,9 +449,9 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         // Find software section and insert warning
-        const softwareSection = document.querySelector('.software-assignment-container');
+        const softwareSection = document.querySelector('.border.border-gray-200');
         if (softwareSection) {
-          softwareSection.insertBefore(warningAlert, softwareSection.firstChild);
+          softwareSection.parentNode.insertBefore(warningAlert, softwareSection);
           changesWarningShown = true;
         }
       }

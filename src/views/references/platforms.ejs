@@ -1,76 +1,92 @@
-<h1>Manage Locations</h1>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">Manage Locations</h1>
 
-<% if (user.role === 'admin') { %>
-  <div class="reference-form">
-    <h3>Add Location</h3>
-    <form method="POST" action="/references/platforms">
-      <div class="form-group">
-        <label for="id">Location ID</label>
-        <input type="text" id="id" name="id" placeholder="e.g. 973" required>
-        <small>Numeric code for the location</small>
-      </div>
-
-      <div class="form-group">
-        <label for="name">Location Name</label>
-        <input type="text" id="name" name="name" placeholder="e.g. Porto" required>
-        <small>City or site name</small>
-      </div>
-
-      <div class="form-group">
-        <button type="submit" class="btn">Add Location</button>
-      </div>
-    </form>
-  </div>
-<% } else { %>
-  <div class="alert alert-info">
-    <i class="fas fa-info-circle"></i> Location management is restricted to administrators only.
-  </div>
-<% } %>
-
-<div class="reference-list">
-  <h3>Existing Locations</h3>
-
-  <% if (platforms && platforms.length > 0) { %>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Employees</th>
-          <% if (user.role === 'admin') { %>
-            <th>Actions</th>
-          <% } %>
-        </tr>
-      </thead>
-      <tbody>
-        <% platforms.forEach(platform => { %>
-          <tr>
-            <td><%= platform.id %></td>
-            <td>
-              <% if (user.role === 'admin') { %>
-                <form class="inline-edit-form" method="POST" action="/references/platforms/<%= platform.id %>">
-                  <input type="text" name="name" value="<%= platform.name %>" required>
-                  <button type="submit" class="btn">Update</button>
-                </form>
-              <% } else { %>
-                <%= platform.name %>
-              <% } %>
-            </td>
-            <td class="text-center"><%= platform.employee_count || 0 %></td>
-            <% if (user.role === 'admin') { %>
-              <td>
-                <form method="POST" action="/references/platforms/<%= platform.id %>/delete" style="display: inline;">
-                  <button type="submit" class="btn btn-danger delete-btn">Delete</button>
-                </form>
-              </td>
-            <% } %>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+  <% if (user.role === 'admin') { %>
+    <div class="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md max-w-lg mx-auto">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Add Location</h3>
+      <form method="POST" action="/references/platforms" class="space-y-6">
+        <div>
+          <label for="id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Location ID</label>
+          <input type="text" id="id" name="id" placeholder="e.g. 973" required
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          <small class="text-gray-500 dark:text-gray-400">Numeric code for the location</small>
+        </div>
+        <div>
+          <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Location Name</label>
+          <input type="text" id="name" name="name" placeholder="e.g. Porto" required
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          <small class="text-gray-500 dark:text-gray-400">City or site name</small>
+        </div>
+        <div>
+          <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+            <i class="fas fa-plus"></i> Add Location
+          </button>
+        </div>
+      </form>
+    </div>
   <% } else { %>
-    <p>No locations found.</p>
+    <div class="mb-8 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-4 py-3 rounded flex items-center gap-2 max-w-lg mx-auto">
+      <i class="fas fa-info-circle"></i>
+      <span>Location management is restricted to administrators only.</span>
+    </div>
   <% } %>
+
+  <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Existing Locations</h3>
+    <% if (platforms && platforms.length > 0) { %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+              <th class="px-4 py-3 text-left font-semibold">ID</th>
+              <th class="px-4 py-3 text-left font-semibold">Name</th>
+              <th class="px-4 py-3 text-center font-semibold">Employees</th>
+              <% if (user.role === 'admin') { %>
+                <th class="px-4 py-3 text-left font-semibold">Actions</th>
+              <% } %>
+            </tr>
+          </thead>
+          <tbody>
+            <% platforms.forEach(platform => { %>
+              <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
+                <td class="px-4 py-3 font-mono text-gray-800 dark:text-gray-100"><%= platform.id %></td>
+                <td class="px-4 py-3">
+                  <% if (user.role === 'admin') { %>
+                    <form class="inline-edit-form flex items-center gap-2" method="POST" action="/references/platforms/<%= platform.id %>">
+                      <input type="text" name="name" value="<%= platform.name %>" required
+                        class="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 transition w-32">
+                      <button type="submit" class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition text-xs flex items-center gap-1">
+                        <i class="fas fa-save"></i> Update
+                      </button>
+                    </form>
+                  <% } else { %>
+                    <span class="text-gray-800 dark:text-gray-100"><%= platform.name %></span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
+                    <i class="fas fa-users"></i>
+                    <%= platform.employee_count || 0 %>
+                  </span>
+                </td>
+                <% if (user.role === 'admin') { %>
+                  <td class="px-4 py-3">
+                    <form method="POST" action="/references/platforms/<%= platform.id %>/delete" style="display: inline;">
+                      <button type="submit" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md transition text-xs flex items-center gap-1 delete-btn">
+                        <i class="fas fa-trash"></i> Delete
+                      </button>
+                    </form>
+                  </td>
+                <% } %>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <p class="text-gray-500 dark:text-gray-400 italic">No locations found.</p>
+    <% } %>
+  </div>
 </div>
 
 <link rel="stylesheet" href="/css/styles.css">

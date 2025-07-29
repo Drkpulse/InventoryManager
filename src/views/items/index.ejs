@@ -1,45 +1,41 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <h1>Asset Management</h1>
-    <div class="header-actions">
-      <div class="search-container">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" id="itemSearch" placeholder="Search assets by name, ID, or type..." autocomplete="off" value="<%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.search) || '' %>">
-        <div class="search-results" id="searchResults"></div>
-      </div>
-      <div class="action-buttons">
-        <button id="exportItemsBtn" class="btn btn-success">
-          <i class="fas fa-download"></i> Export Asset List
-        </button>
-        <a href="/items/new" class="btn btn-secondary">
-          <i class="fas fa-plus"></i> Add New Asset
-        </a>
-        <a href="/items/new-receipt" class="btn btn-primary">
-          <i class="fas fa-receipt"></i> Add Purchase Receipt
-        </a>
-      </div>
+<div class="container mx-auto px-4 py-8">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Asset Management</h1>
+    </div>
+    <div class="flex flex-col md:flex-row gap-2">
+      <a href="/items/new" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-plus mr-2"></i> Add New Asset
+      </a>
+      <a href="/items/new-receipt" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-receipt mr-2"></i> Add Purchase Receipt
+      </a>
+      <button id="exportItemsBtn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-download mr-2"></i> Export Asset List
+      </button>
     </div>
   </div>
 
-  <!-- Advanced Filters Panel -->
-  <div class="filters-panel" id="filtersPanel">
-    <div class="filters-header" id="filtersToggle">
-      <div class="filters-title">
+  <!-- Filters Panel -->
+  <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+    <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" id="filtersToggle">
+      <div class="flex items-center gap-2 text-gray-700 dark:text-gray-200">
         <i class="fas fa-filter"></i>
-        <h3>Advanced Filters</h3>
-        <span class="filter-badge" id="filterBadge">0</span>
+        <span class="font-semibold">Advanced Filters</span>
+        <span class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs" id="filterBadge">0</span>
       </div>
-      <div class="filters-actions">
-        <span class="applied-filters-preview" id="appliedFiltersPreview">No filters applied</span>
-        <i class="fas fa-chevron-down toggle-icon"></i>
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500 dark:text-gray-400" id="appliedFiltersPreview">No filters applied</span>
+        <i class="fas fa-chevron-down transition-transform duration-200"></i>
       </div>
     </div>
-
-    <div class="filters-content" id="filtersContent">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label for="typeFilter">Asset Type</label>
-          <select id="typeFilter" name="type">
+    <div class="px-6 pb-6 pt-2 hidden" id="filtersContent">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+        <div>
+          <label for="typeFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset Type</label>
+          <select id="typeFilter" name="type"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value="">All Types</option>
             <% if (typeof types !== 'undefined') { %>
               <% types.forEach(type => { %>
@@ -50,10 +46,10 @@
             <% } %>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label for="brandFilter">Brand</label>
-          <select id="brandFilter" name="brand">
+        <div>
+          <label for="brandFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Brand</label>
+          <select id="brandFilter" name="brand"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value="">All Brands</option>
             <% if (typeof brands !== 'undefined') { %>
               <% brands.forEach(brand => { %>
@@ -64,19 +60,19 @@
             <% } %>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label for="statusFilter">Assignment Status</label>
-          <select id="statusFilter" name="assigned">
+        <div>
+          <label for="statusFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assignment Status</label>
+          <select id="statusFilter" name="assigned"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value="" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.assigned === '') ? 'selected' : '' %>>All Assets</option>
             <option value="assigned" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.assigned === 'assigned') ? 'selected' : '' %>>Assigned Assets</option>
             <option value="unassigned" <%= (typeof currentFilters === 'undefined' || !currentFilters || currentFilters.assigned === 'unassigned') ? 'selected' : '' %>>Unassigned Assets</option>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label for="conditionFilter">Condition</label>
-          <select id="conditionFilter" name="condition">
+        <div>
+          <label for="conditionFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Condition</label>
+          <select id="conditionFilter" name="condition"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value="">All Conditions</option>
             <option value="active">Active</option>
             <option value="maintenance">Under Maintenance</option>
@@ -84,30 +80,30 @@
             <option value="damaged">Damaged</option>
           </select>
         </div>
-      </div>
-
-      <div class="filter-row">
-        <div class="filter-group">
-          <label for="priceRange">Price Range</label>
-          <div class="price-range">
-            <input type="number" id="minPrice" name="minPrice" placeholder="Min €" min="0" step="0.01" value="<%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.minPrice) || '' %>">
-            <span>to</span>
-            <input type="number" id="maxPrice" name="maxPrice" placeholder="Max €" min="0" step="0.01" value="<%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.maxPrice) || '' %>">
+        <div>
+          <label for="priceRange" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Price Range</label>
+          <div class="flex gap-2">
+            <input type="number" id="minPrice" name="minPrice" placeholder="Min €" min="0" step="0.01"
+              class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <span class="self-center text-gray-500 dark:text-gray-400">to</span>
+            <input type="number" id="maxPrice" name="maxPrice" placeholder="Max €" min="0" step="0.01"
+              class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
           </div>
         </div>
-
-        <div class="filter-group">
-          <label for="dateRange">Date Acquired</label>
-          <div class="date-range">
-            <input type="date" id="startDate" name="startDate" value="<%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.startDate) || '' %>">
-            <span>to</span>
-            <input type="date" id="endDate" name="endDate" value="<%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.endDate) || '' %>">
+        <div>
+          <label for="dateRange" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Date Acquired</label>
+          <div class="flex gap-2">
+            <input type="date" id="startDate" name="startDate"
+              class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <span class="self-center text-gray-500 dark:text-gray-400">to</span>
+            <input type="date" id="endDate" name="endDate"
+              class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
           </div>
         </div>
-
-        <div class="filter-group">
-          <label for="departmentFilter">Department</label>
-          <select id="departmentFilter" name="department">
+        <div>
+          <label for="departmentFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Department</label>
+          <select id="departmentFilter" name="department"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value="">All Departments</option>
             <% if (typeof departments !== 'undefined') { %>
               <% departments.forEach(dept => { %>
@@ -119,14 +115,13 @@
           </select>
         </div>
       </div>
-
-      <div class="filter-actions-bar">
-        <div class="applied-filters-display" id="appliedFilters"></div>
-        <div class="filter-buttons">
-          <button type="button" id="applyFilters" class="btn btn-primary">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div id="appliedFilters" class="flex flex-wrap gap-2"></div>
+        <div class="flex gap-2">
+          <button type="button" id="applyFilters" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
             <i class="fas fa-search"></i> Apply Filters
           </button>
-          <button type="button" id="resetFilters" class="btn btn-secondary">
+          <button type="button" id="resetFilters" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
             <i class="fas fa-times"></i> Reset All
           </button>
         </div>
@@ -134,264 +129,233 @@
     </div>
   </div>
 
+  <!-- Search Bar -->
+  <div class="mb-6">
+    <div class="relative">
+      <input type="text" id="itemSearch" placeholder="Search assets by name, ID, or type..." autocomplete="off"
+        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
+      <div class="absolute w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-md z-10 hidden" id="searchResults"></div>
+    </div>
+  </div>
+
   <% if (items && items.length > 0) { %>
-    <div class="content-section">
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th class="checkbox-col">
-                <input type="checkbox" id="selectAll">
-              </th>
-              <th class="sortable" data-sort="cep_brc">
-                Asset ID <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="name">
-                Name <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="type_name">
-                Type <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="brand_name">
-                Brand <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="assigned_to_name">
-                Assigned To <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="status">
-                Status <i class="fas fa-sort"></i>
-              </th>
-              <th class="actions-col">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%
-            // Sort items to show unassigned first
-            const sortedItems = items.sort((a, b) => {
-              // Unassigned items first
-              if (!a.assigned_to && b.assigned_to) return -1;
-              if (a.assigned_to && !b.assigned_to) return 1;
-              // Then sort by name
-              return a.name.localeCompare(b.name);
-            });
-            %>
-            <% sortedItems.forEach(item => { %>
-              <tr data-item-id="<%= item.id %>" class="table-row <%= item.assigned_to ? 'assigned-item' : 'unassigned-item' %>">
-                <td>
-                  <input type="checkbox" class="row-checkbox" value="<%= item.id %>">
-                </td>
-                <td>
-                  <span class="entity-id"><%= item.cep_brc %></span>
-                </td>
-                <td>
-                  <div class="entity-info">
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="entity-name">
-                      <%= item.name %>
-                    </a>
-                    <% if (item.model) { %>
-                      <small class="entity-detail"><%= item.model %></small>
-                    <% } %>
-                  </div>
-                </td>
-                <td>
-                  <% if (item.type_name) { %>
-                    <span class="category-badge">
-                      <i class="fas fa-tag"></i> <%= item.type_name %>
-                    </span>
-                  <% } else { %>
-                    <span class="badge badge-secondary">
-                      <i class="fas fa-minus"></i> Not Assigned
-                    </span>
+    <div class="overflow-x-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+            <th class="px-4 py-3"><input type="checkbox" id="selectAll"></th>
+            <th class="px-4 py-3">Asset ID</th>
+            <th class="px-4 py-3">Name</th>
+            <th class="px-4 py-3">Type</th>
+            <th class="px-4 py-3">Brand</th>
+            <th class="px-4 py-3">Assigned To</th>
+            <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%
+          const sortedItems = items.sort((a, b) => {
+            if (!a.assigned_to && b.assigned_to) return -1;
+            if (a.assigned_to && !b.assigned_to) return 1;
+            return a.name.localeCompare(b.name);
+          });
+          %>
+          <% sortedItems.forEach(item => { %>
+            <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
+              <td class="px-4 py-3"><input type="checkbox" class="row-checkbox" value="<%= item.id %>"></td>
+              <td class="px-4 py-3 font-mono text-gray-800 dark:text-gray-100"><%= item.cep_brc %></td>
+              <td class="px-4 py-3">
+                <div>
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="font-semibold text-blue-700 dark:text-blue-300 hover:underline"><%= item.name %></a>
+                  <% if (item.model) { %>
+                    <div class="text-xs text-gray-500 dark:text-gray-400"><%= item.model %></div>
                   <% } %>
-                </td>
-                <td>
-                  <% if (item.brand_name) { %>
-                    <span class="brand-badge">
-                      <i class="fas fa-building"></i>
-                      <%= item.brand_name %>
-                    </span>
-                  <% } else { %>
-                    <span class="badge badge-secondary">
-                      <i class="fas fa-minus"></i> Not Specified
-                    </span>
-                  <% } %>
-                </td>
-                <td>
-                  <% if (item.assigned_to_name) { %>
-                    <div class="entity-info">
-                      <a href="/employees/<%= item.assigned_to %>" class="entity-name">
-                        <i class="fas fa-user"></i> <%= item.assigned_to_name %>
-                      </a>
-                      <% if (item.department_name) { %>
-                        <small class="entity-detail"><%= item.department_name %></small>
-                      <% } %>
-                    </div>
-                  <% } else { %>
-                    <span class="badge badge-secondary">
-                      <i class="fas fa-user-slash"></i> Unassigned
-                    </span>
-                  <% } %>
-                </td>
-                <td>
-                  <%
-                    let statusClass = 'badge-secondary';
-                    let statusIcon = 'fas fa-question';
-                    let statusText = 'Unknown';
-
-                    if (item.assigned_to) {
-                      if (item.condition === 'maintenance') {
-                        statusClass = 'badge-warning';
-                        statusIcon = 'fas fa-wrench';
-                        statusText = 'Maintenance';
-                      } else if (item.condition === 'retired') {
-                        statusClass = 'badge-dark';
-                        statusIcon = 'fas fa-archive';
-                        statusText = 'Retired';
-                      } else {
-                        statusClass = 'badge-success';
-                        statusIcon = 'fas fa-check-circle';
-                        statusText = 'Active';
-                      }
-                    } else {
-                      statusClass = 'badge-info';
-                      statusIcon = 'fas fa-clock';
-                      statusText = 'Available';
-                    }
-                  %>
-                  <span class="status-badge <%= statusClass %>">
-                    <i class="<%= statusIcon %>"></i> <%= statusText %>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <% if (item.type_name) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
+                    <i class="fas fa-tag"></i> <%= item.type_name %>
                   </span>
-                  <% if (item.date_acquired) { %>
-                    <small class="entity-detail">
-                      Acquired <%= new Date(item.date_acquired).toLocaleDateString() %>
-                    </small>
-                  <% } %>
-                </td>
-                <td class="actions-cell">
-                  <div class="action-buttons-inline">
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn-action btn-view" title="View Details">
-                      <i class="fas fa-eye"></i>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
+                    <i class="fas fa-minus"></i> Not Assigned
+                  </span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <% if (item.brand_name) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 text-xs font-semibold">
+                    <i class="fas fa-building"></i> <%= item.brand_name %>
+                  </span>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
+                    <i class="fas fa-minus"></i> Not Specified
+                  </span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <% if (item.assigned_to_name) { %>
+                  <div>
+                    <a href="/employees/<%= item.assigned_to %>" class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-100 hover:underline">
+                      <i class="fas fa-user"></i> <%= item.assigned_to_name %>
                     </a>
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="btn-action btn-edit" title="Edit">
-                      <i class="fas fa-edit"></i>
-                    </a>
-                    <% if (item.assigned_to) { %>
-                      <form style="display: inline;" method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/unassign" class="inline-form">
-                        <button type="submit" class="btn-action btn-delete" title="Unassign">
-                          <i class="fas fa-user-minus"></i>
-                        </button>
-                      </form>
-                    <% } else { %>
-                      <a href="/items/<%= item.id %>/<%= item.cep_brc %>/assign" class="btn-action btn-view" title="Assign">
-                        <i class="fas fa-user-plus"></i>
-                      </a>
+                    <% if (item.department_name) { %>
+                      <div class="text-xs text-gray-500 dark:text-gray-400"><%= item.department_name %></div>
                     <% } %>
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="btn-action btn-history" title="View History">
-                      <i class="fas fa-history"></i>
-                    </a>
                   </div>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
+                    <i class="fas fa-user-slash"></i> Unassigned
+                  </span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <%
+                  let statusClass = 'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400';
+                  let statusIcon = 'fas fa-question';
+                  let statusText = 'Unknown';
+                  if (item.assigned_to) {
+                    if (item.condition === 'maintenance') {
+                      statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300';
+                      statusIcon = 'fas fa-wrench';
+                      statusText = 'Maintenance';
+                    } else if (item.condition === 'retired') {
+                      statusClass = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+                      statusIcon = 'fas fa-archive';
+                      statusText = 'Retired';
+                    } else {
+                      statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300';
+                      statusIcon = 'fas fa-check-circle';
+                      statusText = 'Active';
+                    }
+                  } else {
+                    statusClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
+                    statusIcon = 'fas fa-clock';
+                    statusText = 'Available';
+                  }
+                %>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold <%= statusClass %>">
+                  <i class="<%= statusIcon %>"></i> <%= statusText %>
+                </span>
+                <% if (item.date_acquired) { %>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Acquired <%= new Date(item.date_acquired).toLocaleDateString() %>
+                  </div>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex gap-1">
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <% if (item.assigned_to) { %>
+                    <form style="display: inline;" method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/unassign" class="inline-form">
+                      <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition" title="Unassign">
+                        <i class="fas fa-user-minus"></i>
+                      </button>
+                    </form>
+                  <% } else { %>
+                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>/assign" class="inline-flex items-center justify-center w-8 h-8 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition" title="Assign">
+                      <i class="fas fa-user-plus"></i>
+                    </a>
+                  <% } %>
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 transition" title="View History">
+                    <i class="fas fa-history"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
 
-      <!-- Bulk Actions -->
-      <div class="bulk-actions" id="bulkActions" style="display: none;">
-        <div class="bulk-actions-content">
-          <span class="selection-count">0 assets selected</span>
-          <div class="bulk-buttons">
-            <button class="btn btn-primary" id="bulkAssign">
-              <i class="fas fa-user-plus"></i> Bulk Assign
-            </button>
-            <button class="btn btn-warning" id="bulkUnassign">
-              <i class="fas fa-user-minus"></i> Bulk Unassign
-            </button>
-            <button class="btn btn-info" id="bulkExport">
-              <i class="fas fa-download"></i> Export Selected
-            </button>
-            <button class="btn btn-danger" id="bulkDelete">
-              <i class="fas fa-trash"></i> Delete Selected
-            </button>
-          </div>
+    <!-- Bulk Actions -->
+    <div class="mt-4" id="bulkActions" style="display: none;">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-6 py-4">
+        <span class="selection-count text-gray-700 dark:text-gray-300"></span>
+        <div class="flex gap-2">
+          <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2" id="bulkAssign">
+            <i class="fas fa-user-plus"></i> Bulk Assign
+          </button>
+          <button class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition flex items-center gap-2" id="bulkUnassign">
+            <i class="fas fa-user-minus"></i> Bulk Unassign
+          </button>
+          <button class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition flex items-center gap-2" id="bulkExport">
+            <i class="fas fa-download"></i> Export Selected
+          </button>
+          <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition flex items-center gap-2" id="bulkDelete">
+            <i class="fas fa-trash"></i> Delete Selected
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- Results Summary Bottom with Pagination -->
-      <div class="results-summary-bottom">
-        <div class="results-stats">
-          <span class="results-count">
-            <i class="fas fa-boxes"></i>
-            Showing <strong id="itemCount"><%= items.length %></strong> of <%= typeof totalItems !== 'undefined' ? totalItems : items.length %> assets
-          </span>
-          <div class="stats-display">
-            <span class="stat-item">
-              <i class="fas fa-user text-success"></i>
-              <%= items.filter(item => item.assigned_to).length %> Assigned
-            </span>
-            <% if (items.filter(item => !item.assigned_to).length > 0) { %>
-              <span class="stat-item">
-                <i class="fas fa-clock text-warning"></i>
-                <%= items.filter(item => !item.assigned_to).length %> Unassigned
-              </span>
+    <!-- Results Summary & Pagination -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 mt-4 rounded-b-lg">
+      <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
+        <i class="fas fa-boxes"></i>
+        Showing <strong id="itemCount"><%= items.length %></strong> of <%= typeof totalItems !== 'undefined' ? totalItems : items.length %> assets
+        <span class="ml-4"><i class="fas fa-user text-green-600"></i> <%= items.filter(item => item.assigned_to).length %> Assigned</span>
+        <% if (items.filter(item => !item.assigned_to).length > 0) { %>
+          <span class="ml-2"><i class="fas fa-clock text-yellow-500"></i> <%= items.filter(item => !item.assigned_to).length %> Unassigned</span>
+        <% } %>
+      </div>
+      <div class="flex items-center gap-4">
+        <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
+          <div class="flex items-center gap-2">
+            <% if (currentPage > 1) { %>
+              <a href="?page=<%= currentPage - 1 %><%
+                const urlParams = new URLSearchParams(req.query);
+                urlParams.delete('page');
+                for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">« Previous</a>
+            <% } %>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Page <%= currentPage %> of <%= totalPages %></span>
+            <% if (currentPage < totalPages) { %>
+              <a href="?page=<%= currentPage + 1 %><%
+                const urlParams = new URLSearchParams(req.query);
+                urlParams.delete('page');
+                for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">Next »</a>
             <% } %>
           </div>
-          <div class="pagination-controls">
-            <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
-              <div class="pagination">
-                <% if (currentPage > 1) { %>
-                  <a href="?page=<%= currentPage - 1 %><%
-                    const urlParams = new URLSearchParams(req.query);
-                    urlParams.delete('page');
-                    for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="btn btn-sm">&laquo; Previous</a>
-                <% } %>
-
-                <span class="page-info">Page <%= currentPage %> of <%= totalPages %></span>
-
-                <% if (currentPage < totalPages) { %>
-                  <a href="?page=<%= currentPage + 1 %><%
-                    const urlParams = new URLSearchParams(req.query);
-                    urlParams.delete('page');
-                    for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="btn btn-sm">Next &raquo;</a>
-                <% } %>
-              </div>
-            <% } %>
-
-            <div class="items-per-page-compact">
-              <select id="itemsPerPage">
-                <option value="10" <%= typeof perPage !== 'undefined' && perPage == 10 ? 'selected' : '' %>>10</option>
-                <option value="25" <%= typeof perPage !== 'undefined' && perPage == 25 ? 'selected' : '' %>>25</option>
-                <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
-                <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
-              </select>
-              <span>per page</span>
-            </div>
-          </div>
+        <% } %>
+        <div>
+          <select id="itemsPerPage" class="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <option value="10" <%= typeof perPage !== 'undefined' && perPage == 10 ? 'selected' : '' %>>10</option>
+            <option value="25" <%= typeof perPage !== 'undefined' && perPage == 25 ? 'selected' : '' %>>25</option>
+            <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
+            <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
+          </select>
+          <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">per page</span>
         </div>
       </div>
     </div>
   <% } else { %>
-    <div class="content-section">
-      <div class="empty-state">
-        <div class="empty-icon">
-          <i class="fas fa-boxes"></i>
-        </div>
-        <h3>No assets found</h3>
-        <p>No assets match your current search or filter criteria.</p>
-        <div class="empty-actions">
-          <button id="clearFiltersBtn" class="btn btn-secondary" style="display: none;">
-            <i class="fas fa-times"></i> Clear All Filters
-          </button>
-          <a href="/items/new" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Add First Asset
-          </a>
-        </div>
+    <div class="flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div class="mb-4 text-4xl text-gray-400 dark:text-gray-600">
+        <i class="fas fa-boxes"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No assets found</h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-4">No assets match your current search or filter criteria.</p>
+      <div class="flex gap-2">
+        <button id="clearFiltersBtn" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2" style="display: none;">
+          <i class="fas fa-times"></i> Clear All Filters
+        </button>
+        <a href="/items/new" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-plus"></i> Add First Asset
+        </a>
       </div>
     </div>
   <% } %>
 </div>
 
+<!-- The original script block from your file remains unchanged for filter and table logic -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Get URL parameters to preserve filter values

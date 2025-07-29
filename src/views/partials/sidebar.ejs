@@ -1,131 +1,117 @@
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="app-logo">
+<aside class="w-72 min-h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-200">
+  <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+    <div class="flex items-center gap-3 text-indigo-900 dark:text-indigo-300 text-xl font-bold">
       <i class="fas fa-laptop-code"></i>
       <span>IT Asset Manager</span>
     </div>
-    <button id="sidebarToggle" class="sidebar-toggle">
+    <button id="sidebarToggle" class="text-gray-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition">
       <i class="fas fa-chevron-left"></i>
     </button>
   </div>
 
-  <nav class="sidebar-nav">
-    <div class="nav-header">Main Menu</div>
-    <a href="/" class="nav-link">
+  <nav class="flex-1 overflow-y-auto px-2 py-4">
+    <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2">Main Menu</div>
+    <a href="/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-tachometer-alt"></i>
       <span>Dashboard</span>
     </a>
-    <a href="/items" class="nav-link">
+    <a href="/items" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-laptop"></i>
       <span>Assets</span>
     </a>
-    <a href="/employees" class="nav-link">
+    <a href="/employees" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-users"></i>
       <span>Employees</span>
     </a>
-    <a href="/software" class="nav-link">
+    <a href="/software" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-laptop-code"></i>
       <span>Software</span>
     </a>
-    <a href="/clients" class="nav-link">
+    <a href="/clients" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-building"></i>
       <span>Clients</span>
     </a>
-    <a href="/printers" class="nav-link">
+    <a href="/printers" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-print"></i>
       <span>Printers</span>
     </a>
-    <div class="nav-item has-dropdown">
-      <a href="#" class="nav-link dropdown-trigger">
+    <!-- Dropdown Example -->
+    <div class="relative group">
+      <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium dropdown-trigger">
         <i class="fas fa-mobile-alt"></i>
         <span>Mobile Devices</span>
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
+        <i class="fas fa-chevron-down ml-auto text-xs"></i>
       </a>
-      <div class="nav-dropdown">
-        <a href="/pdas" class="nav-link">
+      <div class="hidden group-hover:block ml-4 mt-1">
+        <a href="/pdas" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
           <i class="fas fa-mobile-alt"></i>
           <span>PDAs</span>
         </a>
-        <a href="/simcards" class="nav-link">
+        <a href="/simcards" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
           <i class="fas fa-sim-card"></i>
           <span>SIM Cards</span>
         </a>
       </div>
     </div>
 
-    <div class="nav-header">Reports</div>
-    <a href="/reports/assets" class="nav-link">
+    <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2 mt-4">Reports</div>
+    <a href="/reports/assets" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-chart-bar"></i>
       <span>Asset Reports</span>
     </a>
-    <a href="/reports/purchase-history" class="nav-link">
+    <a href="/reports/purchase-history" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-receipt"></i>
       <span>Purchase History</span>
     </a>
-    <a href="/reports/assets-by-employee" class="nav-link">
+    <a href="/reports/assets-by-employee" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-user-tag"></i>
       <span>Assets by Employee</span>
     </a>
 
     <% if (user && user.role === 'admin') { %>
-    <div class="nav-header">Administration</div>
-    <a href="/admin/users" class="nav-link">
+    <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2 mt-4">Administration</div>
+    <a href="/admin/users" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-user-shield"></i>
       <span>User Management</span>
     </a>
-    <a href="/admin/settings" class="nav-link">
+    <a href="/admin/settings" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-cogs"></i>
       <span>System Settings</span>
     </a>
-    <a href="/admin/logs" class="nav-link">
+    <a href="/admin/logs" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-list-alt"></i>
       <span>Activity Logs</span>
     </a>
-    <a href="/notifications/broadcast" class="nav-link">
+    <a href="/notifications/broadcast" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-bullhorn"></i>
       <span>Send Notification</span>
     </a>
     <% } %>
 
-    <!-- Reference Data Section -->
-    <div class="nav-section">
-      <div class="nav-header">Reference Data</div>
-      <ul class="nav-list">
-        <li class="nav-item">
-          <a href="/references/asset-types" class="nav-link">
-            <i class="fas fa-tags"></i>
-            Asset Types
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="/references/brands" class="nav-link">
-            <i class="fas fa-trademark"></i>
-            Brands
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="/references/statuses" class="nav-link">
-            <i class="fas fa-flag"></i>
-            Statuses
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="/references/locations" class="nav-link">
-            <i class="fas fa-map-marker-alt"></i>
-            Locations
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="/departments" class="nav-link">
-            <i class="fas fa-building"></i>
-            Departments
-          </a>
-        </li>
-      </ul>
-    </div>
+    <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2 mt-4">Reference Data</div>
+    <a href="/references/asset-types" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-tags"></i>
+      <span>Asset Types</span>
+    </a>
+    <a href="/references/brands" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-trademark"></i>
+      <span>Brands</span>
+    </a>
+    <a href="/references/statuses" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-flag"></i>
+      <span>Statuses</span>
+    </a>
+    <a href="/references/locations" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-map-marker-alt"></i>
+      <span>Locations</span>
+    </a>
+    <a href="/departments" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-building"></i>
+      <span>Departments</span>
+    </a>
   </nav>
 
-  <div class="sidebar-footer">
-    <small>v1.0.0</small>
+  <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500 text-center">
+    v1.0.0
   </div>
 </aside>

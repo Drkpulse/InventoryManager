@@ -1,49 +1,60 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <h1>Employee Management</h1>
-    <div class="header-actions">
-      <div class="search-container">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" id="employeeSearch" placeholder="Search employees by name, ID, or department..." autocomplete="off" value="<%= currentFilters && currentFilters.search || '' %>">
-        <div class="search-results" id="searchResults"></div>
-      </div>
-      <div class="action-buttons">
-        <button id="exportEmployeesBtn" class="btn btn-success">
-          <i class="fas fa-download"></i> Export Employee List
-        </button>
-        <a href="/employees/new" class="btn btn-primary">
-          <i class="fas fa-user-plus"></i> Add New Employee
-        </a>
-      </div>
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+        <i class="fas fa-users"></i> Employee Management
+      </h1>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+      <button id="exportEmployeesBtn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-download mr-2"></i> Export Employee List
+      </button>
+      <a href="/employees/new" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-user-plus mr-2"></i> Add New Employee
+      </a>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div class="relative w-full md:w-1/2">
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
+      <input type="text" id="employeeSearch"
+        class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        placeholder="Search employees by name, ID, or department..."
+        autocomplete="off"
+        value="<%= currentFilters && currentFilters.search || '' %>">
+      <div class="absolute left-0 right-0 z-10 bg-white dark:bg-gray-800 rounded-b shadow hidden" id="searchResults"></div>
     </div>
   </div>
 
   <% if (showDeletedMessage) { %>
-    <div class="alert alert-success">
+    <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700">
       <i class="fas fa-check-circle"></i>
-      Employee was successfully deleted and all their items have been unassigned.
+      <span>Employee was successfully deleted and all their items have been unassigned.</span>
     </div>
   <% } %>
 
   <!-- Advanced Filters Panel -->
-  <div class="filters-panel" id="filtersPanel">
-    <div class="filters-header" id="filtersToggle">
-      <div class="filters-title">
+  <div class="mb-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+    <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" id="filtersToggle">
+      <div class="flex items-center gap-2">
         <i class="fas fa-filter"></i>
-        <h3>Advanced Filters</h3>
-        <span class="filter-badge" id="filterBadge">0</span>
+        <h3 class="font-semibold text-gray-700 dark:text-gray-200">Advanced Filters</h3>
+        <span class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold" id="filterBadge">0</span>
       </div>
-      <div class="filters-actions">
-        <span class="applied-filters-preview" id="appliedFiltersPreview">No filters applied</span>
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500 dark:text-gray-400" id="appliedFiltersPreview">No filters applied</span>
         <i class="fas fa-chevron-down toggle-icon"></i>
       </div>
     </div>
-
-    <div class="filters-content" id="filtersContent">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label for="departmentFilter">Department</label>
-          <select id="departmentFilter" name="department">
+    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 hidden" id="filtersContent">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+        <div>
+          <label for="departmentFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Department</label>
+          <select id="departmentFilter" name="department"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value="">All Departments</option>
             <% if (typeof departments !== 'undefined') { %>
               <% departments.forEach(dept => { %>
@@ -54,10 +65,10 @@
             <% } %>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label for="locationFilter">Location</label>
-          <select id="locationFilter" name="location">
+        <div>
+          <label for="locationFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Location</label>
+          <select id="locationFilter" name="location"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value="">All Locations</option>
             <% if (typeof locations !== 'undefined') { %>
               <% locations.forEach(location => { %>
@@ -68,33 +79,35 @@
             <% } %>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label for="statusFilter">Employment Status</label>
-          <select id="statusFilter" name="status">
+        <div>
+          <label for="statusFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Employment Status</label>
+          <select id="statusFilter" name="status"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value="" <%= currentFilters && currentFilters.status === '' ? 'selected' : '' %>>All Employees</option>
             <option value="active" <%= !currentFilters || currentFilters.status === 'active' ? 'selected' : '' %>>Active Employees</option>
             <option value="inactive" <%= currentFilters && currentFilters.status === 'inactive' ? 'selected' : '' %>>Former Employees</option>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label for="joinedDateRange">Joined Date Range</label>
-          <div class="date-range">
-            <input type="date" id="joinedDateFrom" name="joinedDateFrom" value="<%= currentFilters && currentFilters.joinedDateFrom || '' %>">
-            <span>to</span>
-            <input type="date" id="joinedDateTo" name="joinedDateTo" value="<%= currentFilters && currentFilters.joinedDateTo || '' %>">
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Joined Date Range</label>
+          <div class="flex items-center gap-2">
+            <input type="date" id="joinedDateFrom" name="joinedDateFrom"
+              class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 w-32"
+              value="<%= currentFilters && currentFilters.joinedDateFrom || '' %>">
+            <span class="text-gray-400 dark:text-gray-500">to</span>
+            <input type="date" id="joinedDateTo" name="joinedDateTo"
+              class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 w-32"
+              value="<%= currentFilters && currentFilters.joinedDateTo || '' %>">
           </div>
         </div>
       </div>
-
-      <div class="filter-actions-bar">
-        <div class="applied-filters-display" id="appliedFilters"></div>
-        <div class="filter-buttons">
-          <button type="button" id="applyFilters" class="btn btn-primary">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap gap-2 text-xs" id="appliedFilters"></div>
+        <div class="flex gap-2">
+          <button type="button" id="applyFilters" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
             <i class="fas fa-search"></i> Apply Filters
           </button>
-          <button type="button" id="resetFilters" class="btn btn-secondary">
+          <button type="button" id="resetFilters" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
             <i class="fas fa-times"></i> Reset All
           </button>
         </div>
@@ -103,224 +116,197 @@
   </div>
 
   <% if (employees && employees.length > 0) { %>
-    <div class="content-section">
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th class="checkbox-col">
-                <input type="checkbox" id="selectAll">
-              </th>
-              <th class="sortable" data-sort="name">
-                Name <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="cep">
-                Employee ID <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="email">
-                Email <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="department_name">
-                Department <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="location_name">
-                Location <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="joined_date">
-                Status <i class="fas fa-sort"></i>
-              </th>
-              <th class="actions-col">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%
-            // Sort employees to show active first
-            const sortedEmployees = employees.sort((a, b) => {
-              // Active employees (no left_date) first
-              if (!a.left_date && b.left_date) return -1;
-              if (a.left_date && !b.left_date) return 1;
-              // Then sort by name
-              return a.name.localeCompare(b.name);
-            });
-            %>
-            <% sortedEmployees.forEach(employee => { %>
-              <tr data-employee-id="<%= employee.id %>" class="table-row <%= employee.left_date ? 'former-employee' : 'active-employee' %>">
-                <td>
-                  <input type="checkbox" class="row-checkbox" value="<%= employee.id %>">
-                </td>
-                <td>
-                  <div class="entity-info">
-                    <a href="/employees/<%= employee.id %>" class="entity-name">
-                      <%= employee.name %>
-                    </a>
-                    <% if (employee.left_date) { %>
-                      <span class="status-indicator former">Former Employee</span>
-                    <% } %>
-                  </div>
-                </td>
-                <td>
-                  <span class="entity-id"><%= employee.cep %></span>
-                </td>
-                <td>
-                  <a href="mailto:<%= employee.email %>" class="entity-name">
-                    <%= employee.email %>
-                  </a>
-                </td>
-                <td>
-                  <% if (employee.department_name) { %>
-                    <span class="category-badge">
-                      <i class="fas fa-building"></i> <%= employee.department_name %>
-                    </span>
-                  <% } else { %>
-                    <span class="badge badge-secondary">
-                      <i class="fas fa-minus"></i> Not Assigned
-                    </span>
-                  <% } %>
-                </td>
-                <td>
-                  <% if (employee.location_name) { %>
-                    <span class="brand-badge">
-                      <i class="fas fa-map-marker-alt"></i>
-                      <%= employee.location_name %>
-                    </span>
-                  <% } else { %>
-                    <span class="badge badge-secondary">
-                      <i class="fas fa-minus"></i> Not Assigned
-                    </span>
-                  <% } %>
-                </td>
-                <td>
-                  <%
-                    let statusClass = 'badge-success';
-                    let statusIcon = 'fas fa-check-circle';
-                    let statusText = 'Active';
-
-                    if (employee.left_date) {
-                      statusClass = 'badge-dark';
-                      statusIcon = 'fas fa-user-times';
-                      statusText = 'Former';
-                    }
-                  %>
-                  <span class="status-badge <%= statusClass %>">
-                    <i class="<%= statusIcon %>"></i> <%= statusText %>
+    <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-900">
+          <tr>
+            <th class="px-4 py-3">
+              <input type="checkbox" id="selectAll" class="accent-blue-600">
+            </th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Name</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Employee ID</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Email</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Department</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Location</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Status</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <%
+          // Sort employees to show active first
+          const sortedEmployees = employees.sort((a, b) => {
+            if (!a.left_date && b.left_date) return -1;
+            if (a.left_date && !b.left_date) return 1;
+            return a.name.localeCompare(b.name);
+          });
+          %>
+          <% sortedEmployees.forEach(employee => { %>
+            <tr class="<%= employee.left_date ? 'bg-gray-50 dark:bg-gray-900' : '' %>">
+              <td class="px-4 py-3">
+                <input type="checkbox" class="row-checkbox accent-blue-600" value="<%= employee.id %>">
+              </td>
+              <td class="px-4 py-3">
+                <a href="/employees/<%= employee.id %>" class="font-semibold text-blue-700 dark:text-blue-300 hover:underline">
+                  <%= employee.name %>
+                </a>
+                <% if (employee.left_date) { %>
+                  <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded bg-gray-300 dark:bg-gray-700 text-xs text-gray-700 dark:text-gray-200">Former</span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3 font-mono text-xs text-gray-700 dark:text-gray-300"><%= employee.cep %></td>
+              <td class="px-4 py-3">
+                <a href="mailto:<%= employee.email %>" class="text-gray-700 dark:text-gray-200 hover:underline"><%= employee.email %></a>
+              </td>
+              <td class="px-4 py-3">
+                <% if (employee.department_name) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
+                    <i class="fas fa-building"></i> <%= employee.department_name %>
                   </span>
-                  <% if (employee.joined_date) { %>
-                    <small class="entity-detail">
-                      Joined <%= new Date(employee.joined_date).toLocaleDateString() %>
-                    </small>
-                  <% } %>
-                </td>
-                <td class="actions-cell">
-                  <div class="action-buttons-inline">
-                    <a href="/employees/<%= employee.id %>" class="btn-action btn-view" title="View Details">
-                      <i class="fas fa-eye"></i>
-                    </a>
-                    <a href="/employees/<%= employee.id %>/edit" class="btn-action btn-edit" title="Edit">
-                      <i class="fas fa-edit"></i>
-                    </a>
-                    <a href="/employees/<%= employee.id %>/history" class="btn-action btn-history" title="View History">
-                      <i class="fas fa-history"></i>
-                    </a>
-                    <form style="display: inline;" method="POST" action="/employees/<%= employee.id %>/delete" class="inline-form" onsubmit="return confirmDelete('<%= employee.name %>');">
-                      <button type="submit" class="btn-action btn-delete" title="Delete Employee">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs">
+                    <i class="fas fa-minus"></i> Not Assigned
+                  </span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <% if (employee.location_name) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-semibold">
+                    <i class="fas fa-map-marker-alt"></i> <%= employee.location_name %>
+                  </span>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs">
+                    <i class="fas fa-minus"></i> Not Assigned
+                  </span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <%
+                  let statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300';
+                  let statusIcon = 'fas fa-check-circle';
+                  let statusText = 'Active';
+                  if (employee.left_date) {
+                    statusClass = 'bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-200';
+                    statusIcon = 'fas fa-user-times';
+                    statusText = 'Former';
+                  }
+                %>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded <%= statusClass %> text-xs font-semibold">
+                  <i class="<%= statusIcon %>"></i> <%= statusText %>
+                </span>
+                <% if (employee.joined_date) { %>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">Joined <%= new Date(employee.joined_date).toLocaleDateString() %></div>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-wrap gap-2">
+                  <a href="/employees/<%= employee.id %>" class="inline-flex items-center px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="/employees/<%= employee.id %>/edit" class="inline-flex items-center px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="/employees/<%= employee.id %>/history" class="inline-flex items-center px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition" title="View History">
+                    <i class="fas fa-history"></i>
+                  </a>
+                  <form style="display: inline;" method="POST" action="/employees/<%= employee.id %>/delete" class="inline-form" onsubmit="return confirmDelete('<%= employee.name %>');">
+                    <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition" title="Delete Employee">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
 
-      <!-- Bulk Actions -->
-      <div class="bulk-actions" id="bulkActions" style="display: none;">
-        <div class="bulk-actions-content">
-          <span class="selection-count">0 employees selected</span>
-          <div class="bulk-buttons">
-            <button class="btn btn-info" id="bulkExport">
-              <i class="fas fa-download"></i> Export Selected
-            </button>
-            <button class="btn btn-warning" id="bulkTransfer">
-              <i class="fas fa-exchange-alt"></i> Bulk Transfer
-            </button>
-            <button class="btn btn-danger" id="bulkDelete">
-              <i class="fas fa-trash"></i> Delete Selected
-            </button>
-          </div>
+    <!-- Bulk Actions -->
+    <div class="mt-4" id="bulkActions" style="display: none;">
+      <div class="flex flex-wrap items-center justify-between bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg px-6 py-4">
+        <span class="selection-count text-sm font-semibold text-blue-700 dark:text-blue-300">0 employees selected</span>
+        <div class="flex gap-2">
+          <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md transition" id="bulkExport">
+            <i class="fas fa-download"></i> Export Selected
+          </button>
+          <button class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition" id="bulkTransfer">
+            <i class="fas fa-exchange-alt"></i> Bulk Transfer
+          </button>
+          <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition" id="bulkDelete">
+            <i class="fas fa-trash"></i> Delete Selected
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- Results Summary Bottom with Pagination -->
-      <div class="results-summary-bottom">
-        <div class="results-stats">
-          <span class="results-count">
-            <i class="fas fa-users"></i>
-            Showing <strong id="employeeCount"><%= employees.length %></strong> of <%= typeof totalEmployees !== 'undefined' ? totalEmployees : employees.length %> employees
+    <!-- Results Summary & Pagination -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8">
+      <div class="flex flex-col gap-2">
+        <span class="text-sm text-gray-700 dark:text-gray-200">
+          <i class="fas fa-users"></i>
+          Showing <strong id="employeeCount"><%= employees.length %></strong> of <%= typeof totalEmployees !== 'undefined' ? totalEmployees : employees.length %> employees
+        </span>
+        <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
+          <span>
+            <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
+            <%= employees.filter(emp => !emp.left_date).length %> Active
           </span>
-          <div class="stats-display">
-            <span class="stat-item">
-              <i class="fas fa-check-circle text-success"></i>
-              <%= employees.filter(emp => !emp.left_date).length %> Active
+          <% if (employees.filter(emp => emp.left_date).length > 0) { %>
+            <span>
+              <i class="fas fa-user-times text-gray-400 dark:text-gray-500"></i>
+              <%= employees.filter(emp => emp.left_date).length %> Former
             </span>
-            <% if (employees.filter(emp => emp.left_date).length > 0) { %>
-              <span class="stat-item">
-                <i class="fas fa-user-times text-muted"></i>
-                <%= employees.filter(emp => emp.left_date).length %> Former
-              </span>
+          <% } %>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
+          <div class="flex items-center gap-2">
+            <% if (currentPage > 1) { %>
+              <a href="?page=<%= currentPage - 1 %><%
+                const urlParams = new URLSearchParams(req.query);
+                urlParams.delete('page');
+                for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition flex items-center gap-1">
+                <i class="fas fa-chevron-left"></i> Previous
+              </a>
+            <% } %>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Page <%= currentPage %> of <%= totalPages %></span>
+            <% if (currentPage < totalPages) { %>
+              <a href="?page=<%= currentPage + 1 %><%
+                const urlParams = new URLSearchParams(req.query);
+                urlParams.delete('page');
+                for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition flex items-center gap-1">
+                Next <i class="fas fa-chevron-right"></i>
+              </a>
             <% } %>
           </div>
-          <div class="pagination-controls">
-            <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
-              <div class="pagination">
-                <% if (currentPage > 1) { %>
-                  <a href="?page=<%= currentPage - 1 %><%
-                    const urlParams = new URLSearchParams(req.query);
-                    urlParams.delete('page');
-                    for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="btn btn-sm">&laquo; Previous</a>
-                <% } %>
-
-                <span class="page-info">Page <%= currentPage %> of <%= totalPages %></span>
-
-                <% if (currentPage < totalPages) { %>
-                  <a href="?page=<%= currentPage + 1 %><%
-                    const urlParams = new URLSearchParams(req.query);
-                    urlParams.delete('page');
-                    for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="btn btn-sm">Next &raquo;</a>
-                <% } %>
-              </div>
-            <% } %>
-
-            <div class="items-per-page-compact">
-              <select id="employeesPerPage">
-                <option value="10" <%= typeof perPage !== 'undefined' && perPage == 10 ? 'selected' : '' %>>10</option>
-                <option value="25" <%= typeof perPage !== 'undefined' && perPage == 25 ? 'selected' : '' %>>25</option>
-                <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
-                <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
-              </select>
-              <span>per page</span>
-            </div>
-          </div>
+        <% } %>
+        <div>
+          <select id="employeesPerPage" class="ml-2 px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-xs">
+            <option value="10" <%= typeof perPage !== 'undefined' && perPage == 10 ? 'selected' : '' %>>10</option>
+            <option value="25" <%= typeof perPage !== 'undefined' && perPage == 25 ? 'selected' : '' %>>25</option>
+            <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
+            <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
+          </select>
+          <span class="text-xs text-gray-500 dark:text-gray-400">per page</span>
         </div>
       </div>
     </div>
   <% } else { %>
-    <div class="content-section">
-      <div class="empty-state">
-        <div class="empty-icon">
-          <i class="fas fa-users"></i>
-        </div>
-        <h3>No employees found</h3>
-        <p>No employees match your current search or filter criteria.</p>
-        <div class="empty-actions">
-          <button id="clearFiltersBtn" class="btn btn-secondary" style="display: none;">
-            <i class="fas fa-times"></i> Clear All Filters
-          </button>
-          <a href="/employees/new" class="btn btn-primary">
-            <i class="fas fa-user-plus"></i> Add First Employee
-          </a>
-        </div>
+    <div class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950 mt-8">
+      <div class="text-4xl text-blue-500 mb-2">
+        <i class="fas fa-users"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No employees found</h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-4">No employees match your current search or filter criteria.</p>
+      <div class="flex gap-2 justify-center">
+        <button id="clearFiltersBtn" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2" style="display: none;">
+          <i class="fas fa-times"></i> Clear All Filters
+        </button>
+        <a href="/employees/new" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-user-plus"></i> Add First Employee
+        </a>
       </div>
     </div>
   <% } %>

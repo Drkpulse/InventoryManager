@@ -1,105 +1,111 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <h1><i class="fas fa-sim-card"></i> SIM Card Details: <%= simCard.sim_number %></h1>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/simcards" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to SIM Cards
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+  <div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+        <i class="fas fa-sim-card"></i> SIM Card Details: <%= simCard.sim_number %>
+      </h1>
+      <div class="flex gap-2">
+        <a href="/simcards" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md font-semibold transition">
+          <i class="fas fa-arrow-left mr-2"></i> Back to SIM Cards
         </a>
-        <a href="/simcards/<%= simCard.id %>/edit" class="btn btn-primary">
-          <i class="fas fa-edit"></i> Edit SIM Card
+        <a href="/simcards/<%= simCard.id %>/edit" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+          <i class="fas fa-edit mr-2"></i> Edit SIM Card
         </a>
       </div>
     </div>
-  </div>
 
-  <% if (locals.messages && messages.success) { %>
-    <div class="alert alert-success">
-      <i class="fas fa-check-circle"></i>
-      <%= messages.success %>
+    <% if (locals.messages && messages.success) { %>
+      <div class="mb-6 bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 rounded-lg p-4 flex items-center gap-2">
+        <i class="fas fa-check-circle"></i>
+        <span><%= messages.success %></span>
+      </div>
+    <% } %>
+
+    <!-- SIM Card Info -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i class="fas fa-info-circle"></i> SIM Card Information
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">SIM Number</span>
+          <span class="text-gray-800 dark:text-gray-100"><%= simCard.sim_number %></span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Carrier</span>
+          <span class="text-gray-800 dark:text-gray-100"><%= simCard.carrier %></span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Monthly Cost</span>
+          <span class="text-gray-800 dark:text-gray-100">
+            <% if (simCard.monthly_cost) { %>
+              €<%= parseFloat(simCard.monthly_cost).toFixed(2) %>/month
+            <% } else { %>
+              <span class="text-gray-400 dark:text-gray-500 italic">Not specified</span>
+            <% } %>
+          </span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Status</span>
+          <span>
+            <% if (simCard.status_name) { %>
+              <span class="inline-block px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-semibold"><%= simCard.status_name %></span>
+            <% } else { %>
+              <span class="text-gray-400 dark:text-gray-500 italic">No status</span>
+            <% } %>
+          </span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Client</span>
+          <span>
+            <% if (simCard.client_name) { %>
+              <a href="/clients/<%= simCard.client_id %>" class="text-purple-700 dark:text-purple-300 hover:underline">
+                <%= simCard.client_name %> (<%= simCard.client_code %>)
+              </a>
+            <% } else { %>
+              <span class="text-gray-400 dark:text-gray-500 italic">No client assigned</span>
+            <% } %>
+          </span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Assigned PDA</span>
+          <span>
+            <% if (simCard.pda_serial) { %>
+              <a href="/pdas/<%= simCard.pda_id %>" class="text-green-700 dark:text-green-300 hover:underline">
+                <%= simCard.pda_serial %>
+                <% if (simCard.pda_model) { %>
+                  (<%= simCard.pda_model %>)
+                <% } %>
+              </a>
+            <% } else { %>
+              <span class="text-gray-400 dark:text-gray-500 italic">Unassigned</span>
+            <% } %>
+          </span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Created</span>
+          <span class="text-gray-800 dark:text-gray-100"><%= new Date(simCard.created_at).toLocaleDateString() %></span>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Last Updated</span>
+          <span class="text-gray-800 dark:text-gray-100"><%= new Date(simCard.updated_at).toLocaleDateString() %></span>
+        </div>
+      </div>
     </div>
-  <% } %>
 
-  <div class="info-container">
-    <div class="info-section">
-      <h3><i class="fas fa-info-circle"></i> SIM Card Information</h3>
-      
-      <div class="info-item">
-        <label>SIM Number:</label>
-        <span><%= simCard.sim_number %></span>
-      </div>
-      <div class="info-item">
-        <label>Carrier:</label>
-        <span><%= simCard.carrier %></span>
-      </div>
-      <div class="info-item">
-        <label>Monthly Cost:</label>
-        <span>
-          <% if (simCard.monthly_cost) { %>
-            €<%= parseFloat(simCard.monthly_cost).toFixed(2) %>/month
-          <% } else { %>
-            Not specified
-          <% } %>
-        </span>
-      </div>
-      <div class="info-item">
-        <label>Status:</label>
-        <span>
-          <% if (simCard.status_name) { %>
-            <span class="badge badge-info"><%= simCard.status_name %></span>
-          <% } else { %>
-            <span class="text-muted">No status</span>
-          <% } %>
-        </span>
-      </div>
-      <div class="info-item">
-        <label>Client:</label>
-        <span>
-          <% if (simCard.client_name) { %>
-            <a href="/clients/<%= simCard.client_id %>">
-              <%= simCard.client_name %> (<%= simCard.client_code %>)
-            </a>
-          <% } else { %>
-            <span class="text-muted">No client assigned</span>
-          <% } %>
-        </span>
-      </div>
-      <div class="info-item">
-        <label>Assigned PDA:</label>
-        <span>
-          <% if (simCard.pda_serial) { %>
-            <a href="/pdas/<%= simCard.pda_id %>">
-              <%= simCard.pda_serial %> 
-              <% if (simCard.pda_model) { %>
-                (<%= simCard.pda_model %>)
-              <% } %>
-            </a>
-          <% } else { %>
-            <span class="text-muted">Unassigned</span>
-          <% } %>
-        </span>
-      </div>
-      <div class="info-item">
-        <label>Created:</label>
-        <span><%= new Date(simCard.created_at).toLocaleDateString() %></span>
-      </div>
-      <div class="info-item">
-        <label>Last Updated:</label>
-        <span><%= new Date(simCard.updated_at).toLocaleDateString() %></span>
-      </div>
+    <!-- Actions -->
+    <div class="flex flex-wrap gap-4 mb-8">
+      <a href="/simcards/<%= simCard.id %>/history" class="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 font-semibold rounded-md transition hover:bg-blue-200 dark:hover:bg-blue-800">
+        <i class="fas fa-history mr-2"></i> View History
+      </a>
+      <a href="/simcards/<%= simCard.id %>/edit" class="inline-flex items-center px-4 py-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 font-semibold rounded-md transition hover:bg-yellow-200 dark:hover:bg-yellow-800">
+        <i class="fas fa-edit mr-2"></i> Edit SIM Card
+      </a>
+      <button onclick="confirmDelete()" class="inline-flex items-center px-4 py-2 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 font-semibold rounded-md transition hover:bg-red-200 dark:hover:bg-red-800">
+        <i class="fas fa-trash mr-2"></i> Delete SIM Card
+      </button>
     </div>
-  </div>
-
-  <div class="actions-section">
-    <a href="/simcards/<%= simCard.id %>/history" class="btn btn-info">
-      <i class="fas fa-history"></i> View History
-    </a>
-    <a href="/simcards/<%= simCard.id %>/edit" class="btn btn-warning">
-      <i class="fas fa-edit"></i> Edit SIM Card
-    </a>
-    <button onclick="confirmDelete()" class="btn btn-danger">
-      <i class="fas fa-trash"></i> Delete SIM Card
-    </button>
   </div>
 </div>
 

@@ -4,79 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title || 'Error' %> - Inventory Manager</title>
-  <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .error-page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--light) 0%, #e9ecef 100%);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .error-container {
-      max-width: 600px;
-      text-align: center;
-      padding: 3rem 2rem;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-      position: relative;
-      z-index: 2;
-      animation: slideInUp 0.8s ease-out;
-    }
-
-    .error-icon {
-      font-size: 4rem;
-      color: var(--danger);
-      margin-bottom: 1.5rem;
-      animation: bounce 1s infinite;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .error-icon:hover {
-      transform: scale(1.1);
-      color: var(--warning);
-    }
-
-    .error-code {
-      font-size: 6rem;
-      font-weight: 900;
-      color: var(--primary);
-      margin: 0;
-      line-height: 1;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-      animation: fadeInScale 1s ease-out 0.3s both;
-    }
-
-    .error-title {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: var(--dark);
-      margin: 1rem 0;
-      animation: fadeInSlide 1s ease-out 0.5s both;
-    }
-
-    .error-message {
-      font-size: 1.1rem;
-      color: #666;
-      margin-bottom: 2rem;
-      line-height: 1.6;
-      animation: fadeInSlide 1s ease-out 0.7s both;
-    }
-
-    .error-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      animation: fadeInSlide 1s ease-out 0.9s both;
-    }
-
+    /* Particle and portal animation styles (not easily replaced by Tailwind) */
     .floating-particles {
       position: absolute;
       width: 100%;
@@ -84,275 +15,184 @@
       overflow: hidden;
       z-index: 1;
     }
-
     .particle {
       position: absolute;
       width: 10px;
       height: 10px;
-      background: var(--primary);
+      background: #6366f1;
       opacity: 0.1;
       border-radius: 50%;
       animation: float 6s infinite linear;
     }
-
     .particle:nth-child(2n) {
-      background: var(--secondary);
+      background: #f59e42;
       animation-duration: 8s;
     }
-
     .particle:nth-child(3n) {
-      background: var(--info);
+      background: #38bdf8;
       animation-duration: 10s;
     }
-
-    /* Rick and Morty Easter Egg Styles */
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10%,90% { opacity: 0.1; }
+      100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+    }
     .rick-morty-portal {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, #00ff88 0%, #00cc66 30%, #009944 100%);
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle at 60% 40%, #00ff88 0%, #00cc66 50%, #009944 100%);
       border-radius: 50%;
       opacity: 0;
       z-index: 1000;
-      animation: portalSpin 2s linear infinite;
+      pointer-events: none;
+      box-shadow: 0 0 60px 20px #00ff8855, 0 0 120px 40px #00ff8888;
+      transition: opacity 0.4s cubic-bezier(.4,2,.6,1), box-shadow 0.4s;
       display: none;
     }
-
     .rick-morty-portal.active {
       display: block;
-      animation: portalAppear 0.5s ease-out forwards, portalSpin 2s linear infinite;
+      opacity: 1;
+      animation: portalAppear 0.5s cubic-bezier(.4,2,.6,1) forwards, portalSpin 2.5s linear infinite;
+      box-shadow: 0 0 100px 40px #00ff88cc, 0 0 200px 80px #00ff8866;
     }
-
     .portal-inner {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 80%;
-      height: 80%;
-      background: radial-gradient(circle, #66ff99 0%, #33ff77 50%, transparent 70%);
+      width: 85%;
+      height: 85%;
+      background: radial-gradient(circle, #66ff99 0%, #33ff77 60%, transparent 80%);
       border-radius: 50%;
-      animation: portalPulse 1s ease-in-out infinite alternate;
+      box-shadow: 0 0 60px 10px #66ff99aa;
+      animation: portalPulse 1.2s ease-in-out infinite alternate;
+      z-index: 1;
     }
-
+    .portal-swirls {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 90%; height: 90%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      z-index: 2;
+      background: conic-gradient(
+        from 0deg,
+        #00ff88 0deg 60deg,
+        #00cc66 60deg 120deg,
+        #009944 120deg 180deg,
+        #00ff88 180deg 240deg,
+        #00cc66 240deg 300deg,
+        #009944 300deg 360deg
+      );
+      opacity: 0.22;
+      animation: swirlSpin 3s linear infinite;
+      filter: blur(3px) brightness(1.2);
+    }
+    @keyframes swirlSpin {
+      0% { transform: translate(-50%, -50%) rotate(0deg);}
+      100% { transform: translate(-50%, -50%) rotate(360deg);}
+    }
     .rick-message {
       position: fixed;
       top: 20%;
       left: 50%;
-      transform: translateX(-50%);
-      background: #333;
+      transform: translateX(-50%) scale(0.95);
+      background: #18181b;
       color: #00ff88;
-      padding: 1rem 2rem;
-      border-radius: 10px;
-      font-family: 'Courier New', monospace;
+      padding: 1.1rem 2.2rem;
+      border-radius: 12px;
+      font-family: 'Fira Mono', 'Courier New', monospace;
       font-weight: bold;
-      border: 2px solid #00ff88;
-      box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+      border: 2.5px solid #00ff88;
+      box-shadow: 0 0 32px 5px #00ff8877, 0 0 2px #00ff88;
       z-index: 1001;
       opacity: 0;
       display: none;
-      max-width: 90%;
+      max-width: 90vw;
       text-align: center;
+      font-size: 1.1rem;
+      letter-spacing: 0.01em;
+      transition: opacity 0.3s, transform 0.3s;
     }
-
     .rick-message.active {
       display: block;
-      animation: messageAppear 0.5s ease-out 0.5s forwards;
+      opacity: 1;
+      transform: translateX(-50%) scale(1.04);
+      animation: messageAppear 0.6s cubic-bezier(.4,2,.6,1);
+      box-shadow: 0 0 48px 10px #00ff88cc, 0 0 2px #00ff88;
     }
-
-    /* Animations */
-    @keyframes slideInUp {
-      from {
-        opacity: 0;
-        transform: translateY(50px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes fadeInScale {
-      from {
-        opacity: 0;
-        transform: scale(0.5);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    @keyframes fadeInSlide {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-      }
-      40% {
-        transform: translateY(-10px);
-      }
-      60% {
-        transform: translateY(-5px);
-      }
-    }
-
-    @keyframes float {
-      0% {
-        transform: translateY(100vh) rotate(0deg);
-        opacity: 0;
-      }
-      10% {
-        opacity: 0.1;
-      }
-      90% {
-        opacity: 0.1;
-      }
-      100% {
-        transform: translateY(-100px) rotate(360deg);
-        opacity: 0;
-      }
-    }
-
     @keyframes portalAppear {
-      from {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0);
-      }
-      to {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-      }
+      from { opacity: 0; transform: translate(-50%, -50%) scale(0.6);}
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1);}
     }
-
     @keyframes portalSpin {
-      from {
-        transform: translate(-50%, -50%) rotate(0deg);
-      }
-      to {
-        transform: translate(-50%, -50%) rotate(360deg);
-      }
+      from { transform: translate(-50%, -50%) rotate(0deg);}
+      to { transform: translate(-50%, -50%) rotate(360deg);}
     }
-
     @keyframes portalPulse {
-      from {
-        transform: translate(-50%, -50%) scale(0.8);
-      }
-      to {
-        transform: translate(-50%, -50%) scale(1.2);
-      }
+      from { transform: translate(-50%, -50%) scale(0.9);}
+      to { transform: translate(-50%, -50%) scale(1.08);}
     }
-
     @keyframes messageAppear {
-      from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
+      from { opacity: 0; transform: translateX(-50%) scale(0.92);}
+      to { opacity: 1; transform: translateX(-50%) scale(1.04);}
     }
-
-    /* Responsive Design */
     @media (max-width: 768px) {
-      .error-container {
-        margin: 1rem;
-        padding: 2rem 1.5rem;
-      }
-
-      .error-code {
-        font-size: 4rem;
-      }
-
-      .error-title {
-        font-size: 1.5rem;
-      }
-
-      .error-message {
-        font-size: 1rem;
-      }
-
-      .error-actions {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .rick-morty-portal {
-        width: 200px;
-        height: 200px;
-      }
-
-      .rick-message {
-        font-size: 0.9rem;
-        padding: 0.8rem 1.5rem;
-      }
+      .rick-morty-portal { width: 180px; height: 180px; }
+      .rick-message { font-size: 0.95rem; padding: 0.7rem 1.1rem; }
     }
   </style>
 </head>
-<body>
-  <div class="error-page">
-    <!-- Floating Particles Background -->
-    <div class="floating-particles"></div>
+<body class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center relative">
+  <!-- Floating Particles Background -->
+  <div class="floating-particles"></div>
 
-    <!-- Error Container -->
-    <div class="error-container">
-      <div class="error-icon" id="errorIcon">
-        <i class="fas fa-exclamation-triangle"></i>
+  <!-- Error Container -->
+  <div class="relative z-10 max-w-xl w-full mx-auto text-center bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 md:p-12 animate-fadeIn">
+    <div id="errorIcon" class="mx-auto mb-6 text-5xl text-red-500 dark:text-yellow-400 animate-bounce cursor-pointer transition-transform hover:scale-110">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h1 class="text-6xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-2"><%= locals.status || '404' %></h1>
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4"><%= locals.title || 'Oops! Something went wrong' %></h2>
+    <div class="mb-8">
+      <p class="text-base md:text-lg text-gray-500 dark:text-gray-300"><%= locals.message || 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.' %></p>
+    </div>
+    <% if (locals.user) { %>
+      <div class="flex flex-wrap gap-3 justify-center mb-2">
+        <a href="/" class="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow transition">
+          <i class="fas fa-home"></i> Go to Dashboard
+        </a>
+        <button onclick="history.back()" class="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold shadow transition">
+          <i class="fas fa-arrow-left"></i> Go Back
+        </button>
+        <button onclick="window.location.reload()" class="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold shadow transition">
+          <i class="fas fa-redo"></i> Refresh Page
+        </button>
       </div>
-
-      <h1 class="error-code"><%= locals.status || '404' %></h1>
-
-      <h2 class="error-title"><%= locals.title || 'Oops! Something went wrong' %></h2>
-
-      <div class="alert alert-danger">
-        <p class="error-message"><%= locals.message || 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.' %></p>
+    <% } else { %>
+      <div class="flex flex-wrap gap-3 justify-center mb-2">
+        <a href="/auth/login" class="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow transition">
+          <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+        <a href="/" class="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold shadow transition">
+          <i class="fas fa-home"></i> Home
+        </a>
       </div>
+    <% } %>
+  </div>
 
-      <% if (locals.user) { %>
-        <div class="error-actions">
-          <a href="/" class="btn btn-primary">
-            <i class="fas fa-home"></i> Go to Dashboard
-          </a>
-          <button onclick="history.back()" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Go Back
-          </button>
-          <button onclick="window.location.reload()" class="btn">
-            <i class="fas fa-redo"></i> Refresh Page
-          </button>
-        </div>
-      <% } else { %>
-        <div class="error-actions">
-          <a href="/auth/login" class="btn btn-primary">
-            <i class="fas fa-sign-in-alt"></i> Login
-          </a>
-          <a href="/" class="btn btn-secondary">
-            <i class="fas fa-home"></i> Home
-          </a>
-        </div>
-      <% } %>
-    </div>
-
-    <!-- Rick and Morty Easter Egg -->
-    <div class="rick-morty-portal" id="portal">
-      <div class="portal-inner"></div>
-    </div>
-
-    <div class="rick-message" id="rickMessage">
-      "Wubba lubba dub dub! Looks like you've glitched into another dimension, Morty!"
-    </div>
+  <!-- Rick and Morty Easter Egg -->
+  <div class="rick-morty-portal" id="portal">
+    <div class="portal-inner"></div>
+    <div class="portal-swirls"></div>
+  </div>
+  <div class="rick-message" id="rickMessage">
+    "Wubba lubba dub dub! Looks like you've glitched into another dimension, Morty!"
   </div>
 
   <script>
@@ -360,7 +200,6 @@
     function createParticles() {
       const container = document.querySelector('.floating-particles');
       const particleCount = 20;
-
       for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
@@ -376,7 +215,6 @@
     const errorIcon = document.getElementById('errorIcon');
     const portal = document.getElementById('portal');
     const rickMessage = document.getElementById('rickMessage');
-
     const rickQuotes = [
       "Wubba lubba dub dub! Looks like you've glitched into another dimension, Morty!",
       "Oh great, another broken website. *burp* Way to go, Jerry!",
@@ -385,17 +223,12 @@
       "Existence is pain, Morty! And so is this error page!",
       "I've seen better error handling in interdimensional cable!"
     ];
-
     errorIcon.addEventListener('click', () => {
       clickCount++;
-
       if (clickCount >= 5) {
-        // Trigger Rick and Morty Easter Egg
         portal.classList.add('active');
         rickMessage.textContent = rickQuotes[Math.floor(Math.random() * rickQuotes.length)];
         rickMessage.classList.add('active');
-
-        // Hide after 4 seconds
         setTimeout(() => {
           portal.classList.remove('active');
           rickMessage.classList.remove('active');
@@ -403,20 +236,14 @@
         }, 4000);
       }
     });
-
-    // Icon animation on hover
     errorIcon.addEventListener('mouseenter', () => {
       errorIcon.style.animation = 'none';
       setTimeout(() => {
         errorIcon.style.animation = 'bounce 0.5s ease-out';
       }, 10);
     });
-
-    // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       createParticles();
-
-      // Add some random sparkle effects
       setInterval(() => {
         if (Math.random() < 0.3) {
           const sparkle = document.createElement('div');
@@ -425,20 +252,15 @@
           sparkle.style.top = Math.random() * 100 + '%';
           sparkle.style.width = '4px';
           sparkle.style.height = '4px';
-          sparkle.style.background = 'var(--warning)';
+          sparkle.style.background = '#f59e42';
           sparkle.style.borderRadius = '50%';
           sparkle.style.zIndex = '1';
           sparkle.style.animation = 'fadeInScale 0.5s ease-out forwards';
-
           document.querySelector('.floating-particles').appendChild(sparkle);
-
-          setTimeout(() => {
-            sparkle.remove();
-          }, 500);
+          setTimeout(() => { sparkle.remove(); }, 500);
         }
       }, 2000);
     });
-
     // Konami Code Easter Egg
     let konamiCode = [];
     const konamiSequence = [
@@ -446,21 +268,14 @@
       'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
       'KeyB', 'KeyA'
     ];
-
     document.addEventListener('keydown', (e) => {
       konamiCode.push(e.code);
-
-      if (konamiCode.length > konamiSequence.length) {
-        konamiCode.shift();
-      }
-
+      if (konamiCode.length > konamiSequence.length) konamiCode.shift();
       if (konamiCode.join(',') === konamiSequence.join(',')) {
-        // Trigger special Rick and Morty animation
         document.body.style.animation = 'portalSpin 1s ease-in-out';
         rickMessage.textContent = "🎮 Konami Code activated! *burp* You're a real gamer, Morty!";
         rickMessage.classList.add('active');
         portal.classList.add('active');
-
         setTimeout(() => {
           document.body.style.animation = '';
           rickMessage.classList.remove('active');

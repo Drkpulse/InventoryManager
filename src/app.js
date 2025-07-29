@@ -31,10 +31,27 @@ const PORT = process.env.PORT || 3000;
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// Middlewares
+// Middlewares - CRITICAL ORDER
 app.use(express.static(path.join(__dirname, '../public')));
+
+// BODY PARSING MIDDLEWARE - MUST BE FIRST
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// DEBUG MIDDLEWARE - Add this temporarily to see what's happening
+app.use((req, res, next) => {
+  if (req.method === 'POST') {
+    console.log('=== DEBUG MIDDLEWARE ===');
+    console.log('URL:', req.url);
+    console.log('Method:', req.method);
+    console.log('Content-Type:', req.get('Content-Type'));
+    console.log('Body:', req.body);
+    console.log('Body keys:', Object.keys(req.body || {}));
+    console.log('======================');
+  }
+  next();
+});
+
 app.use(methodOverride('_method'));
 
 // Session configuration
@@ -53,27 +70,19 @@ app.use(handleAjaxResponse);
 
 app.use((req, res, next) => {
   const user = req.user || req.session?.user || { settings: {} };
-
-  const lang =
-    user?.settings?.language ||
-    req.session?.language ||
-    'en';
+  const lang = user?.settings?.language || req.session?.language || 'en';
 
   res.locals.t = (key) =>
     translations[lang]?.[key] ||
     translations['en'][key] ||
     key;
-
   res.locals.user = user;
-
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
   res.locals.errors = req.flash('error');
   res.locals.info = req.flash('info');
-
   next();
 });
-
 
 // Add i18n middleware
 app.use(i18n.init);
@@ -82,7 +91,7 @@ app.use(i18n.init);
 app.use('/notifications', isAuthenticated, notificationRoutes);
 app.use('/api', apiRoutes);
 
-// Routes
+// Routes - AUTH ROUTES FIRST
 app.use('/auth', authRoutes);
 app.use('/items', itemRoutes);
 app.use('/employees', employeeRoutes);
@@ -114,7 +123,7 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Global error handler:', err.stack);
   res.status(500).render('error', {
     title: 'Server Error',
     message: 'Something went wrong on our end.',

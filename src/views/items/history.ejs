@@ -1,463 +1,347 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <div class="header-title-section">
-      <div class="breadcrumb-nav">
-        <a href="/items" class="breadcrumb-link">
+<div class="container mx-auto px-4 py-8">
+  <!-- Breadcrumb & Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+        <a href="/items" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
           <i class="fas fa-boxes"></i> Assets
         </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="breadcrumb-link">
+        <i class="fas fa-chevron-right mx-2"></i>
+        <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
           <%= item.cep_brc %>
         </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-current">History</span>
-      </div>
-      <h1>Asset History</h1>
-      <div class="asset-meta">
-        <span class="asset-id-display"><%= item.cep_brc %></span>
-        <span class="asset-name-display"><%= item.name %></span>
+        <i class="fas fa-chevron-right mx-2"></i>
+        <span class="text-gray-700 dark:text-gray-200">History</span>
+      </nav>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Asset History</h1>
+      <div class="flex items-center gap-2 mt-2">
+        <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-xs text-gray-600 dark:text-gray-400"><%= item.cep_brc %></span>
+        <span class="text-gray-700 dark:text-gray-200 font-semibold"><%= item.name %></span>
       </div>
     </div>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Asset
-        </a>
-        <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="btn btn-warning">
-          <i class="fas fa-edit"></i> Edit Asset
-        </a>
-        <button onclick="exportHistory()" class="btn btn-info">
-          <i class="fas fa-download"></i> Export History
-        </button>
-        <button onclick="printHistory()" class="btn btn-success">
-          <i class="fas fa-print"></i> Print History
-        </button>
-      </div>
+    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+      <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Asset
+      </a>
+      <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition">
+        <i class="fas fa-edit mr-2"></i> Edit Asset
+      </a>
+      <button onclick="exportHistory()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-download mr-2"></i> Export History
+      </button>
+      <button onclick="printHistory()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-print mr-2"></i> Print History
+      </button>
     </div>
   </div>
 
-  <div class="content-section">
-    <div class="history-container">
-      <!-- History Filters -->
-      <div class="history-filters">
-        <div class="filter-group">
-          <label for="actionFilter">Filter by Action</label>
-          <select id="actionFilter" class="form-select">
-            <option value="">All Actions</option>
-            <option value="created">Created</option>
-            <option value="updated">Updated</option>
-            <option value="assigned">Assigned</option>
-            <option value="unassigned">Unassigned</option>
-            <option value="maintenance">Maintenance</option>
-            <option value="retired">Retired</option>
-          </select>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <!-- Filters -->
+    <div class="flex flex-wrap gap-6 mb-8">
+      <div>
+        <label for="actionFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Action</label>
+        <select id="actionFilter" class="w-48 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <option value="">All Actions</option>
+          <option value="created">Created</option>
+          <option value="updated">Updated</option>
+          <option value="assigned">Assigned</option>
+          <option value="unassigned">Unassigned</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="retired">Retired</option>
+        </select>
+      </div>
+      <div>
+        <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Date</label>
+        <div class="flex gap-2">
+          <input type="date" id="dateFrom" class="w-32 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="From">
+          <span class="self-center text-gray-500 dark:text-gray-400">to</span>
+          <input type="date" id="dateTo" class="w-32 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="To">
         </div>
+      </div>
+      <div>
+        <label for="userFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">User</label>
+        <select id="userFilter" class="w-48 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <option value="">All Users</option>
+          <% if (typeof users !== 'undefined') { %>
+            <% users.forEach(user => { %>
+              <option value="<%= user.id %>"><%= user.name %></option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+      <div class="flex items-end gap-2">
+        <button id="applyHistoryFilters" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-search"></i> Apply
+        </button>
+        <button id="resetHistoryFilters" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-times"></i> Reset
+        </button>
+      </div>
+    </div>
 
-        <div class="filter-group">
-          <label for="dateFilter">Filter by Date</label>
-          <div class="date-range">
-            <input type="date" id="dateFrom" class="form-input" placeholder="From">
-            <span>to</span>
-            <input type="date" id="dateTo" class="form-input" placeholder="To">
-          </div>
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="flex items-center gap-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <div class="text-2xl text-blue-600 dark:text-blue-400"><i class="fas fa-history"></i></div>
+        <div>
+          <div class="text-lg font-bold text-gray-800 dark:text-gray-100"><%= history ? history.length : 0 %></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Total Events</div>
         </div>
-
-        <div class="filter-group">
-          <label for="userFilter">Filter by User</label>
-          <select id="userFilter" class="form-select">
-            <option value="">All Users</option>
-            <% if (typeof users !== 'undefined') { %>
-              <% users.forEach(user => { %>
-                <option value="<%= user.id %>"><%= user.name %></option>
-              <% }) %>
+      </div>
+      <div class="flex items-center gap-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <div class="text-2xl text-green-600 dark:text-green-400"><i class="fas fa-calendar"></i></div>
+        <div>
+          <div class="text-lg font-bold text-gray-800 dark:text-gray-100">
+            <% if (history && history.length > 0) { %>
+              <%= Math.ceil((new Date() - new Date(history[history.length - 1].created_at)) / (1000 * 60 * 60 * 24)) %>
+            <% } else { %>
+              0
             <% } %>
-          </select>
-        </div>
-
-        <div class="filter-actions">
-          <button id="applyHistoryFilters" class="btn btn-primary">
-            <i class="fas fa-search"></i> Apply Filters
-          </button>
-          <button id="resetHistoryFilters" class="btn btn-secondary">
-            <i class="fas fa-times"></i> Reset
-          </button>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Days in System</div>
         </div>
       </div>
-
-      <!-- History Stats -->
-      <div class="history-stats">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-history"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-number"><%= history ? history.length : 0 %></span>
-            <span class="stat-label">Total Events</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-calendar"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-number">
-              <% if (history && history.length > 0) { %>
-                <%= Math.ceil((new Date() - new Date(history[history.length - 1].created_at)) / (1000 * 60 * 60 * 24)) %>
-              <% } else { %>
-                0
-              <% } %>
-            </span>
-            <span class="stat-label">Days in System</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-user-friends"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-number">
-              <%
-                const uniqueUsers = history ? [...new Set(history.map(h => h.user_name).filter(Boolean))].length : 0;
-              %>
-              <%= uniqueUsers %>
-            </span>
-            <span class="stat-label">Contributors</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-exchange-alt"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-number">
-              <%
-                const assignmentChanges = history ? history.filter(h => h.action_type === 'assigned' || h.action_type === 'unassigned').length : 0;
-              %>
-              <%= assignmentChanges %>
-            </span>
-            <span class="stat-label">Assignment Changes</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- History Timeline -->
-      <div class="history-timeline-container">
-        <% if (history && history.length > 0) { %>
-          <div class="history-timeline">
+      <div class="flex items-center gap-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <div class="text-2xl text-purple-600 dark:text-purple-400"><i class="fas fa-user-friends"></i></div>
+        <div>
+          <div class="text-lg font-bold text-gray-800 dark:text-gray-100">
             <%
-              // Pagination setup - use provided variables or defaults
-              const currentPage = typeof page !== 'undefined' ? parseInt(page) : 1;
-              const itemsPerPage = typeof perPage !== 'undefined' ? parseInt(perPage) : 10;
-              const totalItems = history.length;
-              const totalPages = Math.ceil(totalItems / itemsPerPage);
-              const startIndex = (currentPage - 1) * itemsPerPage;
-              const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-              const paginatedHistory = history.slice(startIndex, endIndex);
-
-              // Helper function to get action styling
-              function getActionStyle(actionType) {
-                switch(actionType) {
-                  case 'created':
-                    return { icon: 'fas fa-plus-circle', color: 'success', bgColor: '#d4edda' };
-                  case 'updated':
-                    return { icon: 'fas fa-edit', color: 'info', bgColor: '#d1ecf1' };
-                  case 'assigned':
-                    return { icon: 'fas fa-user-plus', color: 'primary', bgColor: '#cce7ff' };
-                  case 'unassigned':
-                    return { icon: 'fas fa-user-minus', color: 'warning', bgColor: '#fff3cd' };
-                  case 'maintenance':
-                    return { icon: 'fas fa-tools', color: 'warning', bgColor: '#fff3cd' };
-                  case 'retired':
-                    return { icon: 'fas fa-archive', color: 'danger', bgColor: '#f8d7da' };
-                  case 'deleted':
-                    return { icon: 'fas fa-trash', color: 'danger', bgColor: '#f8d7da' };
-                  default:
-                    return { icon: 'fas fa-history', color: 'secondary', bgColor: '#f8f9fa' };
-                }
-              }
-
-              // Helper function to get time ago
-              function getTimeAgo(date) {
-                const now = new Date();
-                const diffInMs = now - date;
-                const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-                const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-                const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-                const diffInWeeks = Math.floor(diffInDays / 7);
-                const diffInMonths = Math.floor(diffInDays / 30);
-                const diffInYears = Math.floor(diffInDays / 365);
-
-                if (diffInMinutes < 1) return 'Just now';
-                if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-                if (diffInHours < 24) return `${diffInHours}h ago`;
-                if (diffInDays < 7) return `${diffInDays}d ago`;
-                if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
-                if (diffInMonths < 12) return `${diffInMonths}mo ago`;
-                return `${diffInYears}y ago`;
-              }
+              const uniqueUsers = history ? [...new Set(history.map(h => h.user_name).filter(Boolean))].length : 0;
             %>
+            <%= uniqueUsers %>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Contributors</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <div class="text-2xl text-yellow-600 dark:text-yellow-400"><i class="fas fa-exchange-alt"></i></div>
+        <div>
+          <div class="text-lg font-bold text-gray-800 dark:text-gray-100">
+            <%
+              const assignmentChanges = history ? history.filter(h => h.action_type === 'assigned' || h.action_type === 'unassigned').length : 0;
+            %>
+            <%= assignmentChanges %>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Assignment Changes</div>
+        </div>
+      </div>
+    </div>
 
-            <% paginatedHistory.forEach((entry, index) => { %>
-              <%
-                const actionStyle = getActionStyle(entry.action_type);
-                const entryDate = new Date(entry.created_at);
-                const timeAgo = getTimeAgo(entryDate);
-              %>
-              <div class="history-entry" data-action="<%= entry.action_type %>">
-                <div class="history-marker">
-                  <div class="history-icon <%= actionStyle.color %>" style="background-color: <%= actionStyle.bgColor %>;">
-                    <i class="<%= actionStyle.icon %>"></i>
+    <!-- Timeline -->
+    <div>
+      <% if (history && history.length > 0) { %>
+        <div class="relative border-l-2 border-gray-200 dark:border-gray-700 pl-6">
+          <%
+            // Pagination setup
+            const currentPage = typeof page !== 'undefined' ? parseInt(page) : 1;
+            const itemsPerPage = typeof perPage !== 'undefined' ? parseInt(perPage) : 10;
+            const totalItems = history.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+            const paginatedHistory = history.slice(startIndex, endIndex);
+
+            function getActionStyle(actionType) {
+              switch(actionType) {
+                case 'created':
+                  return { icon: 'fas fa-plus-circle', color: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' };
+                case 'updated':
+                  return { icon: 'fas fa-edit', color: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' };
+                case 'assigned':
+                  return { icon: 'fas fa-user-plus', color: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' };
+                case 'unassigned':
+                  return { icon: 'fas fa-user-minus', color: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' };
+                case 'maintenance':
+                  return { icon: 'fas fa-tools', color: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' };
+                case 'retired':
+                  return { icon: 'fas fa-archive', color: 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300' };
+                case 'deleted':
+                  return { icon: 'fas fa-trash', color: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' };
+                default:
+                  return { icon: 'fas fa-history', color: 'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400' };
+              }
+            }
+            function getTimeAgo(date) {
+              const now = new Date();
+              const diffInMs = now - date;
+              const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+              const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+              const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+              const diffInWeeks = Math.floor(diffInDays / 7);
+              const diffInMonths = Math.floor(diffInDays / 30);
+              const diffInYears = Math.floor(diffInDays / 365);
+
+              if (diffInMinutes < 1) return 'Just now';
+              if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+              if (diffInHours < 24) return `${diffInHours}h ago`;
+              if (diffInDays < 7) return `${diffInDays}d ago`;
+              if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
+              if (diffInMonths < 12) return `${diffInMonths}mo ago`;
+              return `${diffInYears}y ago`;
+            }
+          %>
+          <% paginatedHistory.forEach((entry, index) => { %>
+            <%
+              const actionStyle = getActionStyle(entry.action_type);
+              const entryDate = new Date(entry.created_at);
+              const timeAgo = getTimeAgo(entryDate);
+            %>
+            <div class="mb-10 flex items-start relative">
+              <span class="absolute -left-7 flex items-center justify-center w-10 h-10 rounded-full border-2 border-white dark:border-gray-800 shadow <%= actionStyle.color %>">
+                <i class="<%= actionStyle.icon %>"></i>
+              </span>
+              <div class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 ml-2">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold capitalize"><%= entry.action_type %></span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400"><i class="fas fa-clock"></i> <%= entryDate.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
                   </div>
-                  <% if (index < paginatedHistory.length - 1) { %>
-                    <div class="history-line"></div>
-                  <% } %>
+                  <span class="text-xs text-gray-400 dark:text-gray-500" title="<%= entryDate.toLocaleString() %>"><%= timeAgo %></span>
                 </div>
-
-                <div class="history-content">
-                  <div class="history-card">
-                    <div class="history-header">
-                      <div class="history-title">
-                        <span class="action-badge <%= actionStyle.color %>">
-                          <i class="<%= actionStyle.icon %>"></i>
-                          <%= formatActionType ? formatActionType(entry.action_type) : entry.action_type %>
-                        </span>
-                        <span class="history-time">
-                          <i class="fas fa-clock"></i>
-                          <%= entryDate.toLocaleString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          }) %>
-                        </span>
-                      </div>
-                      <div class="history-meta">
-                        <span class="time-ago" title="<%= entryDate.toLocaleString() %>">
-                          <%= timeAgo %>
-                        </span>
-                      </div>
+                <div class="mb-2">
+                  <% if (entry.action_type === 'created') { %>
+                    <div class="flex items-center gap-2 text-green-700 dark:text-green-300">
+                      <i class="fas fa-sparkles"></i>
+                      <strong>Asset was created and added to inventory</strong>
                     </div>
-
-                    <div class="history-body">
-                      <% if (entry.action_type === 'created') { %>
-                        <div class="action-description">
-                          <i class="fas fa-sparkles"></i>
-                          <strong>Asset was created and added to inventory</strong>
-                        </div>
-
-                      <% } else if (entry.action_type === 'updated') { %>
-                        <div class="action-description">
-                          <i class="fas fa-pencil-alt"></i>
-                          <strong>Asset details were updated</strong>
-                        </div>
-                        <% if (entry.action_details && Object.keys(entry.action_details).length > 0) { %>
-                          <div class="changes-container">
-                            <% for(const [field, change] of Object.entries(entry.action_details || {})) { %>
-                              <div class="change-item">
-                                <div class="change-field">
-                                  <i class="fas fa-arrow-right"></i>
-                                  <strong><%= formatFieldName ? formatFieldName(field) : field %></strong>
-                                </div>
-                                <div class="change-values">
-                                  <span class="old-value">
-                                    <i class="fas fa-minus-circle"></i>
-                                    "<%= formatFieldValue ? formatFieldValue(change.from) : (change.from || 'Empty') %>"
-                                  </span>
-                                  <i class="fas fa-long-arrow-alt-right change-arrow"></i>
-                                  <span class="new-value">
-                                    <i class="fas fa-plus-circle"></i>
-                                    "<%= formatFieldValue ? formatFieldValue(change.to) : (change.to || 'Empty') %>"
-                                  </span>
-                                </div>
-                              </div>
-                            <% } %>
+                  <% } else if (entry.action_type === 'updated') { %>
+                    <div class="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                      <i class="fas fa-pencil-alt"></i>
+                      <strong>Asset details were updated</strong>
+                    </div>
+                    <% if (entry.action_details && Object.keys(entry.action_details).length > 0) { %>
+                      <div class="mt-2 space-y-1">
+                        <% for(const [field, change] of Object.entries(entry.action_details || {})) { %>
+                          <div class="flex items-center gap-2 text-xs">
+                            <span class="font-semibold"><%= field %>:</span>
+                            <span class="line-through text-red-500 dark:text-red-400"><%= change.from || 'Empty' %></span>
+                            <i class="fas fa-arrow-right"></i>
+                            <span class="text-green-700 dark:text-green-300"><%= change.to || 'Empty' %></span>
                           </div>
                         <% } %>
-
-                      <% } else if (entry.action_type === 'assigned') { %>
-                        <div class="action-description">
-                          <i class="fas fa-user-check"></i>
-                          <strong>Asset was assigned to an employee</strong>
-                        </div>
-                        <div class="assignment-details">
-                          <div class="employee-card">
-                            <div class="employee-avatar">
-                              <i class="fas fa-user"></i>
-                            </div>
-                            <div class="employee-info">
-                              <div class="employee-name">
-                                <% if (entry.action_details && entry.action_details.employee_id) { %>
-                                  <a href="/employees/<%= entry.action_details.employee_id %>">
-                                    <%= entry.action_details.employee_name %>
-                                  </a>
-                                <% } else { %>
-                                  <%= entry.action_details.employee_name || 'Unknown Employee' %>
-                                <% } %>
-                              </div>
-                              <% if (entry.action_details && entry.action_details.employee_cep) { %>
-                                <div class="employee-id">ID: <%= entry.action_details.employee_cep %></div>
-                              <% } %>
-                              <% if (entry.action_details && entry.action_details.department) { %>
-                                <div class="employee-dept">
-                                  <i class="fas fa-building"></i>
-                                  <%= entry.action_details.department %>
-                                </div>
-                              <% } %>
-                            </div>
-                          </div>
-                        </div>
-
-                      <% } else if (entry.action_type === 'unassigned') { %>
-                        <div class="action-description">
-                          <i class="fas fa-user-times"></i>
-                          <strong>Asset was unassigned from employee</strong>
-                        </div>
-                        <div class="assignment-details">
-                          <div class="employee-card unassigned">
-                            <div class="employee-avatar">
-                              <i class="fas fa-user-slash"></i>
-                            </div>
-                            <div class="employee-info">
-                              <div class="employee-name">
-                                <% if (entry.action_details && entry.action_details.employee_id) { %>
-                                  <a href="/employees/<%= entry.action_details.employee_id %>">
-                                    <%= entry.action_details.employee_name %>
-                                  </a>
-                                <% } else { %>
-                                  <%= entry.action_details.employee_name || 'Unknown Employee' %>
-                                <% } %>
-                              </div>
-                              <% if (entry.action_details && entry.action_details.reason) { %>
-                                <div class="unassignment-reason">
-                                  <i class="fas fa-info-circle"></i>
-                                  Reason: <%= entry.action_details.reason %>
-                                </div>
-                              <% } %>
-                            </div>
-                          </div>
-                        </div>
-
-                      <% } else if (entry.action_type === 'maintenance') { %>
-                        <div class="action-description">
-                          <i class="fas fa-wrench"></i>
-                          <strong>Asset marked for maintenance</strong>
-                        </div>
-                        <% if (entry.action_details && entry.action_details.reason) { %>
-                          <div class="maintenance-info">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span><%= entry.action_details.reason %></span>
-                          </div>
-                        <% } %>
-
-                      <% } else if (entry.action_type === 'retired') { %>
-                        <div class="action-description">
-                          <i class="fas fa-box-archive"></i>
-                          <strong>Asset was retired</strong>
-                        </div>
-                        <% if (entry.action_details && entry.action_details.reason) { %>
-                          <div class="retirement-info">
-                            <i class="fas fa-info-circle"></i>
-                            <span><%= entry.action_details.reason %></span>
-                          </div>
-                        <% } %>
-
+                      </div>
+                    <% } %>
+                  <% } else if (entry.action_type === 'assigned') { %>
+                    <div class="flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+                      <i class="fas fa-user-check"></i>
+                      <strong>Asset was assigned to an employee</strong>
+                    </div>
+                    <div class="mt-2 flex items-center gap-2">
+                      <i class="fas fa-user"></i>
+                      <% if (entry.action_details && entry.action_details.employee_id) { %>
+                        <a href="/employees/<%= entry.action_details.employee_id %>" class="underline text-blue-700 dark:text-blue-300"><%= entry.action_details.employee_name %></a>
                       <% } else { %>
-                        <div class="action-description">
-                          <i class="fas fa-question-circle"></i>
-                          <strong>Unknown action performed</strong>
-                        </div>
-                        <% if (entry.action_details) { %>
-                          <div class="raw-details">
-                            <pre><%= JSON.stringify(entry.action_details, null, 2) %></pre>
-                          </div>
-                        <% } %>
+                        <%= entry.action_details.employee_name || 'Unknown Employee' %>
+                      <% } %>
+                      <% if (entry.action_details && entry.action_details.department) { %>
+                        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><i class="fas fa-building"></i> <%= entry.action_details.department %></span>
                       <% } %>
                     </div>
-
-                    <div class="history-footer">
-                      <div class="performer-info">
-                        <div class="performer-avatar">
-                          <i class="fas fa-user-circle"></i>
-                        </div>
-                        <div class="performer-details">
-                          <span class="performer-label">Performed by</span>
-                          <% if (entry.performed_by && entry.user_name) { %>
-                            <a href="/users/<%= entry.performed_by %>" class="performer-name">
-                              <%= entry.user_name %>
-                            </a>
-                          <% } else { %>
-                            <span class="performer-name">
-                              <%= entry.user_name || 'System' %>
-                            </span>
-                          <% } %>
-                        </div>
-                      </div>
+                  <% } else if (entry.action_type === 'unassigned') { %>
+                    <div class="flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+                      <i class="fas fa-user-times"></i>
+                      <strong>Asset was unassigned from employee</strong>
                     </div>
-                  </div>
+                    <div class="mt-2 flex items-center gap-2">
+                      <i class="fas fa-user-slash"></i>
+                      <% if (entry.action_details && entry.action_details.employee_id) { %>
+                        <a href="/employees/<%= entry.action_details.employee_id %>" class="underline text-blue-700 dark:text-blue-300"><%= entry.action_details.employee_name %></a>
+                      <% } else { %>
+                        <%= entry.action_details.employee_name || 'Unknown Employee' %>
+                      <% } %>
+                      <% if (entry.action_details && entry.action_details.reason) { %>
+                        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><i class="fas fa-info-circle"></i> Reason: <%= entry.action_details.reason %></span>
+                      <% } %>
+                    </div>
+                  <% } else if (entry.action_type === 'maintenance') { %>
+                    <div class="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+                      <i class="fas fa-wrench"></i>
+                      <strong>Asset marked for maintenance</strong>
+                    </div>
+                    <% if (entry.action_details && entry.action_details.reason) { %>
+                      <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-clipboard-list"></i> <%= entry.action_details.reason %>
+                      </div>
+                    <% } %>
+                  <% } else if (entry.action_type === 'retired') { %>
+                    <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                      <i class="fas fa-box-archive"></i>
+                      <strong>Asset was retired</strong>
+                    </div>
+                    <% if (entry.action_details && entry.action_details.reason) { %>
+                      <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-info-circle"></i> <%= entry.action_details.reason %>
+                      </div>
+                    <% } %>
+                  <% } else { %>
+                    <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                      <i class="fas fa-question-circle"></i>
+                      <strong>Unknown action performed</strong>
+                    </div>
+                    <% if (entry.action_details) { %>
+                      <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        <pre><%= JSON.stringify(entry.action_details, null, 2) %></pre>
+                      </div>
+                    <% } %>
+                  <% } %>
+                </div>
+                <div class="flex items-center gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  <i class="fas fa-user-circle"></i>
+                  <span>Performed by</span>
+                  <% if (entry.performed_by && entry.user_name) { %>
+                    <a href="/users/<%= entry.performed_by %>" class="underline text-blue-700 dark:text-blue-300"><%= entry.user_name %></a>
+                  <% } else { %>
+                    <span><%= entry.user_name || 'System' %></span>
+                  <% } %>
                 </div>
               </div>
-            <% }) %>
-          </div>
-
-          <!-- Pagination -->
-          <div class="history-pagination">
-            <div class="pagination-info">
-              <span class="results-count">
-                <i class="fas fa-history"></i>
-                Showing <%= startIndex + 1 %> to <%= endIndex %> of <%= totalItems %> events
-              </span>
             </div>
+          <% }) %>
+        </div>
 
-            <div class="pagination-controls">
-              <% if (totalPages > 1) { %>
-                <div class="pagination">
-                  <% if (currentPage > 1) { %>
-                    <a href="?page=<%= currentPage - 1 %>&perPage=<%= itemsPerPage %>" class="btn btn-sm">
-                      <i class="fas fa-chevron-left"></i> Previous
-                    </a>
-                  <% } %>
-
-                  <span class="page-info">Page <%= currentPage %> of <%= totalPages %></span>
-
-                  <% if (currentPage < totalPages) { %>
-                    <a href="?page=<%= currentPage + 1 %>&perPage=<%= itemsPerPage %>" class="btn btn-sm">
-                      Next <i class="fas fa-chevron-right"></i>
-                    </a>
-                  <% } %>
-                </div>
-              <% } %>
-
-              <div class="items-per-page-compact">
-                <select id="historyPerPage">
-                  <option value="5" <%= itemsPerPage == 5 ? 'selected' : '' %>>5</option>
-                  <option value="10" <%= itemsPerPage == 10 ? 'selected' : '' %>>10</option>
-                  <option value="20" <%= itemsPerPage == 20 ? 'selected' : '' %>>20</option>
-                  <option value="50" <%= itemsPerPage == 50 ? 'selected' : '' %>>50</option>
-                </select>
-                <span>per page</span>
+        <!-- Pagination -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-8">
+          <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
+            <i class="fas fa-history"></i>
+            Showing <%= startIndex + 1 %> to <%= endIndex %> of <%= totalItems %> events
+          </div>
+          <div class="flex items-center gap-4">
+            <% if (totalPages > 1) { %>
+              <div class="flex items-center gap-2">
+                <% if (currentPage > 1) { %>
+                  <a href="?page=<%= currentPage - 1 %>&perPage=<%= itemsPerPage %>" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">« Previous</a>
+                <% } %>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Page <%= currentPage %> of <%= totalPages %></span>
+                <% if (currentPage < totalPages) { %>
+                  <a href="?page=<%= currentPage + 1 %>&perPage=<%= itemsPerPage %>" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">Next »</a>
+                <% } %>
               </div>
+            <% } %>
+            <div>
+              <select id="historyPerPage" class="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                <option value="5" <%= itemsPerPage == 5 ? 'selected' : '' %>>5</option>
+                <option value="10" <%= itemsPerPage == 10 ? 'selected' : '' %>>10</option>
+                <option value="20" <%= itemsPerPage == 20 ? 'selected' : '' %>>20</option>
+                <option value="50" <%= itemsPerPage == 50 ? 'selected' : '' %>>50</option>
+              </select>
+              <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">per page</span>
             </div>
           </div>
-
-        <% } else { %>
-          <div class="empty-history">
-            <div class="empty-icon">
-              <i class="fas fa-history"></i>
-            </div>
-            <h3>No History Found</h3>
-            <p>This asset doesn't have any recorded history yet.</p>
-            <div class="empty-actions">
-              <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="btn btn-primary">
-                <i class="fas fa-edit"></i> Edit Asset
-              </a>
-            </div>
+        </div>
+      <% } else { %>
+        <div class="flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="mb-4 text-4xl text-gray-400 dark:text-gray-600">
+            <i class="fas fa-history"></i>
           </div>
-        <% } %>
-      </div>
+          <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No History Found</h3>
+          <p class="text-gray-500 dark:text-gray-400 mb-4">This asset doesn't have any recorded history yet.</p>
+          <div class="flex gap-2">
+            <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+              <i class="fas fa-edit mr-2"></i> Edit Asset
+            </a>
+          </div>
+        </div>
+      <% } %>
     </div>
   </div>
 </div>

@@ -1,257 +1,218 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <h1>Add New Asset</h1>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/items" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Assets
-        </a>
-        <a href="/items/new-receipt" class="btn btn-info">
-          <i class="fas fa-receipt"></i> Add with Receipt
-        </a>
-      </div>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+        <i class="fas fa-plus"></i> Add New Asset
+      </h1>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+      <a href="/items" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Assets
+      </a>
+      <a href="/items/new-receipt" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-receipt mr-2"></i> Add with Receipt
+      </a>
     </div>
   </div>
 
-  <div class="content-section">
-    <div class="form-container">
-      <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
-        <div class="alert alert-danger">
-          <i class="fas fa-exclamation-triangle"></i>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>Please fix the following errors:</strong>
+          <ul class="list-disc ml-6">
+            <% errors.forEach(error => { %>
+              <li><%= error %></li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/items" id="createItemForm" class="space-y-10" data-no-ajax="true">
+      <!-- Asset Identification Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-tag"></i> Asset Identification
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="col-span-1 md:col-span-2">
+            <label for="cep_brc" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset ID (CEP/BRC) <span class="text-red-500">*</span></label>
+            <div>
+              <input type="text" id="cep_brc" name="cep_brc"
+                value="<%= typeof formData !== 'undefined' ? formData.cep_brc : 'CEXPT' %>"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                required placeholder="Enter unique asset identifier">
+              <div class="text-xs mt-1" id="cepValidation"></div>
+              <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                <i class="fas fa-info-circle"></i>
+                Unique identifier for this asset (e.g., CEP001, BRC-2024-001)
+              </small>
+            </div>
+          </div>
+          <div class="col-span-1 md:col-span-2">
+            <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset Name <span class="text-red-500">*</span></label>
+            <input type="text" id="name" name="name"
+              value="<%= typeof formData !== 'undefined' ? formData.name : '' %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              required placeholder="Enter descriptive name for this asset">
+          </div>
+          <div class="col-span-1 md:col-span-2">
+            <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Description</label>
+            <textarea id="description" name="description" rows="3"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-vertical"
+              placeholder="Enter detailed description of the asset (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-info-circle"></i>
+              Provide additional details about the asset, its purpose, or any special characteristics
+            </small>
+          </div>
           <div>
-            <strong>Please fix the following errors:</strong>
-            <ul>
-              <% errors.forEach(error => { %>
-                <li><%= error %></li>
+            <label for="type_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset Type <span class="text-red-500">*</span></label>
+            <select id="type_id" name="type_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
+              <option value="">Select Asset Type</option>
+              <% types.forEach(type => { %>
+                <option value="<%= type.id %>" <%= typeof formData !== 'undefined' && formData.type_id == type.id ? 'selected' : '' %>>
+                  <%= type.name %>
+                </option>
               <% }) %>
-            </ul>
+            </select>
           </div>
         </div>
-      <% } %>
-
-      <form method="POST" action="/items" id="createItemForm" class="modern-form" data-no-ajax="true">
-        <!-- Asset Identification Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-tag section-icon"></i>
-            <h3>Asset Identification</h3>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="cep_brc" class="required">Asset ID (CEP/BRC)</label>
-              <div class="input-with-validation">
-                <input type="text" id="cep_brc" name="cep_brc"
-                  value="<%= typeof formData !== 'undefined' ? formData.cep_brc : 'CEXPT' %>"
-                  class="form-input" required placeholder="Enter unique asset identifier">
-                <div class="validation-feedback" id="cepValidation"></div>
-                <small class="field-help">
-                  <i class="fas fa-info-circle"></i>
-                  Unique identifier for this asset (e.g., CEP001, BRC-2024-001)
-                </small>
-              </div>
-            </div>
-
-            <div class="form-group full-width">
-              <label for="name" class="required">Asset Name</label>
-              <input type="text" id="name" name="name"
-                value="<%= typeof formData !== 'undefined' ? formData.name : '' %>"
-                class="form-input" required placeholder="Enter descriptive name for this asset">
-            </div>
-
-            <div class="form-group full-width">
-              <label for="description">Description</label>
-              <textarea id="description" name="description" class="form-textarea" rows="3"
-                placeholder="Enter detailed description of the asset (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
-              <small class="field-help">
-                <i class="fas fa-info-circle"></i>
-                Provide additional details about the asset, its purpose, or any special characteristics
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label for="type_id" class="required">Asset Type</label>
-              <select id="type_id" name="type_id" class="form-select" required>
-                <option value="">Select Asset Type</option>
-                <% types.forEach(type => { %>
-                  <option value="<%= type.id %>" <%= typeof formData !== 'undefined' && formData.type_id == type.id ? 'selected' : '' %>>
-                    <%= type.name %>
-                  </option>
-                <% }) %>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Product Details Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-cog section-icon"></i>
-            <h3>Product Details</h3>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="brand_id">Brand</label>
-              <select id="brand_id" name="brand_id" class="form-select">
-                <option value="">Select Brand</option>
-                <% brands.forEach(brand => { %>
-                  <option value="<%= brand.id %>" <%= typeof formData !== 'undefined' && formData.brand_id == brand.id ? 'selected' : '' %>>
-                    <%= brand.name %>
-                  </option>
-                <% }) %>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="model">Model</label>
-              <input type="text" id="model" name="model"
-                value="<%= typeof formData !== 'undefined' ? formData.model : '' %>"
-                class="form-input" placeholder="Product model number">
-            </div>
-
-            <div class="form-group">
-              <label for="serial_cod">Serial Number</label>
-              <input type="text" id="serial_cod" name="serial_cod"
-                value="<%= typeof formData !== 'undefined' ? formData.serial_cod : '' %>"
-                class="form-input" placeholder="Unique serial number">
-            </div>
-
-            <div class="form-group">
-              <label for="price">Purchase Price (€)</label>
-              <div class="input-group">
-                <span class="input-group-text">€</span>
-                <input type="number" id="price" name="price" min="0" step="0.01"
-                  value="<%= typeof formData !== 'undefined' ? formData.price : '' %>"
-                  class="form-input" placeholder="0.00">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Purchase Information Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-receipt section-icon"></i>
-            <h3>Purchase Information</h3>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="receipt">Purchase Receipt</label>
-              <select id="receipt" name="receipt" class="form-select">
-                <option value="">Select Receipt (Optional)</option>
-                <% sales.forEach(sale => { %>
-                  <option value="<%= sale.receipt %>" <%= typeof formData !== 'undefined' && formData.receipt === sale.receipt ? 'selected' : '' %>>
-                    <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
-                  </option>
-                <% }) %>
-              </select>
-              <small class="field-help">
-                <i class="fas fa-info-circle"></i>
-                Link this asset to an existing purchase receipt, or leave blank to add later
-              </small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Assignment Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-user section-icon"></i>
-            <h3>Asset Assignment</h3>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="assigned_to">Assign To Employee</label>
-              <select id="assigned_to" name="assigned_to" class="form-select">
-                <option value="">Leave Unassigned</option>
-                <% employees.forEach(employee => { %>
-                  <option value="<%= employee.id %>" <%= typeof formData !== 'undefined' && formData.assigned_to == employee.id ? 'selected' : '' %>>
-                    <%= employee.name %> (<%= employee.cep %>)
-                  </option>
-                <% }) %>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="date_assigned">Assignment Date</label>
-              <input type="date" id="date_assigned" name="date_assigned" class="form-input"
-                value="<%= typeof formData !== 'undefined' && formData.date_assigned ? formData.date_assigned : '' %>">
-              <small class="field-help">
-                <i class="fas fa-info-circle"></i>
-                Date when asset is assigned to employee (auto-fills when employee is selected)
-              </small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary btn-lg">
-            <i class="fas fa-plus"></i> Create Asset
-          </button>
-          <a href="/items" class="btn btn-secondary btn-lg">
-            <i class="fas fa-times"></i> Cancel
-          </a>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Asset ID Availability Check Modal -->
-<div class="modal-overlay" id="duplicateIdModal">
-  <div class="modal-content error-modal">
-    <div class="modal-header">
-      <i class="fas fa-exclamation-circle modal-icon error"></i>
-      <h4>Asset ID Already Exists</h4>
-    </div>
-    <div class="modal-body">
-      <p>This Asset ID is already in use by another asset:</p>
-      <div class="duplicate-asset-info" id="duplicateAssetInfo">
-        <!-- Dynamic content -->
       </div>
-      <p>Please choose a different Asset ID or review the existing asset.</p>
-    </div>
-    <div class="modal-actions">
-      <button id="viewExistingAsset" class="btn btn-info">
-        <i class="fas fa-eye"></i> View Existing Asset
-      </button>
-      <button id="closeDuplicateModal" class="btn btn-secondary">
-        <i class="fas fa-times"></i> Close
-      </button>
+
+      <!-- Product Details Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-cog"></i> Product Details
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="brand_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Brand</label>
+            <select id="brand_id" name="brand_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value="">Select Brand</option>
+              <% brands.forEach(brand => { %>
+                <option value="<%= brand.id %>" <%= typeof formData !== 'undefined' && formData.brand_id == brand.id ? 'selected' : '' %>>
+                  <%= brand.name %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          <div>
+            <label for="model" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Model</label>
+            <input type="text" id="model" name="model"
+              value="<%= typeof formData !== 'undefined' ? formData.model : '' %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="Product model number">
+          </div>
+          <div>
+            <label for="serial_cod" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Serial Number</label>
+            <input type="text" id="serial_cod" name="serial_cod"
+              value="<%= typeof formData !== 'undefined' ? formData.serial_cod : '' %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="Unique serial number">
+          </div>
+          <div>
+            <label for="price" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Purchase Price (€)</label>
+            <div class="flex">
+              <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400">€</span>
+              <input type="number" id="price" name="price" min="0" step="0.01"
+                value="<%= typeof formData !== 'undefined' ? formData.price : '' %>"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-r-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                placeholder="0.00">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Information Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-receipt"></i> Purchase Information
+        </h3>
+        <div>
+          <label for="receipt" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Purchase Receipt</label>
+          <select id="receipt" name="receipt" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <option value="">Select Receipt (Optional)</option>
+            <% sales.forEach(sale => { %>
+              <option value="<%= sale.receipt %>" <%= typeof formData !== 'undefined' && formData.receipt === sale.receipt ? 'selected' : '' %>>
+                <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
+              </option>
+            <% }) %>
+          </select>
+          <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+            <i class="fas fa-info-circle"></i>
+            Link this asset to an existing purchase receipt, or leave blank to add later
+          </small>
+        </div>
+      </div>
+
+      <!-- Assignment Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-user"></i> Asset Assignment
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="assigned_to" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assign To Employee</label>
+            <select id="assigned_to" name="assigned_to" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value="">Leave Unassigned</option>
+              <% employees.forEach(employee => { %>
+                <option value="<%= employee.id %>" <%= typeof formData !== 'undefined' && formData.assigned_to == employee.id ? 'selected' : '' %>>
+                  <%= employee.name %> (<%= employee.cep %>)
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          <div>
+            <label for="date_assigned" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assignment Date</label>
+            <input type="date" id="date_assigned" name="date_assigned"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              value="<%= typeof formData !== 'undefined' && formData.date_assigned ? formData.date_assigned : '' %>">
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-info-circle"></i>
+              Date when asset is assigned to employee (auto-fills when employee is selected)
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex flex-wrap gap-2 mt-8">
+        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-plus"></i> Create Asset
+        </button>
+        <a href="/items" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-times"></i> Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Duplicate ID Warning Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" id="duplicateIdModal" style="display:none;">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 text-2xl"></i>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Asset ID Already Exists</h4>
+      </div>
+      <div class="mb-4">
+        <p class="mb-2">This Asset ID is already in use by another asset:</p>
+        <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 mb-2" id="duplicateAssetInfo"></div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Please choose a different Asset ID or review the existing asset.</p>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button id="viewExistingAsset" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+          <i class="fas fa-eye mr-2"></i> View Existing Asset
+        </button>
+        <button id="closeDuplicateModal" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+          <i class="fas fa-times mr-2"></i> Close
+        </button>
+      </div>
     </div>
   </div>
 </div>
-
-<style>
-/* Additional styles for textarea */
-.form-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ced4da;
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  resize: vertical;
-  min-height: 80px;
-  font-family: inherit;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.form-textarea:focus {
-  border-color: #80bdff;
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.form-textarea::placeholder {
-  color: #6c757d;
-  opacity: 1;
-}
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -272,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
       clearTimeout(duplicateCheckTimeout);
 
       // Reset validation state
-      cepValidation.className = 'validation-feedback';
+      cepValidation.className = 'text-xs mt-1';
       cepValidation.innerHTML = '';
 
       if (newValue.length === 0) {
@@ -280,13 +241,13 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       if (newValue.length < 3) {
-        cepValidation.className = 'validation-feedback warning';
+        cepValidation.className = 'text-xs mt-1 text-yellow-700 dark:text-yellow-300';
         cepValidation.innerHTML = '<i class="fas fa-info-circle"></i> Asset ID should be at least 3 characters';
         return;
       }
 
       // Show checking state
-      cepValidation.className = 'validation-feedback checking';
+      cepValidation.className = 'text-xs mt-1 text-blue-700 dark:text-blue-300';
       cepValidation.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
 
       // Check for duplicates after delay
@@ -304,19 +265,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (data.exists) {
         duplicateAssetData = data.asset;
-        cepValidation.className = 'validation-feedback error';
+        cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
         cepValidation.innerHTML = `
           <i class="fas fa-exclamation-triangle"></i>
           Asset ID already exists -
-          <a href="#" onclick="showDuplicateModal()" class="error-link">View existing asset</a>
+          <a href="#" onclick="showDuplicateModal()" class="underline text-blue-700 dark:text-blue-300">View existing asset</a>
         `;
       } else {
-        cepValidation.className = 'validation-feedback success';
+        cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
         cepValidation.innerHTML = '<i class="fas fa-check"></i> Asset ID available';
       }
     } catch (error) {
       console.error('Error checking duplicate:', error);
-      cepValidation.className = 'validation-feedback error';
+      cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
       cepValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error checking availability';
     }
   }
@@ -326,16 +287,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (duplicateAssetData) {
       const duplicateInfo = document.getElementById('duplicateAssetInfo');
       duplicateInfo.innerHTML = `
-        <div class="asset-card">
-          <div class="asset-header">
-            <span class="entity-id">${duplicateAssetData.cep_brc}</span>
-            <span class="entity-name">${duplicateAssetData.name}</span>
-          </div>
-          <div class="asset-details">
-            <div><strong>Type:</strong> ${duplicateAssetData.type_name || 'N/A'}</div>
-            <div><strong>Brand:</strong> ${duplicateAssetData.brand_name || 'N/A'}</div>
-            <div><strong>Status:</strong> ${duplicateAssetData.assigned_to_name ? 'Assigned to ' + duplicateAssetData.assigned_to_name : 'Unassigned'}</div>
-          </div>
+        <div class="mb-2">
+          <span class="font-mono font-semibold text-blue-700 dark:text-blue-300">${duplicateAssetData.cep_brc}</span>
+          <span class="ml-2 font-semibold text-gray-800 dark:text-gray-100">${duplicateAssetData.name}</span>
+        </div>
+        <div class="text-sm text-gray-700 dark:text-gray-200">
+          <div><strong>Type:</strong> ${duplicateAssetData.type_name || 'N/A'}</div>
+          <div><strong>Brand:</strong> ${duplicateAssetData.brand_name || 'N/A'}</div>
+          <div><strong>Status:</strong> ${duplicateAssetData.assigned_to_name ? 'Assigned to ' + duplicateAssetData.assigned_to_name : 'Unassigned'}</div>
         </div>
       `;
 
@@ -349,10 +308,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Form submission handling
   form.addEventListener('submit', function(event) {
-    console.log('Form is submitting!');
-
     // Check for validation errors
-    if (cepValidation.classList.contains('error')) {
+    if (cepValidation.className.includes('text-red-700')) {
       event.preventDefault();
       showDuplicateModal();
       return;
@@ -364,48 +321,22 @@ document.addEventListener('DOMContentLoaded', function() {
     let firstInvalidField = null;
 
     requiredFields.forEach(field => {
-      field.classList.remove('form-error');
+      field.classList.remove('border-red-500');
       if (!field.value.trim()) {
         valid = false;
-        field.classList.add('form-error');
+        field.classList.add('border-red-500');
         if (!firstInvalidField) {
           firstInvalidField = field;
         }
-        console.log('Missing required field:', field.name);
       }
     });
 
     if (!valid) {
       event.preventDefault();
-
-      // Show error message
-      const errorAlert = document.createElement('div');
-      errorAlert.className = 'alert alert-danger';
-      errorAlert.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <div>
-          <strong>Please fill out all required fields</strong>
-          <p>Fields marked with * are required to create an asset.</p>
-        </div>
-      `;
-
-      // Insert error at top of form
-      form.insertBefore(errorAlert, form.firstChild);
-
-      // Scroll to first invalid field
       if (firstInvalidField) {
         firstInvalidField.focus();
         firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-
-      // Remove error after 5 seconds
-      setTimeout(() => {
-        if (errorAlert.parentNode) {
-          errorAlert.remove();
-        }
-      }, 5000);
-    } else {
-      console.log('Form validation passed');
     }
   });
 

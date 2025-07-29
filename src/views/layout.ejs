@@ -1,157 +1,168 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-gray-50 dark:bg-gray-900">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %> | IT Asset Manager</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="/css/styles.css">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body data-theme="<%= user && user.settings && user.settings.theme ? user.settings.theme : 'light' %>">
-  <div class="app-container <%= locals.isDashboardPage ? 'dashboard-page' : '' %>
-                           <%= locals.isReferencePage ? 'reference-page' : '' %>
-                           <%= locals.isReportPage ? 'report-page' : '' %>
-                           <%= locals.isDepartmentPage ? 'department-page' : '' %>">
+<body class="min-h-screen text-gray-900 dark:text-white" data-theme="<%= user && user.settings && user.settings.theme ? user.settings.theme : 'light' %>">
+  <div class="flex min-h-screen <%= locals.isDashboardPage ? 'bg-gray-50 dark:bg-gray-900' : '' %>">
     <% if (user) { %>
       <%- include('partials/sidebar') %>
     <% } %>
 
-    <div class="main-content <%= user ? 'with-sidebar' : '' %>">
+    <div class="flex-1 flex flex-col">
       <% if (user) { %>
-        <header class="top-header">
-          <div class="breadcrumb">
-            <% if (title === 'Dashboard') { %>
-              <span>Dashboard</span>
-            <% } else { %>
-              <a href="/" data-content-loader>Dashboard</a>
-              <i class="fas fa-chevron-right"></i>
-              <span><%= title %></span>
-            <% } %>
+        <header class="flex items-center justify-between px-8 py-4 bg-white dark:bg-gray-800 shadow-md">
+          <div class="flex items-center gap-4">
+            <div class="text-sm text-gray-500 dark:text-gray-300 flex items-center gap-2">
+              <% if (title === 'Dashboard') { %>
+                <span class="font-semibold text-indigo-900 dark:text-indigo-300">Dashboard</span>
+              <% } else { %>
+                <a href="/" data-content-loader class="hover:underline text-indigo-900 dark:text-indigo-300">Dashboard</a>
+                <i class="fas fa-chevron-right text-xs"></i>
+                <span class="font-semibold"><%= title %></span>
+              <% } %>
+            </div>
           </div>
-
-          <div class="user-menu">
-            <div class="notifications">
-              <div class="dropdown">
-                <button class="icon-button notification-toggle dropdown-toggle" id="notificationToggle">
-                  <i class="far fa-bell"></i>
-                  <span class="badge" id="notificationCount" style="display: none;">0</span>
-                </button>
-                <div class="dropdown-menu notification-menu" id="notificationMenu">
-                  <div class="notification-header">
-                    <h3>Notifications</h3>
-                    <a href="#" class="mark-all-read" id="markAllRead">Mark all as read</a>
-                  </div>
-                  <div class="notification-list" id="notificationList">
-                    <div class="notification-loading">Loading notifications...</div>
-                  </div>
-                  <div class="notification-footer">
-                    <a href="/notifications/history">View all notifications</a>
-                  </div>
+          <div class="flex items-center gap-6">
+            <!-- Notifications -->
+            <div class="relative">
+              <button class="relative text-gray-500 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-indigo-300 focus:outline-none" id="notificationToggle">
+                <i class="far fa-bell text-xl"></i>
+                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5" id="notificationCount" style="display: none;">0</span>
+              </button>
+              <div class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-50 hidden" id="notificationMenu">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                  <h3 class="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                  <a href="#" class="text-xs text-indigo-700 dark:text-indigo-300 hover:underline" id="markAllRead">Mark all as read</a>
+                </div>
+                <div class="max-h-64 overflow-y-auto" id="notificationList">
+                  <div class="px-4 py-3 text-gray-500 dark:text-gray-300">Loading notifications...</div>
+                </div>
+                <div class="px-4 py-2 border-t border-gray-100 dark:border-gray-700 text-right">
+                  <a href="/notifications/history" class="text-indigo-700 dark:text-indigo-300 hover:underline text-sm">View all notifications</a>
                 </div>
               </div>
             </div>
-
-            <!-- User dropdown -->
-            <div class="dropdown user-dropdown">
-              <button class="dropdown-toggle user-toggle">
-                <div class="avatar">
+            <!-- User Dropdown -->
+            <div class="relative">
+              <button class="flex items-center gap-2 focus:outline-none" id="userDropdownToggle">
+                <div class="w-9 h-9 rounded-full bg-indigo-900 dark:bg-indigo-700 flex items-center justify-center text-white font-bold text-lg">
                   <%= user.name.charAt(0).toUpperCase() %>
                 </div>
-                <span class="user-name"><%= user.name %></span>
-                <i class="fas fa-chevron-down"></i>
+                <span class="font-medium text-gray-900 dark:text-white"><%= user.name %></span>
+                <i class="fas fa-chevron-down text-xs text-gray-400"></i>
               </button>
-              <div class="dropdown-menu user-menu-dropdown">
-                <div class="user-header">
-                  <div class="avatar-lg">
+              <div class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-50 hidden" id="userDropdownMenu">
+                <div class="flex items-center gap-4 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                  <div class="w-12 h-12 rounded-full bg-indigo-900 dark:bg-indigo-700 flex items-center justify-center text-white font-bold text-2xl">
                     <%= user.name.charAt(0).toUpperCase() %>
                   </div>
-                  <div class="user-details">
-                    <h4 class="user-details-name"><%= user.name %></h4>
-                    <p class="user-details-email"><%= user.email %></p>
-                    <span class="role-badge <%= user.role === 'admin' ? 'role-admin' : 'role-user' %>">
+                  <div>
+                    <h4 class="font-semibold text-gray-900 dark:text-white"><%= user.name %></h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-300"><%= user.email %></p>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium <%= user.role === 'admin' ? 'bg-indigo-100 text-indigo-900 dark:bg-indigo-800 dark:text-indigo-200' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200' %>">
                       <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
                     </span>
                   </div>
                 </div>
-                <div class="dropdown-divider"></div>
-                <a href="/users/profile">
-                  <i class="fas fa-user-circle"></i> My Profile
-                </a>
-                <a href="/users/settings">
-                  <i class="fas fa-cog"></i> Settings
-                </a>
-                <div class="dropdown-divider"></div>
-                <a href="/auth/logout" class="logout-link" data-no-ajax>
-                  <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
+                <div class="flex flex-col py-2">
+                  <a href="/users/profile" class="flex items-center gap-2 px-6 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-900 dark:text-white">
+                    <i class="fas fa-user-circle"></i> My Profile
+                  </a>
+                  <a href="/users/settings" class="flex items-center gap-2 px-6 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-900 dark:text-white">
+                    <i class="fas fa-cog"></i> Settings
+                  </a>
+                  <div class="border-t border-gray-100 dark:border-gray-700 my-2"></div>
+                  <a href="/auth/logout" class="flex items-center gap-2 px-6 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-900" data-no-ajax>
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </header>
       <% } %>
 
-      <main id="mainContent">
+      <main id="mainContent" class="flex-1 p-6">
         <%- include(body, locals) %>
       </main>
 
-      <footer>
-        <p>&copy; <%= new Date().getFullYear() %> IT Asset Manager | All rights reserved</p>
+      <footer class="px-8 py-4 text-center text-xs text-gray-400 dark:text-gray-500">
+        &copy; <%= new Date().getFullYear() %> IT Asset Manager | All rights reserved
       </footer>
     </div>
   </div>
 
-  <!-- Include your scripts -->
+  <!-- Scripts -->
   <script src="/js/main.js"></script>
   <script src="/js/notifications.js"></script>
   <script src="/js/content-loader.js"></script>
-
-  <!-- Add initialization script -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Sidebar toggle functionality
       const sidebarToggle = document.getElementById('sidebarToggle');
       const appContainer = document.querySelector('.app-container');
-
       if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function() {
           appContainer.classList.toggle('sidebar-collapsed');
-
-          // Store preference in localStorage
           if (appContainer.classList.contains('sidebar-collapsed')) {
             localStorage.setItem('sidebarCollapsed', 'true');
           } else {
             localStorage.setItem('sidebarCollapsed', 'false');
           }
         });
-
-        // Apply saved preference
         if (localStorage.getItem('sidebarCollapsed') === 'true') {
           appContainer.classList.add('sidebar-collapsed');
         }
       }
 
-      // Setup dropdowns for the sidebar
-      setupDropdowns();
-
-      // Initialize UI elements
-      if (typeof initializeUI === 'function') {
-        initializeUI();
+      // Dropdown toggles
+      const notificationToggle = document.getElementById('notificationToggle');
+      const notificationMenu = document.getElementById('notificationMenu');
+      if (notificationToggle && notificationMenu) {
+        notificationToggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          notificationMenu.classList.toggle('hidden');
+        });
+        document.addEventListener('click', function() {
+          notificationMenu.classList.add('hidden');
+        });
+        notificationMenu.addEventListener('click', function(e) {
+          e.stopPropagation();
+        });
       }
 
-      // Update active menu items based on current URL
-      updateActiveMenuItems();
+      const userDropdownToggle = document.getElementById('userDropdownToggle');
+      const userDropdownMenu = document.getElementById('userDropdownMenu');
+      if (userDropdownToggle && userDropdownMenu) {
+        userDropdownToggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          userDropdownMenu.classList.toggle('hidden');
+        });
+        document.addEventListener('click', function() {
+          userDropdownMenu.classList.add('hidden');
+        });
+        userDropdownMenu.addEventListener('click', function(e) {
+          e.stopPropagation();
+        });
+      }
+
+      // Setup dropdowns for the sidebar
+      if (typeof setupDropdowns === 'function') setupDropdowns();
+      if (typeof initializeUI === 'function') initializeUI();
+      if (typeof updateActiveMenuItems === 'function') updateActiveMenuItems();
     });
   </script>
 
-  <!-- User data storage for JS access -->
   <% if (user) { %>
   <div id="user-data"
        data-settings="<%= user.settings ? JSON.stringify(user.settings) : '{}' %>"
        style="display: none;"></div>
   <% } %>
-
-  <!-- Theme handler script -->
   <script src="/js/theme-handler.js"></script>
 </body>
 </html>

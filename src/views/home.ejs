@@ -1,84 +1,79 @@
-<div class="modern-home">
+<div class="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-700 dark:from-gray-900 dark:to-gray-800 text-white">
   <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-background">
-      <div class="floating-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
-        <div class="shape shape-4"></div>
-      </div>
+  <section class="relative flex items-center min-h-screen overflow-hidden">
+    <!-- Floating shapes background -->
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <div class="absolute bg-white/10 rounded-full w-20 h-20 top-1/5 left-1/12 animate-[float_6s_ease-in-out_infinite]"></div>
+      <div class="absolute bg-white/10 rounded-full w-32 h-32 top-3/5 right-1/6 animate-[float_6s_ease-in-out_infinite] delay-200"></div>
+      <div class="absolute bg-white/10 rounded-full w-16 h-16 bottom-1/3 left-1/5 animate-[float_6s_ease-in-out_infinite] delay-400"></div>
+      <div class="absolute bg-white/10 rounded-full w-24 h-24 top-1/10 right-1/4 animate-[float_6s_ease-in-out_infinite] delay-100"></div>
     </div>
-
-    <div class="hero-content">
-      <div class="hero-text">
-        <h1 class="hero-title">
-          <span class="title-main">IT Asset Manager</span>
-          <span class="title-sub">Complete Asset Lifecycle Management</span>
+    <div class="relative z-10 max-w-7xl mx-auto w-full px-4 py-16 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <!-- Hero Text -->
+      <div class="space-y-8 animate-fade-in-left">
+        <h1 class="mb-6">
+          <span class="block text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">IT Asset Manager</span>
+          <span class="block text-2xl font-light opacity-90 mt-2">Complete Asset Lifecycle Management</span>
         </h1>
-        <p class="hero-description">
+        <p class="text-lg md:text-xl opacity-90 mb-6">
           Streamline your IT operations with our comprehensive asset management platform.
           Track, monitor, and optimize your technology investments with intelligent insights and automation.
         </p>
-        <div class="hero-stats">
-          <div class="stat-item">
-            <span class="stat-number">10K+</span>
-            <span class="stat-label">Assets Tracked</span>
+        <div class="flex gap-8 mb-8">
+          <div class="text-center">
+            <span class="block text-3xl font-bold text-white">10K+</span>
+            <span class="block text-base opacity-80">Assets Tracked</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-number">500+</span>
-            <span class="stat-label">Organizations</span>
+          <div class="text-center">
+            <span class="block text-3xl font-bold text-white">500+</span>
+            <span class="block text-base opacity-80">Organizations</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-number">99.9%</span>
-            <span class="stat-label">Uptime</span>
+          <div class="text-center">
+            <span class="block text-3xl font-bold text-white">99.9%</span>
+            <span class="block text-base opacity-80">Uptime</span>
           </div>
         </div>
-        <div class="hero-actions">
-          <a href="/auth/login" class="btn-hero btn-primary">
-            <i class="fas fa-sign-in-alt"></i>
-            Get Started
+        <div class="flex flex-wrap gap-4">
+          <a href="/auth/login" class="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold bg-white/20 hover:bg-white/30 border-2 border-white/30 backdrop-blur transition text-white">
+            <i class="fas fa-sign-in-alt"></i> Get Started
           </a>
-          <a href="#features" class="btn-hero btn-secondary">
-            <i class="fas fa-play-circle"></i>
-            Learn More
+          <a href="#features" class="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold border-2 border-white/50 bg-transparent hover:bg-white/10 transition text-white">
+            <i class="fas fa-play-circle"></i> Learn More
           </a>
         </div>
       </div>
-
-      <div class="hero-visual">
-        <div class="dashboard-preview">
-          <div class="preview-header">
-            <div class="preview-dots">
-              <span class="dot"></span>
-              <span class="dot"></span>
-              <span class="dot"></span>
+      <!-- Hero Visual -->
+      <div class="flex justify-center animate-fade-in-right">
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl w-full max-w-md">
+          <div class="flex items-center justify-between mb-4 pb-2 border-b border-white/20">
+            <div class="flex gap-2">
+              <span class="w-3 h-3 rounded-full bg-white/50"></span>
+              <span class="w-3 h-3 rounded-full bg-white/50"></span>
+              <span class="w-3 h-3 rounded-full bg-white/50"></span>
             </div>
-            <div class="preview-title">AssetTrack Dashboard</div>
+            <div class="font-semibold opacity-90">AssetTrack Dashboard</div>
           </div>
-          <div class="preview-content">
-            <div class="preview-chart">
-              <div class="chart-bars">
-                <div class="bar" style="height: 60%"></div>
-                <div class="bar" style="height: 80%"></div>
-                <div class="bar" style="height: 45%"></div>
-                <div class="bar" style="height: 90%"></div>
-                <div class="bar" style="height: 65%"></div>
-              </div>
+          <div class="flex flex-col gap-6">
+            <div class="flex items-end gap-2 h-24">
+              <div class="flex-1 bg-gradient-to-t from-white/60 to-white/30 rounded-t h-3/5"></div>
+              <div class="flex-1 bg-gradient-to-t from-white/60 to-white/30 rounded-t h-4/5"></div>
+              <div class="flex-1 bg-gradient-to-t from-white/60 to-white/30 rounded-t h-2/5"></div>
+              <div class="flex-1 bg-gradient-to-t from-white/60 to-white/30 rounded-t h-full"></div>
+              <div class="flex-1 bg-gradient-to-t from-white/60 to-white/30 rounded-t h-3/4"></div>
             </div>
-            <div class="preview-cards">
-              <div class="mini-card">
-                <div class="card-icon"><i class="fas fa-laptop"></i></div>
-                <div class="card-data">
-                  <span class="card-number">1,247</span>
-                  <span class="card-label">Active Assets</span>
+            <div class="flex gap-4">
+              <div class="flex-1 bg-white/10 rounded-xl p-3 flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-lg"><i class="fas fa-laptop"></i></div>
+                <div>
+                  <span class="block font-bold text-lg">1,247</span>
+                  <span class="block text-xs opacity-80">Active Assets</span>
                 </div>
               </div>
-              <div class="mini-card">
-                <div class="card-icon"><i class="fas fa-users"></i></div>
-                <div class="card-data">
-                  <span class="card-number">342</span>
-                  <span class="card-label">Employees</span>
+              <div class="flex-1 bg-white/10 rounded-xl p-3 flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-lg"><i class="fas fa-users"></i></div>
+                <div>
+                  <span class="block font-bold text-lg">342</span>
+                  <span class="block text-xs opacity-80">Employees</span>
                 </div>
               </div>
             </div>
@@ -89,89 +84,83 @@
   </section>
 
   <!-- Features Section -->
-  <section id="features" class="features-section">
-    <div class="container">
-      <div class="section-header">
-        <h2>Powerful Features for Modern IT Management</h2>
-        <p>Everything you need to manage your IT assets efficiently and effectively</p>
+  <section id="features" class="py-20 bg-white dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-4">Powerful Features for Modern IT Management</h2>
+        <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Everything you need to manage your IT assets efficiently and effectively</p>
       </div>
-
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow hover:shadow-xl border border-gray-100 dark:border-gray-800 transition">
+          <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-400 rounded-xl flex items-center justify-center text-2xl text-white mb-4">
             <i class="fas fa-inventory"></i>
           </div>
-          <h3>Asset Tracking</h3>
-          <p>Complete visibility into your IT inventory with real-time tracking, automated discovery, and detailed asset profiles.</p>
-          <ul class="feature-list">
-            <li><i class="fas fa-check"></i> Real-time asset monitoring</li>
-            <li><i class="fas fa-check"></i> Automated asset discovery</li>
-            <li><i class="fas fa-check"></i> Barcode & QR code support</li>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">Asset Tracking</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">Complete visibility into your IT inventory with real-time tracking, automated discovery, and detailed asset profiles.</p>
+          <ul class="space-y-2 text-gray-700 dark:text-gray-200 text-sm">
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Real-time asset monitoring</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Automated asset discovery</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Barcode & QR code support</li>
           </ul>
         </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow hover:shadow-xl border border-gray-100 dark:border-gray-800 transition">
+          <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-400 rounded-xl flex items-center justify-center text-2xl text-white mb-4">
             <i class="fas fa-user-friends"></i>
           </div>
-          <h3>Employee Management</h3>
-          <p>Seamlessly assign and track assets across your organization with automated workflows and approval processes.</p>
-          <ul class="feature-list">
-            <li><i class="fas fa-check"></i> Automated assignment workflows</li>
-            <li><i class="fas fa-check"></i> Employee self-service portal</li>
-            <li><i class="fas fa-check"></i> Department-based organization</li>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">Employee Management</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">Seamlessly assign and track assets across your organization with automated workflows and approval processes.</p>
+          <ul class="space-y-2 text-gray-700 dark:text-gray-200 text-sm">
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Automated assignment workflows</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Employee self-service portal</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Department-based organization</li>
           </ul>
         </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow hover:shadow-xl border border-gray-100 dark:border-gray-800 transition">
+          <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-400 rounded-xl flex items-center justify-center text-2xl text-white mb-4">
             <i class="fas fa-chart-line"></i>
           </div>
-          <h3>Analytics & Reports</h3>
-          <p>Make data-driven decisions with comprehensive analytics, custom reports, and predictive insights.</p>
-          <ul class="feature-list">
-            <li><i class="fas fa-check"></i> Custom dashboard views</li>
-            <li><i class="fas fa-check"></i> Automated report generation</li>
-            <li><i class="fas fa-check"></i> Cost optimization insights</li>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">Analytics & Reports</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">Make data-driven decisions with comprehensive analytics, custom reports, and predictive insights.</p>
+          <ul class="space-y-2 text-gray-700 dark:text-gray-200 text-sm">
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Custom dashboard views</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Automated report generation</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Cost optimization insights</li>
           </ul>
         </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow hover:shadow-xl border border-gray-100 dark:border-gray-800 transition">
+          <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-400 rounded-xl flex items-center justify-center text-2xl text-white mb-4">
             <i class="fas fa-shield-alt"></i>
           </div>
-          <h3>Security & Compliance</h3>
-          <p>Maintain security standards and compliance requirements with audit trails and access controls.</p>
-          <ul class="feature-list">
-            <li><i class="fas fa-check"></i> Complete audit trails</li>
-            <li><i class="fas fa-check"></i> Role-based access control</li>
-            <li><i class="fas fa-check"></i> Compliance reporting</li>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">Security & Compliance</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">Maintain security standards and compliance requirements with audit trails and access controls.</p>
+          <ul class="space-y-2 text-gray-700 dark:text-gray-200 text-sm">
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Complete audit trails</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Role-based access control</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Compliance reporting</li>
           </ul>
         </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow hover:shadow-xl border border-gray-100 dark:border-gray-800 transition">
+          <div class="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-400 rounded-xl flex items-center justify-center text-2xl text-white mb-4">
             <i class="fas fa-tools"></i>
           </div>
-          <h3>Maintenance Tracking</h3>
-          <p>Proactive maintenance scheduling and tracking to maximize asset lifespan and minimize downtime.</p>
-          <ul class="feature-list">
-            <li><i class="fas fa-check"></i> Scheduled maintenance alerts</li>
-            <li><i class="fas fa-check"></i> Maintenance history tracking</li>
-            <li><i class="fas fa-check"></i> Vendor management</li>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">Maintenance Tracking</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">Proactive maintenance scheduling and tracking to maximize asset lifespan and minimize downtime.</p>
+          <ul class="space-y-2 text-gray-700 dark:text-gray-200 text-sm">
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Scheduled maintenance alerts</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Maintenance history tracking</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Vendor management</li>
           </ul>
         </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow hover:shadow-xl border border-gray-100 dark:border-gray-800 transition">
+          <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-400 rounded-xl flex items-center justify-center text-2xl text-white mb-4">
             <i class="fas fa-mobile-alt"></i>
           </div>
-          <h3>Mobile Ready</h3>
-          <p>Access your asset data anywhere with our responsive design and mobile-optimized interface.</p>
-          <ul class="feature-list">
-            <li><i class="fas fa-check"></i> Responsive web design</li>
-            <li><i class="fas fa-check"></i> Mobile barcode scanning</li>
-            <li><i class="fas fa-check"></i> Offline capability</li>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">Mobile Ready</h3>
+          <p class="text-gray-600 dark:text-gray-300 mb-4">Access your asset data anywhere with our responsive design and mobile-optimized interface.</p>
+          <ul class="space-y-2 text-gray-700 dark:text-gray-200 text-sm">
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Responsive web design</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Mobile barcode scanning</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Offline capability</li>
           </ul>
         </div>
       </div>
@@ -179,19 +168,17 @@
   </section>
 
   <!-- CTA Section -->
-  <section class="cta-section">
-    <div class="container">
-      <div class="cta-content">
-        <h2>Ready to Transform Your IT Asset Management?</h2>
-        <p>Join thousands of organizations already using AssetTrack to optimize their IT operations</p>
-        <div class="cta-actions">
-          <a href="/auth/login" class="btn-cta btn-primary">
-            <i class="fas fa-rocket"></i>
-            Start Managing Assets
+  <section class="py-20 bg-gradient-to-br from-indigo-500 to-purple-700 dark:from-gray-900 dark:to-gray-800 text-white">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your IT Asset Management?</h2>
+        <p class="text-lg mb-8 opacity-90">Join thousands of organizations already using AssetTrack to optimize their IT operations</p>
+        <div class="flex flex-wrap gap-6 justify-center">
+          <a href="/auth/login" class="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold bg-white text-indigo-600 hover:shadow-lg transition text-lg">
+            <i class="fas fa-rocket"></i> Start Managing Assets
           </a>
-          <a href="/auth/register" class="btn-cta btn-outline">
-            <i class="fas fa-user-plus"></i>
-            Create Account
+          <a href="/auth/register" class="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold border-2 border-white text-white hover:bg-white hover:text-indigo-600 transition text-lg">
+            <i class="fas fa-user-plus"></i> Create Account
           </a>
         </div>
       </div>
@@ -199,544 +186,30 @@
   </section>
 </div>
 
+<!-- Tailwind custom animations -->
 <style>
-/* Modern Homepage Styles */
-.modern-home {
-  min-height: 100vh;
-  overflow-x: hidden;
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg);}
+  50% { transform: translateY(-20px) rotate(180deg);}
 }
-
-/* Hero Section */
-.hero-section {
-  min-height: 100vh;
-  position: relative;
-  display: flex;
-  align-items: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  overflow: hidden;
-}
-
-.hero-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-}
-
-.floating-shapes {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-
-.shape {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
+.animate-\[float_6s_ease-in-out_infinite\] {
   animation: float 6s ease-in-out infinite;
 }
-
-.shape-1 {
-  width: 80px;
-  height: 80px;
-  top: 20%;
-  left: 10%;
-  animation-delay: 0s;
-}
-
-.shape-2 {
-  width: 120px;
-  height: 120px;
-  top: 60%;
-  right: 15%;
-  animation-delay: 2s;
-}
-
-.shape-3 {
-  width: 60px;
-  height: 60px;
-  bottom: 30%;
-  left: 20%;
-  animation-delay: 4s;
-}
-
-.shape-4 {
-  width: 100px;
-  height: 100px;
-  top: 10%;
-  right: 30%;
-  animation-delay: 1s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-}
-
-.hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
-}
-
-.hero-text {
-  animation: slideInLeft 1s ease-out;
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.hero-title {
-  margin-bottom: 1.5rem;
-}
-
-.title-main {
-  display: block;
-  font-size: 3.5rem;
-  font-weight: 800;
-  line-height: 1.1;
-  background: linear-gradient(45deg, #fff, #f0f8ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.title-sub {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 400;
-  opacity: 0.9;
-  margin-top: 0.5rem;
-}
-
-.hero-description {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  opacity: 0.9;
-}
-
-.hero-stats {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 2.5rem;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-number {
-  display: block;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-.stat-label {
-  display: block;
-  font-size: 0.9rem;
-  opacity: 0.8;
-  margin-top: 0.25rem;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.btn-hero {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.btn-hero.btn-primary {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  backdrop-filter: blur(10px);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.btn-hero.btn-primary:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.btn-hero.btn-secondary {
-  background: transparent;
-  color: white;
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.btn-hero.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.hero-visual {
-  animation: slideInRight 1s ease-out;
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.dashboard-preview {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-.preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.preview-dots {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.preview-title {
-  font-weight: 600;
-  opacity: 0.9;
-}
-
-.preview-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.chart-bars {
-  display: flex;
-  align-items: end;
-  gap: 0.5rem;
-  height: 100px;
-}
-
-.bar {
-  flex: 1;
-  background: linear-gradient(45deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3));
-  border-radius: 4px 4px 0 0;
-  animation: growBar 1.5s ease-out;
-  animation-delay: calc(var(--i) * 0.1s);
-}
-
-@keyframes growBar {
-  from { height: 0; }
-  to { height: 100%; }
-}
-
-.preview-cards {
-  display: flex;
-  gap: 1rem;
-}
-
-.mini-card {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.card-icon {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-}
-
-.card-data {
-  display: flex;
-  flex-direction: column;
-}
-
-.card-number {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.card-label {
-  font-size: 0.8rem;
-  opacity: 0.8;
-}
-
-/* Features Section */
-.features-section {
-  padding: 5rem 0;
-  background: white;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.section-header {
-  text-align: center;
-  margin-bottom: 4rem;
-}
-
-.section-header h2 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.section-header p {
-  font-size: 1.2rem;
-  color: #666;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
-}
-
-.feature-card {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border: 1px solid #f0f0f0;
-  animation: fadeInUp 0.6s ease-out;
-  animation-fill-mode: both;
-}
-
-.feature-card:nth-child(1) { animation-delay: 0.1s; }
-.feature-card:nth-child(2) { animation-delay: 0.2s; }
-.feature-card:nth-child(3) { animation-delay: 0.3s; }
-.feature-card:nth-child(4) { animation-delay: 0.4s; }
-.feature-card:nth-child(5) { animation-delay: 0.5s; }
-.feature-card:nth-child(6) { animation-delay: 0.6s; }
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.feature-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-}
-
-.feature-icon {
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: white;
-  margin-bottom: 1.5rem;
-}
-
-.feature-card h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.feature-card p {
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-}
-
-.feature-list {
-  list-style: none;
-  padding: 0;
-}
-
-.feature-list li {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  color: #555;
-}
-
-.feature-list i {
-  color: var(--success);
-  font-size: 0.9rem;
-}
-
-/* CTA Section */
-.cta-section {
-  padding: 5rem 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.cta-content {
-  text-align: center;
-}
-
-.cta-content h2 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
-
-.cta-content p {
-  font-size: 1.2rem;
-  margin-bottom: 2.5rem;
-  opacity: 0.9;
-}
-
-.cta-actions {
-  display: flex;
-  gap: 1.5rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.btn-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1.25rem 2.5rem;
-  border-radius: 50px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-  font-size: 1.1rem;
-}
-
-.btn-cta.btn-primary {
-  background: white;
-  color: var(--primary);
-}
-
-.btn-cta.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.btn-cta.btn-outline {
-  background: transparent;
-  color: white;
-  border-color: white;
-}
-
-.btn-cta.btn-outline:hover {
-  background: white;
-  color: var(--primary);
-  transform: translateY(-3px);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .hero-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    text-align: center;
-  }
-
-  .title-main {
-    font-size: 2.5rem;
-  }
-
-  .hero-stats {
-    justify-content: center;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .cta-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .title-main {
-    font-size: 2rem;
-  }
-
-  .hero-description {
-    font-size: 1rem;
-  }
-
-  .section-header h2 {
-    font-size: 2rem;
-  }
-
-  .cta-content h2 {
-    font-size: 2rem;
-  }
+.delay-100 { animation-delay: 1s; }
+.delay-200 { animation-delay: 2s; }
+.delay-400 { animation-delay: 4s; }
+.animate-fade-in-left {
+  animation: fadeInLeft 1s ease-out;
+}
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-50px);}
+  to { opacity: 1; transform: translateX(0);}
+}
+.animate-fade-in-right {
+  animation: fadeInRight 1s ease-out;
+}
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(50px);}
+  to { opacity: 1; transform: translateX(0);}
 }
 </style>

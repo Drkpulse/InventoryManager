@@ -1,11 +1,14 @@
-<h1>System Logs</h1>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8 flex items-center gap-2">
+    <i class="fas fa-clipboard-list"></i> System Logs
+  </h1>
 
-<div class="logs-container">
-  <div class="log-filters">
-    <form class="filter-form">
-      <div class="filter-group">
-        <label for="logLevel">Log Level:</label>
-        <select id="logLevel" name="level">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+    <form class="flex flex-col md:flex-row md:items-end gap-4" method="GET">
+      <div>
+        <label for="logLevel" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Log Level</label>
+        <select id="logLevel" name="level"
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
           <option value="">All Levels</option>
           <option value="error">Error</option>
           <option value="warn">Warning</option>
@@ -13,49 +16,75 @@
           <option value="debug">Debug</option>
         </select>
       </div>
-
-      <div class="filter-group">
-        <label for="startDate">From:</label>
-        <input type="datetime-local" id="startDate" name="startDate">
+      <div>
+        <label for="startDate" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">From</label>
+        <input type="datetime-local" id="startDate" name="startDate"
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
       </div>
-
-      <div class="filter-group">
-        <label for="endDate">To:</label>
-        <input type="datetime-local" id="endDate" name="endDate">
+      <div>
+        <label for="endDate" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">To</label>
+        <input type="datetime-local" id="endDate" name="endDate"
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
       </div>
-
-      <button type="submit" class="btn">Filter</button>
+      <div>
+        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-filter"></i> Filter
+        </button>
+      </div>
     </form>
   </div>
 
-  <div class="logs-content">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
     <% if (typeof logs !== 'undefined' && logs && logs.length > 0) { %>
-      <table class="logs-table">
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Level</th>
-            <th>Message</th>
-            <th>User</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% logs.forEach(log => { %>
-            <tr class="log-<%= log.level || 'info' %>">
-              <td><%= new Date(log.timestamp).toLocaleString() %></td>
-              <td>
-                <span class="log-level <%= log.level || 'info' %>">
-                  <%= (log.level || 'info').toUpperCase() %>
-                </span>
-              </td>
-              <td><%= log.message || 'No message' %></td>
-              <td><%= log.user_name || 'System' %></td>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Timestamp</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Level</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Message</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">User</th>
             </tr>
-          <% }) %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <% logs.forEach(log => { %>
+              <tr class="<%= log.level === 'error' ? 'bg-red-50 dark:bg-red-900' : log.level === 'warn' ? 'bg-yellow-50 dark:bg-yellow-900' : '' %>">
+                <td class="px-4 py-3 text-gray-700 dark:text-gray-200 font-mono"><%= new Date(log.timestamp).toLocaleString() %></td>
+                <td class="px-4 py-3">
+                  <span class="
+                    inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold
+                    <%= log.level === 'error' ? 'bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200' : '' %>
+                    <%= log.level === 'warn' ? 'bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200' : '' %>
+                    <%= log.level === 'info' ? 'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200' : '' %>
+                    <%= log.level === 'debug' ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200' : '' %>
+                  ">
+                    <% if (log.level === 'error') { %>
+                      <i class="fas fa-exclamation-circle"></i>
+                    <% } else if (log.level === 'warn') { %>
+                      <i class="fas fa-exclamation-triangle"></i>
+                    <% } else if (log.level === 'info') { %>
+                      <i class="fas fa-info-circle"></i>
+                    <% } else if (log.level === 'debug') { %>
+                      <i class="fas fa-bug"></i>
+                    <% } %>
+                    <%= (log.level || 'info').toUpperCase() %>
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-gray-800 dark:text-gray-100"><%= log.message || 'No message' %></td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300"><%= log.user_name || 'System' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
     <% } else { %>
-      <p class="no-logs">No logs found for the selected criteria.</p>
+      <div class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+        <div class="text-4xl text-blue-500 mb-2">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No logs found</h3>
+        <p class="text-gray-500 dark:text-gray-400">No logs found for the selected criteria.</p>
+      </div>
     <% } %>
   </div>
 </div>

@@ -1,88 +1,104 @@
-<div class="content-header">
-  <div class="header-title">
-    <h1><i class="fas fa-history"></i> PDA History</h1>
-    <p>History for: <strong><%= pda.serial_number %></strong></p>
-  </div>
-  <div class="header-actions">
-    <a href="/pdas/<%= pda.id %>" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> Back to PDA
-    </a>
-  </div>
-</div>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+  <div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+          <i class="fas fa-history"></i> PDA History
+        </h1>
+        <p class="text-gray-600 dark:text-gray-300 mt-1">
+          History for: <strong><%= pda.serial_number %></strong>
+        </p>
+      </div>
+      <a href="/pdas/<%= pda.id %>" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md font-semibold transition">
+        <i class="fas fa-arrow-left mr-2"></i> Back to PDA
+      </a>
+    </div>
 
-<div class="history-container">
-  <% if (history.length === 0) { %>
-    <div class="empty-state">
-      <i class="fas fa-history"></i>
-      <h3>No history found</h3>
-      <p>No actions have been recorded for this PDA yet.</p>
-    </div>
-  <% } else { %>
-    <div class="timeline">
-      <% history.forEach(entry => { %>
-        <div class="timeline-item">
-          <div class="timeline-marker <%= entry.action_type %>">
-            <% if (entry.action_type === 'created') { %>
-              <i class="fas fa-plus"></i>
-            <% } else if (entry.action_type === 'updated') { %>
-              <i class="fas fa-edit"></i>
-            <% } else if (entry.action_type === 'deleted') { %>
-              <i class="fas fa-trash"></i>
-            <% } else { %>
-              <i class="fas fa-info"></i>
-            <% } %>
-          </div>
-          <div class="timeline-content">
-            <div class="timeline-header">
-              <h4><%= entry.action_type.charAt(0).toUpperCase() + entry.action_type.slice(1) %></h4>
-              <span class="timeline-date">
-                <%= new Date(entry.created_at).toLocaleString() %>
-              </span>
-            </div>
-            <div class="timeline-body">
-              <% if (entry.performed_by_name) { %>
-                <p><strong>Performed by:</strong> <%= entry.performed_by_name %></p>
-              <% } %>
-              
-              <% if (entry.action_details) { %>
-                <div class="action-details">
-                  <% if (entry.action_type === 'created') { %>
-                    <p>PDA created with the following information:</p>
-                    <ul>
-                      <% if (entry.action_details.serial_number) { %>
-                        <li><strong>Serial Number:</strong> <%= entry.action_details.serial_number %></li>
-                      <% } %>
-                      <% if (entry.action_details.client_id) { %>
-                        <li><strong>Client ID:</strong> <%= entry.action_details.client_id %></li>
-                      <% } %>
-                      <% if (entry.action_details.has_sim_card !== undefined) { %>
-                        <li><strong>Has SIM Card:</strong> <%= entry.action_details.has_sim_card ? 'Yes' : 'No' %></li>
-                      <% } %>
-                    </ul>
-                  <% } else if (entry.action_type === 'updated' && entry.action_details.changes) { %>
-                    <p>The following changes were made:</p>
-                    <ul>
-                      <% Object.keys(entry.action_details.changes).forEach(field => { %>
-                        <% const change = entry.action_details.changes[field]; %>
-                        <li>
-                          <strong><%= field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>:</strong>
-                          <span class="text-muted">"<%= change.from || 'empty' %>"</span>
-                          →
-                          <span class="text-success">"<%= change.to || 'empty' %>"</span>
-                        </li>
-                      <% }); %>
-                    </ul>
-                  <% } else if (entry.action_type === 'deleted') { %>
-                    <p>PDA was deleted</p>
-                  <% } else { %>
-                    <pre class="action-data"><%= JSON.stringify(entry.action_details, null, 2) %></pre>
-                  <% } %>
-                </div>
-              <% } %>
-            </div>
-          </div>
+    <!-- History Timeline -->
+    <% if (history.length === 0) { %>
+      <div class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+        <div class="text-4xl text-blue-500 mb-2">
+          <i class="fas fa-history"></i>
         </div>
-      <% }); %>
-    </div>
-  <% } %>
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No history found</h3>
+        <p class="text-gray-500 dark:text-gray-400">No actions have been recorded for this PDA yet.</p>
+      </div>
+    <% } else { %>
+      <div class="relative pl-6 before:absolute before:top-0 before:left-2 before:w-1 before:h-full before:bg-gray-200 dark:before:bg-gray-700 before:rounded">
+        <% history.forEach(entry => { %>
+          <div class="relative mb-10 group">
+            <div class="absolute -left-2 top-2 w-5 h-5 flex items-center justify-center rounded-full
+              <%= entry.action_type === 'created' ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300' :
+                  entry.action_type === 'updated' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300' :
+                  entry.action_type === 'deleted' ? 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300' :
+                  'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300' %>">
+              <% if (entry.action_type === 'created') { %>
+                <i class="fas fa-plus"></i>
+              <% } else if (entry.action_type === 'updated') { %>
+                <i class="fas fa-edit"></i>
+              <% } else if (entry.action_type === 'deleted') { %>
+                <i class="fas fa-trash"></i>
+              <% } else { %>
+                <i class="fas fa-info"></i>
+              <% } %>
+            </div>
+            <div class="ml-8">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-1">
+                <h4 class="font-semibold text-gray-800 dark:text-gray-100 text-base">
+                  <%= entry.action_type.charAt(0).toUpperCase() + entry.action_type.slice(1) %>
+                </h4>
+                <span class="text-xs text-gray-500 dark:text-gray-400">
+                  <i class="fas fa-calendar"></i>
+                  <%= new Date(entry.created_at).toLocaleString() %>
+                </span>
+              </div>
+              <div class="pl-1">
+                <% if (entry.performed_by_name) { %>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    <strong>Performed by:</strong> <%= entry.performed_by_name %>
+                  </p>
+                <% } %>
+                <% if (entry.action_details) { %>
+                  <div>
+                    <% if (entry.action_type === 'created') { %>
+                      <p class="text-gray-700 dark:text-gray-200 mb-2">PDA created with the following information:</p>
+                      <ul class="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-200 text-sm">
+                        <% if (entry.action_details.serial_number) { %>
+                          <li><strong>Serial Number:</strong> <%= entry.action_details.serial_number %></li>
+                        <% } %>
+                        <% if (entry.action_details.client_id) { %>
+                          <li><strong>Client ID:</strong> <%= entry.action_details.client_id %></li>
+                        <% } %>
+                        <% if (entry.action_details.has_sim_card !== undefined) { %>
+                          <li><strong>Has SIM Card:</strong> <%= entry.action_details.has_sim_card ? 'Yes' : 'No' %></li>
+                        <% } %>
+                      </ul>
+                    <% } else if (entry.action_type === 'updated' && entry.action_details.changes) { %>
+                      <p class="text-gray-700 dark:text-gray-200 mb-2">The following changes were made:</p>
+                      <ul class="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-200 text-sm">
+                        <% Object.keys(entry.action_details.changes).forEach(field => { %>
+                          <% const change = entry.action_details.changes[field]; %>
+                          <li>
+                            <strong><%= field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>:</strong>
+                            <span class="text-red-600 dark:text-red-300 line-through ml-1">"<%= change.from || 'empty' %>"</span>
+                            <i class="fas fa-arrow-right mx-1 text-gray-400"></i>
+                            <span class="text-green-700 dark:text-green-300">"<%= change.to || 'empty' %>"</span>
+                          </li>
+                        <% }); %>
+                      </ul>
+                    <% } else if (entry.action_type === 'deleted') { %>
+                      <p class="text-gray-700 dark:text-gray-200 mb-2">PDA was deleted</p>
+                    <% } else { %>
+                      <pre class="bg-gray-100 dark:bg-gray-900 rounded p-3 text-xs text-gray-700 dark:text-gray-200 overflow-x-auto"><%= JSON.stringify(entry.action_details, null, 2) %></pre>
+                    <% } %>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
 </div>

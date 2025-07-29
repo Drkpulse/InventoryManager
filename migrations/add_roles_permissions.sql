@@ -1,4 +1,4 @@
--- Migration: Add roles and permissions system
+-- Migration: Add roles and permissions system with Developer role
 -- File: migrations/add_roles_permissions.sql
 
 -- Create permissions table
@@ -44,12 +44,14 @@ CREATE TABLE IF NOT EXISTS user_roles (
 
 -- Add indexes for performance
 CREATE INDEX IF NOT EXISTS idx_permissions_module ON permissions(module);
+CREATE INDEX IF NOT EXISTS idx_permissions_name ON permissions(name);
 CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(role_id);
 CREATE INDEX IF NOT EXISTS idx_role_permissions_permission ON role_permissions(permission_id);
 CREATE INDEX IF NOT EXISTS idx_user_roles_user ON user_roles(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_roles_role ON user_roles(role_id);
+CREATE INDEX IF NOT EXISTS idx_roles_name ON roles(name);
 
--- Insert default permissions
+-- Insert default permissions (including developer-specific ones)
 INSERT INTO permissions (name, display_name, description, module) VALUES
 -- User Management
 ('users.view', 'View Users', 'Can view user list and details', 'users'),
@@ -92,6 +94,15 @@ INSERT INTO permissions (name, display_name, description, module) VALUES
 ('admin.settings', 'System Settings', 'Can modify system settings', 'admin'),
 ('admin.logs', 'View Activity Logs', 'Can view system activity logs', 'admin'),
 ('admin.notifications', 'Manage Notifications', 'Can manage system notifications', 'admin'),
+('admin.database', 'Database Access', 'Can access database administration tools', 'admin'),
+('admin.debug', 'Debug Mode', 'Can enable debug mode and view system internals', 'admin'),
+
+-- Developer-specific permissions
+('dev.console', 'Developer Console', 'Can access developer console and tools', 'developer'),
+('dev.api', 'API Management', 'Can manage API endpoints and documentation', 'developer'),
+('dev.migrations', 'Database Migrations', 'Can run database migrations and schema changes', 'developer'),
+('dev.logs', 'System Logs', 'Can view detailed system and error logs', 'developer'),
+('dev.performance', 'Performance Monitoring', 'Can access performance monitoring tools', 'developer'),
 
 -- Clients and Equipment
 ('clients.view', 'View Clients', 'Can view client information', 'clients'),
@@ -112,22 +123,35 @@ INSERT INTO permissions (name, display_name, description, module) VALUES
 ('sim_cards.view', 'View SIM Cards', 'Can view SIM card information', 'sim_cards'),
 ('sim_cards.create', 'Create SIM Cards', 'Can add new SIM cards', 'sim_cards'),
 ('sim_cards.edit', 'Edit SIM Cards', 'Can edit SIM card information', 'sim_cards'),
-('sim_cards.delete', 'Delete SIM Cards', 'Can delete SIM cards', 'sim_cards');
+('sim_cards.delete', 'Delete SIM Cards', 'Can delete SIM cards', 'sim_cards')
+ON CONFLICT (name) DO NOTHING;
 
--- Insert default roles
+-- Insert default roles (including Developer)
 INSERT INTO roles (name, display_name, description, is_system_role) VALUES
+('developer', 'Developer', 'Full system access with development tools and debugging capabilities', true),
 ('super_admin', 'Super Administrator', 'Full system access with all permissions', true),
 ('admin', 'Administrator', 'Administrative access with most permissions', true),
 ('manager', 'Manager', 'Management level access', false),
 ('user', 'Regular User', 'Basic user access', true),
-('viewer', 'Viewer', 'Read-only access', false);
+('viewer', 'Viewer', 'Read-only access', false)
+ON CONFLICT (name) DO NOTHING;
+
+-- Assign all permissions to developer role
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT
+  (SELECT id FROM roles WHERE name = 'developer'),
+  id
+FROM permissions
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 -- Assign all permissions to super_admin role
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT
   (SELECT id FROM roles WHERE name = 'super_admin'),
   id
-FROM permissions;
+FROM permissions
+WHERE name NOT LIKE 'dev.%' -- Exclude developer-specific permissions
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 -- Assign most permissions to admin role (excluding some sensitive ones)
 INSERT INTO role_permissions (role_id, permission_id)
@@ -135,7 +159,9 @@ SELECT
   (SELECT id FROM roles WHERE name = 'admin'),
   id
 FROM permissions
-WHERE name NOT IN ('roles.delete', 'admin.settings');
+WHERE name NOT IN ('roles.delete', 'admin.database', 'admin.debug')
+  AND name NOT LIKE 'dev.%'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 -- Assign management permissions to manager role
 INSERT INTO role_permissions (role_id, permission_id)
@@ -144,7 +170,9 @@ SELECT
   id
 FROM permissions
 WHERE module IN ('items', 'employees', 'software', 'clients', 'printers', 'pdas', 'sim_cards', 'reports')
-AND name NOT LIKE '%.delete';
+AND name NOT LIKE '%.delete'
+AND name NOT LIKE 'dev.%'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 -- Assign basic permissions to user role
 INSERT INTO role_permissions (role_id, permission_id)
@@ -155,7 +183,8 @@ FROM permissions
 WHERE name IN (
   'items.view', 'employees.view', 'software.view',
   'clients.view', 'printers.view', 'pdas.view', 'sim_cards.view'
-);
+)
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 -- Assign view-only permissions to viewer role
 INSERT INTO role_permissions (role_id, permission_id)
@@ -163,10 +192,12 @@ SELECT
   (SELECT id FROM roles WHERE name = 'viewer'),
   id
 FROM permissions
-WHERE name LIKE '%.view';
+WHERE name LIKE '%.view'
+AND name NOT LIKE 'dev.%'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 -- Update existing users to have roles based on their current role column
--- First, assign super_admin role to users with 'admin' role
+-- Assign developer role to users with email containing 'dev' or 'developer'
 INSERT INTO user_roles (user_id, role_id, assigned_by)
 SELECT
   u.id,
@@ -174,7 +205,26 @@ SELECT
   1 -- Assigned by first admin user
 FROM users u
 CROSS JOIN roles r
-WHERE u.role = 'admin' AND r.name = 'super_admin';
+WHERE (LOWER(u.email) LIKE '%dev%' OR LOWER(u.email) LIKE '%developer%')
+  AND r.name = 'developer'
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+-- Assign super_admin role to users with 'admin' role who aren't developers
+INSERT INTO user_roles (user_id, role_id, assigned_by)
+SELECT
+  u.id,
+  r.id,
+  1 -- Assigned by first admin user
+FROM users u
+CROSS JOIN roles r
+WHERE u.role = 'admin'
+  AND r.name = 'super_admin'
+  AND NOT EXISTS (
+    SELECT 1 FROM user_roles ur2
+    JOIN roles r2 ON ur2.role_id = r2.id
+    WHERE ur2.user_id = u.id AND r2.name = 'developer'
+  )
+ON CONFLICT (user_id, role_id) DO NOTHING;
 
 -- Assign user role to users with 'user' role
 INSERT INTO user_roles (user_id, role_id, assigned_by)
@@ -184,7 +234,8 @@ SELECT
   1 -- Assigned by first admin user
 FROM users u
 CROSS JOIN roles r
-WHERE u.role = 'user' AND r.name = 'user';
+WHERE u.role = 'user' AND r.name = 'user'
+ON CONFLICT (user_id, role_id) DO NOTHING;
 
 -- Create function to check if user has permission
 CREATE OR REPLACE FUNCTION user_has_permission(user_id_param INTEGER, permission_name_param VARCHAR)
@@ -215,7 +266,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
 -- Create function to get user roles
 CREATE OR REPLACE FUNCTION get_user_roles(user_id_param INTEGER)
 RETURNS TABLE(role_id INTEGER, role_name VARCHAR, display_name VARCHAR, description TEXT) AS $$
@@ -229,6 +279,20 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Create function to check if user has role
+CREATE OR REPLACE FUNCTION user_has_role(user_id_param INTEGER, role_name_param VARCHAR)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    JOIN roles r ON ur.role_id = r.id
+    WHERE ur.user_id = user_id_param
+    AND r.name = role_name_param
+  );
+END;
+$$ LANGUAGE plpgsql;
+
 -- Add triggers for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -238,8 +302,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_roles_updated_at ON roles;
 CREATE TRIGGER update_roles_updated_at BEFORE UPDATE ON roles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_permissions_updated_at ON permissions;
 CREATE TRIGGER update_permissions_updated_at BEFORE UPDATE ON permissions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Create view for user permissions summary
+CREATE OR REPLACE VIEW user_permissions_summary AS
+SELECT
+    u.id as user_id,
+    u.name as user_name,
+    u.email,
+    array_agg(DISTINCT r.display_name ORDER BY r.display_name) as roles,
+    array_agg(DISTINCT p.name ORDER BY p.name) as permissions,
+    COUNT(DISTINCT r.id) as role_count,
+    COUNT(DISTINCT p.id) as permission_count
+FROM users u
+LEFT JOIN user_roles ur ON u.id = ur.user_id
+LEFT JOIN roles r ON ur.role_id = r.id
+LEFT JOIN role_permissions rp ON r.id = rp.role_id
+LEFT JOIN permissions p ON rp.permission_id = p.id
+GROUP BY u.id, u.name, u.email;

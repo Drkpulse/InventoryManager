@@ -15,27 +15,44 @@
       <i class="fas fa-tachometer-alt"></i>
       <span>Dashboard</span>
     </a>
+
+    <% if (can('items.view')) { %>
     <a href="/items" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-laptop"></i>
       <span>Assets</span>
     </a>
+    <% } %>
+
+    <% if (can('employees.view')) { %>
     <a href="/employees" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-users"></i>
       <span>Employees</span>
     </a>
+    <% } %>
+
+    <% if (can('software.view')) { %>
     <a href="/software" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-laptop-code"></i>
       <span>Software</span>
     </a>
+    <% } %>
+
+    <% if (can('clients.view')) { %>
     <a href="/clients" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-building"></i>
       <span>Clients</span>
     </a>
+    <% } %>
+
+    <% if (can('printers.view')) { %>
     <a href="/printers" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-print"></i>
       <span>Printers</span>
     </a>
-    <!-- Dropdown Example -->
+    <% } %>
+
+    <!-- Mobile Devices Dropdown -->
+    <% if (canAny(['pdas.view', 'sim_cards.view'])) { %>
     <div class="relative group">
       <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium dropdown-trigger">
         <i class="fas fa-mobile-alt"></i>
@@ -43,17 +60,24 @@
         <i class="fas fa-chevron-down ml-auto text-xs"></i>
       </a>
       <div class="hidden group-hover:block ml-4 mt-1">
+        <% if (can('pdas.view')) { %>
         <a href="/pdas" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
           <i class="fas fa-mobile-alt"></i>
           <span>PDAs</span>
         </a>
+        <% } %>
+        <% if (can('sim_cards.view')) { %>
         <a href="/simcards" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
           <i class="fas fa-sim-card"></i>
           <span>SIM Cards</span>
         </a>
+        <% } %>
       </div>
     </div>
+    <% } %>
 
+    <!-- Reports Section -->
+    <% if (can('reports.view')) { %>
     <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2 mt-4">Reports</div>
     <a href="/reports/assets" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-chart-bar"></i>
@@ -67,27 +91,68 @@
       <i class="fas fa-user-tag"></i>
       <span>Assets by Employee</span>
     </a>
+    <% } %>
 
-    <% if (user && user.role === 'admin') { %>
-    <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2 mt-4">Administration</div>
+    <!-- Administration Section -->
+    <% if (isAdmin()) { %>
+    <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2 mt-4">
+      Administration
+      <% if (hasRole('developer')) { %>
+        <i class="fas fa-code text-purple-400 ml-1" title="Developer Access"></i>
+      <% } %>
+    </div>
+
+    <% if (can('users.view')) { %>
     <a href="/admin/users" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
-      <i class="fas fa-user-shield"></i>
+      <i class="fas fa-users-cog"></i>
       <span>User Management</span>
+      <% if (can('users.create')) { %>
+        <i class="fas fa-plus text-green-400 text-xs ml-auto" title="Can create users"></i>
+      <% } %>
     </a>
+    <% } %>
+
+    <% if (can('roles.view')) { %>
+    <a href="/admin/roles" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-user-shield"></i>
+      <span>Role Management</span>
+      <% if (can('roles.create')) { %>
+        <i class="fas fa-plus text-green-400 text-xs ml-auto" title="Can create roles"></i>
+      <% } %>
+    </a>
+    <% } %>
+
+    <% if (canAny(['roles.view', 'roles.edit'])) { %>
+    <a href="/admin/permissions" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-key"></i>
+      <span>Permissions</span>
+      <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded ml-auto">View</span>
+    </a>
+    <% } %>
+
+    <% if (can('admin.settings')) { %>
     <a href="/admin/settings" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-cogs"></i>
       <span>System Settings</span>
     </a>
+    <% } %>
+
+    <% if (can('admin.logs')) { %>
     <a href="/admin/logs" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-list-alt"></i>
       <span>Activity Logs</span>
     </a>
+    <% } %>
+
+    <% if (can('admin.notifications')) { %>
     <a href="/notifications/broadcast" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-bullhorn"></i>
       <span>Send Notification</span>
     </a>
     <% } %>
+    <% } %>
 
+    <!-- Reference Data Section -->
     <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2 mt-4">Reference Data</div>
     <a href="/references/asset-types" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-tags"></i>
@@ -111,7 +176,50 @@
     </a>
   </nav>
 
+  <!-- User Info with Roles -->
+  <% if (user) { %>
+  <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+        <%= user.name.charAt(0).toUpperCase() %>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-gray-900 dark:text-white truncate"><%= user.name %></p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 truncate"><%= user.email %></p>
+      </div>
+    </div>
+
+    <!-- User Roles Display -->
+    <% if (userRoles && userRoles.length > 0) { %>
+    <div class="flex flex-wrap gap-1 mb-2">
+      <% userRoles.forEach(role => { %>
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+          <%= role.toLowerCase().includes('developer') ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200' :
+              role.toLowerCase().includes('admin') || role.toLowerCase().includes('super') ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
+              role.toLowerCase().includes('manager') ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
+              'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' %>">
+          <i class="fas <%= role.toLowerCase().includes('developer') ? 'fa-code' :
+                           role.toLowerCase().includes('admin') ? 'fa-user-shield' :
+                           role.toLowerCase().includes('manager') ? 'fa-user-tie' : 'fa-user' %> mr-1"></i>
+          <%= role %>
+        </span>
+      <% }) %>
+    </div>
+    <% } %>
+
+    <div class="flex items-center gap-2">
+      <a href="/profile" class="text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+        <i class="fas fa-user-cog mr-1"></i>Profile
+      </a>
+      <span class="text-gray-300 dark:text-gray-600">•</span>
+      <a href="/auth/logout" class="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition">
+        <i class="fas fa-sign-out-alt mr-1"></i>Logout
+      </a>
+    </div>
+  </div>
+  <% } %>
+
   <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500 text-center">
-    v1.0.0
+    v2.0.0 • Roles & Permissions
   </div>
 </aside>

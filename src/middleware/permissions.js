@@ -1,44 +1,161 @@
 // src/middleware/permissions.js
 const db = require('../config/db');
 
-// Check if user has specific permission
+/**
+ * Load user permissions and roles into session
+ */
+const loadUserPermissions = async (req, res, next) => {
+  try {
+    if (req.session && req.session.user && req.session.user.id) {
+      // Only load permissions if they're not already loaded or if it's been more than 5 minutes
+      const shouldReload = !req.session.user.permissions ||
+                          !req.session.user.permissionsLoadedAt ||
+                          (Date.now() - req.session.user.permissionsLoadedAt) > 5 * 60 * 1000;
+
+      if (shouldReload) {
+        try {
+          // Load user permissions
+          const permissionsResult = await db.query(
+            'SELECT * FROM get_user_permissions($1)',
+            [req.session.user.id]
+          );
+
+          // Load user roles
+          const rolesResult = await db.query(
+            'SELECT * FROM get_user_roles($1)',
+            [req.session.user.id]
+          );
+
+          // Update session with permissions and roles
+          req.session.user.permissions = permissionsResult.rows.map(row => row.permission_name);
+          req.session.user.roles = rolesResult.rows;
+          req.session.user.roleNames = rolesResult.rows.map(role => role.display_name);
+          req.session.user.permissionsLoadedAt = Date.now();
+
+          console.log(`Loaded ${req.session.user.permissions.length} permissions for user ${req.session.user.name}`);
+        } catch (error) {
+          console.error('Error loading user permissions:', error);
+          // Continue without failing - use legacy role system as fallback
+          req.session.user.permissions = [];
+          req.session.user.roles = [];
+          req.session.user.roleNames = [];
+        }
+      }
+    }
+    next();
+  } catch (error) {
+    console.error('Permission loading middleware error:', error);
+    next();
+  }
+};
+
+/**
+ * Add permission helper functions to templates
+ */
+const addPermissionHelpers = (req, res, next) => {
+  // Add permission checking function to response locals
+  res.locals.can = (permission) => {
+    if (!req.session || !req.session.user) return false;
+
+    // Check if user has specific permission
+    if (req.session.user.permissions && req.session.user.permissions.includes(permission)) {
+      return true;
+    }
+
+    // Fallback to legacy role system
+    if (req.session.user.role === 'admin') {
+      return true;
+    }
+
+    return false;
+  };
+
+  // Add role checking function
+  res.locals.hasRole = (roleName) => {
+    if (!req.session || !req.session.user) return false;
+
+    if (req.session.user.roles) {
+      return req.session.user.roles.some(role => role.role_name === roleName);
+    }
+
+    // Fallback to legacy role system
+    return req.session.user.role === roleName;
+  };
+
+  // Add multiple permission checking function
+  res.locals.canAny = (permissions) => {
+    if (!Array.isArray(permissions)) return false;
+    return permissions.some(permission => res.locals.can(permission));
+  };
+
+  // Add admin checking function
+  res.locals.isAdmin = () => {
+    if (!req.session || !req.session.user) return false;
+
+    const adminPermissions = [
+      'users.view', 'roles.view', 'admin.settings', 'admin.logs'
+    ];
+
+    return adminPermissions.some(permission => res.locals.can(permission));
+  };
+
+  // Add current user roles for display
+  res.locals.userRoles = req.session?.user?.roleNames || [];
+
+  next();
+};
+
+/**
+ * Middleware to check if user has specific permission
+ */
 const hasPermission = (permission) => {
   return async (req, res, next) => {
     try {
-      if (!req.session.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+      if (!req.session || !req.session.user) {
+        req.flash('error', 'Please log in to access this feature');
+        return res.redirect('/auth/login');
       }
 
+      // Check permission using database function
       const result = await db.query(
         'SELECT user_has_permission($1, $2) as has_permission',
         [req.session.user.id, permission]
       );
 
-      if (!result.rows[0].has_permission) {
-        if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
-          return res.status(403).json({ error: 'Insufficient permissions' });
-        }
-        req.flash('error', 'You do not have permission to access this resource');
-        return res.redirect('/dashboard');
+      if (result.rows[0].has_permission) {
+        return next();
       }
 
-      next();
+      // Log unauthorized access attempt
+      console.warn(`Unauthorized access attempt: User ${req.session.user.name} (ID: ${req.session.user.id}) tried to access ${permission}`);
+
+      req.flash('error', `You don't have permission to ${permission.replace('.', ' ').replace('_', ' ')}`);
+      return res.redirect('/dashboard');
+
     } catch (error) {
       console.error('Permission check error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      req.flash('error', 'Permission check failed');
+      return res.redirect('/dashboard');
     }
   };
 };
 
-// Check if user has any of the specified permissions
+/**
+ * Middleware to check if user has any of the specified permissions
+ */
 const hasAnyPermission = (permissions) => {
   return async (req, res, next) => {
     try {
-      if (!req.session.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+      if (!req.session || !req.session.user) {
+        req.flash('error', 'Please log in to access this feature');
+        return res.redirect('/auth/login');
       }
 
-      let hasAccess = false;
+      if (!Array.isArray(permissions)) {
+        permissions = [permissions];
+      }
+
+      // Check each permission
       for (const permission of permissions) {
         const result = await db.query(
           'SELECT user_has_permission($1, $2) as has_permission',
@@ -46,91 +163,110 @@ const hasAnyPermission = (permissions) => {
         );
 
         if (result.rows[0].has_permission) {
-          hasAccess = true;
-          break;
+          return next();
         }
       }
 
-      if (!hasAccess) {
-        if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
-          return res.status(403).json({ error: 'Insufficient permissions' });
-        }
-        req.flash('error', 'You do not have permission to access this resource');
-        return res.redirect('/dashboard');
-      }
+      console.warn(`Unauthorized access attempt: User ${req.session.user.name} (ID: ${req.session.user.id}) tried to access one of: ${permissions.join(', ')}`);
 
-      next();
+      req.flash('error', 'You don\'t have permission to access this feature');
+      return res.redirect('/dashboard');
+
     } catch (error) {
       console.error('Permission check error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      req.flash('error', 'Permission check failed');
+      return res.redirect('/dashboard');
     }
   };
 };
 
-// Load user permissions into session
-const loadUserPermissions = async (req, res, next) => {
-  try {
-    if (req.session && req.session.user && !req.session.user.permissions) {
-      const permissionsResult = await db.query(
-        'SELECT * FROM get_user_permissions($1)',
-        [req.session.user.id]
-      );
+/**
+ * Middleware to check if user has all specified permissions
+ */
+const hasAllPermissions = (permissions) => {
+  return async (req, res, next) => {
+    try {
+      if (!req.session || !req.session.user) {
+        req.flash('error', 'Please log in to access this feature');
+        return res.redirect('/auth/login');
+      }
 
-      const rolesResult = await db.query(
-        'SELECT * FROM get_user_roles($1)',
-        [req.session.user.id]
-      );
+      if (!Array.isArray(permissions)) {
+        permissions = [permissions];
+      }
 
-      req.session.user.permissions = permissionsResult.rows.map(row => row.permission_name);
-      req.session.user.roles = rolesResult.rows;
+      // Check all permissions
+      for (const permission of permissions) {
+        const result = await db.query(
+          'SELECT user_has_permission($1, $2) as has_permission',
+          [req.session.user.id, permission]
+        );
 
-      // Add permissions and roles to res.locals for templates
-      res.locals.userPermissions = req.session.user.permissions || [];
-      res.locals.userRoles = req.session.user.roles || [];
-    } else if (req.session.user) {
-      res.locals.userPermissions = req.session.user.permissions || [];
-      res.locals.userRoles = req.session.user.roles || [];
+        if (!result.rows[0].has_permission) {
+          console.warn(`Unauthorized access attempt: User ${req.session.user.name} (ID: ${req.session.user.id}) missing permission: ${permission}`);
+
+          req.flash('error', `You don't have permission to ${permission.replace('.', ' ').replace('_', ' ')}`);
+          return res.redirect('/dashboard');
+        }
+      }
+
+      return next();
+
+    } catch (error) {
+      console.error('Permission check error:', error);
+      req.flash('error', 'Permission check failed');
+      return res.redirect('/dashboard');
     }
-
-    next();
-  } catch (error) {
-    console.error('Error loading user permissions:', error);
-    next();
-  }
-};
-
-// Helper function to check permission in templates
-const can = (permission) => {
-  return (req) => {
-    return req.session.user &&
-           req.session.user.permissions &&
-           req.session.user.permissions.includes(permission);
   };
 };
 
-// Helper function to check if user has any role
+/**
+ * Check if user has role
+ */
 const hasRole = (roleName) => {
-  return (req) => {
-    return req.session.user &&
-           req.session.user.roles &&
-           req.session.user.roles.some(role => role.role_name === roleName);
+  return async (req, res, next) => {
+    try {
+      if (!req.session || !req.session.user) {
+        req.flash('error', 'Please log in to access this feature');
+        return res.redirect('/auth/login');
+      }
+
+      const result = await db.query(`
+        SELECT EXISTS(
+          SELECT 1 FROM user_roles ur
+          JOIN roles r ON ur.role_id = r.id
+          WHERE ur.user_id = $1 AND r.name = $2
+        ) as has_role
+      `, [req.session.user.id, roleName]);
+
+      if (result.rows[0].has_role) {
+        return next();
+      }
+
+      console.warn(`Unauthorized access attempt: User ${req.session.user.name} (ID: ${req.session.user.id}) missing role: ${roleName}`);
+
+      req.flash('error', `You need ${roleName} role to access this feature`);
+      return res.redirect('/dashboard');
+
+    } catch (error) {
+      console.error('Role check error:', error);
+      req.flash('error', 'Role check failed');
+      return res.redirect('/dashboard');
+    }
   };
 };
 
-// Middleware to add helper functions to templates
-const addPermissionHelpers = (req, res, next) => {
-  res.locals.can = (permission) => can(permission)(req);
-  res.locals.hasRole = (roleName) => hasRole(roleName)(req);
-  res.locals.isSuperAdmin = () => hasRole('super_admin')(req);
-  res.locals.isAdmin = () => hasRole('admin')(req) || hasRole('super_admin')(req);
-  next();
-};
+/**
+ * Admin middleware (legacy support)
+ */
+const isAdmin = hasAnyPermission(['users.view', 'roles.view', 'admin.settings', 'admin.logs']);
 
 module.exports = {
-  hasPermission,
-  hasAnyPermission,
   loadUserPermissions,
   addPermissionHelpers,
-  can,
-  hasRole
+  hasPermission,
+  hasAnyPermission,
+  hasAllPermissions,
+  hasRole,
+  isAdmin
 };

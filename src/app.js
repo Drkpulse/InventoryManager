@@ -21,9 +21,6 @@ const departmentRoutes = require('./routes/departmentRoutes');
 const translations = require('./utils/translations');
 const { loadUserPermissions, addPermissionHelpers } = require('./middleware/permissions');
 
-app.use(loadUserPermissions);  // Load user permissions into session
-app.use(addPermissionHelpers); // Add permission helper functions to templates
-
 // Add AJAX response middleware
 const handleAjaxResponse = require('./middleware/ajaxResponse');
 
@@ -72,6 +69,10 @@ app.use(flash());
 // Add AJAX response handling middleware
 app.use(handleAjaxResponse);
 
+// CRITICAL: Load permissions BEFORE adding helpers
+app.use(loadUserPermissions);
+
+// Global template variables and permission helpers
 app.use((req, res, next) => {
   const user = req.user || req.session?.user || { settings: {} };
   const lang = user?.settings?.language || req.session?.language || 'en';
@@ -88,21 +89,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Add permission helper functions AFTER loading permissions
+app.use(addPermissionHelpers);
+
 // Add i18n middleware
 app.use(i18n.init);
-
-// Add notification routes BEFORE main routes
-app.use('/notifications', isAuthenticated, notificationRoutes);
-app.use('/api', apiRoutes);
-
-// Routes - AUTH ROUTES FIRST
-app.use('/auth', authRoutes);
-app.use('/items', itemRoutes);
-app.use('/employees', employeeRoutes);
-app.use('/reports', reportRoutes);
-app.use('/references', referenceRoutes);
-app.use('/software', softwareRoutes);
-app.use('/departments', departmentRoutes);
 
 // Health check endpoint (before authentication)
 app.get('/health', (req, res) => {
@@ -112,6 +103,23 @@ app.get('/health', (req, res) => {
     uptime: process.uptime()
   });
 });
+
+// Add admin routes
+const adminRoutes = require('./routes/adminRoutes');
+
+// Add notification routes BEFORE main routes
+app.use('/notifications', isAuthenticated, notificationRoutes);
+app.use('/api', apiRoutes);
+
+// Routes - AUTH ROUTES FIRST
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);  // Add admin routes
+app.use('/items', itemRoutes);
+app.use('/employees', employeeRoutes);
+app.use('/reports', reportRoutes);
+app.use('/references', referenceRoutes);
+app.use('/software', softwareRoutes);
+app.use('/departments', departmentRoutes);
 
 // Use main routes AFTER notification routes
 app.use('/', routes);

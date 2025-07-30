@@ -48,9 +48,16 @@
           placeholder="Re-enter new password">
       </div>
 
-      <% if (can('users.manage_roles')) { %>
-        <div>
-          <label class="block font-semibold mb-3 text-gray-700 dark:text-gray-200">Assign Roles</label>
+      <!-- Role Management Section -->
+      <div>
+        <label class="block font-semibold mb-3 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+          Assign Roles
+          <% if (!can('users.manage_roles')) { %>
+            <i class="fas fa-lock text-gray-500 text-sm" title="You don't have permission to manage user roles"></i>
+          <% } %>
+        </label>
+
+        <% if (can('users.manage_roles')) { %>
           <div class="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-md p-3 bg-gray-50 dark:bg-gray-900">
             <% if (typeof roles !== 'undefined' && roles.length > 0) { %>
               <% roles.forEach(role => { %>
@@ -78,8 +85,38 @@
             <% } %>
           </div>
           <small class="text-gray-500 dark:text-gray-400">Select one or more roles for this user.</small>
-        </div>
-      <% } %>
+        <% } else { %>
+          <!-- Display current roles as read-only when user doesn't have permission -->
+          <div class="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-md p-3 bg-gray-100 dark:bg-gray-700 opacity-60">
+            <% if (typeof roles !== 'undefined' && roles.length > 0) { %>
+              <% roles.forEach(role => { %>
+                <% if (userRoleIds.includes(role.id)) { %>
+                  <div class="flex items-start gap-2 mb-2">
+                    <input type="checkbox" disabled checked
+                      class="mt-1 h-4 w-4 text-gray-400 border-gray-300 rounded cursor-not-allowed">
+                    <div class="flex-1">
+                      <label class="text-sm font-medium text-gray-600 dark:text-gray-400 cursor-not-allowed">
+                        <%= role.display_name %>
+                        <% if (role.is_system_role) { %>
+                          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400 ml-1">
+                            System
+                          </span>
+                        <% } %>
+                      </label>
+                      <% if (role.description) { %>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><%= role.description %></p>
+                      <% } %>
+                    </div>
+                  </div>
+                <% } %>
+              <% }) %>
+            <% } else { %>
+              <p class="text-gray-400 dark:text-gray-500 text-sm">No roles assigned</p>
+            <% } %>
+          </div>
+          <small class="text-gray-400 dark:text-gray-500">You don't have permission to modify user roles.</small>
+        <% } %>
+      </div>
 
       <div class="flex gap-2 mt-4">
         <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">

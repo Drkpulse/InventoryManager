@@ -102,6 +102,11 @@ const addPermissionHelpers = (req, res, next) => {
   // Add current user roles for display
   res.locals.userRoles = req.session?.user?.roleNames || [];
 
+  // Debug: Log what permissions are available
+  if (req.session?.user?.permissions) {
+    console.log(`Template helpers: User ${req.session.user.name} has permissions: ${req.session.user.permissions.join(', ')}`);
+  }
+
   next();
 };
 

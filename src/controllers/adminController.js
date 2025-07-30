@@ -9,7 +9,7 @@ exports.users = async (req, res) => {
       SELECT
         u.id, u.name, u.email, u.role, u.created_at, u.last_login,
         CASE WHEN u.active IS NULL THEN true ELSE u.active END as active,
-        array_agg(DISTINCT r.display_name ORDER BY r.display_name) as roles
+        array_agg(DISTINCT r.display_name ORDER BY r.display_name) FILTER (WHERE r.display_name IS NOT NULL) as roles
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
@@ -38,7 +38,8 @@ exports.showAddUserForm = async (req, res) => {
       title: 'Add New User',
       body: 'admin/add-user',
       roles: rolesResult.rows,
-      formData: {}
+      formData: {},
+      errors: []
     });
   } catch (error) {
     console.error('Error loading add user form:', error);
@@ -49,6 +50,8 @@ exports.showAddUserForm = async (req, res) => {
 
 exports.addUser = async (req, res) => {
   try {
+    console.log('Add user request body:', req.body);
+
     const { name, email, password, confirm_password, selectedRoles } = req.body;
     const errors = [];
 
@@ -87,12 +90,21 @@ exports.addUser = async (req, res) => {
     const userId = userResult.rows[0].id;
 
     // Assign roles
-    const rolesToAssign = Array.isArray(selectedRoles) ? selectedRoles : (selectedRoles ? [selectedRoles] : ['user']);
+    let rolesToAssign = [];
+    if (selectedRoles) {
+      rolesToAssign = Array.isArray(selectedRoles) ? selectedRoles : [selectedRoles];
+    } else {
+      // Default to 'user' role if none selected
+      const defaultRoleResult = await db.query('SELECT id FROM roles WHERE name = $1', ['user']);
+      if (defaultRoleResult.rows.length > 0) {
+        rolesToAssign = [defaultRoleResult.rows[0].id.toString()];
+      }
+    }
 
     for (const roleId of rolesToAssign) {
       await db.query(
         'INSERT INTO user_roles (user_id, role_id, assigned_by) VALUES ($1, $2, $3)',
-        [userId, roleId, req.session.user.id]
+        [userId, parseInt(roleId), req.session.user.id]
       );
     }
 
@@ -102,14 +114,20 @@ exports.addUser = async (req, res) => {
   } catch (error) {
     console.error('Error creating user:', error);
 
-    const rolesResult = await db.query('SELECT * FROM roles ORDER BY display_name');
-    res.render('layout', {
-      title: 'Add New User',
-      body: 'admin/add-user',
-      roles: rolesResult.rows,
-      errors: ['Failed to create user'],
-      formData: req.body
-    });
+    try {
+      const rolesResult = await db.query('SELECT * FROM roles ORDER BY display_name');
+      res.render('layout', {
+        title: 'Add New User',
+        body: 'admin/add-user',
+        roles: rolesResult.rows,
+        errors: ['Failed to create user: ' + error.message],
+        formData: req.body
+      });
+    } catch (renderError) {
+      console.error('Error rendering add user form:', renderError);
+      req.flash('error', 'Failed to create user');
+      res.redirect('/admin/users');
+    }
   }
 };
 
@@ -136,7 +154,8 @@ exports.showEditUserForm = async (req, res) => {
       body: 'admin/edit-user',
       editUser: userResult.rows[0],
       roles: rolesResult.rows,
-      userRoleIds
+      userRoleIds,
+      errors: []
     });
 
   } catch (error) {
@@ -149,6 +168,8 @@ exports.showEditUserForm = async (req, res) => {
 exports.editUser = async (req, res) => {
   try {
     const userId = req.params.id;
+    console.log('Edit user request body:', req.body);
+
     const { name, email, password, confirm_password, selectedRoles } = req.body;
     const errors = [];
 
@@ -200,12 +221,15 @@ exports.editUser = async (req, res) => {
       await db.query('DELETE FROM user_roles WHERE user_id = $1', [userId]);
 
       // Add new roles
-      const rolesToAssign = Array.isArray(selectedRoles) ? selectedRoles : (selectedRoles ? [selectedRoles] : []);
+      let rolesToAssign = [];
+      if (selectedRoles) {
+        rolesToAssign = Array.isArray(selectedRoles) ? selectedRoles : [selectedRoles];
+      }
 
       for (const roleId of rolesToAssign) {
         await db.query(
           'INSERT INTO user_roles (user_id, role_id, assigned_by) VALUES ($1, $2, $3)',
-          [userId, roleId, req.session.user.id]
+          [userId, parseInt(roleId), req.session.user.id]
         );
       }
     }
@@ -215,7 +239,7 @@ exports.editUser = async (req, res) => {
 
   } catch (error) {
     console.error('Error updating user:', error);
-    req.flash('error', 'Failed to update user');
+    req.flash('error', 'Failed to update user: ' + error.message);
     res.redirect('/admin/users');
   }
 };
@@ -295,7 +319,8 @@ exports.showAddRoleForm = async (req, res) => {
       title: 'Add New Role',
       body: 'admin/add-role',
       permissionsByModule,
-      formData: {}
+      formData: {},
+      errors: []
     });
   } catch (error) {
     console.error('Error loading add role form:', error);
@@ -306,6 +331,8 @@ exports.showAddRoleForm = async (req, res) => {
 
 exports.addRole = async (req, res) => {
   try {
+    console.log('Add role request body:', req.body);
+
     const { name, display_name, description, selectedPermissions } = req.body;
     const errors = [];
 
@@ -350,12 +377,15 @@ exports.addRole = async (req, res) => {
     const roleId = roleResult.rows[0].id;
 
     // Assign permissions
-    const permissionsToAssign = Array.isArray(selectedPermissions) ? selectedPermissions : (selectedPermissions ? [selectedPermissions] : []);
+    let permissionsToAssign = [];
+    if (selectedPermissions) {
+      permissionsToAssign = Array.isArray(selectedPermissions) ? selectedPermissions : [selectedPermissions];
+    }
 
     for (const permissionId of permissionsToAssign) {
       await db.query(
         'INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)',
-        [roleId, permissionId]
+        [roleId, parseInt(permissionId)]
       );
     }
 
@@ -364,7 +394,7 @@ exports.addRole = async (req, res) => {
 
   } catch (error) {
     console.error('Error creating role:', error);
-    req.flash('error', 'Failed to create role');
+    req.flash('error', 'Failed to create role: ' + error.message);
     res.redirect('/admin/roles');
   }
 };
@@ -397,7 +427,8 @@ exports.showEditRoleForm = async (req, res) => {
       body: 'admin/edit-role',
       editRole: roleResult.rows[0],
       permissionsByModule,
-      rolePermissionIds
+      rolePermissionIds,
+      errors: []
     });
 
   } catch (error) {
@@ -410,6 +441,8 @@ exports.showEditRoleForm = async (req, res) => {
 exports.editRole = async (req, res) => {
   try {
     const roleId = req.params.id;
+    console.log('Edit role request body:', req.body);
+
     const { name, display_name, description, selectedPermissions } = req.body;
     const errors = [];
 
@@ -474,12 +507,15 @@ exports.editRole = async (req, res) => {
     // Update permissions
     await db.query('DELETE FROM role_permissions WHERE role_id = $1', [roleId]);
 
-    const permissionsToAssign = Array.isArray(selectedPermissions) ? selectedPermissions : (selectedPermissions ? [selectedPermissions] : []);
+    let permissionsToAssign = [];
+    if (selectedPermissions) {
+      permissionsToAssign = Array.isArray(selectedPermissions) ? selectedPermissions : [selectedPermissions];
+    }
 
     for (const permissionId of permissionsToAssign) {
       await db.query(
         'INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)',
-        [roleId, permissionId]
+        [roleId, parseInt(permissionId)]
       );
     }
 
@@ -488,7 +524,7 @@ exports.editRole = async (req, res) => {
 
   } catch (error) {
     console.error('Error updating role:', error);
-    req.flash('error', 'Failed to update role');
+    req.flash('error', 'Failed to update role: ' + error.message);
     res.redirect('/admin/roles');
   }
 };

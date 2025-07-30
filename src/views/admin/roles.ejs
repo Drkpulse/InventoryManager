@@ -8,11 +8,20 @@
 		<a href="/admin/roles/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
 		  <i class="fas fa-plus mr-2"></i> Add New Role
 		</a>
+	  <% } else { %>
+		<button disabled class="inline-flex items-center px-4 py-2 bg-gray-400 text-gray-600 font-semibold rounded-md cursor-not-allowed opacity-60" title="You don't have permission to create roles">
+		  <i class="fas fa-plus mr-2"></i> Add New Role
+		</button>
 	  <% } %>
+
 	  <% if (can('roles.view') || can('roles.edit')) { %>
 		<a href="/admin/permissions" class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-md transition">
 		  <i class="fas fa-key mr-2"></i> View Permissions
 		</a>
+	  <% } else { %>
+		<button disabled class="inline-flex items-center px-4 py-2 bg-gray-400 text-gray-600 font-semibold rounded-md cursor-not-allowed opacity-60" title="You don't have permission to view permissions">
+		  <i class="fas fa-key mr-2"></i> View Permissions
+		</button>
 	  <% } %>
 	</div>
 
@@ -71,11 +80,18 @@
 				</td>
 				<td class="px-4 py-3">
 				  <div class="flex flex-wrap gap-2">
+					<!-- Edit Button -->
 					<% if (can('roles.edit')) { %>
 					  <a href="/admin/roles/<%= role.id %>/edit" class="inline-flex items-center px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition text-xs" title="Edit">
 						<i class="fas fa-edit"></i>
 					  </a>
+					<% } else { %>
+					  <button disabled class="inline-flex items-center px-2 py-1 bg-gray-400 text-gray-600 rounded cursor-not-allowed opacity-60 text-xs" title="You don't have permission to edit roles">
+						<i class="fas fa-edit"></i>
+					  </button>
 					<% } %>
+
+					<!-- Delete Button -->
 					<% if (can('roles.delete') && !role.is_system_role) { %>
 					  <form style="display: inline;" method="POST" action="/admin/roles/<%= role.id %>/delete"
 							onsubmit="return confirm('Are you sure you want to delete this role? This action cannot be undone.')">
@@ -85,6 +101,14 @@
 						  <i class="fas fa-trash"></i>
 						</button>
 					  </form>
+					<% } else if (!can('roles.delete')) { %>
+					  <button disabled class="inline-flex items-center px-2 py-1 bg-gray-400 text-gray-600 rounded cursor-not-allowed opacity-60 text-xs" title="You don't have permission to delete roles">
+						<i class="fas fa-trash"></i>
+					  </button>
+					<% } else if (role.is_system_role) { %>
+					  <button disabled class="inline-flex items-center px-2 py-1 bg-gray-400 text-gray-600 rounded cursor-not-allowed opacity-60 text-xs" title="System roles cannot be deleted">
+						<i class="fas fa-trash"></i>
+					  </button>
 					<% } %>
 				  </div>
 				</td>
@@ -104,6 +128,10 @@
 		  <a href="/admin/roles/add" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2 mt-4">
 			<i class="fas fa-plus"></i> Add New Role
 		  </a>
+		<% } else { %>
+		  <button disabled class="px-4 py-2 bg-gray-400 text-gray-600 font-semibold rounded-md cursor-not-allowed opacity-60 flex items-center gap-2 mt-4" title="You don't have permission to create roles">
+			<i class="fas fa-plus"></i> Add New Role
+		  </button>
 		<% } %>
 	  </div>
 	<% } %>

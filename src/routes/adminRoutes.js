@@ -33,5 +33,6 @@ router.post('/settings', hasPermission('admin.settings'), adminController.update
 
 // Activity Logs
 router.get('/logs', hasPermission('admin.logs'), adminController.logs);
+router.get('/dashboard', hasPermission('admin.settings'), adminController.adminDashboard);
 
 module.exports = router;

@@ -142,6 +142,48 @@
         </div>
       </div>
 
+      <!-- Warranty Information Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-shield-alt"></i> Warranty Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label for="warranty_start_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty Start Date</label>
+            <input type="date" id="warranty_start_date" name="warranty_start_date"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              value="<%= typeof formData !== 'undefined' && formData.warranty_start_date ? formData.warranty_start_date : (typeof item !== 'undefined' && item.warranty_start_date ? new Date(item.warranty_start_date).toISOString().split('T')[0] : '') %>">
+          </div>
+          <div>
+            <label for="warranty_months" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty Period (Months)</label>
+            <select id="warranty_months" name="warranty_months" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value="">No Warranty</option>
+              <option value="6" <%= (typeof formData !== 'undefined' && formData.warranty_months == 6) || (typeof item !== 'undefined' && item.warranty_months == 6) ? 'selected' : '' %>>6 months</option>
+              <option value="12" <%= (typeof formData !== 'undefined' && formData.warranty_months == 12) || (typeof item !== 'undefined' && item.warranty_months == 12) || (!formData && !item) ? 'selected' : '' %>>12 months</option>
+              <option value="24" <%= (typeof formData !== 'undefined' && formData.warranty_months == 24) || (typeof item !== 'undefined' && item.warranty_months == 24) ? 'selected' : '' %>>24 months</option>
+              <option value="36" <%= (typeof formData !== 'undefined' && formData.warranty_months == 36) || (typeof item !== 'undefined' && item.warranty_months == 36) ? 'selected' : '' %>>36 months</option>
+              <option value="48" <%= (typeof formData !== 'undefined' && formData.warranty_months == 48) || (typeof item !== 'undefined' && item.warranty_months == 48) ? 'selected' : '' %>>48 months</option>
+              <option value="60" <%= (typeof formData !== 'undefined' && formData.warranty_months == 60) || (typeof item !== 'undefined' && item.warranty_months == 60) ? 'selected' : '' %>>60 months</option>
+            </select>
+          </div>
+          <div>
+            <label for="warranty_end_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty End Date</label>
+            <input type="date" id="warranty_end_date" name="warranty_end_date" readonly
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+              value="<%= typeof formData !== 'undefined' && formData.warranty_end_date ? formData.warranty_end_date : (typeof item !== 'undefined' && item.warranty_end_date ? new Date(item.warranty_end_date).toISOString().split('T')[0] : '') %>">
+          </div>
+        </div>
+        <div class="mt-4" id="warrantyStatus" style="display: none;">
+          <div class="flex items-center gap-2 px-4 py-3 rounded-lg" id="warrantyStatusContent">
+            <!-- Dynamic warranty status will be shown here -->
+          </div>
+        </div>
+        <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-2">
+          <i class="fas fa-info-circle"></i>
+          Warranty end date is automatically calculated when you set the start date and period
+        </small>
+      </div>
+
       <!-- Assignment Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -413,5 +455,100 @@ document.addEventListener('DOMContentLoaded', function() {
       dateAssignedInput.value = new Date().toISOString().split('T')[0];
     }
   });
+});
+
+// Warranty calculation logic
+document.addEventListener('DOMContentLoaded', function() {
+  const warrantyStartDate = document.getElementById('warranty_start_date');
+  const warrantyMonths = document.getElementById('warranty_months');
+  const warrantyEndDate = document.getElementById('warranty_end_date');
+  const warrantyStatus = document.getElementById('warrantyStatus');
+  const warrantyStatusContent = document.getElementById('warrantyStatusContent');
+
+  function calculateWarrantyEndDate() {
+    const startDate = warrantyStartDate.value;
+    const months = parseInt(warrantyMonths.value);
+
+    if (startDate && months) {
+      const start = new Date(startDate);
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + months);
+
+      warrantyEndDate.value = end.toISOString().split('T')[0];
+      updateWarrantyStatus(end);
+    } else {
+      warrantyEndDate.value = '';
+      warrantyStatus.style.display = 'none';
+    }
+  }
+
+  function updateWarrantyStatus(endDate) {
+    if (!endDate) {
+      warrantyStatus.style.display = 'none';
+      return;
+    }
+
+    const now = new Date();
+    const diffTime = endDate - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    let statusClass, statusText, statusIcon;
+
+    if (diffDays < 0) {
+      // Expired
+      statusClass = 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700';
+      statusIcon = 'fas fa-exclamation-circle text-red-600 dark:text-red-400';
+      statusText = `Warranty expired ${Math.abs(diffDays)} days ago`;
+    } else if (diffDays <= 30) {
+      // Expiring soon
+      statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700';
+      statusIcon = 'fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400';
+      statusText = `Warranty expires in ${diffDays} days`;
+    } else {
+      // Active
+      statusClass = 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700';
+      statusIcon = 'fas fa-shield-alt text-green-600 dark:text-green-400';
+      statusText = `Warranty active for ${diffDays} more days`;
+    }
+
+    warrantyStatusContent.className = statusClass;
+    warrantyStatusContent.innerHTML = `
+      <i class="${statusIcon}"></i>
+      <span class="font-medium">${statusText}</span>
+    `;
+    warrantyStatus.style.display = 'block';
+  }
+
+  // Event listeners
+  warrantyStartDate.addEventListener('change', calculateWarrantyEndDate);
+  warrantyMonths.addEventListener('change', calculateWarrantyEndDate);
+
+  // Auto-fill warranty start date with purchase date if available
+  const receiptSelect = document.getElementById('receipt');
+  if (receiptSelect) {
+    receiptSelect.addEventListener('change', function() {
+      if (this.value && !warrantyStartDate.value) {
+        // Extract date from receipt option text (format: "RECEIPT - SUPPLIER (DATE)")
+        const optionText = this.options[this.selectedIndex].text;
+        const dateMatch = optionText.match(/\(([^)]+)\)$/);
+        if (dateMatch) {
+          const dateStr = dateMatch[1];
+          const purchaseDate = new Date(dateStr);
+          if (!isNaN(purchaseDate.getTime())) {
+            warrantyStartDate.value = purchaseDate.toISOString().split('T')[0];
+            calculateWarrantyEndDate();
+          }
+        }
+      }
+    });
+  }
+
+  // Calculate warranty end date on page load if values exist
+  if (warrantyStartDate.value && warrantyMonths.value) {
+    calculateWarrantyEndDate();
+  } else if (warrantyEndDate.value) {
+    // Show status for existing warranty end date
+    updateWarrantyStatus(new Date(warrantyEndDate.value));
+  }
 });
 </script>

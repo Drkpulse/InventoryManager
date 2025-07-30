@@ -28,6 +28,9 @@ const handleAjaxResponse = require('./middleware/ajaxResponse');
 const notificationRoutes = require('./routes/notificationRoutes');
 const apiRoutes = require('./routes/apiRoutes');
 
+// Import warranty scheduler
+const warrantyScheduler = require('./services/warrantyScheduler');
+
 // Set up view engine
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -146,6 +149,15 @@ app.use((err, req, res, next) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+
+  // Start warranty scheduler after server is running
+  setTimeout(() => {
+    try {
+      warrantyScheduler.start();
+    } catch (error) {
+      console.error('Failed to start warranty scheduler:', error);
+    }
+  }, 5000); // 5 second delay to ensure database is ready
 });
 
 module.exports = app;

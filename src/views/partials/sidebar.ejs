@@ -91,7 +91,12 @@
         <i class="fas fa-code text-purple-400 ml-1" title="Developer Access"></i>
       <% } %>
     </div>
-
+    <% if (can('admin.settings')) { %>
+    <a href="/admin/dashboard" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-tools"></i>
+      <span>Admin Dashboard</span>
+    </a>
+    <% } %>
     <% if (can('users.view')) { %>
     <a href="/admin/users" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-users-cog"></i>

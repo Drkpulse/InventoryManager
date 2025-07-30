@@ -650,3 +650,17 @@ exports.logs = async (req, res) => {
     res.redirect('/dashboard');
   }
 };
+
+exports.adminDashboard = async (req, res) => {
+  try {
+    // Optionally, fetch stats or notification counts here if needed
+    res.render('admin/dashboard', {
+      title: 'Admin Dashboard',
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error('Error loading admin dashboard:', error);
+    req.flash('error', 'Failed to load admin dashboard');
+    res.redirect('/dashboard');
+  }
+};

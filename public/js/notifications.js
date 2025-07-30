@@ -3,6 +3,7 @@ class NotificationManager {
     this.notifications = [];
     this.settings = {};
     this.pollingInterval = null;
+    this.isPolling = false;
   }
 
   async init() {
@@ -31,14 +32,37 @@ class NotificationManager {
       }
 
       const data = await response.json();
-      this.notifications = data.notifications || [];
-      console.log('Loaded notifications:', this.notifications.length);
-      this.updateUI();
+
+      if (data.success) {
+        this.notifications = data.notifications || [];
+        console.log('Loaded notifications:', this.notifications.length);
+        this.updateUI();
+      } else {
+        throw new Error(data.error || 'Failed to load notifications');
+      }
     } catch (error) {
       console.error('Error loading notifications:', error);
       // Show empty state instead of error
       this.notifications = [];
       this.updateUI();
+    }
+  }
+
+  async loadUnreadCount() {
+    try {
+      const response = await fetch('/notifications/unread-count');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        return data.count;
+      }
+      return 0;
+    } catch (error) {
+      console.error('Error loading unread count:', error);
+      return 0;
     }
   }
 
@@ -49,7 +73,9 @@ class NotificationManager {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      this.settings = data.settings || [];
+      if (data.success) {
+        this.settings = data.settings || [];
+      }
     } catch (error) {
       console.error('Error loading notification settings:', error);
       this.settings = [];
@@ -60,6 +86,7 @@ class NotificationManager {
     const unreadCount = this.notifications.filter(n => !n.is_read).length;
     const countBadge = document.getElementById('notificationCount');
     const notificationList = document.getElementById('notificationList');
+    const notificationLoading = document.getElementById('notificationLoading');
 
     // Update badge
     if (countBadge) {
@@ -67,10 +94,20 @@ class NotificationManager {
       countBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
     }
 
+    // Hide loading indicator
+    if (notificationLoading) {
+      notificationLoading.style.display = 'none';
+    }
+
     // Update notification list
     if (notificationList) {
       if (this.notifications.length === 0) {
-        notificationList.innerHTML = '<div class="notification-empty">No notifications</div>';
+        notificationList.innerHTML = `
+          <div class="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
+            <i class="fas fa-bell-slash text-2xl mb-2"></i>
+            <p>No notifications</p>
+          </div>
+        `;
       } else {
         notificationList.innerHTML = this.notifications.slice(0, 10).map(notification =>
           this.renderNotification(notification)
@@ -82,19 +119,31 @@ class NotificationManager {
   renderNotification(notification) {
     const isUnread = !notification.is_read;
     const timeAgo = this.timeAgo(new Date(notification.created_at));
+    const bgClass = isUnread ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 dark:border-blue-400' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50';
+    const iconColor = isUnread ? 'text-blue-500 dark:text-blue-300' : 'text-gray-400 dark:text-gray-500';
 
     return `
-      <a href="${notification.url || '#'}"
-         class="notification-item ${isUnread ? 'unread' : ''}"
-         data-notification-id="${notification.id}">
-        <div class="notification-icon">
-          <i class="${notification.icon || 'fas fa-bell'}"></i>
+      <div class="notification-item ${bgClass} ${isUnread ? 'unread' : ''} cursor-pointer transition-colors duration-200"
+           data-notification-id="${notification.id}"
+           ${notification.url ? `onclick="window.location.href='${notification.url}'"` : ''}>
+        <div class="flex items-start gap-3 px-5 py-4">
+          <div class="flex-shrink-0 ${iconColor} mt-0.5">
+            <i class="${notification.icon || 'fas fa-bell'} text-lg"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-gray-900 dark:text-white mb-1 line-clamp-2">
+              ${notification.title || notification.message}
+            </div>
+            ${notification.title && notification.message && notification.title !== notification.message ?
+              `<div class="text-xs text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">${notification.message}</div>` : ''
+            }
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-500 dark:text-gray-400">${timeAgo}</span>
+              ${isUnread ? '<span class="w-2 h-2 bg-blue-500 rounded-full"></span>' : ''}
+            </div>
+          </div>
         </div>
-        <div class="notification-content">
-          <p class="notification-text">${notification.message || notification.title}</p>
-          <span class="notification-time">${timeAgo}</span>
-        </div>
-      </a>
+      </div>
     `;
   }
 
@@ -111,11 +160,14 @@ class NotificationManager {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Update local state
-      const notification = this.notifications.find(n => n.id === notificationId);
-      if (notification) {
-        notification.is_read = true;
-        this.updateUI();
+      const data = await response.json();
+      if (data.success) {
+        // Update local state
+        const notification = this.notifications.find(n => n.id === notificationId);
+        if (notification) {
+          notification.is_read = true;
+          this.updateUI();
+        }
       }
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -135,18 +187,40 @@ class NotificationManager {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Update local state
-      this.notifications.forEach(n => n.is_read = true);
-      this.updateUI();
+      const data = await response.json();
+      if (data.success) {
+        // Update local state
+        this.notifications.forEach(n => n.is_read = true);
+        this.updateUI();
+      }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
   }
 
   setupEventListeners() {
-    document.getElementById('notificationToggle').addEventListener('click', () => {
-      this.loadNotifications();
-    });
+    const notificationToggle = document.getElementById('notificationToggle');
+    const notificationMenu = document.getElementById('notificationMenu');
+
+    // Toggle notification menu
+    if (notificationToggle && notificationMenu) {
+      notificationToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notificationMenu.classList.toggle('hidden');
+
+        // Refresh notifications when opening
+        if (!notificationMenu.classList.contains('hidden')) {
+          this.loadNotifications();
+        }
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!notificationMenu.contains(e.target) && !notificationToggle.contains(e.target)) {
+          notificationMenu.classList.add('hidden');
+        }
+      });
+    }
 
     // Mark all as read
     const markAllReadBtn = document.getElementById('markAllRead');
@@ -169,7 +243,7 @@ class NotificationManager {
           // Close dropdown after clicking a notification
           const notificationMenu = document.getElementById('notificationMenu');
           if (notificationMenu) {
-            notificationMenu.classList.remove('show');
+            notificationMenu.classList.add('hidden');
           }
         }
       }
@@ -183,7 +257,12 @@ class NotificationManager {
     }
 
     this.pollingInterval = setInterval(() => {
-      this.loadNotifications();
+      if (!this.isPolling) {
+        this.isPolling = true;
+        this.loadNotifications().finally(() => {
+          this.isPolling = false;
+        });
+      }
     }, 30000);
   }
 
@@ -194,7 +273,8 @@ class NotificationManager {
     if (diffInSeconds < 60) return 'Just now';
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return new Date(date).toLocaleDateString();
   }
 
   destroy() {

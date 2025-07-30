@@ -7,13 +7,13 @@ exports.users = async (req, res) => {
   try {
     const result = await db.query(`
       SELECT
-        u.id, u.name, u.email, u.role, u.created_at, u.last_login,
+        u.id, u.name, u.email, u.cep_id, u.role, u.created_at, u.last_login,
         CASE WHEN u.active IS NULL THEN true ELSE u.active END as active,
         array_agg(DISTINCT r.display_name ORDER BY r.display_name) FILTER (WHERE r.display_name IS NOT NULL) as roles
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
-      GROUP BY u.id, u.name, u.email, u.role, u.created_at, u.last_login, u.active
+      GROUP BY u.id, u.name, u.email, u.cep_id, u.role, u.created_at, u.last_login, u.active
       ORDER BY u.created_at DESC
     `);
 
@@ -52,19 +52,21 @@ exports.addUser = async (req, res) => {
   try {
     console.log('Add user request body:', req.body);
 
-    const { name, email, password, confirm_password, selectedRoles } = req.body;
+    const { cep_id, name, email, password, confirm_password, selectedRoles } = req.body;
     const errors = [];
 
     // Validation
+    if (!cep_id || cep_id.trim() === '') errors.push('CEP ID is required');
     if (!name || name.trim() === '') errors.push('Name is required');
     if (!email || email.trim() === '') errors.push('Email is required');
     if (!password || password.length < 6) errors.push('Password must be at least 6 characters');
     if (password !== confirm_password) errors.push('Passwords do not match');
 
-    // Check if email already exists
-    const existingUser = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    // Check if email or cep_id already exists
+    const existingUser = await db.query('SELECT id FROM users WHERE email = $1 OR cep_id = $2', [email, cep_id]);
     if (existingUser.rows.length > 0) {
-      errors.push('Email already exists');
+      if (existingUser.rows.some(u => u.email === email)) errors.push('Email already exists');
+      if (existingUser.rows.some(u => u.cep_id === cep_id)) errors.push('CEP ID already exists');
     }
 
     if (errors.length > 0) {
@@ -74,7 +76,7 @@ exports.addUser = async (req, res) => {
         body: 'admin/add-user',
         roles: rolesResult.rows,
         errors,
-        formData: { name, email }
+        formData: { cep_id, name, email }
       });
     }
 
@@ -83,8 +85,8 @@ exports.addUser = async (req, res) => {
 
     // Create user
     const userResult = await db.query(
-      'INSERT INTO users (name, email, password, role, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING id',
-      [name.trim(), email.trim(), hashedPassword, 'user'] // Default role for compatibility
+      'INSERT INTO users (cep_id, name, email, password, role, created_at) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING id',
+      [cep_id.trim(), name.trim(), email.trim(), hashedPassword, 'user']
     );
 
     const userId = userResult.rows[0].id;
@@ -170,10 +172,11 @@ exports.editUser = async (req, res) => {
     const userId = req.params.id;
     console.log('Edit user request body:', req.body);
 
-    const { name, email, password, confirm_password, selectedRoles } = req.body;
+    const { cep_id, name, email, password, confirm_password, selectedRoles } = req.body;
     const errors = [];
 
     // Validation
+    if (!cep_id || cep_id.trim() === '') errors.push('CEP ID is required');
     if (!name || name.trim() === '') errors.push('Name is required');
     if (!email || email.trim() === '') errors.push('Email is required');
 
@@ -182,10 +185,14 @@ exports.editUser = async (req, res) => {
       if (password !== confirm_password) errors.push('Passwords do not match');
     }
 
-    // Check if email already exists for other users
-    const existingUser = await db.query('SELECT id FROM users WHERE email = $1 AND id != $2', [email, userId]);
+    // Check if email or cep_id already exists for other users
+    const existingUser = await db.query(
+      'SELECT id FROM users WHERE (email = $1 OR cep_id = $2) AND id != $3',
+      [email, cep_id, userId]
+    );
     if (existingUser.rows.length > 0) {
-      errors.push('Email already exists');
+      if (existingUser.rows.some(u => u.email === email)) errors.push('Email already exists');
+      if (existingUser.rows.some(u => u.cep_id === cep_id)) errors.push('CEP ID already exists');
     }
 
     if (errors.length > 0) {
@@ -204,13 +211,13 @@ exports.editUser = async (req, res) => {
     }
 
     // Update user
-    let updateQuery = 'UPDATE users SET name = $1, email = $2, updated_at = NOW() WHERE id = $3';
-    let updateParams = [name.trim(), email.trim(), userId];
+    let updateQuery = 'UPDATE users SET cep_id = $1, name = $2, email = $3, updated_at = NOW() WHERE id = $4';
+    let updateParams = [cep_id.trim(), name.trim(), email.trim(), userId];
 
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      updateQuery = 'UPDATE users SET name = $1, email = $2, password = $4, updated_at = NOW() WHERE id = $3';
-      updateParams = [name.trim(), email.trim(), userId, hashedPassword];
+      updateQuery = 'UPDATE users SET cep_id = $1, name = $2, email = $3, password = $5, updated_at = NOW() WHERE id = $4';
+      updateParams = [cep_id.trim(), name.trim(), email.trim(), userId, hashedPassword];
     }
 
     await db.query(updateQuery, updateParams);

@@ -32,4 +32,7 @@ router.get('/assets-by-employee', isAuthenticated, reportController.assetsByEmpl
 router.get('/export-assets', isAuthenticated, reportController.exportAssetsCSV);
 router.get('/assets/export', isAuthenticated, reportController.exportAssetsCSV);
 
+router.get('/employee-full-assets/:id', isAuthenticated, reportController.employeeFullAssetsPDF);
+
+
 module.exports = router;

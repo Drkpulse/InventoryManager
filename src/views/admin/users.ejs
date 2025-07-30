@@ -20,6 +20,7 @@
       <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead class="bg-gray-50 dark:bg-gray-900">
           <tr>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">CEP</th>
             <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Name</th>
             <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Email</th>
             <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Roles</th>
@@ -31,7 +32,16 @@
         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
           <% users.forEach(user => { %>
             <tr>
-              <td class="px-4 py-3 text-gray-800 dark:text-gray-100"><%= user.name %></td>
+              <td class="px-4 py-3 text-gray-800 dark:text-gray-100">
+                <% if (user.cep_id) { %>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">[<%= user.cep_id %>]</span>
+                <% } else { %>
+                  <span class="text-xs text-gray-400 dark:text-gray-600">-</span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3 text-gray-800 dark:text-gray-100">
+                <%= user.name %>
+              </td>
               <td class="px-4 py-3 text-gray-700 dark:text-gray-200"><%= user.email %></td>
               <td class="px-4 py-3">
                 <div class="flex flex-wrap gap-1">

@@ -6,51 +6,52 @@ exports.loginForm = async (req, res) => {
     title: 'Login',
     body: 'auth/login',
     error: req.flash('error'),
-    email: req.body.email || '',
+    email: req.body.email || req.body.login || '',
     user: null
   });
 };
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, login, password } = req.body;
+    const loginInput = email || login; // Support both field names
 
     // Validate input
-    if (!email || !password) {
+    if (!loginInput || !password) {
       if (req.isAjax) {
         return res.status(400).json({
           success: false,
-          message: 'Email and password are required'
+          message: 'Email/CEP ID and password are required'
         });
       }
 
       return res.render('layout', {
         title: 'Login',
         body: 'auth/login',
-        error: 'Email and password are required',
-        email,
+        error: 'Email/CEP ID and password are required',
+        email: loginInput,
         user: null
       });
     }
 
-    // Query for user
-    const { rows } = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    // Query for user using the helper function (case-insensitive)
+    const { rows } = await db.query('SELECT * FROM find_user_by_login($1)', [loginInput]);
 
     if (rows.length === 0) {
-      console.log('User not found:', email);
+      console.log('User not found:', loginInput);
 
       if (req.isAjax) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid email or password'
+          message: 'Invalid email/CEP ID or password'
         });
       }
 
       return res.render('layout', {
         title: 'Login',
         body: 'auth/login',
-        error: 'Invalid email or password',
-        email,
+        error: 'Invalid email/CEP ID or password',
+        email: loginInput,
         user: null
       });
     }
@@ -61,20 +62,20 @@ exports.login = async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
-      console.log('Password mismatch for user:', email);
+      console.log('Password mismatch for user:', loginInput);
 
       if (req.isAjax) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid email or password'
+          message: 'Invalid email/CEP ID or password'
         });
       }
 
       return res.render('layout', {
         title: 'Login',
         body: 'auth/login',
-        error: 'Invalid email or password',
-        email,
+        error: 'Invalid email/CEP ID or password',
+        email: loginInput,
         user: null
       });
     }
@@ -96,6 +97,7 @@ exports.login = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        cep_id: user.cep_id,
         role: user.role, // Keep for backward compatibility
         permissions: permissionsResult.rows.map(row => row.permission_name),
         roles: rolesResult.rows,
@@ -110,7 +112,7 @@ exports.login = async (req, res) => {
       );
 
       // Log successful login with role info
-      console.log(`User logged in successfully: ${email} with roles: ${req.session.user.roleNames.join(', ')}`);
+      console.log(`User logged in successfully: ${loginInput} (${user.name}) with roles: ${req.session.user.roleNames.join(', ')}`);
 
     } catch (permissionError) {
       console.error('Error loading permissions during login:', permissionError);
@@ -120,6 +122,7 @@ exports.login = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        cep_id: user.cep_id,
         role: user.role,
         permissions: [],
         roles: [],
@@ -133,12 +136,13 @@ exports.login = async (req, res) => {
         redirect: '/',
         user: {
           name: req.session.user.name,
+          cep_id: req.session.user.cep_id,
           roles: req.session.user.roleNames
         }
       });
     }
 
-    req.flash('success', 'Welcome back! You have been logged in successfully.');
+    req.flash('success', `Welcome back, ${user.name}! You have been logged in successfully.`);
     res.redirect('/');
 
   } catch (error) {
@@ -155,7 +159,7 @@ exports.login = async (req, res) => {
       title: 'Login',
       body: 'auth/login',
       error: 'An error occurred during login',
-      email: req.body.email,
+      email: req.body.email || req.body.login,
       user: null
     });
   }
@@ -164,6 +168,7 @@ exports.login = async (req, res) => {
 exports.logout = async (req, res) => {
   try {
     const userName = req.session?.user?.name || 'Unknown';
+    const userCep = req.session?.user?.cep_id || 'Unknown';
 
     // Destroy session
     req.session.destroy((err) => {
@@ -173,7 +178,7 @@ exports.logout = async (req, res) => {
         return res.redirect('/');
       }
 
-      console.log(`User logged out: ${userName}`);
+      console.log(`User logged out: ${userName} (${userCep})`);
       res.redirect('/auth/login');
     });
 
@@ -193,6 +198,7 @@ exports.checkAuth = (req, res) => {
         id: req.session.user.id,
         name: req.session.user.name,
         email: req.session.user.email,
+        cep_id: req.session.user.cep_id,
         roles: req.session.user.roleNames || [],
         permissions: req.session.user.permissions || []
       }
@@ -233,7 +239,7 @@ exports.refreshPermissions = async (req, res) => {
     req.session.user.roleNames = rolesResult.rows.map(role => role.display_name);
     req.session.user.permissionsLoadedAt = Date.now();
 
-    console.log(`Refreshed permissions for user: ${req.session.user.name}`);
+    console.log(`Refreshed permissions for user: ${req.session.user.name} (${req.session.user.cep_id})`);
 
     res.json({
       success: true,

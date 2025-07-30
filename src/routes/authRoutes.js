@@ -33,34 +33,36 @@ router.post('/login', upload.none(), async (req, res) => {
     console.log('Request headers:', req.headers);
     console.log('Content-Type:', req.get('Content-Type'));
 
-    const { email, password } = req.body;
+    // Support both 'email' and 'login' fields
+    const { email, login, password } = req.body;
+    const loginInput = email || login;
 
-    console.log('Extracted email:', email);
+    console.log('Extracted loginInput:', loginInput);
     console.log('Extracted password:', password ? '[PRESENT]' : '[MISSING]');
 
     // Validate input
-    if (!email || !password) {
-      console.log('Missing email or password');
+    if (!loginInput || !password) {
+      console.log('Missing login or password');
       return res.render('layout', {
         title: 'Login',
         body: 'auth/login',
-        error: 'Email and password are required',
+        error: 'Email/CEP ID and password are required',
         user: null,
-        email: email || ''
+        email: loginInput || ''
       });
     }
 
     // Query for user
-    const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    const result = await db.query('SELECT * FROM users WHERE email = $1', [loginInput]);
 
     if (result.rows.length === 0) {
-      console.log('User not found:', email);
+      console.log('User not found:', loginInput);
       return res.render('layout', {
         title: 'Login',
         body: 'auth/login',
         error: 'Invalid email or password',
         user: null,
-        email: email
+        email: loginInput
       });
     }
 
@@ -72,13 +74,13 @@ router.post('/login', upload.none(), async (req, res) => {
     console.log('Password match:', isMatch);
 
     if (!isMatch) {
-      console.log('Password mismatch for user:', email);
+      console.log('Password mismatch for user:', loginInput);
       return res.render('layout', {
         title: 'Login',
         body: 'auth/login',
         error: 'Invalid email or password',
         user: null,
-        email: email
+        email: loginInput
       });
     }
 
@@ -99,7 +101,7 @@ router.post('/login', upload.none(), async (req, res) => {
           body: 'auth/login',
           error: 'Login failed. Please try again.',
           user: null,
-          email: email
+          email: loginInput
         });
       }
 

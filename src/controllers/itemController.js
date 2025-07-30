@@ -902,3 +902,20 @@ exports.getItemHistory = async (req, res) => {
     res.status(500).send('Server error: ' + error.message);
   }
 };
+
+exports.getUnassignedItemsJson = async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT i.id, i.cep_brc, i.name, t.name as type_name, b.name as brand_name
+      FROM items i
+      LEFT JOIN types t ON i.type_id = t.id
+      LEFT JOIN brands b ON i.brand_id = b.id
+      WHERE i.assigned_to IS NULL
+      ORDER BY i.name
+    `);
+    res.json({ items: result.rows });
+  } catch (error) {
+    console.error('Error fetching unassigned items:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};

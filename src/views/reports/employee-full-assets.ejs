@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Assets Report for <%= employee.name %></title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #222; margin: 0; padding: 0; background: #f7fafd; }
+    .header { background: linear-gradient(90deg, #003366 60%, #005fa3 100%); color: #fff; padding: 32px 40px 24px 40px; border-bottom-left-radius: 24px; box-shadow: 0 2px 8px #00336622; }
+    .header h1 { margin: 0 0 8px 0; font-size: 2.2rem; letter-spacing: 1px; }
+    .header .meta { font-size: 1.05rem; margin-bottom: 4px; }
+    .header .created-by { font-size: 1rem; color: #e0e0e0; margin-top: 8px; }
+    .section { padding: 32px 40px; }
+    .section-title { font-size: 1.25rem; margin-bottom: 16px; color: #003366; font-weight: 600; letter-spacing: 0.5px; }
+    .info-table, .assets-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px #00336611; }
+    .info-table td { padding: 10px 16px; font-size: 1rem; }
+    .info-table tr:nth-child(even) { background: #f4f8fb; }
+    .assets-table th, .assets-table td { border: 1px solid #c3d0e0; padding: 10px 12px; font-size: 0.98rem; }
+    .assets-table th { background: #eaf2fb; font-weight: 600; }
+    .assets-table tr:nth-child(even) { background: #f7fbff; }
+    .summary { margin-bottom: 28px; background: #eaf2fb; padding: 14px 18px; border-radius: 6px; display: flex; gap: 32px; font-size: 1.05rem; }
+    .summary span { font-weight: bold; color: #003366; }
+    .footer { text-align: right; font-size: 0.95rem; color: #888; padding: 18px 40px 12px 40px; background: #f0f4f8; border-top: 1px solid #e0e7ef; border-bottom-right-radius: 18px; }
+    .details-list { margin: 0; padding: 0 0 0 18px; font-size: 0.98rem; color: #444; }
+    .details-list li { margin-bottom: 4px; }
+    .no-assets { color: #b00; font-weight: 500; background: #fff3f3; padding: 12px 18px; border-radius: 6px; border: 1px solid #f3cccc; }
+    @media (max-width: 700px) {
+      .header, .section, .footer { padding: 16px 8vw; }
+      .assets-table th, .assets-table td, .info-table td { font-size: 0.92rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Assets Report for <%= employee.name %></h1>
+    <div class="meta">Employee ID: <%= employee.cep %> &nbsp; | &nbsp; Department: <%= employee.department_name || 'N/A' %></div>
+    <div class="meta">Generated: <%= new Date().toLocaleString() %></div>
+    <div class="created-by">
+      Report created by:
+      <strong>
+        <%= typeof created_by !== 'undefined' && created_by ? created_by : 'IT-assets' %>
+      </strong>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Employee Details</div>
+    <table class="info-table">
+      <tr>
+        <td><strong>Name:</strong></td>
+        <td><%= employee.name %></td>
+        <td><strong>Email:</strong></td>
+        <td><%= employee.email || 'N/A' %></td>
+      </tr>
+      <tr>
+        <td><strong>Department:</strong></td>
+        <td><%= employee.department_name || 'N/A' %></td>
+        <td><strong>Location:</strong></td>
+        <td><%= employee.location_name || 'N/A' %></td>
+      </tr>
+      <tr>
+        <td><strong>Start Date:</strong></td>
+        <td><%= employee.joined_date ? new Date(employee.joined_date).toLocaleDateString() : 'N/A' %></td>
+        <td><strong>Job Title:</strong></td>
+        <td><%= employee.job_title || 'N/A' %></td>
+      </tr>
+      <tr>
+        <td><strong>Phone:</strong></td>
+        <td><%= employee.phone || 'N/A' %></td>
+        <td><strong>Status:</strong></td>
+        <td><%= employee.status || 'Active' %></td>
+      </tr>
+    </table>
+    <ul class="details-list">
+      <li><strong>Manager:</strong> <%= employee.manager_name || 'N/A' %></li>
+      <li><strong>Notes:</strong> <%= employee.notes || 'None' %></li>
+    </ul>
+    <div class="summary">
+      <span>Total Items: <%= stats.total_items || 0 %></span>
+      <span>Total Value: $<%= stats.total_value ? parseFloat(stats.total_value).toFixed(2) : '0.00' %></span>
+      <span>Asset Types: <%= stats.asset_types || 'None' %></span>
+    </div>
+    <div class="section-title">Assigned Assets</div>
+    <% if (items && items.length > 0) { %>
+      <table class="assets-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Brand</th>
+            <th>Model</th>
+            <th>Serial</th>
+            <th>Value</th>
+            <th>Date Assigned</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% items.forEach(item => { %>
+            <tr>
+              <td><%= item.cep_brc %></td>
+              <td><%= item.name %></td>
+              <td><%= item.type_name || 'N/A' %></td>
+              <td><%= item.brand_name || 'N/A' %></td>
+              <td><%= item.model || 'N/A' %></td>
+              <td><%= item.serial || 'N/A' %></td>
+              <td>$<%= item.price ? parseFloat(item.price).toFixed(2) : '0.00' %></td>
+              <td><%= item.date_assigned ? new Date(item.date_assigned).toLocaleDateString() : 'N/A' %></td>
+              <td><%= item.status || 'Active' %></td>
+              <td><%= item.notes || '' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <div class="no-assets">No assets assigned to this employee.</div>
+    <% } %>
+  </div>
+  <div class="footer">
+    Generated by Inventory Manager &mdash; <%= new Date().toLocaleString() %>
+  </div>
+</body>
+</html>

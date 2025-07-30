@@ -12,23 +12,31 @@
       <h1 class="text-2xl font-bold text-white mt-4 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent animate-gradient-x">AssetTrack</h1>
       <p class="text-gray-200">IT Asset Management</p>
     </div>
-    <form id="loginForm" method="POST" action="/auth/login" class="space-y-6">
+    <form id="loginForm" method="POST" action="/auth/login" class="space-y-6" data-no-ajax="true">
       <div>
-        <label for="email" class="block text-sm font-medium text-gray-200">Email address</label>
+        <label for="login" class="block text-sm font-medium text-gray-200">
+          <i class="fas fa-user mr-1"></i>
+          Email or CEP ID
+        </label>
         <div class="relative mt-1">
           <input
-            type="email"
-            name="email"
-            id="email"
+            type="text"
+            name="login"
+            id="login"
             required
             autofocus
             class="block w-full rounded-lg border border-gray-300 bg-white/60 py-2 pl-12 pr-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 peer"
-            placeholder="you@example.com"
-            value="<%= typeof email !== 'undefined' ? email : '' %>"
+            placeholder="Enter your email or CEP ID"
+            value="<%= typeof login !== 'undefined' ? login : '' %>"
+            autocomplete="username"
           >
           <span class="input-icon pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400 transition-all duration-300 peer-focus:-left-10 peer-[not(:placeholder-shown)]:-left-10 peer-focus:opacity-0 peer-[not(:placeholder-shown)]:opacity-0">
-            <i class="fas fa-envelope"></i>
+            <i class="fas fa-id-badge"></i>
           </span>
+        </div>
+        <div class="mt-1 text-xs text-gray-400">
+          <i class="fas fa-info-circle mr-1"></i>
+          You can use either your email address or CEP ID
         </div>
       </div>
       <div>
@@ -49,6 +57,14 @@
           <button type="button" onclick="togglePasswordPro()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-400 transition">
             <i class="fas fa-eye" id="passwordToggleIcon"></i>
           </button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded" <%= typeof remember !== 'undefined' && remember ? 'checked' : '' %>>
+          <label for="remember" class="ml-2 text-sm text-gray-400">
+            Remember me
+          </label>
         </div>
       </div>
       <% if (typeof error !== 'undefined' && error) { %>
@@ -82,6 +98,25 @@ function togglePasswordPro() {
     toggleIcon.className = 'fas fa-eye';
   }
 }
+
+// Remember me: set cookie on submit if checked
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+  const remember = document.getElementById('remember').checked;
+  const login = document.getElementById('login').value;
+  if (remember) {
+    document.cookie = `remember_login=${encodeURIComponent(login)}; path=/; max-age=2592000`; // 30 days
+  } else {
+    document.cookie = 'remember_login=; path=/; max-age=0';
+  }
+});
+window.addEventListener('DOMContentLoaded', function() {
+  // Autofill login field from cookie if present
+  const match = document.cookie.match(/(?:^|; )remember_login=([^;]*)/);
+  if (match) {
+    document.getElementById('login').value = decodeURIComponent(match[1]);
+    document.getElementById('remember').checked = true;
+  }
+});
 </script>
 <style>
 @keyframes animate-shake {

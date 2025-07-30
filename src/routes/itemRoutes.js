@@ -42,6 +42,9 @@ router.get('/', isAuthenticated, itemController.getAllItems);
 router.get('/new', isAuthenticated, itemController.createItemForm);
 router.post('/', isAuthenticated, itemController.createItem);
 
+// Route to get all unassigned items json
+router.get('/api/unassigned', isAuthenticated, itemController.getUnassignedItemsJson);
+
 // New route for receipt and items
 router.get('/new-receipt', isAuthenticated, itemController.newReceiptForm);
 router.post('/new-receipt', isAuthenticated, itemController.createReceiptWithItems);

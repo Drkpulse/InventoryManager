@@ -214,33 +214,6 @@
           <% } %>
         </div>
       </div>
-
-      <!-- Quick Actions -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">Quick Actions</h3>
-        <div class="flex flex-col gap-2">
-          <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition">
-            <i class="fas fa-edit"></i> Edit Details
-          </a>
-          <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
-            <i class="fas fa-history"></i> View History
-          </a>
-          <button onclick="printAssetLabel()" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
-            <i class="fas fa-print"></i> Print Label
-          </button>
-          <% if (item.assigned_to) { %>
-            <form method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/unassign">
-              <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition w-full">
-                <i class="fas fa-user-minus"></i> Unassign
-              </button>
-            </form>
-          <% } else { %>
-            <a href="/items/<%= item.id %>/<%= item.cep_brc %>/assign" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
-              <i class="fas fa-user-plus"></i> Assign
-            </a>
-          <% } %>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -289,12 +262,16 @@ function printAssetLabel() {
           .details div {
             margin-bottom: 4px;
           }
+          .barcode {
+            margin: 16px 0 4px 0;
+          }
         </style>
       </head>
       <body>
         <div class="label">
-          <div class="asset-id"><%= item.cep_brc %></div>
           <div class="asset-name"><%= item.name %></div>
+          <svg id="barcode" class="barcode"></svg>
+          <div class="asset-id"><%= item.cep_brc %></div>
           <div class="details">
             <div><strong>Type:</strong> <%= item.type_name || 'N/A' %></div>
             <div><strong>Brand:</strong> <%= item.brand_name || 'N/A' %></div>
@@ -302,6 +279,19 @@ function printAssetLabel() {
             <% if (item.assigned_to_name) { %><div><strong>Assigned:</strong> <%= item.assigned_to_name %></div><% } %>
           </div>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode/dist/JsBarcode.all.min.js"></script>
+        <script>
+          window.onload = function() {
+            JsBarcode("#barcode", "<%= item.cep_brc %>", {
+              format: "CODE128",
+              width: 2,
+              height: 40,
+              displayValue: false
+            });
+            window.print();
+            window.close();
+          }
+        <\/script>
       </body>
     </html>
   `);

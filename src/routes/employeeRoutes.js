@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db'); // Add this missing import
 const employeeController = require('../controllers/employeeController');
+const { getEmployeeHistory } = require('../utils/historyLogger');
 
 // Middleware to check if user is logged in
 const isAuthenticated = (req, res, next) => {
@@ -145,6 +146,64 @@ router.get('/:id/edit', isAuthenticated, employeeController.updateEmployeeForm);
 router.post('/:id', isAuthenticated, employeeController.updateEmployee);
 router.post('/:id/delete', isAuthenticated, employeeController.deleteEmployee);
 router.post('/:id/unassign-and-delete', isAuthenticated, employeeController.unassignAndDeleteEmployee);
-router.get('/:id/history', isAuthenticated, employeeController.getEmployeeHistory);
+router.get('/:id/history', async (req, res) => {
+  try {
+    const employeeId = req.params.id;
+
+    // Fetch employee details
+    const employeeResult = await db.query('SELECT * FROM employees WHERE id = $1', [employeeId]);
+    const employee = employeeResult.rows[0];
+
+    if (!employee) {
+      return res.status(404).render('layout', {
+        title: 'Error',
+        body: 'error',
+        message: 'Employee not found',
+        user: req.session.user
+      });
+    }
+
+    // Fetch employee history - adjust the query as per your database schema
+    const history = await getEmployeeHistory(employeeId); // Implement this function to fetch history
+
+    // Fetch users for filter dropdowns, etc.
+    const usersResult = await db.query('SELECT id, name FROM users ORDER BY name');
+    const users = usersResult.rows;
+
+    // Pagination logic
+    const page = parseInt(req.query.page) || 1;
+    const perPage = parseInt(req.query.perPage) || 10;
+
+    // Paginate history
+    const paginatedHistory = history.slice((page - 1) * perPage, page * perPage);
+
+    const profileChanges = history.filter(h => h.action_type === 'updated' && h.history_type === 'employee').length;
+    const itemActivities = history.filter(h => h.history_type === 'item').length;
+
+    res.render('employees/history', {
+      employee,
+      history,
+      paginatedHistory,
+      users,
+      startIndex: (page - 1) * perPage,
+      endIndex: Math.min(page * perPage, history.length),
+      totalItems: history.length,
+      currentPage: page,
+      totalPages: Math.ceil(history.length / perPage),
+      itemsPerPage: perPage,
+      profileChanges,
+      itemActivities,
+      // ...any other locals...
+    });
+  } catch (error) {
+    console.error('Error fetching employee history:', error);
+    res.status(500).render('layout', {
+      title: 'Error',
+      body: 'error',
+      message: 'Could not fetch employee history',
+      user: req.session.user
+    });
+  }
+});
 
 module.exports = router;

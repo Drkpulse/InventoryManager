@@ -1,4 +1,7 @@
 const db = require('../config/db');
+const ejs = require('ejs');
+const path = require('path');
+const puppeteer = require('puppeteer'); // or use pdfkit, html-pdf, etc.
 
 // Report on asset allocation by department
 exports.assetsByDepartment = async (req, res) => {
@@ -429,5 +432,67 @@ exports.assetsReport = async (req, res) => {
       message: 'Could not load assets report: ' + error.message,
       user: req.session.user
     });
+  }
+};
+
+// Employee full assets report (detailed view with PDF export)
+exports.employeeFullAssetsPDF = async (req, res) => {
+  const employeeId = req.params.id;
+  try {
+    // Fetch employee details
+    const employeeResult = await db.query(`
+      SELECT e.*, d.name as department_name, l.name as location_name
+      FROM employees e
+      LEFT JOIN departments d ON e.dept_id = d.id
+      LEFT JOIN locations l ON e.location_id = l.id
+      WHERE e.id = $1
+    `, [employeeId]);
+    if (employeeResult.rows.length === 0) {
+      return res.status(404).send('Employee not found');
+    }
+    const employee = employeeResult.rows[0];
+
+    // Fetch assigned items
+    const itemsResult = await db.query(`
+      SELECT i.*, t.name as type_name, b.name as brand_name
+      FROM items i
+      LEFT JOIN types t ON i.type_id = t.id
+      LEFT JOIN brands b ON i.brand_id = b.id
+      WHERE i.assigned_to = $1
+      ORDER BY i.name
+    `, [employeeId]);
+    const items = itemsResult.rows;
+
+    // Calculate stats
+    const stats = {
+      total_items: items.length,
+      total_value: items.reduce((sum, i) => sum + (parseFloat(i.price) || 0), 0),
+      asset_types: [...new Set(items.map(i => i.type_name).filter(Boolean))].join(', ')
+    };
+
+    // Render HTML using EJS
+    const html = await ejs.renderFile(
+      path.join(__dirname, '../views/reports/employee-full-assets.ejs'),
+      { employee, items, stats }
+    );
+
+    if (req.query.format === 'pdf') {
+      const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+      await browser.close();
+
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="assets-report-${employee.cep}.pdf"`
+      });
+      return res.send(pdfBuffer);
+    } else {
+      res.send(html);
+    }
+  } catch (error) {
+    console.error('Error generating employee full assets report:', error);
+    res.status(500).send('Server error');
   }
 };

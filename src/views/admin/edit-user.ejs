@@ -18,7 +18,7 @@
       </div>
     <% } %>
 
-    <form method="POST" action="/admin/users/<%= editUser.id %>/edit" class="space-y-6" autocomplete="off">
+    <form method="POST" action="/admin/users/<%= editUser.id %>/edit" class="space-y-6" autocomplete="off" data-no-ajax="true">
       <div>
         <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Name <span class="text-red-500">*</span></label>
         <input type="text" id="name" name="name" value="<%= editUser.name %>" required

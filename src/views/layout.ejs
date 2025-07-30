@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %> | IT Asset Manager</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/tailwind.css">
 </head>
 <body class="min-h-screen text-gray-900 dark:text-white" data-theme="<%= user && user.settings && user.settings.theme ? user.settings.theme : 'light' %>">
   <div class="flex min-h-screen <%= locals.isDashboardPage ? 'bg-gray-50 dark:bg-gray-900' : '' %>">
@@ -32,18 +32,27 @@
             <div class="relative">
               <button class="relative text-gray-500 dark:text-gray-300 hover:text-indigo-700 dark:hover:text-indigo-300 focus:outline-none" id="notificationToggle">
                 <i class="far fa-bell text-xl"></i>
-                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5" id="notificationCount" style="display: none;">0</span>
+                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 shadow" id="notificationCount" style="display: none;">0</span>
               </button>
-              <div class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-50 hidden" id="notificationMenu">
-                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                  <h3 class="font-semibold text-gray-900 dark:text-white">Notifications</h3>
-                  <a href="#" class="text-xs text-indigo-700 dark:text-indigo-300 hover:underline" id="markAllRead">Mark all as read</a>
+              <div class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl z-50 border border-gray-100 dark:border-gray-700 hidden transition-all duration-200" id="notificationMenu">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-2xl">
+                  <h3 class="font-semibold text-gray-900 dark:text-white text-base">Notifications</h3>
+                  <a href="#" class="text-xs text-indigo-700 dark:text-indigo-300 hover:underline font-medium" id="markAllRead">Mark all as read</a>
                 </div>
-                <div class="max-h-64 overflow-y-auto" id="notificationList">
-                  <div class="px-4 py-3 text-gray-500 dark:text-gray-300">Loading notifications...</div>
+                <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700" id="notificationList">
+                  <!-- Example notification item, replace with JS rendering -->
+                  <div class="flex items-start gap-3 px-5 py-4 bg-indigo-50 dark:bg-indigo-900/30 border-l-4 border-indigo-500 dark:border-indigo-400 shadow-sm mb-1 rounded-lg last:mb-0">
+                    <i class="fas fa-info-circle text-indigo-500 dark:text-indigo-300 mt-1"></i>
+                    <div>
+                      <div class="text-sm text-gray-900 dark:text-white font-medium">Welcome to IT Asset Manager!</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-300">Just now</div>
+                    </div>
+                  </div>
+                  <!-- Placeholder for loading -->
+                  <div class="px-5 py-4 text-gray-500 dark:text-gray-300 text-center" id="notificationLoading">Loading notifications...</div>
                 </div>
-                <div class="px-4 py-2 border-t border-gray-100 dark:border-gray-700 text-right">
-                  <a href="/notifications/history" class="text-indigo-700 dark:text-indigo-300 hover:underline text-sm">View all notifications</a>
+                <div class="px-5 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-b-2xl text-right">
+                  <a href="/notifications/history" class="text-indigo-700 dark:text-indigo-300 hover:underline text-sm font-medium">View all notifications</a>
                 </div>
               </div>
             </div>
@@ -56,17 +65,47 @@
                 <span class="font-medium text-gray-900 dark:text-white"><%= user.name %></span>
                 <i class="fas fa-chevron-down text-xs text-gray-400"></i>
               </button>
-              <div class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-50 hidden" id="userDropdownMenu">
-                <div class="flex items-center gap-4 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                  <div class="w-12 h-12 rounded-full bg-indigo-900 dark:bg-indigo-700 flex items-center justify-center text-white font-bold text-2xl">
+              <div class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-50 hidden" id="userDropdownMenu">
+                <div class="flex flex-col items-center px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+                  <div class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-2xl mb-3
+                    <%
+                      let mainRole = userRoles[0] ? userRoles[0].toLowerCase() : '';
+                      let avatarBg = mainRole.includes('developer') ? 'bg-purple-700 dark:bg-purple-900' :
+                                     (mainRole.includes('admin') || mainRole.includes('super')) ? 'bg-red-700 dark:bg-red-900' :
+                                     mainRole.includes('manager') ? 'bg-yellow-600 dark:bg-yellow-900' :
+                                     'bg-blue-700 dark:bg-blue-900';
+                    %>
+                    <%= avatarBg %>">
                     <%= user.name.charAt(0).toUpperCase() %>
                   </div>
-                  <div>
-                    <h4 class="font-semibold text-gray-900 dark:text-white"><%= user.name %></h4>
-                    <p class="text-xs text-gray-500 dark:text-gray-300"><%= user.email %></p>
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium <%= user.role === 'admin' ? 'bg-indigo-100 text-indigo-900 dark:bg-indigo-800 dark:text-indigo-200' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200' %>">
-                      <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
-                    </span>
+                  <div class="flex flex-col items-center w-full">
+                    <div class="flex flex-col items-center justify-center mb-1 w-full">
+                      <span class="font-semibold text-gray-900 dark:text-white text-base"><%= user.name %></span>
+                      <span class="text-xs text-gray-500 dark:text-gray-300"><%= user.email %></span>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-2 w-full">
+                      <% userRoles.forEach(role => {
+                        let roleLower = role.toLowerCase();
+                        let badgeColor = roleLower.includes('developer') ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 ring-2 ring-purple-400/40' :
+                                        (roleLower.includes('admin') || roleLower.includes('super')) ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 ring-2 ring-red-400/40' :
+                                        roleLower.includes('manager') ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 ring-2 ring-yellow-400/40' :
+                                        'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 ring-2 ring-blue-400/40';
+                        let iconBg = roleLower.includes('developer') ? 'bg-purple-400/80' :
+                                     (roleLower.includes('admin') || roleLower.includes('super')) ? 'bg-red-400/80' :
+                                     roleLower.includes('manager') ? 'bg-yellow-400/80' :
+                                     'bg-blue-400/80';
+                        let icon = roleLower.includes('developer') ? 'fa-code' :
+                                   roleLower.includes('admin') ? 'fa-user-shield' :
+                                   roleLower.includes('manager') ? 'fa-user-tie' : 'fa-user';
+                      %>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm transition <%= badgeColor %> mb-1">
+                          <span class="w-5 h-5 flex items-center justify-center rounded-full mr-2 <%= iconBg %> text-white">
+                            <i class="fas <%= icon %> text-xs"></i>
+                          </span>
+                          <%= role %>
+                        </span>
+                      <% }) %>
+                    </div>
                   </div>
                 </div>
                 <div class="flex flex-col py-2">

@@ -115,7 +115,7 @@
 			  <div class="ml-4">
 				<div class="text-2xl font-bold text-yellow-600 dark:text-yellow-300">
 				  <%= Object.values(permissionsByModule).reduce((total, perms) =>
-					total + perms.reduce((sum, p) => sum + p.role_count, 0), 0) %>
+					total + perms.reduce((sum, p) => sum + Number(p.role_count || 0), 0), 0) %>
 				</div>
 				<div class="text-sm text-yellow-600 dark:text-yellow-300">Total Assignments</div>
 			  </div>
@@ -128,10 +128,17 @@
 				<i class="fas fa-chart-line text-purple-500 text-2xl"></i>
 			  </div>
 			  <div class="ml-4">
+				<%
+				  const totalAssignments = Object.values(permissionsByModule).reduce(
+					(total, perms) => total + perms.reduce((sum, p) => sum + Number(p.role_count || 0), 0), 0
+				  );
+				  const totalPermissions = Object.values(permissionsByModule).reduce(
+					(total, perms) => total + perms.length, 0
+				  );
+				  const avgUsage = totalPermissions > 0 ? Math.round(totalAssignments / totalPermissions) : 0;
+				%>
 				<div class="text-2xl font-bold text-purple-600 dark:text-purple-300">
-				  <%= Math.round(Object.values(permissionsByModule).reduce((total, perms) =>
-					total + perms.reduce((sum, p) => sum + p.role_count, 0), 0) /
-					Object.values(permissionsByModule).reduce((total, perms) => total + perms.length, 0)) || 0 %>
+				  <%= avgUsage %>
 				</div>
 				<div class="text-sm text-purple-600 dark:text-purple-300">Avg. Usage</div>
 			  </div>

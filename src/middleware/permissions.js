@@ -54,7 +54,7 @@ const loadUserPermissions = async (req, res, next) => {
  */
 const addPermissionHelpers = (req, res, next) => {
   // Add permission checking function to response locals
-  res.locals.can = (permission) => {
+  res.locals.userCan = (permission) => {
     if (!req.session || !req.session.user) return false;
 
     // Check if user has specific permission
@@ -70,8 +70,10 @@ const addPermissionHelpers = (req, res, next) => {
     return false;
   };
 
+  res.locals.can = res.locals.userCan;
+
   // Add role checking function
-  res.locals.hasRole = (roleName) => {
+  res.locals.userHasRole = (roleName) => {
     if (!req.session || !req.session.user) return false;
 
     if (req.session.user.roles) {
@@ -82,22 +84,28 @@ const addPermissionHelpers = (req, res, next) => {
     return req.session.user.role === roleName;
   };
 
+  res.locals.hasRole = res.locals.userHasRole;
+
   // Add multiple permission checking function
-  res.locals.canAny = (permissions) => {
+  res.locals.userCanAny = (permissions) => {
     if (!Array.isArray(permissions)) return false;
-    return permissions.some(permission => res.locals.can(permission));
+    return permissions.some(permission => res.locals.userCan(permission));
   };
 
+    res.locals.canAny = res.locals.userCanAny;
+
   // Add admin checking function
-  res.locals.isAdmin = () => {
+  res.locals.userIsAdmin = () => {
     if (!req.session || !req.session.user) return false;
 
     const adminPermissions = [
       'users.view', 'roles.view', 'admin.settings', 'admin.logs'
     ];
 
-    return adminPermissions.some(permission => res.locals.can(permission));
+    return adminPermissions.some(permission => res.locals.userCan(permission));
   };
+
+  res.locals.isAdmin = res.locals.userIsAdmin;
 
   // Add current user roles for display
   res.locals.userRoles = req.session?.user?.roleNames || [];

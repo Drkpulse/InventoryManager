@@ -36,7 +36,20 @@
     "pg-hstore": "^2.3.4"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.21",
     "nodemon": "^3.0.1",
-    "tailwindcss": "^3.3.3"
-  }
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Drkpulse/inv_manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Drkpulse/inv_manager/issues"
+  },
+  "homepage": "https://github.com/Drkpulse/inv_manager#readme"
 }

@@ -14,8 +14,10 @@
   </div>
 
   <div class="mb-6">
-    <label for="role" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Role</label>
-    <input type="text" id="role" value="<%= profile.role %>" disabled
+    <label for="roles" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Roles</label>
+    <input type="text" id="roles"
+      value="<%= Array.isArray(userRoles) && userRoles.length ? userRoles.join(', ') : (Array.isArray(profile.roles) ? profile.roles.join(', ') : (profile.roleNames ? profile.roleNames.join(', ') : (profile.role || ''))) %>"
+      disabled
       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed">
   </div>
 

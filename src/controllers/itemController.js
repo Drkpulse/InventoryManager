@@ -75,12 +75,14 @@ exports.getAllItems = async (req, res) => {
     // Get the filtered items with pagination
     const itemsQuery = `
       SELECT i.*, t.name as type_name, b.name as brand_name,
-             e.name as assigned_to_name, d.name as department_name
+             e.name as assigned_to_name, d.name as department_name,
+             st.name as status_name
       FROM items i
       LEFT JOIN types t ON i.type_id = t.id
       LEFT JOIN brands b ON i.brand_id = b.id
       LEFT JOIN employees e ON i.assigned_to = e.id
       LEFT JOIN departments d ON e.dept_id = d.id
+      LEFT JOIN statuses st ON i.status_id = st.id
       ${whereClause}
       ORDER BY i.created_at DESC
       LIMIT ${perPage} OFFSET ${offset}
@@ -131,13 +133,15 @@ exports.getItemById = async (req, res) => {
 
     const result = await db.query(`
       SELECT i.*, t.name as type_name, b.name as brand_name,
-       e.name as assigned_to_name, e.id as employee_id,
-       s.supplier, s.date_acquired
+      e.name as assigned_to_name, e.id as employee_id,
+      s.supplier, s.date_acquired,
+      st.name as status_name
       FROM items i
       LEFT JOIN types t ON i.type_id = t.id
       LEFT JOIN brands b ON i.brand_id = b.id
       LEFT JOIN employees e ON i.assigned_to = e.id
       LEFT JOIN sales s ON i.receipt = s.receipt
+      LEFT JOIN statuses st ON i.status_id = st.id
       WHERE i.id = $1 AND i.cep_brc = $2
     `, [id, cep_brc]);
 
@@ -167,15 +171,14 @@ exports.createItemForm = async (req, res) => {
   try {
     // Get types for dropdown
     const types = await db.query('SELECT * FROM types ORDER BY name');
-
     // Get brands for dropdown
     const brands = await db.query('SELECT * FROM brands ORDER BY name');
-
     // Get sales receipts for dropdown
     const sales = await db.query('SELECT * FROM sales ORDER BY date_acquired DESC');
-
     // Get employees for dropdown
     const employees = await db.query('SELECT * FROM employees WHERE left_date IS NULL ORDER BY name');
+    // Get statuses for dropdown
+    const statuses = await db.query('SELECT * FROM statuses ORDER BY name');
 
     res.render('layout', {
       title: 'Add New Item',
@@ -184,6 +187,7 @@ exports.createItemForm = async (req, res) => {
       brands: brands.rows,
       sales: sales.rows,
       employees: employees.rows,
+      statuses: statuses.rows,
       user: req.session.user
     });
   } catch (error) {
@@ -196,7 +200,7 @@ exports.createItem = async (req, res) => {
   try {
     const {
       cep_brc, name, type_id, price, brand_id,
-      model, serial_cod, receipt, date_assigned, assigned_to, description
+      model, serial_cod, receipt, date_assigned, assigned_to, description, status_id
     } = req.body;
 
     console.log('Creating new item with data:', {
@@ -233,13 +237,13 @@ exports.createItem = async (req, res) => {
     try {
       const result = await db.query(`
         INSERT INTO items
-        (cep_brc, name, type_id, price, brand_id, model, serial_cod, receipt, date_assigned, assigned_to, description)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        (cep_brc, name, type_id, price, brand_id, model, serial_cod, receipt, date_assigned, assigned_to, description, status_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         RETURNING id, cep_brc
       `, [
         cep_brc, name, type_id, price || null, brand_id || null,
         model || null, serial_cod || null, receipt || null,
-        date_assigned || null, assigned_to || null, description || null
+        date_assigned || null, assigned_to || null, description || null, status_id || null
       ]);
 
       console.log('Item created successfully:', result.rows[0]);
@@ -323,6 +327,9 @@ exports.updateItemForm = async (req, res) => {
     // Get employees for dropdown
     const employees = await db.query('SELECT * FROM employees WHERE left_date IS NULL ORDER BY name');
 
+    // Get statuses for dropdown
+    const statuses = await db.query('SELECT * FROM statuses ORDER BY name');
+
     res.render('layout', {
       title: 'Edit Item',
       body: 'items/edit',
@@ -331,6 +338,7 @@ exports.updateItemForm = async (req, res) => {
       brands: brands.rows,
       sales: sales.rows,
       employees: employees.rows,
+      statuses: statuses.rows,
       user: req.session.user
     });
   } catch (error) {
@@ -344,7 +352,8 @@ exports.updateItem = async (req, res) => {
     const { id, cep_brc } = req.params;
     const {
       name, type_id, price, brand_id,
-      model, serial_cod, receipt, date_assigned, assigned_to, description
+      model, serial_cod, receipt, date_assigned, assigned_to, description,
+      status_id
     } = req.body;
 
     // Get the submitted CEP/BRC (which may be different if admin changed it)
@@ -467,12 +476,13 @@ exports.updateItem = async (req, res) => {
         date_assigned = $8,
         assigned_to = $9,
         description = $10,
+        status_id = $11,
         updated_at = NOW()
-      WHERE id = $11 AND cep_brc = $12
+      WHERE id = $12 AND cep_brc = $13
     `, [
       name, type_id, price || null, brand_id || null, model || null,
       serial_cod || null, receipt || null, date_assigned || null,
-      assigned_to || null, description || null, id, cep_brc
+      assigned_to || null, description || null, status_id || null, id, cep_brc
     ]);
 
     // Get original item data for comparison

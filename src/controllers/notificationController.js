@@ -1,3 +1,4 @@
+// src/controllers/notificationController.js - Fixed version
 const db = require('../config/db');
 
 // Service functions for creating notifications
@@ -18,6 +19,7 @@ const createNotification = async ({ type_name, user_id = null, title, message, u
       [type_id, user_id, title, message, url, data ? JSON.stringify(data) : null]
     );
 
+    console.log(`✅ Created notification: ${title} for user ${user_id || 'ALL'}`);
     return true;
   } catch (error) {
     console.error('Error creating notification:', error);
@@ -49,14 +51,21 @@ const createBroadcastNotification = async ({ type_name, title, message, url = nu
     const usersResult = await db.query(userQuery, queryParams);
 
     // Create notifications for all users
+    let successCount = 0;
     for (const user of usersResult.rows) {
-      await db.query(
-        'INSERT INTO notifications (type_id, user_id, title, message, url, data) VALUES ($1, $2, $3, $4, $5, $6)',
-        [type_id, user.id, title, message, url, data ? JSON.stringify(data) : null]
-      );
+      try {
+        await db.query(
+          'INSERT INTO notifications (type_id, user_id, title, message, url, data) VALUES ($1, $2, $3, $4, $5, $6)',
+          [type_id, user.id, title, message, url, data ? JSON.stringify(data) : null]
+        );
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to create notification for user ${user.id}:`, error);
+      }
     }
 
-    return usersResult.rows.length;
+    console.log(`✅ Created broadcast notification for ${successCount} users`);
+    return successCount;
   } catch (error) {
     console.error('Error creating broadcast notification:', error);
     return false;
@@ -66,6 +75,13 @@ const createBroadcastNotification = async ({ type_name, title, message, url = nu
 // Main controller functions
 exports.getNotifications = async (req, res) => {
   try {
+    if (!req.session?.user?.id) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
+
     const userId = req.session.user.id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
@@ -121,6 +137,13 @@ exports.getNotifications = async (req, res) => {
 
 exports.getUnreadCount = async (req, res) => {
   try {
+    if (!req.session?.user?.id) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
+
     const userId = req.session.user.id;
 
     const result = await db.query(
@@ -325,11 +348,23 @@ exports.getNotificationHistory = async (req, res) => {
 // Warranty notification functions
 const checkWarrantyExpiration = async () => {
   try {
+    console.log('🔍 Starting warranty expiration check...');
+
     // Items expiring in 30 days
     const expiringResult = await db.query(`
-      SELECT i.*, u.id as user_id, u.name as user_name, e.name as employee_name
+      SELECT
+        i.id,
+        i.name,
+        i.cep_brc,
+        i.warranty_end_date,
+        EXTRACT(DAY FROM (i.warranty_end_date - CURRENT_DATE)) as days_until_expiry,
+        e.id as employee_id,
+        e.name as employee_name,
+        u.id as user_id,
+        u.name as user_name
       FROM items i
       LEFT JOIN employees e ON i.assigned_to = e.id
+      LEFT JOIN users u ON e.user_id = u.id
       WHERE i.warranty_end_date IS NOT NULL
       AND i.warranty_end_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
       AND NOT EXISTS (
@@ -341,9 +376,16 @@ const checkWarrantyExpiration = async () => {
       )
     `);
 
-    // Items already expired
     const expiredResult = await db.query(`
-      SELECT i.*, u.id as user_id, u.name as user_name, e.name as employee_name
+      SELECT
+        i.id,
+        i.name,
+        i.cep_brc,
+        i.warranty_end_date,
+        EXTRACT(DAY FROM (CURRENT_DATE - i.warranty_end_date)) as days_expired,
+        e.id as employee_id,
+        e.name as employee_name,
+        u.name as user_name
       FROM items i
       LEFT JOIN employees e ON i.assigned_to = e.id
       LEFT JOIN users u ON e.user_id = u.id
@@ -360,7 +402,7 @@ const checkWarrantyExpiration = async () => {
 
     // Create notifications for expiring warranties
     for (const item of expiringResult.rows) {
-      const daysUntilExpiry = Math.ceil((new Date(item.warranty_end_date) - new Date()) / (1000 * 60 * 60 * 24));
+      const daysUntilExpiry = Math.ceil(parseFloat(item.days_until_expiry));
 
       if (item.user_id) {
         // Notify assigned user
@@ -396,7 +438,7 @@ const checkWarrantyExpiration = async () => {
 
     // Create notifications for expired warranties
     for (const item of expiredResult.rows) {
-      const daysExpired = Math.ceil((new Date() - new Date(item.warranty_end_date)) / (1000 * 60 * 60 * 24));
+      const daysExpired = Math.ceil(parseFloat(item.days_expired));
 
       if (item.user_id) {
         // Notify assigned user
@@ -430,14 +472,56 @@ const checkWarrantyExpiration = async () => {
       }
     }
 
-    console.log(`Warranty check completed: ${expiringResult.rows.length} expiring, ${expiredResult.rows.length} expired`);
+    console.log(`✅ Warranty check completed: ${expiringResult.rows.length} expiring, ${expiredResult.rows.length} expired`);
     return {
       expiring: expiringResult.rows.length,
       expired: expiredResult.rows.length
     };
   } catch (error) {
-    console.error('Error checking warranty expiration:', error);
+    console.error('❌ Error checking warranty expiration:', error);
     return null;
+  }
+};
+
+// Helper function to create item assignment notifications
+const createItemAssignmentNotification = async (itemId, employeeId, action = 'assigned') => {
+  try {
+    // Get item and employee details
+    const itemResult = await db.query(`
+      SELECT i.*, e.name as employee_name, u.id as user_id
+      FROM items i
+      LEFT JOIN employees e ON $2 = e.id
+      LEFT JOIN users u ON e.user_id = u.id
+      WHERE i.id = $1
+    `, [itemId, employeeId]);
+
+    if (itemResult.rows.length === 0) {
+      console.error('Item not found for assignment notification');
+      return false;
+    }
+
+    const item = itemResult.rows[0];
+    const type_name = action === 'assigned' ? 'item_assignment' : 'item_unassignment';
+    const title = action === 'assigned' ? 'Item Assigned' : 'Item Unassigned';
+    const message = action === 'assigned'
+      ? `"${item.name}" (${item.cep_brc}) has been assigned to you`
+      : `"${item.name}" (${item.cep_brc}) has been unassigned from you`;
+
+    if (item.user_id) {
+      await createNotification({
+        type_name,
+        user_id: item.user_id,
+        title,
+        message,
+        url: `/items/${item.id}/${item.cep_brc}`,
+        data: { item_id: itemId, employee_id: employeeId, action }
+      });
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error creating item assignment notification:', error);
+    return false;
   }
 };
 
@@ -445,3 +529,4 @@ const checkWarrantyExpiration = async () => {
 exports.createNotification = createNotification;
 exports.createBroadcastNotification = createBroadcastNotification;
 exports.checkWarrantyExpiration = checkWarrantyExpiration;
+exports.createItemAssignmentNotification = createItemAssignmentNotification;

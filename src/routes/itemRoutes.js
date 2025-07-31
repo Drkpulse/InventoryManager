@@ -35,6 +35,25 @@ router.get('/api/items/check-duplicate/:cep_brc', isAuthenticated, async (req, r
   }
 });
 
+router.post('/:id/:cep_brc/change-status', isAuthenticated, async (req, res) => {
+  const { id, cep_brc } = req.params;
+  const { status_id } = req.body;
+  const db = require('../config/db');
+
+  try {
+    // Update the item's status_id
+    await db.query(
+      'UPDATE items SET status_id = $1, updated_at = NOW() WHERE id = $2 AND cep_brc = $3',
+      [status_id, id, cep_brc]
+    );
+    req.flash('success', 'Status updated successfully');
+  } catch (error) {
+    console.error('Error updating item status:', error);
+    req.flash('error', 'Failed to update status');
+  }
+  res.redirect(`/items/${id}/${cep_brc}`);
+});
+
 // Routes with composite key (id + cep_brc)
 router.get('/', isAuthenticated, itemController.getAllItems);
 

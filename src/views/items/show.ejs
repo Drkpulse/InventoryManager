@@ -13,22 +13,37 @@
       <div class="flex items-center gap-4 mt-2 text-gray-700 dark:text-gray-300 text-sm">
         <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-xs text-gray-600 dark:text-gray-400">ID: <%= item.cep_brc %></span>
         <%
-          let statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300';
-          let statusIcon = 'fas fa-clock';
-          let statusText = 'Available';
-          if (item.assigned_to) {
-            if (item.condition === 'maintenance') {
-              statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300';
-              statusIcon = 'fas fa-wrench';
-              statusText = 'Under Maintenance';
-            } else if (item.condition === 'retired') {
-              statusClass = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
-              statusIcon = 'fas fa-archive';
-              statusText = 'Retired';
-            } else {
-              statusClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
-              statusIcon = 'fas fa-check-circle';
-              statusText = 'Active';
+          // Use item's status_name from the database
+          let statusClass = 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300';
+          let statusIcon = 'fas fa-question-circle';
+          let statusText = item.status_name || 'Unknown';
+
+          if (item.status_name) {
+            switch (item.status_name.toLowerCase()) {
+              case 'active':
+                statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300';
+                statusIcon = 'fas fa-check-circle';
+                break;
+              case 'maintenance':
+                statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300';
+                statusIcon = 'fas fa-wrench';
+                break;
+              case 'retired':
+                statusClass = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+                statusIcon = 'fas fa-archive';
+                break;
+              case 'lost':
+                statusClass = 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300';
+                statusIcon = 'fas fa-times-circle';
+                break;
+              case 'in storage':
+              case 'available':
+                statusClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
+                statusIcon = 'fas fa-clock';
+                break;
+              default:
+                statusClass = 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300';
+                statusIcon = 'fas fa-question-circle';
             }
           }
         %>

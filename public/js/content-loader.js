@@ -151,7 +151,7 @@ function loadContent(url, updateHistory = true) {
 function updatePageContent(data) {
   // Update page title
   if (data.title) {
-    document.title = data.title + ' | IT Asset Manager';
+    document.title = data.title;
   }
 
   // Update main content

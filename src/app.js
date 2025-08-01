@@ -21,10 +21,7 @@ const departmentRoutes = require('./routes/departmentRoutes');
 const translations = require('./utils/translations');
 const { loadUserPermissions, addPermissionHelpers } = require('./middleware/permissions');
 
-// Add AJAX response middleware
-const handleAjaxResponse = require('./middleware/ajaxResponse');
-
-// Add notification routes BEFORE the main routes
+// Add notification routes
 const notificationRoutes = require('./routes/notificationRoutes');
 const apiRoutes = require('./routes/apiRoutes');
 
@@ -38,23 +35,9 @@ app.set('view engine', 'ejs');
 // Middlewares - CRITICAL ORDER
 app.use(express.static(path.join(__dirname, '../public')));
 
-// BODY PARSING MIDDLEWARE - MUST BE FIRST
+// BODY PARSING MIDDLEWARE
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// DEBUG MIDDLEWARE - Add this temporarily to see what's happening
-app.use((req, res, next) => {
-  if (req.method === 'POST') {
-    console.log('=== DEBUG MIDDLEWARE ===');
-    console.log('URL:', req.url);
-    console.log('Method:', req.method);
-    console.log('Content-Type:', req.get('Content-Type'));
-    console.log('Body:', req.body);
-    console.log('Body keys:', Object.keys(req.body || {}));
-    console.log('======================');
-  }
-  next();
-});
 
 app.use(methodOverride('_method'));
 
@@ -69,10 +52,13 @@ app.use(session({
 // Flash messages
 app.use(flash());
 
-// Add AJAX response handling middleware
-app.use(handleAjaxResponse);
+// Add flash messages to res.locals for all views
+app.use((req, res, next) => {
+  res.locals.messages = req.flash();
+  next();
+});
 
-// CRITICAL: Load permissions BEFORE adding helpers
+// Load permissions
 app.use(loadUserPermissions);
 
 // Global template variables and permission helpers
@@ -92,13 +78,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Add permission helper functions AFTER loading permissions
+// Add permission helper functions
 app.use(addPermissionHelpers);
 
 // Add i18n middleware
 app.use(i18n.init);
 
-// Health check endpoint (before authentication)
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
@@ -110,13 +96,11 @@ app.get('/health', (req, res) => {
 // Add admin routes
 const adminRoutes = require('./routes/adminRoutes');
 
-// Add notification routes BEFORE main routes
+// Routes
 app.use('/notifications', isAuthenticated, notificationRoutes);
 app.use('/api', apiRoutes);
-
-// Routes - AUTH ROUTES FIRST
 app.use('/auth', authRoutes);
-app.use('/admin', adminRoutes);  // Add admin routes
+app.use('/admin', adminRoutes);
 app.use('/items', itemRoutes);
 app.use('/employees', employeeRoutes);
 app.use('/reports', reportRoutes);
@@ -124,7 +108,7 @@ app.use('/references', referenceRoutes);
 app.use('/software', softwareRoutes);
 app.use('/departments', departmentRoutes);
 
-// Use main routes AFTER notification routes
+// Use main routes
 app.use('/', routes);
 
 // 404 handler
@@ -157,7 +141,7 @@ app.listen(PORT, () => {
     } catch (error) {
       console.error('Failed to start warranty scheduler:', error);
     }
-  }, 5000); // 5 second delay to ensure database is ready
+  }, 5000);
 });
 
 module.exports = app;

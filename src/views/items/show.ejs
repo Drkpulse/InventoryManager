@@ -13,61 +13,84 @@
       <div class="flex items-center gap-4 mt-2 text-gray-700 dark:text-gray-300 text-sm">
         <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-xs text-gray-600 dark:text-gray-400">ID: <%= item.cep_brc %></span>
         <%
-          // Use item's status_name from the database
+          // Get status information from database if available
           let statusClass = 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300';
           let statusIcon = 'fas fa-question-circle';
-          let statusText = item.status_name || 'Unknown';
+          let statusText = 'Unknown';
 
           if (item.status_name) {
-            switch (item.status_name.toLowerCase()) {
-              case 'active':
+            statusText = item.status_name;
+
+            // Check if we have status data with color/icon information
+            if (typeof item.status_color !== 'undefined' && item.status_color) {
+              switch(item.status_color) {
+                case 'green':
+                  statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300';
+                  break;
+                case 'yellow':
+                  statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300';
+                  break;
+                case 'red':
+                  statusClass = 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300';
+                  break;
+                case 'blue':
+                  statusClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
+                  break;
+                case 'gray':
+                  statusClass = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+                  break;
+                default:
+                  statusClass = 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300';
+              }
+            } else {
+              // Fallback to pattern matching if no color is available
+              const statusName = item.status_name.toLowerCase();
+              if (statusName.includes('active') || statusName.includes('operational') || statusName.includes('working')) {
                 statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300';
                 statusIcon = 'fas fa-check-circle';
-                break;
-              case 'maintenance':
+              } else if (statusName.includes('maintenance') || statusName.includes('repair') || statusName.includes('service')) {
                 statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300';
                 statusIcon = 'fas fa-wrench';
-                break;
-              case 'retired':
+              } else if (statusName.includes('retired') || statusName.includes('disposed') || statusName.includes('end')) {
                 statusClass = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
                 statusIcon = 'fas fa-archive';
-                break;
-              case 'lost':
+              } else if (statusName.includes('lost') || statusName.includes('missing') || statusName.includes('stolen')) {
                 statusClass = 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300';
                 statusIcon = 'fas fa-times-circle';
-                break;
-              case 'in storage':
-              case 'available':
+              } else if (statusName.includes('storage') || statusName.includes('available') || statusName.includes('stock')) {
                 statusClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
-                statusIcon = 'fas fa-clock';
-                break;
-              default:
-                statusClass = 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300';
-                statusIcon = 'fas fa-question-circle';
+                statusIcon = 'fas fa-box';
+              }
+            }
+
+            // Use database icon if available
+            if (typeof item.status_icon !== 'undefined' && item.status_icon) {
+              statusIcon = item.status_icon;
             }
           }
         %>
-        <span class="inline-flex items-center gap-2 px-3 py-1 rounded font-semibold text-xs <%= statusClass %>">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full font-semibold text-xs shadow <%= statusClass %>">
           <i class="<%= statusIcon %>"></i> <%= statusText %>
         </span>
       </div>
     </div>
-    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
-      <a href="/items" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-        <i class="fas fa-arrow-left mr-2"></i> Back to Assets
+    <!-- Modern action buttons -->
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <a href="/items" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> Back to Assets
       </a>
-      <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition">
-        <i class="fas fa-edit mr-2"></i> Edit
+      <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="group px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform duration-300"></i> Edit Asset
       </a>
-      <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
-        <i class="fas fa-history mr-2"></i> History
+      <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-history mr-2 group-hover:scale-110 transition-transform duration-300"></i> History
       </a>
-      <button onclick="printAssetLabel()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
-        <i class="fas fa-print mr-2"></i> Print Label
+      <button type="button" onclick="printAssetLabel()" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-print mr-2 group-hover:scale-110 transition-transform duration-300"></i> Print Label
       </button>
       <form style="display: inline;" method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/delete" class="inline-form" onsubmit="return confirmDelete('<%= item.name %>');">
-        <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition">
-          <i class="fas fa-trash mr-2"></i> Delete
+        <button type="submit" class="group px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-trash mr-2 group-hover:scale-110 transition-transform duration-300"></i> Delete
         </button>
       </form>
     </div>
@@ -314,8 +337,8 @@
 </div>
 
 <script>
-function confirmDelete(assetName) {
-  return confirm(`Are you sure you want to delete "${assetName}"? This action cannot be undone and will remove all history associated with this asset.`);
+function confirmDelete(itemName, itemId) {
+  return confirm(`Are you sure you want to delete "${itemName}" (${itemId})? This action cannot be undone and will remove all history associated with this asset.`);
 }
 
 function printAssetLabel() {

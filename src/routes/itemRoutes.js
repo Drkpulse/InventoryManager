@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const itemController = require('../controllers/itemController');
-const { isAuthenticated, isAdmin } = require('../middleware/auth');
+const { hasPermission } = require('../middleware/permissions');
 
-// Add this route before your existing routes
-router.get('/api/items/check-duplicate/:cep_brc', isAuthenticated, async (req, res) => {
+// Check for duplicate asset ID
+router.get('/api/items/check-duplicate/:cep_brc', hasPermission('items.view'), async (req, res) => {
   try {
     const { cep_brc } = req.params;
+    const db = require('../config/db');
 
     const result = await db.query(`
       SELECT i.id, i.cep_brc, i.name, i.assigned_to,
@@ -35,7 +36,8 @@ router.get('/api/items/check-duplicate/:cep_brc', isAuthenticated, async (req, r
   }
 });
 
-router.post('/:id/:cep_brc/change-status', isAuthenticated, async (req, res) => {
+// Change item status
+router.post('/:id/:cep_brc/change-status', hasPermission('items.edit'), async (req, res) => {
   const { id, cep_brc } = req.params;
   const { status_id } = req.body;
   const db = require('../config/db');
@@ -54,33 +56,30 @@ router.post('/:id/:cep_brc/change-status', isAuthenticated, async (req, res) => 
   res.redirect(`/items/${id}/${cep_brc}`);
 });
 
-// Routes with composite key (id + cep_brc)
-router.get('/', isAuthenticated, itemController.getAllItems);
+// Get all items
+router.get('/', hasPermission('items.view'), itemController.getAllItems);
 
-// Check that these routes exist
-router.get('/new', isAuthenticated, itemController.createItemForm);
-router.post('/', isAuthenticated, itemController.createItem);
+// Create new item
+router.get('/new', hasPermission('items.create'), itemController.createItemForm);
+router.post('/', hasPermission('items.create'), itemController.createItem);
 
-// Route to get all unassigned items json
-router.get('/api/unassigned', isAuthenticated, itemController.getUnassignedItemsJson);
+// Get all unassigned items json
+router.get('/api/unassigned', hasPermission('items.view'), itemController.getUnassignedItemsJson);
 
-// New route for receipt and items
-router.get('/new-receipt', isAuthenticated, itemController.newReceiptForm);
-router.post('/new-receipt', isAuthenticated, itemController.createReceiptWithItems);
+// New receipt and items
+router.get('/new-receipt', hasPermission('items.create'), itemController.newReceiptForm);
+router.post('/new-receipt', hasPermission('items.create'), itemController.createReceiptWithItems);
 
 // Individual item routes with composite key
-router.get('/:id/:cep_brc', isAuthenticated, itemController.getItemById);
-router.get('/:id/:cep_brc/edit', isAuthenticated, itemController.updateItemForm);
-router.post('/:id/:cep_brc', isAuthenticated, itemController.updateItem);
-router.post('/:id/:cep_brc/delete', isAuthenticated, itemController.deleteItem);
-router.get('/:id/:cep_brc/history', isAuthenticated, itemController.getItemHistory);
-
-// Check that this route exists:
-router.get('/:id/:cep_brc/history', isAuthenticated, itemController.getItemHistory);
+router.get('/:id/:cep_brc', hasPermission('items.view'), itemController.getItemById);
+router.get('/:id/:cep_brc/edit', hasPermission('items.edit'), itemController.showEditItemForm);
+router.post('/:id/:cep_brc', hasPermission('items.edit'), itemController.updateItem);
+router.post('/:id/:cep_brc/delete', hasPermission('items.delete'), itemController.deleteItem);
+router.get('/:id/:cep_brc/history', hasPermission('items.view'), itemController.getItemHistory);
 
 // Assignment routes with composite key
-router.get('/:id/:cep_brc/assign', isAuthenticated, itemController.assignItemForm);
-router.post('/:id/:cep_brc/assign', isAuthenticated, itemController.assignItem);
-router.post('/:id/:cep_brc/unassign', isAuthenticated, itemController.unassignItem);
+router.get('/:id/:cep_brc/assign', hasPermission('items.assign'), itemController.assignItemForm);
+router.post('/:id/:cep_brc/assign', hasPermission('items.assign'), itemController.assignItem);
+router.post('/:id/:cep_brc/unassign', hasPermission('items.assign'), itemController.unassignItem);
 
 module.exports = router;

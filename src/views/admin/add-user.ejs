@@ -20,13 +20,15 @@
 
     <form method="POST" action="/admin/users/add" class="space-y-6" data-no-ajax="true">
       <div>
-        <label for="cep_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">CEP <span class="text-red-500">*</span></label>
+        <label for="cep_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">CEP ID <span class="text-red-500">*</span></label>
         <input type="text" id="cep_id" name="cep_id"
           value="<%= typeof formData !== 'undefined' ? formData.cep_id : '' %>"
           required
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          placeholder="Enter CEP">
+          placeholder="Enter CEP ID">
+        <div id="cep-validation" class="text-xs mt-1"></div>
       </div>
+
       <div>
         <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Name <span class="text-red-500">*</span></label>
         <input type="text" id="name" name="name"
@@ -101,28 +103,102 @@
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const passwordField = document.getElementById('password');
-    const confirmPasswordField = document.getElementById('confirm_password');
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.querySelector('form');
+  const passwordField = document.getElementById('password');
+  const confirmPasswordField = document.getElementById('confirm_password');
+  const cepIdField = document.getElementById('cep_id');
+  const cepValidation = document.getElementById('cep-validation');
+  let cepCheckTimeout;
 
-    form.addEventListener('submit', function(e) {
-      const password = passwordField.value;
-      const confirmPassword = confirmPasswordField.value;
+  // Real-time CEP ID validation
+  cepIdField.addEventListener('input', function() {
+    const newValue = this.value.trim();
 
-      if (password !== confirmPassword) {
-        e.preventDefault();
-        alert('Passwords do not match!');
-        confirmPasswordField.focus();
-        return false;
-      }
+    // Clear existing timeout
+    if (cepCheckTimeout) {
+      clearTimeout(cepCheckTimeout);
+    }
 
-      if (password.length < 6) {
-        e.preventDefault();
-        alert('Password must be at least 6 characters long!');
-        passwordField.focus();
-        return false;
-      }
-    });
+    // Clear validation message
+    cepValidation.innerHTML = '';
+    cepValidation.className = 'text-xs mt-1';
+
+    // Don't validate if empty
+    if (newValue.length === 0) {
+      return;
+    }
+
+    if (newValue.length < 3) {
+      cepValidation.className = 'text-xs mt-1 text-yellow-700 dark:text-yellow-300';
+      cepValidation.innerHTML = '<i class="fas fa-info-circle"></i> CEP ID should be at least 3 characters';
+      return;
+    }
+
+    // Show checking state
+    cepValidation.className = 'text-xs mt-1 text-blue-700 dark:text-blue-300';
+    cepValidation.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
+
+    // Check for availability after delay
+    cepCheckTimeout = setTimeout(() => {
+      checkCepIdAvailability(newValue);
+    }, 800);
   });
+
+  function checkCepIdAvailability(cepId) {
+    fetch('/api/check-cep-availability', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        cep_id: cepId
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.available) {
+        cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
+        cepValidation.innerHTML = '<i class="fas fa-check"></i> CEP ID is available';
+        clearFieldError(cepIdField);
+      } else {
+        cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-300';
+        cepValidation.innerHTML = '<i class="fas fa-times"></i> This CEP ID is already taken';
+        showFieldError(cepIdField, 'This CEP ID is already taken');
+      }
+    })
+    .catch(error => {
+      console.error('Error checking CEP ID availability:', error);
+      cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-300';
+      cepValidation.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Unable to verify CEP ID availability. Please try again.';
+    });
+  }
+
+  form.addEventListener('submit', function(e) {
+    const password = passwordField.value;
+    const confirmPassword = confirmPasswordField.value;
+
+    if (password !== confirmPassword) {
+      e.preventDefault();
+      alert('Passwords do not match!');
+      confirmPasswordField.focus();
+      return false;
+    }
+
+    if (password.length < 6) {
+      e.preventDefault();
+      alert('Password must be at least 6 characters long!');
+      passwordField.focus();
+      return false;
+    }
+  });
+
+  function showFieldError(field, message) {
+    field.classList.add('border-red-500', 'focus:ring-red-500');
+  }
+
+  function clearFieldError(field) {
+    field.classList.remove('border-red-500', 'focus:ring-red-500');
+  }
+});
 </script>

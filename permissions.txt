@@ -1,0 +1,62 @@
+users.view           - View Users: Can view user list and details
+users.create         - Create Users: Can create new users
+users.edit           - Edit Users: Can edit user information
+users.delete         - Delete Users: Can delete users
+users.manage_roles   - Manage User Roles: Can assign/remove roles from users
+
+roles.view           - View Roles: Can view roles and permissions
+roles.create         - Create Roles: Can create new roles
+roles.edit           - Edit Roles: Can edit roles and their permissions
+roles.delete         - Delete Roles: Can delete non-system roles
+
+items.view           - View Items: Can view inventory items
+items.create         - Create Items: Can add new items to inventory
+items.edit           - Edit Items: Can edit item information
+items.delete         - Delete Items: Can delete items from inventory
+items.assign         - Assign Items: Can assign items to employees
+
+employees.view       - View Employees: Can view employee list and details
+employees.create     - Create Employees: Can add new employees
+employees.edit       - Edit Employees: Can edit employee information
+employees.delete     - Delete Employees: Can delete employees
+
+software.view        - View Software: Can view software licenses
+software.create      - Create Software: Can add new software licenses
+software.edit        - Edit Software: Can edit software information
+software.delete      - Delete Software: Can delete software licenses
+software.assign      - Assign Software: Can assign software to employees
+
+reports.view         - View Reports: Can view system reports and analytics
+reports.export       - Export Reports: Can export reports and data
+
+admin.settings       - System Settings: Can modify system settings
+admin.logs           - View Activity Logs: Can view system activity logs
+admin.notifications  - Manage Notifications: Can manage system notifications
+admin.database       - Database Access: Can access database administration tools
+admin.debug          - Debug Mode: Can enable debug mode and view system internals
+
+dev.console          - Developer Console: Can access developer console and tools
+dev.api              - API Management: Can manage API endpoints and documentation
+dev.migrations       - Database Migrations: Can run database migrations and schema changes
+dev.logs             - System Logs: Can view detailed system and error logs
+dev.performance      - Performance Monitoring: Can access performance monitoring tools
+
+clients.view         - View Clients: Can view client information
+clients.create       - Create Clients: Can add new clients
+clients.edit         - Edit Clients: Can edit client information
+clients.delete       - Delete Clients: Can delete clients
+
+printers.view        - View Printers: Can view printer information
+printers.create      - Create Printers: Can add new printers
+printers.edit        - Edit Printers: Can edit printer information
+printers.delete      - Delete Printers: Can delete printers
+
+pdas.view            - View PDAs: Can view PDA information
+pdas.create          - Create PDAs: Can add new PDAs
+pdas.edit            - Edit PDAs: Can edit PDA information
+pdas.delete          - Delete PDAs: Can delete PDAs
+
+sim_cards.view       - View SIM Cards: Can view SIM card information
+sim_cards.create     - Create SIM Cards: Can add new SIM cards
+sim_cards.edit       - Edit SIM Cards: Can edit SIM card information
+sim_cards.delete     - Delete SIM Cards: Can

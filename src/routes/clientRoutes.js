@@ -1,18 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const clientController = require('../controllers/clientController');
-const { isAuthenticated } = require('../middleware/auth');
+const { hasPermission } = require('../middleware/permissions');
 
 // Client list and main routes
-router.get('/', isAuthenticated, clientController.getAllClients);
-router.get('/new', isAuthenticated, clientController.createClientForm);
-router.post('/', isAuthenticated, clientController.createClient);
+router.get('/', hasPermission('clients.view'), clientController.getAllClients);
+router.get('/new', hasPermission('clients.create'), clientController.createClientForm);
+router.post('/', hasPermission('clients.create'), clientController.createClient);
 
 // Individual client routes
-router.get('/:id', isAuthenticated, clientController.getClientById);
-router.get('/:id/edit', isAuthenticated, clientController.updateClientForm);
-router.post('/:id', isAuthenticated, clientController.updateClient);
-router.post('/:id/delete', isAuthenticated, clientController.deleteClient);
-router.get('/:id/history', isAuthenticated, clientController.getClientHistory);
+router.get('/:id', hasPermission('clients.view'), clientController.getClientById);
+router.get('/:id/edit', hasPermission('clients.edit'), clientController.updateClientForm);
+router.post('/:id', hasPermission('clients.edit'), clientController.updateClient);
+router.post('/:id/delete', hasPermission('clients.delete'), clientController.deleteClient);
+router.get('/:id/history', hasPermission('clients.view'), clientController.getClientHistory);
 
 module.exports = router;

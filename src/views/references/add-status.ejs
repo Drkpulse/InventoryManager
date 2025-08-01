@@ -30,6 +30,32 @@
     </div>
 
     <div>
+      <label for="icon" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status Icon</label>
+      <select id="icon" name="icon"
+        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+        <option value="fas fa-check-circle" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-check-circle' ? 'selected' : '' %>>✓ Active/Working</option>
+        <option value="fas fa-wrench" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-wrench' ? 'selected' : '' %>>🔧 Maintenance/Repair</option>
+        <option value="fas fa-archive" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-archive' ? 'selected' : '' %>>📦 Retired/Archived</option>
+        <option value="fas fa-times-circle" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-times-circle' ? 'selected' : '' %>>❌ Lost/Missing</option>
+        <option value="fas fa-box" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-box' ? 'selected' : '' %>>📦 In Storage</option>
+        <option value="fas fa-exclamation-triangle" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-exclamation-triangle' ? 'selected' : '' %>>⚠️ Warning/Attention</option>
+        <option value="fas fa-pause-circle" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-pause-circle' ? 'selected' : '' %>>⏸️ Inactive/Paused</option>
+        <option value="fas fa-shield-alt" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-shield-alt' ? 'selected' : '' %>>🛡️ Protected/Warranty</option>
+        <option value="fas fa-clock" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-clock' ? 'selected' : '' %>>⏰ Pending/Waiting</option>
+        <option value="fas fa-tools" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-tools' ? 'selected' : '' %>>🛠️ Under Service</option>
+        <option value="fas fa-fire" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-fire' ? 'selected' : '' %>>🔥 Critical/Urgent</option>
+        <option value="fas fa-tag" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-tag' ? 'selected' : '' %>>🏷️ Generic/Other</option>
+      </select>
+      <small class="text-gray-500 dark:text-gray-400">Icon that represents this status visually</small>
+      <!-- Icon Preview -->
+      <div class="mt-2 p-2 bg-gray-100 dark:bg-gray-900 rounded">
+        <span class="text-sm text-gray-600 dark:text-gray-400">Preview: </span>
+        <i id="iconPreview" class="fas fa-check-circle text-lg"></i>
+        <span id="iconLabel" class="ml-2 text-sm">Active/Working</span>
+      </div>
+    </div>
+
+    <div>
       <label for="color" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status Color</label>
       <select id="color" name="color"
         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
@@ -62,5 +88,39 @@
     </div>
   </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const iconSelect = document.getElementById('icon');
+  const iconPreview = document.getElementById('iconPreview');
+  const iconLabel = document.getElementById('iconLabel');
+
+  const iconLabels = {
+    'fas fa-check-circle': 'Active/Working',
+    'fas fa-wrench': 'Maintenance/Repair',
+    'fas fa-archive': 'Retired/Archived',
+    'fas fa-times-circle': 'Lost/Missing',
+    'fas fa-box': 'In Storage',
+    'fas fa-exclamation-triangle': 'Warning/Attention',
+    'fas fa-pause-circle': 'Inactive/Paused',
+    'fas fa-shield-alt': 'Protected/Warranty',
+    'fas fa-clock': 'Pending/Waiting',
+    'fas fa-tools': 'Under Service',
+    'fas fa-fire': 'Critical/Urgent',
+    'fas fa-tag': 'Generic/Other'
+  };
+
+  function updateIconPreview() {
+    const selectedIcon = iconSelect.value;
+    iconPreview.className = selectedIcon + ' text-lg';
+    iconLabel.textContent = iconLabels[selectedIcon] || 'Unknown';
+  }
+
+  iconSelect.addEventListener('change', updateIconPreview);
+
+  // Set initial preview
+  updateIconPreview();
+});
+</script>
 
 <link rel="stylesheet" href="/css/styles.css">

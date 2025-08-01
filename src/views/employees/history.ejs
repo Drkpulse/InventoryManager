@@ -1,47 +1,65 @@
-<div class="container mx-auto px-2 py-6">
-  <!-- Header & Breadcrumb -->
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
-    <div>
-      <nav class="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-1">
-        <a href="/employees" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1 transition-colors duration-150">
-          <i class="fas fa-users"></i> Employees
-        </a>
-        <i class="fas fa-chevron-right mx-1"></i>
-        <a href="/employees/<%= employee.id %>" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1 transition-colors duration-150">
-          <%= employee.name %>
-        </a>
-        <i class="fas fa-chevron-right mx-1"></i>
-        <span class="text-gray-700 dark:text-gray-200">History</span>
-      </nav>
-      <h1 class="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight"><%= employee.name %> History</h1>
-      <div class="flex items-center gap-2 mt-1">
-        <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700"><%= employee.cep %></span>
-        <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-semibold border border-blue-200 dark:border-blue-700"><%= employee.name %></span>
+<div class="container mx-auto px-4 py-8">
+  <!-- Modern Header with Glassmorphism -->
+  <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 mb-8 animate-[fadeInUp_0.6s_ease-out]">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="space-y-3">
+        <!-- Breadcrumb with hover effects -->
+        <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+          <a href="/employees" class="group flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
+            <i class="fas fa-users group-hover:scale-110 transition-transform duration-300"></i>
+            <span>Employees</span>
+          </a>
+          <i class="fas fa-chevron-right mx-2 text-xs"></i>
+          <a href="/employees/<%= employee.id %>" class="group flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
+            <span class="group-hover:underline"><%= employee.name %></span>
+          </a>
+          <i class="fas fa-chevron-right mx-2 text-xs"></i>
+          <span class="text-gray-700 dark:text-gray-200 font-medium">History</span>
+        </nav>
+
+        <!-- Title with gradient text -->
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <%= employee.name %> History
+        </h1>
+
+        <!-- Employee badges with modern styling -->
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-semibold shadow-lg">
+            <%= employee.cep %>
+          </span>
+          <span class="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full text-sm font-semibold shadow-lg">
+            <%= employee.name %>
+          </span>
+        </div>
       </div>
-    </div>
-    <div class="flex flex-wrap gap-2 mt-2 md:mt-0">
-      <a href="/employees/<%= employee.id %>" class="inline-flex items-center px-3 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded transition-all duration-150 shadow-sm">
-        <i class="fas fa-arrow-left mr-2"></i> Back
-      </a>
-      <a href="/employees/<%= employee.id %>/edit" class="inline-flex items-center px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded transition-all duration-150 shadow-sm">
-        <i class="fas fa-edit mr-2"></i> Edit
-      </a>
-      <button onclick="exportHistory()" class="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded transition-all duration-150 shadow-sm">
-        <i class="fas fa-download mr-2"></i> Export
-      </button>
-      <button onclick="printHistory()" class="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded transition-all duration-150 shadow-sm">
-        <i class="fas fa-print mr-2"></i> Print
-      </button>
+
+      <!-- Action buttons with modern hover effects -->
+      <div class="flex flex-wrap gap-3">
+        <a href="/employees/<%= employee.id %>" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> Back
+        </a>
+        <a href="/employees/<%= employee.id %>/edit" class="group px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform duration-300"></i> Edit
+        </a>
+        <button onclick="exportHistory()" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-download mr-2 group-hover:translate-y-1 transition-transform duration-300"></i> Export
+        </button>
+        <button onclick="printHistory()" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-print mr-2 group-hover:scale-110 transition-transform duration-300"></i> Print
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
-    <!-- Filters -->
-    <div class="flex flex-wrap gap-3 mb-4 items-end">
-      <div>
-        <label for="actionFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">Action</label>
-        <select id="actionFilter" class="w-32 px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-xs">
-          <option value="">All</option>
+  <!-- Modern Filter Panel -->
+  <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 mb-8 animate-[fadeInUp_0.6s_ease-out_0.1s] opacity-0 [animation-fill-mode:forwards]">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+      <div class="group">
+        <label for="actionFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          Action Type
+        </label>
+        <select id="actionFilter" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500">
+          <option value="">All Actions</option>
           <option value="created">Created</option>
           <option value="updated">Updated</option>
           <option value="assigned">Assigned</option>
@@ -50,27 +68,35 @@
           <option value="deleted">Deleted</option>
         </select>
       </div>
-      <div>
-        <label for="typeFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">Type</label>
-        <select id="typeFilter" class="w-32 px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-xs">
-          <option value="">All</option>
+
+      <div class="group">
+        <label for="typeFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          Type
+        </label>
+        <select id="typeFilter" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500">
+          <option value="">All Types</option>
           <option value="employee">Employee</option>
           <option value="item">Item</option>
           <option value="software">Software</option>
         </select>
       </div>
-      <div>
-        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">Date</label>
-        <div class="flex items-center gap-1">
-          <input type="date" id="dateFrom" class="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 w-24 text-xs">
-          <span class="text-gray-400 dark:text-gray-500">-</span>
-          <input type="date" id="dateTo" class="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 w-24 text-xs">
+
+      <div class="group">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          Date Range
+        </label>
+        <div class="flex gap-2">
+          <input type="date" id="dateFrom" class="flex-1 px-3 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300">
+          <input type="date" id="dateTo" class="flex-1 px-3 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300">
         </div>
       </div>
-      <div>
-        <label for="userFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-0.5">User</label>
-        <select id="userFilter" class="w-32 px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-xs">
-          <option value="">All</option>
+
+      <div class="group">
+        <label for="userFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          Performed By
+        </label>
+        <select id="userFilter" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500">
+          <option value="">All Users</option>
           <% if (typeof users !== 'undefined') { %>
             <% users.forEach(user => { %>
               <option value="<%= user.id %>"><%= user.name %></option>
@@ -78,412 +104,419 @@
           <% } %>
         </select>
       </div>
-      <div class="flex gap-1">
-        <button id="applyHistoryFilters" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-all duration-150 flex items-center gap-1 text-xs shadow-sm">
-          <i class="fas fa-search"></i> Apply
+
+      <div class="flex gap-2">
+        <button id="applyHistoryFilters" class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg group">
+          <i class="fas fa-search mr-2 group-hover:scale-110 transition-transform duration-300"></i> Apply
         </button>
-        <button id="resetHistoryFilters" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded transition-all duration-150 flex items-center gap-1 text-xs shadow-sm">
-          <i class="fas fa-times"></i> Reset
+        <button id="resetHistoryFilters" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg group">
+          <i class="fas fa-times mr-2 group-hover:rotate-90 transition-transform duration-300"></i> Reset
         </button>
       </div>
     </div>
+  </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-      <div class="flex items-center gap-6 p-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg animate-fade-in">
-        <div class="text-3xl text-blue-600 dark:text-blue-400">
-          <i class="fas fa-history fa-bounce"></i>
-        </div>
-        <div>
-          <div class="text-2xl font-bold text-gray-800 dark:text-gray-100"><%= history ? history.length : 0 %></div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Events</div>
-        </div>
-      </div>
-      <div class="flex items-center gap-6 p-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg animate-fade-in">
-        <div class="text-3xl text-green-600 dark:text-green-400">
-          <i class="fas fa-calendar fa-spin"></i>
-        </div>
-        <div>
-          <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-            <% if (history && history.length > 0) { %>
-              <%= Math.ceil((new Date() - new Date(history[history.length - 1].created_at)) / (1000 * 60 * 60 * 24)) %>
-            <% } else { %>
-              0
-            <% } %>
+  <!-- Modern Stats Grid (compact style) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <%
+      const stats = [
+        {
+          icon: 'fas fa-history',
+          label: 'Total Events',
+          value: history ? history.length : 0,
+          color: 'from-blue-500 to-blue-600',
+          delay: '0s'
+        },
+        {
+          icon: 'fas fa-calendar-alt',
+          label: 'Days Active',
+          value: history && history.length > 0 ? Math.ceil((new Date() - new Date(history[history.length - 1].created_at)) / (1000 * 60 * 60 * 24)) : 0,
+          color: 'from-green-500 to-green-600',
+          delay: '0.1s'
+        },
+        {
+          icon: 'fas fa-user-cog',
+          label: 'Profile Changes',
+          value: profileChanges || 0,
+          color: 'from-yellow-500 to-orange-500',
+          delay: '0.2s'
+        },
+        {
+          icon: 'fas fa-laptop',
+          label: 'Item Activities',
+          value: itemActivities || 0,
+          color: 'from-purple-500 to-purple-600',
+          delay: '0.3s'
+        }
+      ];
+    %>
+    <% stats.forEach((stat) => { %>
+      <div class="group bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 hover:scale-105 transition-all duration-500 hover:shadow-2xl">
+        <div class="flex items-center space-x-4">
+          <div class="p-3 bg-gradient-to-r <%= stat.color %> rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+            <i class="<%= stat.icon %> text-2xl text-white"></i>
           </div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Days Since First</div>
-        </div>
-      </div>
-      <div class="flex items-center gap-6 p-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg animate-fade-in">
-        <div class="text-3xl text-yellow-600 dark:text-yellow-400">
-          <i class="fas fa-user-cog fa-beat"></i>
-        </div>
-        <div>
-          <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-            <%= profileChanges %>
+          <div>
+            <div class="text-3xl font-bold bg-gradient-to-r <%= stat.color %> bg-clip-text text-transparent">
+              <%= stat.value %>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">
+              <%= stat.label %>
+            </div>
           </div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Profile Changes</div>
         </div>
       </div>
-      <div class="flex items-center gap-6 p-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg animate-fade-in">
-        <div class="text-3xl text-purple-600 dark:text-purple-400">
-          <i class="fas fa-laptop fa-bounce"></i>
-        </div>
-        <div>
-          <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-            <%= itemActivities %>
-          </div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">Item Activities</div>
-        </div>
-      </div>
-    </div>
+    <% }) %>
+  </div>
 
-    <!-- Timeline -->
-    <div>
-      <% if (history && history.length > 0) { %>
+  <!-- Compact Timeline (like items) -->
+  <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
+    <% if (paginatedHistory && paginatedHistory.length > 0) { %>
+      <div class="p-6">
+        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-timeline text-blue-500 text-lg"></i>
+          Event Timeline
+          <span class="text-xs font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+            <%= paginatedHistory.length %> events
+          </span>
+        </h2>
         <div class="relative">
-          <div class="border-l-4 border-gray-200 dark:border-gray-700 pl-10">
-            <% paginatedHistory.forEach((entry, index) => { %>
-              <%
-                const actionStyle = getActionStyle(entry.action_type, entry.history_type);
-                const entryDate = new Date(entry.created_at);
-                const timeAgo = getTimeAgo(entryDate);
-                // Choose animation for icon
-                let iconAnim = '';
-                switch(entry.action_type) {
-                  case 'created': iconAnim = 'fa-bounce'; break;
-                  case 'updated': iconAnim = 'fa-beat'; break;
-                  case 'assigned': iconAnim = 'fa-fade'; break;
-                  case 'unassigned': iconAnim = 'fa-shake'; break;
-                  case 'deleted': iconAnim = 'fa-fade'; break;
-                  default: iconAnim = 'fa-spin'; break;
-                }
-              %>
-              <div class="relative mb-10 animate-slide-in">
-                <span class="absolute -left-12 flex items-center justify-center w-14 h-14 rounded-full border-4 border-white dark:border-gray-800 shadow-xl <%= actionStyle.color %> transition-all duration-200">
-                  <i class="<%= actionStyle.icon %> <%= iconAnim %> text-3xl"></i>
-                </span>
-                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 ml-2 shadow-lg transition-all duration-200 hover:scale-[1.025] hover:shadow-2xl">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold <%= actionStyle.color %>">
-                      <i class="<%= actionStyle.icon %>"></i>
-                      <%= entry.action_type.charAt(0).toUpperCase() + entry.action_type.slice(1) %>
-                    </span>
-                    <% if (entry.history_type === 'item' && entry.item_name) { %>
-                      <span class="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-semibold border border-blue-200 dark:border-blue-700">
-                        <i class="fas fa-laptop"></i> <%= entry.item_name %>
-                        <% if (entry.cep_brc) { %> (<%= entry.cep_brc %>) <% } %>
+          <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400 to-purple-400 opacity-60"></div>
+          <% paginatedHistory.forEach((entry, index) => { %>
+            <%
+              const actionStyle = getActionStyle(entry.action_type, entry.history_type);
+              const entryDate = new Date(entry.created_at);
+              const timeAgo = getTimeAgo(entryDate);
+              const animationDelay = index * 0.05;
+            %>
+            <div class="relative mb-3 animate-[slideInLeft_0.4s_ease-out_<%= animationDelay %>s] group">
+              <div class="absolute left-2.5 w-3 h-3 bg-white dark:bg-gray-800 rounded-full border-2 <%= actionStyle.color.replace('bg-', 'border-').replace('-100', '-400').replace('-900', '-500') %> shadow-sm group-hover:scale-125 transition-all duration-200 z-10"></div>
+              <div class="ml-8 bg-white/80 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200/60 dark:border-gray-700 overflow-hidden hover:shadow-md transition-all duration-200 group-hover:translate-x-1">
+                <div class="px-4 py-3">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                      <span class="inline-flex items-center gap-1 px-2 py-1 <%= actionStyle.color %> rounded-md text-xs font-medium">
+                        <i class="<%= actionStyle.icon %> text-xs"></i>
+                        <%= entry.action_type.charAt(0).toUpperCase() + entry.action_type.slice(1) %>
                       </span>
-                    <% } %>
-                    <% if (entry.history_type === 'software' && entry.software_name) { %>
-                      <span class="ml-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded text-xs font-semibold border border-indigo-200 dark:border-indigo-700">
-                        <i class="fas fa-laptop-code"></i> <%= entry.software_name %>
-                      </span>
-                    <% } %>
-                    <span class="ml-auto text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                      <i class="fas fa-clock"></i>
-                      <%= entryDate.toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) %>
-                      <span title="<%= entryDate.toLocaleString() %>">· <%= timeAgo %></span>
-                    </span>
-                  </div>
-                  <div class="mb-1 text-xs">
-                    <% if (entry.action_type === 'created' && entry.history_type === 'employee') { %>
-                      <div class="flex items-center gap-2 text-green-700 dark:text-green-300 mb-0.5">
-                        <i class="fas fa-user-plus"></i>
-                        <strong>Employee profile was created</strong>
-                      </div>
-                      <% if (entry.action_details) { %>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-200">
-                          <% if (entry.action_details.email) { %>
-                            <div><span class="font-semibold">Email:</span> <%= entry.action_details.email %></div>
-                          <% } %>
-                          <% if (entry.action_details.department_name) { %>
-                            <div><span class="font-semibold">Department:</span> <%= entry.action_details.department_name %></div>
-                          <% } %>
-                          <% if (entry.action_details.location_name) { %>
-                            <div><span class="font-semibold">Location:</span> <%= entry.action_details.location_name %></div>
-                          <% } %>
-                          <% if (entry.action_details.joined_date) { %>
-                            <div><span class="font-semibold">Start Date:</span> <%= new Date(entry.action_details.joined_date).toLocaleDateString() %></div>
-                          <% } %>
-                          <% if (entry.action_details.software_assigned && entry.action_details.software_assigned.length > 0) { %>
-                            <div class="md:col-span-2 flex flex-wrap gap-1 mt-1">
-                              <span class="font-semibold">Initial Software:</span>
-                              <% entry.action_details.software_assigned.forEach(software => { %>
-                                <span class="bg-gray-200 dark:bg-gray-700 text-xs rounded px-2 py-0.5 flex items-center gap-1">
-                                  <i class="fas fa-laptop-code"></i> <%= software %>
-                                </span>
-                              <% }) %>
-                            </div>
-                          <% } %>
-                        </div>
-                      <% } %>
-                    <% } else if (entry.action_type === 'updated' && entry.history_type === 'employee') { %>
-                      <div class="flex items-center gap-2 text-blue-700 dark:text-blue-300 mb-0.5">
-                        <i class="fas fa-user-edit"></i>
-                        <strong>Employee profile was updated</strong>
-                      </div>
-                      <% if (entry.action_details && Object.keys(entry.action_details).length > 0) { %>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-200">
-                          <% for(const [field, change] of Object.entries(entry.action_details || {})) { %>
-                            <% if (field !== 'updated_by') { %>
-                              <% if (field === 'software_changes') { %>
-                                <div class="md:col-span-2">
-                                  <span class="font-semibold flex items-center gap-1"><i class="fas fa-laptop-code"></i> Software Changes</span>
-                                  <div class="flex flex-wrap gap-1 mt-1">
-                                    <% if (change.added && change.added.length > 0) { %>
-                                      <span class="text-green-700 dark:text-green-300 flex items-center gap-1"><i class="fas fa-plus-circle"></i> Added:</span>
-                                      <% change.added.forEach(software => { %>
-                                        <span class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded px-2 py-0.5 flex items-center gap-1">
-                                          <i class="fas fa-laptop-code"></i> <%= software %>
-                                        </span>
-                                      <% }) %>
-                                    <% } %>
-                                    <% if (change.removed && change.removed.length > 0) { %>
-                                      <span class="text-red-700 dark:text-red-300 flex items-center gap-1"><i class="fas fa-minus-circle"></i> Removed:</span>
-                                      <% change.removed.forEach(software => { %>
-                                        <span class="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 text-xs rounded px-2 py-0.5 flex items-center gap-1">
-                                          <i class="fas fa-laptop-code"></i> <%= software %>
-                                        </span>
-                                      <% }) %>
-                                    <% } %>
-                                  </div>
-                                </div>
-                              <% } else if (typeof change === 'object' && change.from !== undefined) { %>
-                                <div>
-                                  <span class="font-semibold flex items-center gap-1"><i class="fas fa-arrow-right"></i> <%= field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
-                                  <div class="flex items-center gap-2 mt-1">
-                                    <span class="bg-gray-200 dark:bg-gray-700 text-xs rounded px-2 py-0.5 flex items-center gap-1"><i class="fas fa-minus-circle"></i> "<%= change.from || 'Empty' %>"</span>
-                                    <i class="fas fa-long-arrow-alt-right text-gray-400 dark:text-gray-500"></i>
-                                    <span class="bg-blue-100 dark:bg-blue-900 text-xs rounded px-2 py-0.5 flex items-center gap-1"><i class="fas fa-plus-circle"></i> "<%= change.to || 'Empty' %>"</span>
-                                  </div>
-                                </div>
-                              <% } %>
-                            <% } %>
-                          <% } %>
-                        </div>
-                      <% } %>
-                    <% } else if (entry.action_type === 'assigned' && entry.history_type === 'item') { %>
-                      <div class="flex items-center gap-2 text-blue-800 dark:text-blue-200 mb-0.5">
-                        <i class="fas fa-arrow-right"></i>
-                        <strong>Item was assigned to this employee</strong>
-                      </div>
-                      <div class="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-700 rounded p-2 mt-1 flex flex-col gap-1">
-                        <span class="font-mono text-xs font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-1"><i class="fas fa-tag"></i> <%= entry.cep_brc %></span>
-                        <span class="font-semibold text-gray-800 dark:text-gray-100"><%= entry.item_name %></span>
-                        <% if (entry.action_details && entry.action_details.date) { %>
-                          <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1"><i class="fas fa-calendar-check"></i> Assigned on <%= new Date(entry.action_details.date).toLocaleDateString() %></span>
-                        <% } %>
-                      </div>
-                    <% } else if (entry.action_type === 'unassigned' && entry.history_type === 'item') { %>
-                      <div class="flex items-center gap-2 text-red-800 dark:text-red-300 mb-0.5">
-                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
-                        <strong>Item was unassigned from this employee</strong>
-                      </div>
-                      <div class="bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded p-2 mt-1 flex flex-col gap-1" role="region" aria-label="Unassigned Item Details">
-                        <span class="font-mono text-xs font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-1">
-                          <i class="fas fa-tag" aria-hidden="true"></i> <%= entry.cep_brc %>
+                      <% if (entry.history_type) { %>
+                        <span class="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
+                          <%= entry.history_type %>
                         </span>
-                        <span class="font-semibold text-gray-800 dark:text-gray-100"><%= entry.item_name %></span>
-                        <% if (entry.action_details && entry.action_details.reason) { %>
-                          <span class="text-xs text-red-700 dark:text-red-300 flex items-center gap-1">
-                            <i class="fas fa-info-circle" aria-hidden="true"></i>
-                            <span class="sr-only">Reason:</span>
-                            Reason: <%= entry.action_details.reason %>
+                      <% } %>
+                      <% if (entry.action_details && Object.keys(entry.action_details).length > 0) { %>
+                        <span class="text-xs text-gray-600 dark:text-gray-400 truncate">
+                          <%
+                            const importantKeys = ['name', 'cep', 'role', 'department', 'assigned_items', 'status', 'comment'];
+                            const relevantChanges = Object.entries(entry.action_details).filter(([key, value]) =>
+                              importantKeys.includes(key) && value !== null && value !== undefined && key !== 'timestamp'
+                            );
+                            if (relevantChanges.length > 0) {
+                              const [key, value] = relevantChanges[0];
+                              const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                              if (value && typeof value === 'object' && ('from' in value || 'to' in value)) {
+                          %>
+                          <span class="font-semibold text-gray-800 dark:text-gray-200"><%= displayKey %></span>:
+                          <span class="inline-flex items-center gap-1">
+                            <span class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[11px]">
+                              <%= value.from !== undefined && value.from !== null ? value.from : '-' %>
+                            </span>
+                            <i class="fas fa-arrow-right text-gray-400 text-[10px]"></i>
+                            <span class="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-[11px] font-semibold">
+                              <%= value.to !== undefined && value.to !== null ? value.to : '-' %>
+                            </span>
                           </span>
-                        <% } %>
-                      </div>
-                    <% } else if (entry.action_type === 'software_comment' && entry.history_type === 'software') { %>
-                      <div class="flex items-center gap-2 text-indigo-800 dark:text-indigo-200 mb-0.5">
-                        <i class="fas fa-comment-dots"></i>
-                        <strong>Software comment added</strong>
-                      </div>
-                      <div class="bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-700 rounded p-2 mt-1 flex flex-col gap-1">
-                        <span class="font-semibold text-gray-800 dark:text-gray-100"><%= entry.software_name %></span>
-                        <% if (entry.action_details && entry.action_details.comment) { %>
-                          <span class="text-xs text-gray-700 dark:text-gray-200 flex items-center gap-1"><i class="fas fa-quote-left"></i> <%= entry.action_details.comment %></span>
-                        <% } %>
-                      </div>
-                    <% } else if (entry.action_type === 'deleted' && entry.history_type === 'employee') { %>
-                      <div class="flex items-center gap-2 text-red-700 dark:text-red-300 mb-0.5">
-                        <i class="fas fa-user-times"></i>
-                        <strong>Employee profile was deleted</strong>
-                      </div>
-                      <% if (entry.action_details) { %>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-200 mt-1">
-                          <% if (entry.action_details.items_unassigned && entry.action_details.items_unassigned.length > 0) { %>
-                            <div class="md:col-span-2">
-                              <span class="font-semibold flex items-center gap-1"><i class="fas fa-laptop"></i> Items Unassigned:</span>
-                              <div class="flex flex-wrap gap-1 mt-1">
-                                <% entry.action_details.items_unassigned.forEach(item => { %>
-                                  <span class="bg-gray-200 dark:bg-gray-700 text-xs rounded px-2 py-0.5 flex items-center gap-1">
-                                    <i class="fas fa-tag"></i> <%= item.cep_brc %> <%= item.name %> (<%= item.type %>)
-                                  </span>
-                                <% }) %>
-                              </div>
-                            </div>
-                          <% } %>
-                          <% if (entry.action_details.software_removed && entry.action_details.software_removed.length > 0) { %>
-                            <div class="md:col-span-2">
-                              <span class="font-semibold flex items-center gap-1"><i class="fas fa-laptop-code"></i> Software Licenses Removed:</span>
-                              <div class="flex flex-wrap gap-1 mt-1">
-                                <% entry.action_details.software_removed.forEach(software => { %>
-                                  <span class="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 text-xs rounded px-2 py-0.5 flex items-center gap-1">
-                                    <i class="fas fa-laptop-code"></i> <%= software %>
-                                  </span>
-                                <% }) %>
-                              </div>
-                            </div>
-                          <% } %>
-                          <% if (entry.action_details.deletion_reason) { %>
-                            <div class="md:col-span-2 flex items-center gap-1 mt-1 text-yellow-700 dark:text-yellow-300">
-                              <i class="fas fa-info-circle"></i>
-                              <strong>Reason:</strong> <%= entry.action_details.deletion_reason %>
-                            </div>
-                          <% } %>
-                        </div>
-                      <% } %>
-                    <% } else { %>
-                      <div class="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-0.5">
-                        <i class="fas fa-question-circle"></i>
-                        <strong>Unknown action performed</strong>
-                      </div>
-                      <% if (entry.action_details) { %>
-                        <pre class="bg-gray-100 dark:bg-gray-900 rounded p-2 text-xs mt-1"><%= JSON.stringify(entry.action_details, null, 2) %></pre>
-                      <% } %>
+                        <%
+                            } else {
+                              let displayValue = value;
+                              if (typeof value === 'object') {
+                                displayValue = value.name || value.toString();
+                              }
+                        %>
+                          <span class="font-semibold text-gray-800 dark:text-gray-200"><%= displayKey %></span>:
+                          <span class="font-medium text-gray-800 dark:text-gray-200"><%= displayValue %></span>
+                        <%
+                            }
+                          } else if (entry.action_type === 'created') {
+                        %>
+                          <span class="text-xs text-gray-600 dark:text-gray-400">Employee created</span>
+                        <%
+                          } else if (entry.action_type === 'updated') {
+                        %>
+                          <span class="text-xs text-gray-600 dark:text-gray-400">Profile updated</span>
+                        <%
+                          }
+                        %>
+                      </span>
                     <% } %>
                   </div>
-                  <div class="flex items-center gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    <i class="fas fa-user-circle"></i>
-                    Performed by
+                  <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 shrink-0">
                     <% if (entry.performed_by_name) { %>
-                      <span class="font-semibold text-gray-700 dark:text-gray-200"><%= entry.performed_by_name %></span>
-                    <% } else { %>
-                      <span class="font-semibold text-gray-700 dark:text-gray-200">System</span>
+                      <span class="font-medium text-gray-700 dark:text-gray-300"><%= entry.performed_by_name %></span>
+                      <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
                     <% } %>
+                    <span class="flex items-center gap-1">
+                      <i class="fas fa-clock text-xs"></i>
+                      <%= timeAgo %>
+                    </span>
                   </div>
                 </div>
+                <% if (entry.action_details && Object.keys(entry.action_details).length > 2) { %>
+                  <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 hidden group-hover:block">
+                    <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                      <% Object.entries(entry.action_details).forEach(([key, value]) => { %>
+                        <% if (key !== 'timestamp' && value !== null && value !== undefined) { %>
+                          <div class="flex gap-2">
+                            <span class="font-medium capitalize text-gray-700 dark:text-gray-300 min-w-0"><%= key.replace(/_/g, ' ') %>:</span>
+                            <span class="truncate">
+                              <% if (typeof value === 'object') { %>
+                                <%= value.name || JSON.stringify(value) %>
+                              <% } else { %>
+                                <%= value %>
+                              <% } %>
+                            </span>
+                          </div>
+                        <% } %>
+                      <% }) %>
+                    </div>
+                  </div>
+                <% } %>
               </div>
-            <% }) %>
-          </div>
+            </div>
+          <% }) %>
         </div>
-        <!-- Pagination -->
-        <div class="flex flex-wrap items-center justify-between mt-4 gap-2">
-          <div class="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2">
-            <i class="fas fa-history"></i>
-            Showing <%= startIndex + 1 %> to <%= endIndex %> of <%= totalItems %> events
+      </div>
+      <!-- Compact Pagination -->
+      <div class="border-t border-gray-200/50 dark:border-gray-600/50 bg-gray-50/50 dark:bg-gray-800/50 px-6 py-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div class="text-xs text-gray-600 dark:text-gray-400">
+            <span><%= startIndex + 1 %>-<%= endIndex %> of <%= totalItems %></span>
           </div>
-          <div class="flex items-center gap-1">
+          <div class="flex items-center gap-2">
             <% if (totalPages > 1) { %>
-              <% if (currentPage > 1) { %>
-                <a href="?page=<%= currentPage - 1 %>&perPage=<%= itemsPerPage %>" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition flex items-center gap-1 text-xs">
-                  <i class="fas fa-chevron-left"></i> Prev
-                </a>
-              <% } %>
-              <span class="text-xs text-gray-500 dark:text-gray-400">Page <%= currentPage %> of <%= totalPages %></span>
-              <% if (currentPage < totalPages) { %>
-                <a href="?page=<%= currentPage + 1 %>&perPage=<%= itemsPerPage %>" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition flex items-center gap-1 text-xs">
-                  Next <i class="fas fa-chevron-right"></i>
-                </a>
-              <% } %>
+              <div class="flex items-center gap-1">
+                <% if (currentPage > 1) { %>
+                  <a href="?page=<%= currentPage - 1 %>&perPage=<%= itemsPerPage %>" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded transition-colors">
+                    <i class="fas fa-chevron-left text-xs"></i>
+                  </a>
+                <% } %>
+                <span class="px-3 py-1 bg-blue-500 text-white rounded text-xs font-medium">
+                  <%= currentPage %>
+                </span>
+                <% if (currentPage < totalPages) { %>
+                  <a href="?page=<%= currentPage + 1 %>&perPage=<%= itemsPerPage %>" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded transition-colors">
+                    <i class="fas fa-chevron-right text-xs"></i>
+                  </a>
+                <% } %>
+              </div>
             <% } %>
-            <select id="historyPerPage" class="ml-1 px-1 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-xs">
+            <select id="historyPerPage" class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100">
               <option value="5" <%= itemsPerPage == 5 ? 'selected' : '' %>>5</option>
               <option value="10" <%= itemsPerPage == 10 ? 'selected' : '' %>>10</option>
               <option value="20" <%= itemsPerPage == 20 ? 'selected' : '' %>>20</option>
               <option value="50" <%= itemsPerPage == 50 ? 'selected' : '' %>>50</option>
             </select>
-            <span class="text-xs text-gray-500 dark:text-gray-400">/page</span>
           </div>
         </div>
-      <% } else { %>
-        <div class="flex flex-col items-center justify-center py-12 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950 animate-fade-in">
-          <div class="text-3xl text-blue-500 mb-1">
-            <i class="fas fa-history"></i>
-          </div>
-          <h3 class="text-base font-semibold text-gray-700 dark:text-gray-200 mb-1">No History Found</h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-2">This employee doesn't have any recorded history yet.</p>
-          <a href="/employees/<%= employee.id %>/edit" class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-all duration-150">
-            <i class="fas fa-edit mr-2"></i> Edit Employee
-          </a>
+      </div>
+    <% } else { %>
+      <!-- Compact empty state -->
+      <div class="flex flex-col items-center justify-center py-12 px-6">
+        <div class="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mb-4">
+          <i class="fas fa-history text-xl text-white"></i>
         </div>
-      <% } %>
-    </div>
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No History Found</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center">
+          No events recorded for this employee yet.
+        </p>
+        <a href="/employees/<%= employee.id %>/edit" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-edit mr-2"></i> Edit Employee
+        </a>
+      </div>
+    <% } %>
   </div>
 </div>
 
+<!-- Enhanced CSS with modern animations -->
 <style>
-@media (max-width: 640px) {
-  .container { padding-left: 0.25rem; padding-right: 0.25rem; }
+/* Custom animations for modern feel */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px);}
-  to { opacity: 1; transform: translateY(0);}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
-@keyframes slide-in {
-  from { opacity: 0; transform: translateX(-16px);}
-  to { opacity: 1; transform: translateX(0);}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
-.animate-fade-in { animation: fade-in 0.5s cubic-bezier(.4,0,.2,1) both; }
-.animate-slide-in { animation: slide-in 0.5s cubic-bezier(.4,0,.2,1) both; }
+
+/* Glassmorphism effects */
+.backdrop-blur-lg {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #2563eb, #7c3aed);
+}
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .ml-20 {
+    margin-left: 3rem;
+  }
+
+  .absolute.left-8 {
+    left: 1rem;
+  }
+
+  .absolute.left-4 {
+    left: 0.5rem;
+  }
+}
 </style>
 
+<!-- Enhanced JavaScript with smooth interactions -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Pagination per page change
+  // Add loading states to buttons
+  function addLoadingState(button, text = 'Loading...') {
+    const originalText = button.innerHTML;
+    button.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${text}`;
+    button.disabled = true;
+
+    return () => {
+      button.innerHTML = originalText;
+      button.disabled = false;
+    };
+  }
+
+  // Enhanced pagination handling
   const historyPerPageSelect = document.getElementById('historyPerPage');
   if (historyPerPageSelect) {
     historyPerPageSelect.addEventListener('change', function() {
+      const removeLoading = addLoadingState(this, 'Updating...');
+
       const urlParams = new URLSearchParams(window.location.search);
       urlParams.set('perPage', this.value);
-      urlParams.delete('page'); // Reset to first page
-      window.location.search = urlParams.toString();
+      urlParams.delete('page');
+
+      setTimeout(() => {
+        window.location.search = urlParams.toString();
+      }, 300);
     });
   }
 
-  // Filter functionality
+  // Enhanced filter functionality with loading states
   const applyFiltersBtn = document.getElementById('applyHistoryFilters');
   const resetFiltersBtn = document.getElementById('resetHistoryFilters');
 
   if (applyFiltersBtn) {
     applyFiltersBtn.addEventListener('click', function() {
-      const actionFilter = document.getElementById('actionFilter').value;
-      const typeFilter = document.getElementById('typeFilter').value;
-      const dateFrom = document.getElementById('dateFrom').value;
-      const dateTo = document.getElementById('dateTo').value;
-      const userFilter = document.getElementById('userFilter').value;
+      const removeLoading = addLoadingState(this, 'Applying Filters...');
 
-      const params = new URLSearchParams();
-      if (actionFilter) params.append('action', actionFilter);
-      if (typeFilter) params.append('type', typeFilter);
-      if (dateFrom) params.append('dateFrom', dateFrom);
-      if (dateTo) params.append('dateTo', dateTo);
-      if (userFilter) params.append('user', userFilter);
+      setTimeout(() => {
+        const actionFilter = document.getElementById('actionFilter').value;
+        const typeFilter = document.getElementById('typeFilter').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        const userFilter = document.getElementById('userFilter').value;
 
-      window.location.search = params.toString();
+        const params = new URLSearchParams();
+        if (actionFilter) params.append('action', actionFilter);
+        if (typeFilter) params.append('type', typeFilter);
+        if (dateFrom) params.append('dateFrom', dateFrom);
+        if (dateTo) params.append('dateTo', dateTo);
+        if (userFilter) params.append('user', userFilter);
+
+        window.location.search = params.toString();
+      }, 300);
     });
   }
 
   if (resetFiltersBtn) {
     resetFiltersBtn.addEventListener('click', function() {
-      window.location.href = window.location.pathname;
+      const removeLoading = addLoadingState(this, 'Resetting...');
+
+      setTimeout(() => {
+        window.location.href = window.location.pathname;
+      }, 300);
     });
   }
+
+  // Add intersection observer for scroll animations
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animationPlayState = 'running';
+      }
+    });
+  }, observerOptions);
+
+  // Observe all animated elements
+  document.querySelectorAll('[class*="animate-"]').forEach(el => {
+    observer.observe(el);
+  });
 });
 
-// Export functionality
+// Enhanced export functionality with progress indication
 function exportHistory() {
+  const exportBtn = event.target.closest('button');
+  const originalText = exportBtn.innerHTML;
+
+  exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Exporting...';
+  exportBtn.disabled = true;
+
   const params = new URLSearchParams(window.location.search);
   params.append('export', 'csv');
   params.append('export_timestamp', new Date().toISOString());
 
-  // Create hidden iframe for download
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = `${window.location.pathname}/export?${params.toString()}`;
@@ -491,12 +524,34 @@ function exportHistory() {
 
   setTimeout(() => {
     document.body.removeChild(iframe);
+    exportBtn.innerHTML = originalText;
+    exportBtn.disabled = false;
+
+    // Show success notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-[fadeInUp_0.3s_ease-out]';
+    notification.innerHTML = '<i class="fas fa-check mr-2"></i>Export completed successfully!';
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.remove();
+    }, 3000);
   }, 2000);
 }
 
-// Print functionality
+// Enhanced print functionality
 function printHistory() {
-  window.print();
+  const printBtn = event.target.closest('button');
+  const originalText = printBtn.innerHTML;
+
+  printBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Preparing...';
+  printBtn.disabled = true;
+
+  setTimeout(() => {
+    window.print();
+    printBtn.innerHTML = originalText;
+    printBtn.disabled = false;
+  }, 500);
 }
 </script>
 
@@ -520,9 +575,7 @@ function getActionStyle(actionType, historyType) {
       return { icon: 'fas fa-history', color: 'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400' };
   }
 }
-%>
 
-<%
 function getTimeAgo(date) {
   const now = new Date();
   const diffInMs = now - date;

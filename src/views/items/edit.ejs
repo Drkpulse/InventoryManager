@@ -4,17 +4,20 @@
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
         <i class="fas fa-edit"></i> Edit Asset
       </h1>
-      <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-        <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-xs text-gray-600 dark:text-gray-400">ID: <%= item.cep_brc %></span>
-        <span class="text-gray-700 dark:text-gray-200 font-semibold"><%= item.name %></span>
+      <!-- Asset badges with modern styling -->
+      <div class="flex items-center gap-3 mt-2">
+        <span class="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-semibold shadow-lg">
+          <%= item.cep_brc %>
+        </span>
+        <span class="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full text-sm font-semibold shadow-lg">
+          <%= item.name %>
+        </span>
       </div>
     </div>
-    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
-      <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-        <i class="fas fa-arrow-left mr-2"></i> Back to Asset
-      </a>
-      <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
-        <i class="fas fa-history mr-2"></i> View History
+    <!-- Action buttons with modern hover effects -->
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> Back to Asset
       </a>
     </div>
   </div>
@@ -159,7 +162,7 @@
             <select id="warranty_months" name="warranty_months" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
               <option value="">No Warranty</option>
               <option value="6" <%= (typeof formData !== 'undefined' && formData.warranty_months == 6) || (typeof item !== 'undefined' && item.warranty_months == 6) ? 'selected' : '' %>>6 months</option>
-              <option value="12" <%= (typeof formData !== 'undefined' && formData.warranty_months == 12) || (typeof item !== 'undefined' && item.warranty_months == 12) || (!formData && !item) ? 'selected' : '' %>>12 months</option>
+              <option value="12" <%= (typeof formData !== 'undefined' && formData.warranty_months == 12) || (typeof item !== 'undefined' && item.warranty_months == 12) || (typeof formData === 'undefined' && typeof item !== 'undefined' && !item.warranty_months) ? 'selected' : '' %>>12 months</option>
               <option value="24" <%= (typeof formData !== 'undefined' && formData.warranty_months == 24) || (typeof item !== 'undefined' && item.warranty_months == 24) ? 'selected' : '' %>>24 months</option>
               <option value="36" <%= (typeof formData !== 'undefined' && formData.warranty_months == 36) || (typeof item !== 'undefined' && item.warranty_months == 36) ? 'selected' : '' %>>36 months</option>
               <option value="48" <%= (typeof formData !== 'undefined' && formData.warranty_months == 48) || (typeof item !== 'undefined' && item.warranty_months == 48) ? 'selected' : '' %>>48 months</option>
@@ -212,19 +215,21 @@
 
       <!-- Asset Status Section -->
       <div>
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-toggle-on"></i> Asset Status
-        </h3>
-        <div>
-          <label for="status" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status <span class="text-red-500">*</span></label>
-          <select id="status" name="status" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
-            <option value="active" <%= item.status === 'active' ? 'selected' : '' %>>Active</option>
-            <option value="inactive" <%= item.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
-            <option value="retired" <%= item.status === 'retired' ? 'selected' : '' %>>Retired</option>
-            <option value="lost" <%= item.status === 'lost' ? 'selected' : '' %>>Lost</option>
-            <option value="maintenance" <%= item.status === 'maintenance' ? 'selected' : '' %>>Maintenance</option>
-          </select>
-        </div>
+        <label for="status_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status <span class="text-red-500">*</span></label>
+        <select id="status_id" name="status_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
+          <option value="">Select Status</option>
+          <% if (typeof statuses !== 'undefined') { %>
+            <% statuses.forEach(status => { %>
+              <option value="<%= status.id %>"
+                <%= item.status_id == status.id ? 'selected' : '' %>
+                data-icon="<%= status.icon || 'fas fa-tag' %>"
+                data-color="<%= status.color || 'gray' %>">
+                <%= status.name %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+        <small class="text-gray-500 dark:text-gray-400">Current operational status of this asset</small>
       </div>
 
       <!-- Form Actions -->
@@ -504,30 +509,23 @@ document.addEventListener('DOMContentLoaded', function() {
       warrantyStatus.style.display = 'none';
       return;
     }
-
     const now = new Date();
     const diffTime = endDate - now;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
     let statusClass, statusText, statusIcon;
-
     if (diffDays < 0) {
-      // Expired
       statusClass = 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700';
       statusIcon = 'fas fa-exclamation-circle text-red-600 dark:text-red-400';
       statusText = `Warranty expired ${Math.abs(diffDays)} days ago`;
     } else if (diffDays <= 30) {
-      // Expiring soon
       statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700';
       statusIcon = 'fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400';
       statusText = `Warranty expires in ${diffDays} days`;
     } else {
-      // Active
       statusClass = 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700';
       statusIcon = 'fas fa-shield-alt text-green-600 dark:text-green-400';
       statusText = `Warranty active for ${diffDays} more days`;
     }
-
     warrantyStatusContent.className = statusClass;
     warrantyStatusContent.innerHTML = `
       <i class="${statusIcon}"></i>
@@ -536,36 +534,15 @@ document.addEventListener('DOMContentLoaded', function() {
     warrantyStatus.style.display = 'block';
   }
 
-  // Event listeners
+  // Listen to both 'input' and 'change' for real-time updates
+  warrantyStartDate.addEventListener('input', calculateWarrantyEndDate);
   warrantyStartDate.addEventListener('change', calculateWarrantyEndDate);
+  warrantyMonths.addEventListener('input', calculateWarrantyEndDate);
   warrantyMonths.addEventListener('change', calculateWarrantyEndDate);
-
-  // Auto-fill warranty start date with purchase date if available
-  const receiptSelect = document.getElementById('receipt');
-  if (receiptSelect) {
-    receiptSelect.addEventListener('change', function() {
-      if (this.value && !warrantyStartDate.value) {
-        // Extract date from receipt option text (format: "RECEIPT - SUPPLIER (DATE)")
-        const optionText = this.options[this.selectedIndex].text;
-        const dateMatch = optionText.match(/\(([^)]+)\)$/);
-        if (dateMatch) {
-          const dateStr = dateMatch[1];
-          const purchaseDate = new Date(dateStr);
-          if (!isNaN(purchaseDate.getTime())) {
-            warrantyStartDate.value = purchaseDate.toISOString().split('T')[0];
-            calculateWarrantyEndDate();
-          }
-        }
-      }
-    });
-  }
 
   // Calculate warranty end date on page load if values exist
   if (warrantyStartDate.value && warrantyMonths.value) {
     calculateWarrantyEndDate();
-  } else if (warrantyEndDate.value) {
-    // Show status for existing warranty end date
-    updateWarrantyStatus(new Date(warrantyEndDate.value));
   }
 });
 </script>

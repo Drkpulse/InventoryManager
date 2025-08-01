@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
+const WarrantyController = require('../controllers/warrantyController');
 
-// Employees API routes (remove the /api prefix since it's already in the mount path)
+// Employees API routes
 router.get('/employees/available', isAuthenticated, async (req, res) => {
   try {
     const employees = await db.query(`
@@ -61,237 +62,28 @@ router.get('/items/check-duplicate/:assetId', isAuthenticated, async (req, res) 
   }
 });
 
-const dashboardController = require('../controllers/dashboardController');
 // Global search endpoint
+const dashboardController = require('../controllers/dashboardController');
 router.get('/search', dashboardController.searchAssets);
 
-// Get warranty summary for admin dashboard
-router.get('/warranties/summary', isAdmin, async (req, res) => {
-  try {
-    // Get items expiring in next 30 days
-    const expiringResult = await db.query(`
-      SELECT COUNT(*) as count
-      FROM items
-      WHERE warranty_end_date IS NOT NULL
-      AND warranty_end_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
-    `);
+// === ENHANCED WARRANTY ENDPOINTS ===
 
-    // Get expired items
-    const expiredResult = await db.query(`
-      SELECT COUNT(*) as count
-      FROM items
-      WHERE warranty_end_date IS NOT NULL
-      AND warranty_end_date < CURRENT_DATE
-    `);
+// Get warranty summary for dashboard
+router.get('/warranties/summary', isAuthenticated, WarrantyController.getWarrantySummary);
 
-    // Get detailed alerts for display
-    const alertsResult = await db.query(`
-      SELECT
-        i.id as item_id,
-        i.cep_brc,
-        i.name,
-        i.warranty_end_date,
-        CASE
-          WHEN i.warranty_end_date < CURRENT_DATE
-          THEN -EXTRACT(days FROM CURRENT_DATE - i.warranty_end_date)::integer
-          ELSE EXTRACT(days FROM i.warranty_end_date - CURRENT_DATE)::integer
-        END as days_until_expiry
-      FROM items i
-      WHERE i.warranty_end_date IS NOT NULL
-      AND (
-        i.warranty_end_date < CURRENT_DATE
-        OR i.warranty_end_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
-      )
-      ORDER BY i.warranty_end_date ASC
-      LIMIT 10
-    `);
-
-    res.json({
-      success: true,
-      expiring: parseInt(expiringResult.rows[0].count),
-      expired: parseInt(expiredResult.rows[0].count),
-      alerts: alertsResult.rows
-    });
-  } catch (error) {
-    console.error('Error fetching warranty summary:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch warranty summary'
-    });
-  }
-});
-
-// Get items with warranty information
-router.get('/warranties/items', isAuthenticated, async (req, res) => {
-  try {
-    const { status, page = 1, limit = 20 } = req.query;
-    const offset = (page - 1) * limit;
-
-    let whereClause = 'WHERE i.warranty_end_date IS NOT NULL';
-    let params = [limit, offset];
-    let paramIndex = 3;
-
-    if (status === 'expiring') {
-      whereClause += ` AND i.warranty_end_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'`;
-    } else if (status === 'expired') {
-      whereClause += ` AND i.warranty_end_date < CURRENT_DATE`;
-    } else if (status === 'active') {
-      whereClause += ` AND i.warranty_end_date > CURRENT_DATE + INTERVAL '30 days'`;
-    }
-
-    const itemsResult = await db.query(`
-      SELECT
-        i.id,
-        i.cep_brc,
-        i.name,
-        i.warranty_start_date,
-        i.warranty_end_date,
-        i.warranty_months,
-        t.name as type_name,
-        b.name as brand_name,
-        e.name as employee_name,
-        CASE
-          WHEN i.warranty_end_date < CURRENT_DATE
-          THEN -EXTRACT(days FROM CURRENT_DATE - i.warranty_end_date)::integer
-          ELSE EXTRACT(days FROM i.warranty_end_date - CURRENT_DATE)::integer
-        END as days_until_expiry
-      FROM items i
-      LEFT JOIN types t ON i.type_id = t.id
-      LEFT JOIN brands b ON i.brand_id = b.id
-      LEFT JOIN employees e ON i.assigned_to = e.id
-      ${whereClause}
-      ORDER BY i.warranty_end_date ASC
-      LIMIT $1 OFFSET $2
-    `, params);
-
-    const countResult = await db.query(`
-      SELECT COUNT(*) as total
-      FROM items i
-      ${whereClause.replace('LIMIT $1 OFFSET $2', '')}
-    `, params.slice(2));
-
-    const total = parseInt(countResult.rows[0].total);
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      success: true,
-      items: itemsResult.rows,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages,
-        total,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching warranty items:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch warranty items'
-    });
-  }
-});
+// Get warranty items with filtering and pagination
+router.get('/warranties/items', isAuthenticated, WarrantyController.getWarrantyItems);
 
 // Update item warranty information
-router.put('/warranties/items/:id', isAuthenticated, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { warranty_start_date, warranty_months, warranty_end_date } = req.body;
+router.put('/warranties/items/:id', isAuthenticated, WarrantyController.updateItemWarranty);
 
-    // Calculate end date if not provided
-    let endDate = warranty_end_date;
-    if (warranty_start_date && warranty_months && !warranty_end_date) {
-      const startDate = new Date(warranty_start_date);
-      const calculatedEndDate = new Date(startDate);
-      calculatedEndDate.setMonth(calculatedEndDate.getMonth() + parseInt(warranty_months));
-      endDate = calculatedEndDate.toISOString().split('T')[0];
-    }
+// Get warranty statistics
+router.get('/warranties/stats', isAuthenticated, WarrantyController.getWarrantyStats);
 
-    await db.query(`
-      UPDATE items
-      SET warranty_start_date = $1, warranty_months = $2, warranty_end_date = $3
-      WHERE id = $4
-    `, [warranty_start_date || null, warranty_months || null, endDate || null, id]);
+// Manual warranty check (admin only)
+router.post('/warranties/check', isAdmin, WarrantyController.manualWarrantyCheck);
 
-    res.json({
-      success: true,
-      message: 'Warranty information updated successfully'
-    });
-  } catch (error) {
-    console.error('Error updating warranty information:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update warranty information'
-    });
-  }
-});
-
-// Warranty summary endpoint for admin dashboard
-router.get('/warranties/summary', isAuthenticated, async (req, res) => {
-  try {
-    // Get items expiring in next 30 days
-    const expiringResult = await db.query(`
-      SELECT
-        i.id,
-        i.name,
-        i.cep_brc,
-        i.warranty_end_date,
-        EXTRACT(DAY FROM (i.warranty_end_date - CURRENT_DATE)) as days_until_expiry,
-        e.name as employee_name
-      FROM items i
-      LEFT JOIN employees e ON i.assigned_to = e.id
-      WHERE i.warranty_end_date IS NOT NULL
-      AND i.warranty_end_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
-      ORDER BY i.warranty_end_date ASC
-    `);
-
-    // Get items already expired
-    const expiredResult = await db.query(`
-      SELECT
-        i.id,
-        i.name,
-        i.cep_brc,
-        i.warranty_end_date,
-        EXTRACT(DAY FROM (CURRENT_DATE - i.warranty_end_date)) as days_expired,
-        e.name as employee_name
-      FROM items i
-      LEFT JOIN employees e ON i.assigned_to = e.id
-      WHERE i.warranty_end_date IS NOT NULL
-      AND i.warranty_end_date < CURRENT_DATE
-      ORDER BY i.warranty_end_date DESC
-      LIMIT 20
-    `);
-
-    // Combine expiring and expired for alerts
-    const alerts = [
-      ...expiringResult.rows.map(item => ({
-        ...item,
-        days_until_expiry: parseInt(item.days_until_expiry),
-        status: 'expiring'
-      })),
-      ...expiredResult.rows.map(item => ({
-        ...item,
-        days_until_expiry: -parseInt(item.days_expired),
-        status: 'expired'
-      }))
-    ].sort((a, b) => Math.abs(a.days_until_expiry) - Math.abs(b.days_until_expiry));
-
-    res.json({
-      success: true,
-      expiring: expiringResult.rows.length,
-      expired: expiredResult.rows.length,
-      alerts: alerts.slice(0, 10) // Return top 10 for dashboard
-    });
-
-  } catch (error) {
-    console.error('Error fetching warranty summary:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch warranty summary'
-    });
-  }
-});
+// === SYSTEM ENDPOINTS ===
 
 // System statistics endpoint
 router.get('/system/stats', isAuthenticated, async (req, res) => {
@@ -303,13 +95,22 @@ router.get('/system/stats', isAuthenticated, async (req, res) => {
       totalItems,
       totalEmployees,
       unassignedItems,
-      activeNotifications
+      activeNotifications,
+      warrantyStats
     ] = await Promise.all([
       db.query('SELECT COUNT(*) as count FROM items'),
-      db.query('SELECT COUNT(*) as count FROM employees'),
+      db.query('SELECT COUNT(*) as count FROM employees WHERE left_date IS NULL'),
       db.query('SELECT COUNT(*) as count FROM items WHERE assigned_to IS NULL'),
-      db.query('SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND is_read = FALSE', [userId])
+      db.query('SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND is_read = FALSE', [userId]),
+      db.query(`
+        SELECT
+          COUNT(CASE WHEN warranty_status = 'expired' THEN 1 END) as expired,
+          COUNT(CASE WHEN warranty_status = 'expiring_soon' THEN 1 END) as expiring
+        FROM warranty_status_view
+      `)
     ]);
+
+    const warrantyData = warrantyStats.rows[0];
 
     res.json({
       success: true,
@@ -317,7 +118,9 @@ router.get('/system/stats', isAuthenticated, async (req, res) => {
         totalItems: parseInt(totalItems.rows[0].count),
         totalEmployees: parseInt(totalEmployees.rows[0].count),
         unassignedItems: parseInt(unassignedItems.rows[0].count),
-        activeNotifications: parseInt(activeNotifications.rows[0].count)
+        activeNotifications: parseInt(activeNotifications.rows[0].count),
+        expiredWarranties: parseInt(warrantyData.expired) || 0,
+        expiringWarranties: parseInt(warrantyData.expiring) || 0
       }
     });
 

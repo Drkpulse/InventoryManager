@@ -1,19 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const authController = require('../controllers/authController'); // Add this import
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const multer = require('multer');
 const upload = multer(); // Use memory storage for form-data parsing
 
 // Login form
-router.get('/login', (req, res) => {
-  res.render('layout', {
-    title: 'Login',
-    body: 'auth/login',
-    user: null,
-    error: null
-  });
-});
+router.get('/login', authController.loginForm);
+
+// Login process - Use the controller method
+router.post('/login', authController.login);
 
 // Register form
 router.get('/register', (req, res) => {
@@ -23,105 +20,6 @@ router.get('/register', (req, res) => {
     user: null,
     error: null
   });
-});
-
-// Login process - FIXED VERSION WITH BETTER DEBUGGING
-router.post('/login', upload.none(), async (req, res) => {
-  try {
-    console.log('=== LOGIN ROUTE CALLED ===');
-    console.log('Request body:', req.body);
-    console.log('Request headers:', req.headers);
-    console.log('Content-Type:', req.get('Content-Type'));
-
-    // Support both 'email' and 'login' fields
-    const { email, login, password } = req.body;
-    const loginInput = email || login;
-
-    console.log('Extracted loginInput:', loginInput);
-    console.log('Extracted password:', password ? '[PRESENT]' : '[MISSING]');
-
-    // Validate input
-    if (!loginInput || !password) {
-      console.log('Missing login or password');
-      return res.render('layout', {
-        title: 'Login',
-        body: 'auth/login',
-        error: 'Email/CEP ID and password are required',
-        user: null,
-        email: loginInput || ''
-      });
-    }
-
-    // Query for user
-    const result = await db.query('SELECT * FROM users WHERE email = $1', [loginInput]);
-
-    if (result.rows.length === 0) {
-      console.log('User not found:', loginInput);
-      return res.render('layout', {
-        title: 'Login',
-        body: 'auth/login',
-        error: 'Invalid email or password',
-        user: null,
-        email: loginInput
-      });
-    }
-
-    const user = result.rows[0];
-    console.log('User found:', user.name, 'Role:', user.role);
-
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match:', isMatch);
-
-    if (!isMatch) {
-      console.log('Password mismatch for user:', loginInput);
-      return res.render('layout', {
-        title: 'Login',
-        body: 'auth/login',
-        error: 'Invalid email or password',
-        user: null,
-        email: loginInput
-      });
-    }
-
-    // Create session - ENSURE session is properly saved
-    req.session.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role
-    };
-
-    // Save session explicitly
-    req.session.save((err) => {
-      if (err) {
-        console.error('Session save error:', err);
-        return res.render('layout', {
-          title: 'Login',
-          body: 'auth/login',
-          error: 'Login failed. Please try again.',
-          user: null,
-          email: loginInput
-        });
-      }
-
-      console.log('Login successful for:', user.name, 'Session ID:', req.sessionID);
-      console.log('Session data:', req.session.user);
-
-      // Redirect to home page
-      return res.redirect('/');
-    });
-
-  } catch (error) {
-    console.error('Login error:', error);
-    res.render('layout', {
-      title: 'Login',
-      body: 'auth/login',
-      error: 'An error occurred during login. Please try again.',
-      user: null,
-      email: req.body.email || ''
-    });
-  }
 });
 
 // Register process

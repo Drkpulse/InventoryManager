@@ -34,6 +34,20 @@
       </div>
 
       <div>
+        <label for="cep_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">CEP ID <span class="text-red-500">*</span></label>
+        <% if (can('admin.settings')) { %>
+          <input type="text" id="cep_id" name="cep_id" value="<%= editUser.cep_id || '' %>" required
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            placeholder="Enter CEP ID">
+          <div id="cep-validation" class="text-xs mt-1"></div>
+        <% } else { %>
+          <input type="text" id="cep_id" name="cep_id" value="<%= editUser.cep_id || '' %>" readonly
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed">
+          <small class="text-gray-500 dark:text-gray-400">Only users with admin.settings permission can edit this field</small>
+        <% } %>
+      </div>
+
+      <div>
         <label for="password" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">New Password</label>
         <input type="password" id="password" name="password"
           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -136,7 +150,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const confirmPasswordField = document.getElementById('confirm_password');
   const nameField = document.getElementById('name');
   const emailField = document.getElementById('email');
+  const cepIdField = document.getElementById('cep_id');
+  const cepValidation = document.getElementById('cep-validation');
   const form = document.querySelector('form');
+  let cepCheckTimeout;
 
   form.addEventListener('submit', function(e) {
     clearErrorStyling();
@@ -158,6 +175,13 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (!isValidEmail(emailField.value.trim())) {
       e.preventDefault();
       showFieldError(emailField, 'Please enter a valid email address');
+      hasErrors = true;
+    }
+
+    // Validate CEP ID
+    if (!cepIdField.value || cepIdField.value.trim() === '') {
+      e.preventDefault();
+      showFieldError(cepIdField, 'CEP ID is required');
       hasErrors = true;
     }
 
@@ -206,6 +230,91 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
+  // Real-time CEP ID validation
+  if (cepIdField && !cepIdField.readOnly) {
+    cepIdField.addEventListener('input', function() {
+      const newValue = this.value.trim();
+      const originalCepId = '<%= editUser.cep_id || "" %>';
+
+      // Clear existing timeout
+      if (cepCheckTimeout) {
+        clearTimeout(cepCheckTimeout);
+      }
+
+      // Clear validation message
+      if (cepValidation) {
+        cepValidation.innerHTML = '';
+        cepValidation.className = 'text-xs mt-1';
+      }
+
+      // Don't validate if empty or same as original
+      if (newValue.length === 0) {
+        return;
+      }
+
+      if (newValue === originalCepId) {
+        if (cepValidation) {
+          cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
+          cepValidation.innerHTML = '<i class="fas fa-check"></i> Current CEP ID';
+        }
+        return;
+      }
+
+      if (newValue.length < 3) {
+        if (cepValidation) {
+          cepValidation.className = 'text-xs mt-1 text-yellow-700 dark:text-yellow-300';
+          cepValidation.innerHTML = '<i class="fas fa-info-circle"></i> CEP ID should be at least 3 characters';
+        }
+        return;
+      }
+
+      // Show checking state
+      if (cepValidation) {
+        cepValidation.className = 'text-xs mt-1 text-blue-700 dark:text-blue-300';
+        cepValidation.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
+      }
+
+      // Check for availability after delay
+      cepCheckTimeout = setTimeout(() => {
+        checkCepIdAvailability(newValue);
+      }, 800);
+    });
+  }
+
+  function checkCepIdAvailability(cepId) {
+    fetch('/api/check-cep-availability', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        cep_id: cepId,
+        exclude_user_id: '<%= editUser.id %>' // Exclude current user from check
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (cepValidation) {
+        if (data.available) {
+          cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
+          cepValidation.innerHTML = '<i class="fas fa-check"></i> CEP ID is available';
+          clearFieldError(cepIdField);
+        } else {
+          cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-300';
+          cepValidation.innerHTML = '<i class="fas fa-times"></i> This CEP ID is already taken by another user';
+          showFieldError(cepIdField, 'This CEP ID is already taken');
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Error checking CEP ID availability:', error);
+      if (cepValidation) {
+        cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-300';
+        cepValidation.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Unable to verify CEP ID availability. Please try again.';
+      }
+    });
+  }
+
   function showFieldError(field, message) {
     field.classList.add('border-red-500', 'focus:ring-red-500');
     // Remove existing error message
@@ -218,7 +327,6 @@ document.addEventListener('DOMContentLoaded', function() {
     errorDiv.className = 'error-message text-red-600 dark:text-red-400 text-xs mt-1';
     errorDiv.textContent = message;
     field.parentNode.appendChild(errorDiv);
-    field.focus();
   }
 
   function clearFieldError(field) {

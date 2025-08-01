@@ -1,4 +1,6 @@
 const db = require('../config/db');
+const { getRecentActivities } = require('../utils/historyLogger');
+
 
 exports.getDashboard = async (req, res) => {
   try {
@@ -7,6 +9,8 @@ exports.getDashboard = async (req, res) => {
     const employeesResult = await db.query('SELECT COUNT(*) as count FROM employees WHERE left_date IS NULL');
     const departmentsResult = await db.query('SELECT COUNT(*) as count FROM departments');
     const unassignedResult = await db.query('SELECT COUNT(*) as count FROM items WHERE assigned_to IS NULL');
+    const recentActivities = await getRecentActivities(10); // Limit to 10, or any number you prefer
+
 
     // Ensure we get empty arrays if no data instead of null
     // Get items by type for chart with fallback for empty results
@@ -63,6 +67,7 @@ exports.getDashboard = async (req, res) => {
       recentItems: recentItemsResult.rows || [],
       recentPurchases: recentPurchasesResult.rows || [],
       deptEmployees: deptEmployeesResult.rows || [],
+      recentActivities,
       user: req.session.user
     });
   } catch (error) {

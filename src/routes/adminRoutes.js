@@ -33,6 +33,40 @@ router.post('/settings', hasPermission('admin.settings'), adminController.update
 
 // Activity Logs
 router.get('/logs', hasPermission('admin.logs'), adminController.logs);
-router.get('/dashboard', hasPermission('admin.settings'), adminController.adminDashboard);
+router.get('/warranty', hasPermission('admin.settings'), adminController.warrantyPage);
+
+// CEP ID availability check endpoint
+router.post('/check-cep-availability', isAuthenticated, async (req, res) => {
+  try {
+    const { cep_id, exclude_user_id } = req.body;
+
+    if (!cep_id || cep_id.trim() === '') {
+      return res.json({ available: false, error: 'CEP ID is required' });
+    }
+
+    let query = 'SELECT id FROM users WHERE cep_id = $1';
+    let params = [cep_id.trim()];
+
+    // Exclude current user from check if editing
+    if (exclude_user_id) {
+      query += ' AND id != $2';
+      params.push(exclude_user_id);
+    }
+
+    const result = await db.query(query, params);
+
+    res.json({
+      available: result.rows.length === 0,
+      cep_id: cep_id.trim()
+    });
+
+  } catch (error) {
+    console.error('Error checking CEP ID availability:', error);
+    res.status(500).json({
+      available: false,
+      error: 'Server error while checking availability'
+    });
+  }
+});
 
 module.exports = router;

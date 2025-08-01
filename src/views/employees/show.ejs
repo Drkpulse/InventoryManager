@@ -27,21 +27,21 @@
         </span>
       </div>
     </div>
-    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
-      <a href="/employees" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-        <i class="fas fa-arrow-left mr-2"></i> Back to Employees
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <a href="/employees" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> Back to Employees
       </a>
-      <a href="/employees/<%= employee.id %>/edit" class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition">
-        <i class="fas fa-edit mr-2"></i> Edit
+      <a href="/employees/<%= employee.id %>/edit" class="group px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform duration-300"></i> Edit
       </a>
-      <a href="/employees/<%= employee.id %>/history" class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md transition">
-        <i class="fas fa-history mr-2"></i> History
+      <a href="/employees/<%= employee.id %>/history" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-history mr-2 group-hover:scale-110 transition-transform duration-300"></i> History
       </a>
-      <button onclick="generateFullAssetReport()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
-        <i class="fas fa-file-pdf mr-2"></i> Assets Report (PDF)
+      <button onclick="generateFullAssetReport()" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-file-pdf mr-2 group-hover:scale-110 transition-transform duration-300"></i> Assets Report (PDF)
       </button>
-      <button type="button" class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition" id="deleteEmployeeBtn">
-        <i class="fas fa-trash mr-2"></i> Delete
+      <button type="button" class="group px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg" id="deleteEmployeeBtn">
+        <i class="fas fa-trash mr-2 group-hover:scale-110 transition-transform duration-300"></i> Delete
       </button>
     </div>
   </div>
@@ -166,7 +166,7 @@
               <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2">
                 <div class="flex items-center justify-between">
                   <span class="font-mono bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-semibold"><%= item.cep_brc %></span>
-                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="inline-flex items-center px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition" title="View Asset">
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="group inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg" title="View Asset">
                     <i class="fas fa-eye"></i>
                   </a>
                 </div>
@@ -313,11 +313,11 @@
         </div>
       </div>
       <div class="flex gap-2 justify-end">
-        <button type="button" class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition" id="confirmDelete">
-          <i class="fas fa-trash mr-2"></i> Delete Employee
+        <button type="button" class="group px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg" id="confirmDelete">
+          <i class="fas fa-trash mr-2 group-hover:scale-110 transition-transform duration-300"></i> Delete Employee
         </button>
-        <button type="button" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition" id="cancelDelete">
-          <i class="fas fa-times mr-2"></i> Cancel
+        <button type="button" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg" id="cancelDelete">
+          <i class="fas fa-times mr-2 group-hover:-rotate-12 transition-transform duration-300"></i> Cancel
         </button>
       </div>
     </div>
@@ -334,8 +334,8 @@
         <div class="text-center text-gray-500 dark:text-gray-400 py-8">Loading available assets...</div>
       </div>
       <div class="flex gap-2 justify-end">
-        <button type="button" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition" id="closeAssignAssetModal">
-          <i class="fas fa-times mr-2"></i> Cancel
+        <button type="button" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg" id="closeAssignAssetModal">
+          <i class="fas fa-times mr-2 group-hover:-rotate-12 transition-transform duration-300"></i> Cancel
         </button>
       </div>
     </div>

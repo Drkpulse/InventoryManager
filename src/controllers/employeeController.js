@@ -512,71 +512,107 @@ exports.unassignAndDeleteEmployee = async (req, res) => {
 exports.getEmployeeHistory = async (req, res) => {
   try {
     const { id } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const perPage = parseInt(req.query.perPage) || 10;
+    const offset = (page - 1) * perPage;
 
-    // Get the employee details
+    // Get employee details
     const employeeResult = await db.query(`
-      SELECT e.*,
-             d.name as department_name,
-             l.name as location_name
+      SELECT e.*, d.name as department_name
       FROM employees e
       LEFT JOIN departments d ON e.dept_id = d.id
-      LEFT JOIN locations l ON e.location_id = l.id
       WHERE e.id = $1
     `, [id]);
 
     if (employeeResult.rows.length === 0) {
-      return res.status(404).send('Employee not found');
+      if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
+        return res.status(404).json({
+          success: false,
+          error: 'Employee not found'
+        });
+      }
+      req.flash('error', 'Employee not found');
+      return res.redirect('/employees');
     }
 
-    // Get the comprehensive employee history (including related items)
-    const history = await historyLogger.getEmployeeHistory(id);
+    const employee = employeeResult.rows[0];
 
-    // Helper functions for the view
-    const formatActionType = (actionType, historyType) => {
-      const typeMap = {
-        'created': 'Employee Created',
-        'updated': 'Employee Updated',
-        'deleted': 'Employee Deleted',
-        'assigned': historyType === 'item' ? 'Item Assigned' : 'Software Assigned',
-        'unassigned': historyType === 'item' ? 'Item Unassigned' : 'Software Unassigned'
-      };
-      return typeMap[actionType] || actionType.charAt(0).toUpperCase() + actionType.slice(1);
-    };
+    // Get total count of history entries
+    const countResult = await db.query(`
+      SELECT COUNT(*) as total
+      FROM employee_history
+      WHERE employee_id = $1
+    `, [id]);
 
-    const formatFieldName = (field) => {
-      const fieldMap = {
-        'name': 'Name',
-        'cep': 'Employee ID',
-        'email': 'Email',
-        'dept_id': 'Department',
-        'location_id': 'Location',
-        'joined_date': 'Joined Date',
-        'left_date': 'Left Date',
-        'software_changes': 'Software Changes'
-      };
-      return fieldMap[field] || field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ');
-    };
+    const totalItems = parseInt(countResult.rows[0].total);
+    const totalPages = Math.ceil(totalItems / perPage);
 
-    const formatFieldValue = (value) => {
-      if (value === null || value === undefined) return 'None';
-      if (value instanceof Date) return value.toLocaleDateString();
-      if (typeof value === 'object') return JSON.stringify(value, null, 2);
-      return value;
-    };
+    // Get paginated history
+    const historyResult = await db.query(`
+      SELECT eh.*, u.name as performed_by_name
+      FROM employee_history eh
+      LEFT JOIN users u ON eh.performed_by = u.id
+      WHERE eh.employee_id = $1
+      ORDER BY eh.created_at DESC
+      LIMIT $2 OFFSET $3
+    `, [id, perPage, offset]);
 
+    // Get all history for stats
+    const allHistoryResult = await db.query(`
+      SELECT eh.*, u.name as user_name
+      FROM employee_history eh
+      LEFT JOIN users u ON eh.performed_by = u.id
+      WHERE eh.employee_id = $1
+      ORDER BY eh.created_at DESC
+    `, [id]);
+
+    // Get users for filter
+    const usersResult = await db.query('SELECT id, name FROM users ORDER BY name');
+
+    const paginatedHistory = historyResult.rows;
+    const history = allHistoryResult.rows;
+    const users = usersResult.rows;
+
+    // Calculate stats
+    const profileChanges = history.filter(h => h.action_type === 'updated').length;
+    const itemActivities = history.filter(h =>
+      h.action_type === 'assigned' || h.action_type === 'unassigned'
+    ).length;
+
+    const startIndex = offset;
+    const endIndex = Math.min(offset + perPage, totalItems);
+
+    // Regular page load with layout
     res.render('layout', {
-      title: 'Employee History',
+      title: `${employee.name} History`,
       body: 'employees/history',
-      employee: employeeResult.rows[0],
-      history: history,
-      formatActionType,
-      formatFieldName,
-      formatFieldValue,
+      employee,
+      history,
+      paginatedHistory,
+      users,
+      currentPage: page,
+      totalPages,
+      itemsPerPage: perPage,
+      totalItems,
+      startIndex,
+      endIndex,
+      profileChanges,
+      itemActivities,
       user: req.session.user
     });
+
   } catch (error) {
     console.error('Error fetching employee history:', error);
-    res.status(500).send('Server error');
+
+    if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to load employee history'
+      });
+    }
+
+    req.flash('error', 'Error loading employee history');
+    res.redirect('/employees');
   }
 };
 

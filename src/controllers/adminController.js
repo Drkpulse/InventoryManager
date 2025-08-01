@@ -651,12 +651,12 @@ exports.logs = async (req, res) => {
   }
 };
 
-exports.adminDashboard = async (req, res) => {
+exports.warrantyPage = (req, res) => {
   try {
-    // Optionally, fetch stats or notification counts here if needed
-    res.render('admin/dashboard', {
-      title: 'Admin Dashboard',
-      user: req.session.user
+  res.render('layout', {
+    title: 'Warranty Management',
+    body: 'admin/warranty',
+    user: req.session.user
     });
   } catch (error) {
     console.error('Error loading admin dashboard:', error);

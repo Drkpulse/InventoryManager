@@ -110,10 +110,10 @@ const addPermissionHelpers = (req, res, next) => {
   // Add current user roles for display
   res.locals.userRoles = req.session?.user?.roleNames || [];
 
-  // Debug: Log what permissions are available
-  if (req.session?.user?.permissions) {
-    console.log(`Template helpers: User ${req.session.user.name} has permissions: ${req.session.user.permissions.join(', ')}`);
-  }
+  // // Debug: Log what permissions are available
+  // if (req.session?.user?.permissions) {
+  //   console.log(`Template helpers: User ${req.session.user.name} has permissions: ${req.session.user.permissions.join(', ')}`);
+  // }
 
   next();
 };
@@ -129,7 +129,6 @@ const hasPermission = (permission) => {
         return res.redirect('/auth/login');
       }
 
-      // Check permission using database function
       const result = await db.query(
         'SELECT user_has_permission($1, $2) as has_permission',
         [req.session.user.id, permission]
@@ -143,12 +142,15 @@ const hasPermission = (permission) => {
       console.warn(`Unauthorized access attempt: User ${req.session.user.name} (ID: ${req.session.user.id}) tried to access ${permission}`);
 
       req.flash('error', `You don't have permission to ${permission.replace('.', ' ').replace('_', ' ')}`);
-      return res.redirect('/dashboard');
+      // Redirect back if possible, otherwise to dashboard
+      const backUrl = req.get('Referrer') || '/dashboard';
+      return res.redirect(backUrl);
 
     } catch (error) {
       console.error('Permission check error:', error);
       req.flash('error', 'Permission check failed');
-      return res.redirect('/dashboard');
+      const backUrl = req.get('Referrer') || '/dashboard';
+      return res.redirect(backUrl);
     }
   };
 };

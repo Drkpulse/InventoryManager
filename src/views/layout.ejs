@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50 dark:bg-gray-900">
+<html lang="en"
+  class="h-full<%= user && user.settings && (user.settings.theme === 'dark' || (user.settings.theme === 'auto' && locals.prefersDark)) ? ' dark' : '' %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %> | IT Asset Manager</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="/css/tailwind.css">
+
 </head>
-<body class="min-h-screen text-gray-900 dark:text-white" data-theme="<%= user && user.settings && user.settings.theme ? user.settings.theme : 'light' %>">
+<body class="min-h-screen text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900"
+  data-theme="<%= user && user.settings && user.settings.theme ? user.settings.theme : 'light' %>">
   <div class="flex min-h-screen <%= locals.isDashboardPage ? 'bg-gray-50 dark:bg-gray-900' : '' %>">
     <% if (user) { %>
       <%- include('partials/sidebar') %>
@@ -21,7 +24,7 @@
               <% if (title === 'Dashboard') { %>
                 <span class="font-semibold text-indigo-900 dark:text-indigo-300">Dashboard</span>
               <% } else { %>
-                <a href="/" data-content-loader class="hover:underline text-indigo-900 dark:text-indigo-300">Dashboard</a>
+                <a href="/" class="hover:underline text-indigo-900 dark:text-indigo-300">Dashboard</a>
                 <i class="fas fa-chevron-right text-xs"></i>
                 <span class="font-semibold"><%= title %></span>
               <% } %>
@@ -40,15 +43,6 @@
                   <a href="#" class="text-xs text-indigo-700 dark:text-indigo-300 hover:underline font-medium" id="markAllRead">Mark all as read</a>
                 </div>
                 <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700" id="notificationList">
-                  <!-- Example notification item, replace with JS rendering -->
-                  <div class="flex items-start gap-3 px-5 py-4 bg-indigo-50 dark:bg-indigo-900/30 border-l-4 border-indigo-500 dark:border-indigo-400 shadow-sm mb-1 rounded-lg last:mb-0">
-                    <i class="fas fa-info-circle text-indigo-500 dark:text-indigo-300 mt-1"></i>
-                    <div>
-                      <div class="text-sm text-gray-900 dark:text-white font-medium">Welcome to IT Asset Manager!</div>
-                      <div class="text-xs text-gray-500 dark:text-gray-300">Just now</div>
-                    </div>
-                  </div>
-                  <!-- Placeholder for loading -->
                   <div class="px-5 py-4 text-gray-500 dark:text-gray-300 text-center" id="notificationLoading">Loading notifications...</div>
                 </div>
                 <div class="px-5 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-b-2xl text-right">
@@ -116,7 +110,7 @@
                     <i class="fas fa-cog"></i> Settings
                   </a>
                   <div class="border-t border-gray-100 dark:border-gray-700 my-2"></div>
-                  <a href="/auth/logout" class="flex items-center gap-2 px-6 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-900" data-no-ajax>
+                  <a href="/auth/logout" class="flex items-center gap-2 px-6 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-900">
                     <i class="fas fa-sign-out-alt"></i> Logout
                   </a>
                 </div>
@@ -126,7 +120,20 @@
         </header>
       <% } %>
 
-      <main id="mainContent" class="flex-1 p-6">
+      <main id="mainContent" class="fade-in">
+        <% if (messages && messages.error && messages.error.length > 0) { %>
+          <div class="fixed top-20 right-8 z-50 flex flex-col items-end" id="flash-container">
+            <% messages.error.forEach(function(msg, idx) { %>
+              <div class="flash-message bg-red-500 text-white px-4 py-2 rounded shadow mb-2 animate-fade-in flex items-center cursor-pointer" data-index="<%= idx %>">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span><%= msg %></span>
+                <button class="ml-3 text-white focus:outline-none" onclick="this.parentElement.remove()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
         <%- include(body, locals) %>
       </main>
 
@@ -136,72 +143,53 @@
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- Core Scripts Only -->
   <script src="/js/main.js"></script>
   <script src="/js/notifications.js"></script>
-  <script src="/js/content-loader.js"></script>
+  <script src="/js/theme-handler.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Sidebar toggle functionality
-      const sidebarToggle = document.getElementById('sidebarToggle');
-      const appContainer = document.querySelector('.app-container');
-      if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function() {
-          appContainer.classList.toggle('sidebar-collapsed');
-          if (appContainer.classList.contains('sidebar-collapsed')) {
-            localStorage.setItem('sidebarCollapsed', 'true');
-          } else {
-            localStorage.setItem('sidebarCollapsed', 'false');
-          }
-        });
-        if (localStorage.getItem('sidebarCollapsed') === 'true') {
-          appContainer.classList.add('sidebar-collapsed');
-        }
-      }
-
-      // Dropdown toggles
-      const notificationToggle = document.getElementById('notificationToggle');
-      const notificationMenu = document.getElementById('notificationMenu');
-      if (notificationToggle && notificationMenu) {
-        notificationToggle.addEventListener('click', function(e) {
-          e.stopPropagation();
-          notificationMenu.classList.toggle('hidden');
-        });
-        document.addEventListener('click', function() {
-          notificationMenu.classList.add('hidden');
-        });
-        notificationMenu.addEventListener('click', function(e) {
-          e.stopPropagation();
-        });
-      }
-
-      const userDropdownToggle = document.getElementById('userDropdownToggle');
-      const userDropdownMenu = document.getElementById('userDropdownMenu');
-      if (userDropdownToggle && userDropdownMenu) {
-        userDropdownToggle.addEventListener('click', function(e) {
-          e.stopPropagation();
-          userDropdownMenu.classList.toggle('hidden');
-        });
-        document.addEventListener('click', function() {
-          userDropdownMenu.classList.add('hidden');
-        });
-        userDropdownMenu.addEventListener('click', function(e) {
-          e.stopPropagation();
-        });
-      }
-
-      // Setup dropdowns for the sidebar
-      if (typeof setupDropdowns === 'function') setupDropdowns();
-      if (typeof initializeUI === 'function') initializeUI();
-      if (typeof updateActiveMenuItems === 'function') updateActiveMenuItems();
-    });
-  </script>
+document.querySelectorAll('.flash-message').forEach(function(el) {
+  // Remove on click (already handled by button, but allow clicking anywhere)
+  el.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('fa-times')) {
+      el.classList.add('fade-out');
+      setTimeout(() => el.remove(), 500);
+    }
+  });
+  // Auto remove after 10 seconds
+  setTimeout(function() {
+    el.classList.add('fade-out');
+    setTimeout(() => el.remove(), 500);
+  }, 10000);
+});
+</script>
 
   <% if (user) { %>
   <div id="user-data"
        data-settings="<%= user.settings ? JSON.stringify(user.settings) : '{}' %>"
        style="display: none;"></div>
   <% } %>
-  <script src="/js/theme-handler.js"></script>
 </body>
 </html>
+
+<style>
+.fade-in {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeInUp 0.7s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.flash-message {
+  transition: opacity 0.5s;
+}
+.flash-message.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+</style>
+

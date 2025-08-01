@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
-const { isAuthenticated, isAdmin } = require('../middleware/auth'); // Import auth middleware
-const userController = require('../controllers/userController'); // Import the controller
+const { hasPermission } = require('../middleware/permissions');
+const userController = require('../controllers/userController');
 
-// Get all users (admin only)
-router.get('/', isAdmin, async (req, res) => {
+// Get all users
+router.get('/', hasPermission('users.view'), async (req, res) => {
   try {
     const result = await db.query('SELECT id, name, email, role FROM users ORDER BY name');
     res.render('layout', {
@@ -22,7 +22,7 @@ router.get('/', isAdmin, async (req, res) => {
 });
 
 // User profile page
-router.get('/profile', isAuthenticated, async (req, res) => {
+router.get('/profile', hasPermission('users.view'), async (req, res) => {
   if (!req.session.user) {
     return res.redirect('/auth/login');
   }
@@ -44,7 +44,7 @@ router.get('/profile', isAuthenticated, async (req, res) => {
 });
 
 // Update user profile
-router.post('/profile', isAuthenticated, async (req, res) => {
+router.post('/profile', hasPermission('users.edit'), async (req, res) => {
   if (!req.session.user) {
     return res.redirect('/auth/login');
   }
@@ -66,8 +66,8 @@ router.post('/profile', isAuthenticated, async (req, res) => {
   }
 });
 
-// Edit user form (admin only)
-router.get('/:id/edit', isAdmin, async (req, res) => {
+// Edit user form
+router.get('/:id/edit', hasPermission('users.edit'), async (req, res) => {
   try {
     const { id } = req.params;
     const result = await db.query('SELECT id, name, email, role FROM users WHERE id = $1', [id]);
@@ -88,8 +88,8 @@ router.get('/:id/edit', isAdmin, async (req, res) => {
   }
 });
 
-// Update user (admin only)
-router.post('/:id', isAdmin, async (req, res) => {
+// Update user
+router.post('/:id', hasPermission('users.edit'), async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, role, password, confirm_password } = req.body;
@@ -132,8 +132,8 @@ router.post('/:id', isAdmin, async (req, res) => {
   }
 });
 
-// Delete user (admin only)
-router.post('/:id/delete', isAdmin, async (req, res) => {
+// Delete user
+router.post('/:id/delete', hasPermission('users.delete'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -151,15 +151,15 @@ router.post('/:id/delete', isAdmin, async (req, res) => {
 });
 
 // Settings routes
-router.get('/settings', isAuthenticated, userController.getSettings);
+router.get('/settings', hasPermission('users.view'), userController.getSettings);
 
 // Update display settings
-router.post('/settings/display', isAuthenticated, userController.updateDisplaySettings);
+router.post('/settings/display', hasPermission('users.edit'), userController.updateDisplaySettings);
 
 // Update notification settings
-router.post('/settings/notifications', isAuthenticated, userController.updateNotificationSettings);
+router.post('/settings/notifications', hasPermission('users.edit'), userController.updateNotificationSettings);
 
 // Update security settings
-router.post('/settings/security', isAuthenticated, userController.updateSecuritySettings);
+router.post('/settings/security', hasPermission('users.edit'), userController.updateSecuritySettings);
 
 module.exports = router;

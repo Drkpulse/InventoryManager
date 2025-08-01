@@ -241,12 +241,23 @@ exports.showAddStatusForm = (req, res) => {
 
 exports.addStatus = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, icon, color, is_active } = req.body;
+
+    // Get the next order number
+    const maxOrderResult = await db.query('SELECT COALESCE(MAX(status_order), 0) + 1 as next_order FROM statuses');
+    const nextOrder = maxOrderResult.rows[0].next_order;
 
     await db.query(`
-      INSERT INTO statuses (name, description)
-      VALUES ($1, $2)
-    `, [name, description]);
+      INSERT INTO statuses (name, description, icon, color, is_active, status_order)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `, [
+      name,
+      description,
+      icon || 'fas fa-tag',
+      color || 'gray',
+      is_active === 'true',
+      nextOrder
+    ]);
 
     req.flash('success', 'Status added successfully');
     res.redirect('/references/statuses');
@@ -262,7 +273,7 @@ exports.showEditStatusForm = async (req, res) => {
     const statusId = req.params.id;
 
     const status = await db.query(`
-      SELECT id, name, description
+      SELECT id, name, description, icon, color, is_active, status_order
       FROM statuses
       WHERE id = $1
     `, [statusId]);
@@ -289,13 +300,20 @@ exports.showEditStatusForm = async (req, res) => {
 exports.editStatus = async (req, res) => {
   try {
     const statusId = req.params.id;
-    const { name, description } = req.body;
+    const { name, description, icon, color, is_active } = req.body;
 
     await db.query(`
       UPDATE statuses
-      SET name = $1, description = $2
-      WHERE id = $3
-    `, [name, description, statusId]);
+      SET name = $1, description = $2, icon = $3, color = $4, is_active = $5, updated_at = NOW()
+      WHERE id = $6
+    `, [
+      name,
+      description,
+      icon || 'fas fa-tag',
+      color || 'gray',
+      is_active === 'true',
+      statusId
+    ]);
 
     req.flash('success', 'Status updated successfully');
     res.redirect('/references/statuses');
@@ -960,5 +978,74 @@ exports.unassignSoftware = async (req, res) => {
   } catch (error) {
     console.error('Error unassigning software:', error);
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.getStatuses = async (req, res) => {
+  try {
+    const statuses = await db.query(`
+      SELECT
+        s.id,
+        s.name,
+        s.description,
+        s.icon,
+        s.color,
+        s.is_active,
+        s.status_order,
+        COUNT(i.id) as item_count
+      FROM statuses s
+      LEFT JOIN items i ON i.status_id = s.id
+      GROUP BY s.id, s.name, s.description, s.icon, s.color, s.is_active, s.status_order
+      ORDER BY s.status_order ASC, s.name ASC
+    `);
+
+    res.render('layout', {
+      title: 'Status Options',
+      body: 'references/statuses',
+      user: req.session.user,
+      statuses: statuses.rows,
+      isReferencePage: true
+    });
+  } catch (error) {
+    console.error('Error fetching statuses:', error);
+    res.status(500).render('layout', {
+      title: 'Error',
+      body: 'error',
+      message: 'Could not fetch status options',
+      user: req.session.user
+    });
+  }
+};
+
+exports.createStatus = async (req, res) => {
+  try {
+    const { name, description, icon, color, is_active } = req.body;
+
+    await db.query(
+      'INSERT INTO statuses (name, description, icon, color, is_active) VALUES ($1, $2, $3, $4, $5)',
+      [name, description, icon || 'fas fa-tag', color || 'gray', is_active === 'true']
+    );
+
+    res.redirect('/references/statuses');
+  } catch (error) {
+    console.error('Error creating status:', error);
+    res.status(500).render('error', { error: 'Failed to create status' });
+  }
+};
+
+exports.updateStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, icon, color, is_active } = req.body;
+
+    await db.query(
+      'UPDATE statuses SET name = $1, description = $2, icon = $3, color = $4, is_active = $5 WHERE id = $6',
+      [name, description, icon || 'fas fa-tag', color || 'gray', is_active === 'true', id]
+    );
+
+    res.redirect('/references/statuses');
+  } catch (error) {
+    console.error('Error updating status:', error);
+    res.status(500).render('error', { error: 'Failed to update status' });
   }
 };

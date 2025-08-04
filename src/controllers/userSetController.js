@@ -1,18 +1,26 @@
-const db = require('../config/db');
+/**
+ * User Settings Controller
+ * Handles user preferences and settings
+ */
 
-exports.getSettings = async (req, res) => {
+const bcrypt = require('bcryptjs');
+const db = require('../config/db');
+const { supportedLanguages } = require('../utils/translations');
+
+/**
+ * Display user settings page
+ */
+exports.showSettings = async (req, res) => {
   try {
-    // Get user data with settings
     const userId = req.session.user.id;
     const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
 
     if (userResult.rows.length === 0) {
-      return res.status(404).send('User not found');
+      req.flash('error', 'User not found');
+      return res.redirect('/');
     }
 
     const user = userResult.rows[0];
-
-    // Check if settings is defined, if not initialize it
     if (!user.settings) {
       user.settings = {
         theme: 'light',
@@ -20,94 +28,78 @@ exports.getSettings = async (req, res) => {
       };
     }
 
-    // Pass the showUpdated flag based on query param
     const showUpdated = req.query.updated === 'true';
 
     res.render('layout', {
       title: 'User Settings',
       body: 'users/settings',
-      user: user,
-      showUpdated: showUpdated,
-      t: res.locals.t // <-- add this line
+      user,
+      supportedLanguages,
+      showUpdated,
+      success: req.flash('success'),
+      error: req.flash('error')
     });
   } catch (error) {
     console.error('Error loading settings:', error);
-    res.status(500).send('Server error');
+    req.flash('error', 'Failed to load settings');
+    res.redirect('/');
   }
 };
 
+/**
+ * Update display settings
+ */
 exports.updateDisplaySettings = async (req, res) => {
   try {
     const userId = req.session.user.id;
     const { theme, language, timezone, items_per_page } = req.body;
 
-    // Make sure settings column exists
     await ensureSettingsColumnExists();
 
-    // Get current settings
     const userResult = await db.query('SELECT settings FROM users WHERE id = $1', [userId]);
-
     if (userResult.rows.length === 0) {
-      return res.status(404).send('User not found');
+      req.flash('error', 'User not found');
+      return res.redirect('/users/settings');
     }
 
-    // Update settings
     let settings = userResult.rows[0].settings || {};
-
     settings = {
       ...settings,
       theme: theme || 'light',
       language: language || 'en',
       timezone: timezone || 'UTC',
+      items_per_page: items_per_page || '20'
     };
 
-    // Save to database
     await db.query('UPDATE users SET settings = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [JSON.stringify(settings), userId]);
-
-    // Update session
-    req.session.user = {
-      ...req.session.user,
-      settings
-    };
-
+    req.session.user = { ...req.session.user, settings };
     req.flash('success', 'Display settings updated successfully');
-
-    // Set cookie for immediate theme application
-    res.cookie('user_theme', settings.theme || 'light', {
-      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
-      httpOnly: false // Allow JavaScript access
-    });
-
+    res.cookie('user_theme', settings.theme || 'light', { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: false });
     res.redirect('/users/settings?updated=true');
   } catch (error) {
     console.error('Error updating display settings:', error);
-    res.status(500).send('Server error: ' + error.message);
+    req.flash('error', 'Failed to update display settings');
+    res.redirect('/users/settings');
   }
 };
 
+/**
+ * Update notification settings
+ */
 exports.updateNotificationSettings = async (req, res) => {
   try {
     const userId = req.session.user.id;
-    const {
-      email_notifications,
-      browser_notifications,
-      maintenance_alerts,
-      assignment_notifications
-    } = req.body;
+    const { email_notifications, browser_notifications, maintenance_alerts, assignment_notifications } = req.body;
 
-    // Make sure settings column exists
     await ensureSettingsColumnExists();
 
-    // Get current settings
     const userResult = await db.query('SELECT settings FROM users WHERE id = $1', [userId]);
-
     if (userResult.rows.length === 0) {
-      return res.status(404).send('User not found');
+      req.flash('error', 'User not found');
+      return res.redirect('/users/settings');
     }
 
-    // Update settings
     let settings = userResult.rows[0].settings || {};
-
     settings = {
       ...settings,
       email_notifications: email_notifications === 'on',
@@ -116,29 +108,25 @@ exports.updateNotificationSettings = async (req, res) => {
       assignment_notifications: assignment_notifications === 'on'
     };
 
-    // Save to database
     await db.query('UPDATE users SET settings = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [JSON.stringify(settings), userId]);
-
-    // Update session
-    req.session.user = {
-      ...req.session.user,
-      settings
-    };
-
+    req.session.user = { ...req.session.user, settings };
     req.flash('success', 'Notification settings updated successfully');
     res.redirect('/users/settings?updated=true');
   } catch (error) {
     console.error('Error updating notification settings:', error);
-    res.status(500).send('Server error: ' + error.message);
+    req.flash('error', 'Failed to update notification settings');
+    res.redirect('/users/settings');
   }
 };
 
+/**
+ * Update security settings (password change)
+ */
 exports.updateSecuritySettings = async (req, res) => {
   try {
     const userId = req.session.user.id;
     const { current_password, new_password, confirm_password } = req.body;
 
-    // Validate input
     if (!current_password || !new_password || !confirm_password) {
       return res.render('layout', {
         title: 'User Settings',
@@ -157,16 +145,13 @@ exports.updateSecuritySettings = async (req, res) => {
       });
     }
 
-    // Get user from database to check password
     const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
-
     if (userResult.rows.length === 0) {
-      return res.status(404).send('User not found');
+      req.flash('error', 'User not found');
+      return res.redirect('/users/settings');
     }
 
     const user = userResult.rows[0];
-
-    // Check current password (implement your password verification)
     const isPasswordValid = await verifyPassword(current_password, user.password);
 
     if (!isPasswordValid) {
@@ -178,16 +163,34 @@ exports.updateSecuritySettings = async (req, res) => {
       });
     }
 
-    // Hash new password (implement your password hashing)
     const hashedPassword = await hashPassword(new_password);
-
-    // Update password
     await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
-
+    req.flash('success', 'Password updated successfully');
     res.redirect('/users/settings?updated=true');
   } catch (error) {
     console.error('Error updating security settings:', error);
-    res.status(500).send('Server error');
+    req.flash('error', 'Failed to update security settings');
+    res.redirect('/users/settings');
+  }
+};
+
+/**
+ * Get user settings as JSON (for API)
+ */
+exports.getUserSettings = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const userResult = await db.query('SELECT settings FROM users WHERE id = $1', [userId]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({
+      success: true,
+      settings: userResult.rows[0].settings || {}
+    });
+  } catch (error) {
+    console.error('Error getting user settings:', error);
+    res.status(500).json({ error: 'Failed to get user settings' });
   }
 };
 
@@ -214,18 +217,11 @@ async function ensureSettingsColumnExists() {
 }
 
 // Helper functions for password verification and hashing
-// Note: Implement these using bcrypt or another secure method
 async function verifyPassword(plainPassword, hashedPassword) {
-  // Implement your password verification logic
-  // This is a placeholder
-  const bcrypt = require('bcrypt');
   return await bcrypt.compare(plainPassword, hashedPassword);
 }
 
 async function hashPassword(password) {
-  // Implement your password hashing logic
-  // This is a placeholder
-  const bcrypt = require('bcrypt');
   const saltRounds = 10;
   return await bcrypt.hash(password, saltRounds);
 }

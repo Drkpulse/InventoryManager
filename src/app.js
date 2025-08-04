@@ -6,7 +6,7 @@ const methodOverride = require('method-override');
 const routes = require('./routes');
 const i18n = require('./config/i18n');
 const { isAuthenticated } = require('./middleware/auth');
-
+const { translationMiddleware, languageSwitcher } = require('./middleware/translationMiddleware');
 const app = express();
 const PORT = process.env.PORT || 3000;
 

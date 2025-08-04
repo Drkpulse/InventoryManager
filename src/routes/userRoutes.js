@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const { hasPermission } = require('../middleware/permissions');
-const userController = require('../controllers/userController');
+const userSetController = require('../controllers/userSetController');
 
 // Get all users
 router.get('/', hasPermission('users.view'), async (req, res) => {
@@ -151,15 +151,10 @@ router.post('/:id/delete', hasPermission('users.delete'), async (req, res) => {
 });
 
 // Settings routes
-router.get('/settings', hasPermission('users.view'), userController.getSettings);
+router.get('/settings', hasPermission('users.view'), userSetController.showSettings);
+router.post('/settings/display', hasPermission('users.edit'), userSetController.updateDisplaySettings);
+router.post('/settings/notifications', hasPermission('users.edit'), userSetController.updateNotificationSettings);
+router.post('/settings/security', hasPermission('users.edit'), userSetController.updateSecuritySettings);
 
-// Update display settings
-router.post('/settings/display', hasPermission('users.edit'), userController.updateDisplaySettings);
-
-// Update notification settings
-router.post('/settings/notifications', hasPermission('users.edit'), userController.updateNotificationSettings);
-
-// Update security settings
-router.post('/settings/security', hasPermission('users.edit'), userController.updateSecuritySettings);
 
 module.exports = router;

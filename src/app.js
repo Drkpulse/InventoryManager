@@ -21,9 +21,15 @@ const departmentRoutes = require('./routes/departmentRoutes');
 const translations = require('./utils/translations');
 const { loadUserPermissions, addPermissionHelpers } = require('./middleware/permissions');
 
-// Add notification routes
+// Add notification routes and middleware
 const notificationRoutes = require('./routes/notificationRoutes');
 const apiRoutes = require('./routes/apiRoutes');
+const {
+  addNotificationHelpers,
+  addNotificationCount,
+  ensureUserNotificationSettings,
+  convertFlashToNotifications
+} = require('./middleware/notificationMiddleware');
 
 // Import warranty scheduler
 const warrantyScheduler = require('./services/warrantyScheduler');
@@ -52,14 +58,38 @@ app.use(session({
 // Flash messages
 app.use(flash());
 
-// Add flash messages to res.locals for all views
-app.use((req, res, next) => {
-  res.locals.messages = req.flash();
-  next();
-});
+// Initialize notification system on startup
+const { initializeNotificationSystem } = require('./controllers/notificationController');
+let notificationSystemReady = false;
+
+// Initialize notification system
+(async () => {
+  try {
+    const db = require('./config/db');
+    const result = await initializeNotificationSystem();
+    if (result) {
+      notificationSystemReady = true;
+      console.log('✅ Notification system initialized successfully');
+    } else {
+      console.error('❌ Failed to initialize notification system');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing notification system:', error);
+  }
+})();
+
+// Add notification helpers early in middleware chain
+app.use(addNotificationHelpers);
 
 // Load permissions
 app.use(loadUserPermissions);
+
+// Add notification count to all views (after authentication)
+app.use(addNotificationCount);
+
+// Ensure user notification settings exist
+app.use(ensureUserNotificationSettings);
+
 
 // Language switcher middleware
 app.use(languageSwitcher);
@@ -78,6 +108,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Convert important flash messages to persistent notifications
+app.use(convertFlashToNotifications);
+
 // Add permission helper functions
 app.use(addPermissionHelpers);
 
@@ -89,7 +122,8 @@ app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    notificationSystem: notificationSystemReady
   });
 });
 
@@ -120,9 +154,31 @@ app.use((req, res) => {
   });
 });
 
-// Global error handler
+// Global error handler with notification support
 app.use((err, req, res, next) => {
   console.error('Global error handler:', err.stack);
+
+  // Create error notification for authenticated users
+  if (req.session?.user?.id && notificationSystemReady) {
+    try {
+      req.createNotification({
+        type_name: 'security_alert',
+        user_id: req.session.user.id,
+        title: 'System Error Occurred',
+        message: 'An error occurred while processing your request. Our team has been notified.',
+        data: {
+          error: err.message,
+          stack: err.stack,
+          url: req.url,
+          method: req.method,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } catch (notificationError) {
+      console.error('Failed to create error notification:', notificationError);
+    }
+  }
+
   res.status(500).render('error', {
     title: 'Server Error',
     message: 'Something went wrong on our end.',
@@ -130,16 +186,55 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Graceful shutdown handler
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully...');
+
+  // Stop warranty scheduler
+  if (warrantyScheduler) {
+    try {
+      warrantyScheduler.stop();
+      console.log('✅ Warranty scheduler stopped');
+    } catch (error) {
+      console.error('❌ Error stopping warranty scheduler:', error);
+    }
+  }
+
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully...');
+
+  // Stop warranty scheduler
+  if (warrantyScheduler) {
+    try {
+      warrantyScheduler.stop();
+      console.log('✅ Warranty scheduler stopped');
+    } catch (error) {
+      console.error('❌ Error stopping warranty scheduler:', error);
+    }
+  }
+
+  process.exit(0);
+});
+
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Notification system: ${notificationSystemReady ? '✅ Ready' : '❌ Not Ready'}`);
 
-  // Start warranty scheduler after server is running
+  // Start warranty scheduler after server is running and notification system is ready
   setTimeout(() => {
-    try {
-      warrantyScheduler.start();
-    } catch (error) {
-      console.error('Failed to start warranty scheduler:', error);
+    if (notificationSystemReady) {
+      try {
+        warrantyScheduler.start();
+        console.log('⏰ Warranty scheduler started');
+      } catch (error) {
+        console.error('❌ Failed to start warranty scheduler:', error);
+      }
+    } else {
+      console.log('⚠️ Warranty scheduler not started - notification system not ready');
     }
   }, 5000);
 });

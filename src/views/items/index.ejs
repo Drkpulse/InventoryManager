@@ -2,17 +2,17 @@
   <!-- Page Header -->
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Asset Management</h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100"><%= t('assets_management') %></h1>
     </div>
     <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
       <a href="/items/new" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-plus mr-2 group-hover:scale-110 transition-transform duration-300"></i> Add New Asset
+        <i class="fas fa-plus mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('add_new_item') %>
       </a>
       <a href="/items/new-receipt" class="group px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-receipt mr-2 group-hover:rotate-12 transition-transform duration-300"></i> Add Purchase Receipt
+        <i class="fas fa-receipt mr-2 group-hover:rotate-12 transition-transform duration-300"></i> <%= t('add_new_receipt') %>
       </a>
       <button id="exportItemsBtn" type="button" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-download mr-2 group-hover:translate-y-1 transition-transform duration-300"></i> Export Asset List
+        <i class="fas fa-download mr-2 group-hover:translate-y-1 transition-transform duration-300"></i> <%= t('export_asset_list') %>
       </button>
     </div>
   </div>
@@ -22,21 +22,21 @@
     <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" id="filtersToggle">
       <div class="flex items-center gap-2 text-gray-700 dark:text-gray-200">
         <i class="fas fa-filter"></i>
-        <span class="font-semibold">Advanced Filters</span>
+        <span class="font-semibold"><%= t('advanced_filters') %></span>
         <span class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs" id="filterBadge">0</span>
       </div>
       <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500 dark:text-gray-400" id="appliedFiltersPreview">No filters applied</span>
+        <span class="text-sm text-gray-500 dark:text-gray-400" id="appliedFiltersPreview"><%= t('no_filters_applied') %></span>
         <i class="fas fa-chevron-down transition-transform duration-200"></i>
       </div>
     </div>
     <div class="px-6 pb-6 pt-2 hidden" id="filtersContent">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
         <div>
-          <label for="typeFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset Type</label>
+          <label for="typeFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_type') %></label>
           <select id="typeFilter" name="type"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-            <option value="">All Types</option>
+            <option value=""><%= t('all_types') %></option>
             <% if (typeof types !== 'undefined') { %>
               <% types.forEach(type => { %>
                 <option value="<%= type.id %>" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.type == type.id) ? 'selected' : '' %>>
@@ -47,10 +47,10 @@
           </select>
         </div>
         <div>
-          <label for="brandFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Brand</label>
+          <label for="brandFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('brand') %></label>
           <select id="brandFilter" name="brand"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-            <option value="">All Brands</option>
+            <option value=""><%= t('all_brands') %></option>
             <% if (typeof brands !== 'undefined') { %>
               <% brands.forEach(brand => { %>
                 <option value="<%= brand.id %>" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.brand == brand.id) ? 'selected' : '' %>>
@@ -61,27 +61,27 @@
           </select>
         </div>
         <div>
-          <label for="statusFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assignment Status</label>
+          <label for="statusFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('assignment_status') %></label>
           <select id="statusFilter" name="assigned"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-            <option value="" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.assigned === '') ? 'selected' : '' %>>All Assets</option>
-            <option value="assigned" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.assigned === 'assigned') ? 'selected' : '' %>>Assigned Assets</option>
-            <option value="unassigned" <%= (typeof currentFilters === 'undefined' || !currentFilters || currentFilters.assigned === 'unassigned') ? 'selected' : '' %>>Unassigned Assets</option>
+            <option value="" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.assigned === '') ? 'selected' : '' %>><%= t('all_assets') %></option>
+            <option value="assigned" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.assigned === 'assigned') ? 'selected' : '' %>><%= t('assigned_assets') %></option>
+            <option value="unassigned" <%= (typeof currentFilters === 'undefined' || !currentFilters || currentFilters.assigned === 'unassigned') ? 'selected' : '' %>><%= t('unassigned_assets') %></option>
           </select>
         </div>
         <div>
-          <label for="conditionFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Condition</label>
+          <label for="conditionFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('condition') %></label>
           <select id="conditionFilter" name="condition"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-            <option value="">All Conditions</option>
-            <option value="active">Active</option>
-            <option value="maintenance">Under Maintenance</option>
-            <option value="retired">Retired</option>
-            <option value="damaged">Damaged</option>
+            <option value=""><%= t('all_conditions') %></option>
+            <option value="active"><%= t('active') %></option>
+            <option value="maintenance"><%= t('maintenance') %></option>
+            <option value="retired"><%= t('retired') %></option>
+            <option value="damaged"><%= t('damaged') %></option>
           </select>
         </div>
         <div>
-          <label for="priceRange" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Price Range</label>
+          <label for="priceRange" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('price_range') %></label>
           <div class="flex gap-2">
             <input type="number" id="minPrice" name="minPrice" placeholder="Min €" min="0" step="0.01"
               class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -91,7 +91,7 @@
           </div>
         </div>
         <div>
-          <label for="dateRange" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Date Acquired</label>
+          <label for="dateRange" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('date_acquired') %></label>
           <div class="flex gap-2">
             <input type="date" id="startDate" name="startDate"
               class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -101,10 +101,10 @@
           </div>
         </div>
         <div>
-          <label for="departmentFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Department</label>
+          <label for="departmentFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('department') %></label>
           <select id="departmentFilter" name="department"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-            <option value="">All Departments</option>
+            <option value=""><%= t('all_departments') %></option>
             <% if (typeof departments !== 'undefined') { %>
               <% departments.forEach(dept => { %>
                 <option value="<%= dept.id %>" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.department == dept.id) ? 'selected' : '' %>>
@@ -119,10 +119,10 @@
         <div id="appliedFilters" class="flex flex-wrap gap-2"></div>
         <div class="flex gap-2">
           <button type="button" id="applyFilters" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
-            <i class="fas fa-search"></i> Apply Filters
+            <i class="fas fa-search"></i> <%= t('apply_filters') %>
           </button>
           <button type="button" id="resetFilters" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
-            <i class="fas fa-times"></i> Reset All
+            <i class="fas fa-times"></i> <%= t('reset_filters') %>
           </button>
         </div>
       </div>
@@ -132,7 +132,7 @@
   <!-- Search Bar -->
   <div class="mb-6">
     <div class="relative">
-      <input type="text" id="itemSearch" placeholder="Search assets by name, ID, or type..." autocomplete="off"
+      <input type="text" id="itemSearch" placeholder="<%= t('search_placeholder') %>" autocomplete="off"
         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
       <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
       <div class="absolute w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-md z-10 hidden" id="searchResults"></div>
@@ -145,13 +145,13 @@
         <thead>
           <tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
             <th class="px-4 py-3"><input type="checkbox" id="selectAll"></th>
-            <th class="px-4 py-3">Asset ID</th>
-            <th class="px-4 py-3">Name</th>
-            <th class="px-4 py-3">Type</th>
-            <th class="px-4 py-3">Brand</th>
-            <th class="px-4 py-3">Assigned To</th>
-            <th class="px-4 py-3">Status</th>
-            <th class="px-4 py-3">Actions</th>
+            <th class="px-4 py-3"><%= t('asset_id') %></th>
+            <th class="px-4 py-3"><%= t('name') %></th>
+            <th class="px-4 py-3"><%= t('type') %></th>
+            <th class="px-4 py-3"><%= t('brand') %></th>
+            <th class="px-4 py-3"><%= t('assigned_to') %></th>
+            <th class="px-4 py-3"><%= t('status') %></th>
+            <th class="px-4 py-3"><%= t('actions') %></th>
           </tr>
         </thead>
         <tbody>
@@ -181,7 +181,7 @@
                   </span>
                 <% } else { %>
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
-                    <i class="fas fa-minus"></i> Not Assigned
+                    <i class="fas fa-minus"></i> <%= t('not_assigned') %>
                   </span>
                 <% } %>
               </td>
@@ -192,7 +192,7 @@
                   </span>
                 <% } else { %>
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
-                    <i class="fas fa-minus"></i> Not Specified
+                    <i class="fas fa-minus"></i> <%= t('not_specified') %>
                   </span>
                 <% } %>
               </td>
@@ -208,7 +208,7 @@
                   </div>
                 <% } else { %>
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
-                    <i class="fas fa-user-slash"></i> Unassigned
+                    <i class="fas fa-user-slash"></i> <%= t('unassigned') %>
                   </span>
                 <% } %>
               </td>
@@ -252,34 +252,34 @@
                 %>
                 <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium <%= statusClass %>">
                   <i class="<%= statusIcon %>"></i>
-                  <%= statusText %>
+                  <%= t(statusText) %>
                 </span>
                 <% if (item.date_acquired) { %>
                   <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Acquired <%= new Date(item.date_acquired).toLocaleDateString() %>
+                    <%= t('acquired') %> <%= new Date(item.date_acquired).toLocaleDateString() %>
                   </div>
                 <% } %>
               </td>
               <td class="px-4 py-3">
                 <div class="flex gap-1">
-                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition" title="View Details">
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition" title="<%= t('view_details') %>">
                     <i class="fas fa-eye"></i>
                   </a>
-                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="Edit">
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="<%= t('edit') %>">
                     <i class="fas fa-edit"></i>
                   </a>
                   <% if (item.assigned_to) { %>
                     <form style="display: inline;" method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/unassign" class="inline-form">
-                      <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition" title="Unassign">
+                      <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition" title="<%= t('unassign') %>">
                         <i class="fas fa-user-minus"></i>
                       </button>
                     </form>
                   <% } else { %>
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>/assign" class="inline-flex items-center justify-center w-8 h-8 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition" title="Assign">
+                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>/assign" class="inline-flex items-center justify-center w-8 h-8 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition" title="<%= t('assign') %>">
                       <i class="fas fa-user-plus"></i>
                     </a>
                   <% } %>
-                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 transition" title="View History">
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 transition" title="<%= t('view_history') %>">
                     <i class="fas fa-history"></i>
                   </a>
                 </div>
@@ -315,10 +315,10 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 mt-4 rounded-b-lg">
       <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
         <i class="fas fa-boxes"></i>
-        Showing <strong id="itemCount"><%= items.length %></strong> of <%= typeof totalItems !== 'undefined' ? totalItems : items.length %> assets
-        <span class="ml-4"><i class="fas fa-user text-green-600"></i> <%= items.filter(item => item.assigned_to).length %> Assigned</span>
+        <%= t('showing') %> <strong id="itemCount"><%= items.length %></strong> <%= t('of') %> <%= typeof totalItems !== 'undefined' ? totalItems : items.length %> <%= t('assets') %>
+        <span class="ml-4"><i class="fas fa-user text-green-600"></i> <%= items.filter(item => item.assigned_to).length %> <%= t('assigned') %></span>
         <% if (items.filter(item => !item.assigned_to).length > 0) { %>
-          <span class="ml-2"><i class="fas fa-clock text-yellow-500"></i> <%= items.filter(item => !item.assigned_to).length %> Unassigned</span>
+          <span class="ml-2"><i class="fas fa-clock text-yellow-500"></i> <%= items.filter(item => !item.assigned_to).length %> <%= t('unassigned') %></span>
         <% } %>
       </div>
       <div class="flex items-center gap-4">
@@ -330,7 +330,7 @@
                 urlParams.delete('page');
                 for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">« Previous</a>
             <% } %>
-            <span class="text-xs text-gray-500 dark:text-gray-400">Page <%= currentPage %> of <%= totalPages %></span>
+            <span class="text-xs text-gray-500 dark:text-gray-400"><%= t('page') %> <%= currentPage %> <%= t('of') %> <%= totalPages %></span>
             <% if (currentPage < totalPages) { %>
               <a href="?page=<%= currentPage + 1 %><%
                 const urlParams = new URLSearchParams(req.query);
@@ -346,7 +346,7 @@
             <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
             <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
           </select>
-          <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">per page</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400 ml-1"><%= t('items_per_page') %></span>
         </div>
       </div>
     </div>
@@ -355,14 +355,14 @@
       <div class="mb-4 text-4xl text-gray-400 dark:text-gray-600">
         <i class="fas fa-boxes"></i>
       </div>
-      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No assets found</h3>
-      <p class="text-gray-500 dark:text-gray-400 mb-4">No assets match your current search or filter criteria.</p>
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2"><%= t('no_assets_found') %></h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-4"><%= t('no_assets_match') %></p>
       <div class="flex gap-2">
         <button id="clearFiltersBtn" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2" style="display: none;">
-          <i class="fas fa-times"></i> Clear All Filters
+          <i class="fas fa-times"></i> <%= t('clear_all_filters') %>
         </button>
         <a href="/items/new" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
-          <i class="fas fa-plus"></i> Add First Asset
+          <i class="fas fa-plus"></i> <%= t('add_first_asset') %>
         </a>
       </div>
     </div>

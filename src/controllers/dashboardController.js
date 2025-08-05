@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { getRecentActivities } = require('../utils/historyLogger');
+const { translate } = require('../utils/translations');
 
 
 exports.getDashboard = async (req, res) => {
@@ -68,7 +69,9 @@ exports.getDashboard = async (req, res) => {
       recentPurchases: recentPurchasesResult.rows || [],
       deptEmployees: deptEmployeesResult.rows || [],
       recentActivities,
-      user: req.session.user
+      user: req.session.user,
+      t: req.t || ((key) => translate(key, req.language)),
+      currentLanguage: req.language
     });
   } catch (error) {
     console.error('Error loading dashboard:', error);

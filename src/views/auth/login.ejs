@@ -16,7 +16,7 @@
       <div>
         <label for="login" class="block text-sm font-medium text-gray-200">
           <i class="fas fa-user mr-1"></i>
-          Email or CEP ID
+        <%= t('login') || 'Email or CEP' %>
         </label>
         <div class="relative mt-1">
           <input
@@ -36,11 +36,11 @@
         </div>
         <div class="mt-1 text-xs text-gray-400">
           <i class="fas fa-info-circle mr-1"></i>
-          You can use either your email address or CEP ID
+          <%= t('login_hint') || 'Use your email or CEP ID to log in.' %>
         </div>
       </div>
       <div>
-        <label for="password" class="block text-sm font-medium text-gray-200">Password</label>
+        <label for="password" class="block text-sm font-medium text-gray-200"><%= t('password') %></label>
         <div class="relative mt-1">
           <input
             type="password"
@@ -63,7 +63,7 @@
         <div class="flex items-center">
           <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded" <%= typeof remember !== 'undefined' && remember ? 'checked' : '' %>>
           <label for="remember" class="ml-2 text-sm text-gray-400">
-            Remember me
+            <%= t('remember_me') %>
           </label>
         </div>
       </div>
@@ -74,13 +74,13 @@
         </div>
       <% } %>
       <button type="submit" class="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold shadow-lg hover:scale-105 transition-transform duration-300 flex items-center justify-center gap-2 animate-fade-in-up">
-        <span class="btn-text">Sign In</span>
+        <span class="btn-text"><%= t('sign_in') %></span>
       </button>
     </form>
     <div class="flex flex-col items-center mt-6 gap-2 animate-fade-in">
       <div class="flex items-center gap-2 text-gray-400 text-sm">
         <i class="fas fa-shield-alt animate-pulse"></i>
-        Secure Login • v2.0.0
+        Secure Login • v1.0.0
       </div>
     </div>
   </div>

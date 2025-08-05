@@ -2,24 +2,24 @@
   <!-- Header Section -->
   <div class="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
     <div>
-      <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-900 to-blue-700 bg-clip-text text-transparent">Dashboard Overview</h1>
-      <p class="text-gray-500 dark:text-gray-300 mt-2 text-lg">Welcome back! Here's what's happening with your IT assets.</p>
+      <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-900 to-blue-700 bg-clip-text text-transparent"><%= t('dashboard_overview') %></h1>
+      <p class="text-gray-500 dark:text-gray-300 mt-2 text-lg"><%= t('dashboard_welcome_message') %></p>
     </div>
     <div class="flex gap-4 items-center">
       <div class="relative flex items-center">
         <i class="fas fa-search absolute left-4 text-gray-400"></i>
-        <input type="text" id="globalSearch" placeholder="Search assets, employees..."
+        <input type="text" id="globalSearch" placeholder="<%= t('search_placeholder') %>"
           class="pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-base w-72 transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
       </div>
       <div class="relative group">
         <button class="bg-gradient-to-r from-indigo-900 to-blue-700 text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
           <i class="fas fa-plus"></i>
-          <span>Quick Add</span>
+          <span><%= t('quick_add') %></span>
         </button>
         <div class="absolute top-full right-0 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-2 min-w-[200px] opacity-0 group-hover:opacity-100 group-hover:visible invisible transition z-10 border border-gray-100 dark:border-gray-700">
-          <a href="/items/new" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-900 dark:text-white"><i class="fas fa-laptop"></i>New Asset</a>
-          <a href="/employees/new" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-900 dark:text-white"><i class="fas fa-user-plus"></i>New Employee</a>
-          <a href="/items/new-receipt" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-900 dark:text-white"><i class="fas fa-receipt"></i>Purchase Receipt</a>
+          <a href="/items/new" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-900 dark:text-white"><i class="fas fa-laptop"></i><%= t('add_new_item') %></a>
+          <a href="/employees/new" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-900 dark:text-white"><i class="fas fa-user-plus"></i><%= t('add_new_employee') %></a>
+          <a href="/items/new-receipt" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-900 dark:text-white"><i class="fas fa-receipt"></i><%= t('add_new_receipt') %></a>
         </div>
       </div>
     </div>
@@ -33,8 +33,8 @@
       </div>
       <div>
         <span class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.itemCount %></span>
-        <span class="block text-gray-500 dark:text-gray-300 text-sm">Total Assets</span>
-        <span class="block text-green-500 text-xs">Click to view all</span>
+        <span class="block text-gray-500 dark:text-gray-300 text-sm"><%= t('total_assets') %></span>
+        <span class="block text-green-500 text-xs"><%= t('click_to_view_all') %></span>
       </div>
     </a>
     <a href="/employees" class="bg-white dark:bg-gray-800 rounded-2xl p-8 flex items-center gap-6 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden text-inherit no-underline border-t-4 border-green-400">
@@ -43,8 +43,8 @@
       </div>
       <div>
         <span class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.employeeCount %></span>
-        <span class="block text-gray-500 dark:text-gray-300 text-sm">Active Users</span>
-        <span class="block text-green-500 text-xs">Click to manage</span>
+        <span class="block text-gray-500 dark:text-gray-300 text-sm"><%= t('total_employees') %></span>
+        <span class="block text-green-500 text-xs"><%= t('click_to_manage') %></span>
       </div>
     </a>
     <a href="/items?filter=unassigned" class="bg-white dark:bg-gray-800 rounded-2xl p-8 flex items-center gap-6 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden text-inherit no-underline border-t-4 border-yellow-400">
@@ -53,8 +53,8 @@
       </div>
       <div>
         <span class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.unassignedCount %></span>
-        <span class="block text-gray-500 dark:text-gray-300 text-sm">Unassigned</span>
-        <span class="block text-yellow-500 text-xs">Need attention</span>
+        <span class="block text-gray-500 dark:text-gray-300 text-sm"><%= t('unassigned_assets') %></span>
+        <span class="block text-yellow-500 text-xs"><%= t('need_attention') %></span>
       </div>
     </a>
     <a href="/software" class="bg-white dark:bg-gray-800 rounded-2xl p-8 flex items-center gap-6 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl relative overflow-hidden text-inherit no-underline border-t-4 border-blue-400">
@@ -63,8 +63,8 @@
       </div>
       <div>
         <span class="text-3xl font-bold text-gray-900 dark:text-white"><%= stats.departmentCount %></span>
-        <span class="block text-gray-500 dark:text-gray-300 text-sm">Software</span>
-        <span class="block text-blue-500 text-xs">Active licenses</span>
+        <span class="block text-gray-500 dark:text-gray-300 text-sm"><%= t('total_software') %></span>
+        <span class="block text-blue-500 text-xs"><%= t('active_licenses') %></span>
       </div>
     </a>
   </div>
@@ -74,15 +74,15 @@
     <!-- Asset Distribution Chart -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition">
       <div class="flex justify-between items-center px-8 py-6 border-b border-gray-100 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Asset Distribution</h3>
-        <a href="/items" class="text-indigo-900 dark:text-indigo-400 text-sm font-medium hover:underline">View All Assets</a>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><%= t('asset_distribution') %></h3>
+        <a href="/items" class="text-indigo-900 dark:text-indigo-400 text-sm font-medium hover:underline"><%= t('view_all_assets') %></a>
       </div>
       <div class="px-8 py-6">
         <% itemsByType.forEach((item, index) => { %>
           <div class="flex justify-between items-center py-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
             <div>
               <span class="font-semibold text-gray-900 dark:text-white text-base"><%= item.name %></span>
-              <span class="block text-gray-500 dark:text-gray-300 text-xs"><%= item.count %> items</span>
+              <span class="block text-gray-500 dark:text-gray-300 text-xs"><%= item.count %> <%= t('items') %></span>
             </div>
             <div>
               <% const percentage = Math.round((item.count / stats.itemCount) * 100) %>
@@ -108,8 +108,8 @@ function activityIcon(action) {
     <!-- Recent Activity -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition">
       <div class="flex justify-between items-center px-8 py-6 border-b border-gray-100 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
-        <a href="/activity" class="text-indigo-900 dark:text-indigo-400 text-sm font-medium hover:underline">View All</a>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><%= t('recent_activity') %></h3>
+        <a href="/activity" class="text-indigo-900 dark:text-indigo-400 text-sm font-medium hover:underline"><%= t('view_all') %></a>
       </div>
       <div class="px-8 py-6">
         <% recentActivities.slice(0, 5).forEach(activity => { %>
@@ -140,13 +140,13 @@ function activityIcon(action) {
                 <%= name %>
               </a>
               <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <%= activity.action.charAt(0).toUpperCase() + activity.action.slice(1) %>
-                <span>on <%= activity.entity_type %></span>
+                <%= t('activity_' + activity.action) %>
+                <span><%= t('on') %> <%= t(activity.entity_type) %></span>
               </div>
             </div>
             <div class="flex flex-col items-end min-w-[120px]">
               <span class="font-mono text-xs text-gray-500 dark:text-gray-400"><%= new Date(activity.created_at).toLocaleString() %></span>
-              <span class="text-xs text-indigo-900 dark:text-indigo-400 font-semibold"><%= activity.user_name || 'System' %></span>
+              <span class="text-xs text-indigo-900 dark:text-indigo-400 font-semibold"><%= activity.user_name || t('system') %></span>
             </div>
           </div>
         <% }) %>
@@ -156,24 +156,24 @@ function activityIcon(action) {
     <!-- System Overview -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition">
       <div class="flex justify-between items-center px-8 py-6 bg-gradient-to-r from-indigo-900 to-blue-700 text-white">
-        <h3 class="text-lg font-semibold">System Overview</h3>
-        <span class="bg-green-400 text-indigo-900 px-3 py-1 rounded-full text-xs font-semibold">ONLINE</span>
+        <h3 class="text-lg font-semibold"><%= t('system_overview') %></h3>
+        <span class="bg-green-400 text-indigo-900 px-3 py-1 rounded-full text-xs font-semibold"><%= t('online') %></span>
       </div>
       <div class="px-8 py-6">
         <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-gray-500 dark:text-gray-300 text-sm">Total Assets</span>
+          <span class="text-gray-500 dark:text-gray-300 text-sm"><%= t('total_assets') %></span>
           <span class="font-semibold text-gray-900 dark:text-white"><%= stats.itemCount %></span>
         </div>
         <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-gray-500 dark:text-gray-300 text-sm">Active Employees</span>
+          <span class="text-gray-500 dark:text-gray-300 text-sm"><%= t('active_employees') %></span>
           <span class="font-semibold text-gray-900 dark:text-white"><%= stats.employeeCount %></span>
         </div>
         <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
-          <span class="text-gray-500 dark:text-gray-300 text-sm">Assigned Assets</span>
+          <span class="text-gray-500 dark:text-gray-300 text-sm"><%= t('assigned_assets') %></span>
           <span class="font-semibold text-gray-900 dark:text-white"><%= stats.itemCount - stats.unassignedCount %></span>
         </div>
         <div class="flex justify-between items-center py-3">
-          <span class="text-gray-500 dark:text-gray-300 text-sm">Assignment Rate</span>
+          <span class="text-gray-500 dark:text-gray-300 text-sm"><%= t('assignment_rate') %></span>
           <span class="font-semibold text-green-400">
             <%= stats.itemCount > 0 ? Math.round(((stats.itemCount - stats.unassignedCount) / stats.itemCount) * 100) : 0 %>%
           </span>
@@ -184,7 +184,7 @@ function activityIcon(action) {
     <!-- Quick Insights -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition">
       <div class="flex justify-between items-center px-8 py-6 border-b border-gray-100 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Insights</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><%= t('quick_insights') %></h3>
         <button class="bg-transparent border-none text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 p-2 rounded-lg transition" onclick="refreshInsights()">
           <i class="fas fa-refresh"></i>
         </button>
@@ -195,8 +195,8 @@ function activityIcon(action) {
             <i class="fas fa-check-circle"></i>
           </div>
           <div>
-            <h4 class="font-semibold text-gray-900 dark:text-white text-base mb-1">System Health</h4>
-            <p class="text-gray-500 dark:text-gray-300 text-xs m-0">All systems operational and running smoothly</p>
+            <h4 class="font-semibold text-gray-900 dark:text-white text-base mb-1"><%= t('system_health') %></h4>
+            <p class="text-gray-500 dark:text-gray-300 text-xs m-0"><%= t('system_health_status') %></p>
           </div>
         </div>
         <div class="flex items-center gap-4 py-4 border-b border-gray-100 dark:border-gray-700">
@@ -204,7 +204,7 @@ function activityIcon(action) {
             <i class="fas fa-info-circle"></i>
           </div>
           <div>
-            <h4 class="font-semibold text-gray-900 dark:text-white text-base mb-1">Recent Activity</h4>
+            <h4 class="font-semibold text-gray-900 dark:text-white text-base mb-1"><%= t('recent_activity') %></h4>
             <p class="text-gray-500 dark:text-gray-300 text-xs m-0"><%= recentItems.length %> assets updated in the last 30 days</p>
           </div>
         </div>
@@ -214,8 +214,8 @@ function activityIcon(action) {
             <i class="fas fa-exclamation-triangle"></i>
           </div>
           <div>
-            <h4 class="font-semibold text-gray-900 dark:text-white text-base mb-1">Attention Required</h4>
-            <p class="text-gray-500 dark:text-gray-300 text-xs m-0"><%= stats.unassignedCount %> assets need to be assigned</p>
+            <h4 class="font-semibold text-gray-900 dark:text-white text-base mb-1"><%= t('attention_required') %></h4>
+            <p class="text-gray-500 dark:text-gray-300 text-xs m-0"><%= stats.unassignedCount %> <%= t('assets_need_assignment') %></p>
           </div>
         </div>
         <% } %>
@@ -227,19 +227,19 @@ function activityIcon(action) {
   <div class="flex flex-wrap gap-4 justify-center">
     <a href="/items/new" class="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-900 to-blue-700 text-white rounded-xl font-medium shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
       <i class="fas fa-plus"></i>
-      <span>Add Asset</span>
+      <span><%= t('add_asset') %></span>
     </a>
     <a href="/employees/new" class="flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl font-medium shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
       <i class="fas fa-user-plus"></i>
-      <span>Add Employee</span>
+      <span><%= t('add_employee') %></span>
     </a>
     <a href="/reports/export-assets" class="flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl font-medium shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
       <i class="fas fa-download"></i>
-      <span>Export Data</span>
+      <span><%= t('export_data') %></span>
     </a>
     <a href="/items" class="flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl font-medium shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
       <i class="fas fa-list"></i>
-      <span>View All Assets</span>
+      <span><%= t('view_all_assets') %></span>
     </a>
   </div>
 </section>
@@ -718,7 +718,7 @@ function activityIcon(action) {
       searchResults.innerHTML = `
         <div class="search-loading">
           <i class="fas fa-spinner fa-spin"></i>
-          <span>Searching...</span>
+          <span><%= t('searching') %></span>
         </div>
       `;
       searchResults.classList.remove('hidden');
@@ -728,7 +728,7 @@ function activityIcon(action) {
       searchResults.innerHTML = `
         <div class="search-error">
           <i class="fas fa-exclamation-triangle"></i>
-          <span>Search temporarily unavailable</span>
+          <span><%= t('search_unavailable') %></span>
         </div>
       `;
     }
@@ -746,7 +746,7 @@ function activityIcon(action) {
         html = `
           <div class="search-no-results">
             <i class="fas fa-search"></i>
-            <span>No results found</span>
+            <span><%= t('no_results_found') %></span>
           </div>
         `;
       } else {

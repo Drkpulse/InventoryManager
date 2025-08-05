@@ -6,41 +6,74 @@
       </h1>
       <p class="text-gray-600 dark:text-gray-300 mt-2">Send a message to all users instantly. Use this for important announcements or system-wide alerts.</p>
     </div>
+
     <div>
+      <!-- Flash messages integration -->
+      <% if (messages && messages.error && messages.error.length > 0) { %>
+        <% messages.error.forEach(function(msg) { %>
+          <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700 animate-fadeOut">
+            <i class="fas fa-exclamation-triangle"></i> <%= msg %>
+          </div>
+        <% }) %>
+      <% } %>
+
+      <% if (messages && messages.success && messages.success.length > 0) { %>
+        <% messages.success.forEach(function(msg) { %>
+          <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700 animate-fadeOut">
+            <i class="fas fa-check-circle"></i> <%= msg %>
+          </div>
+        <% }) %>
+      <% } %>
+
+      <% if (messages && messages.info && messages.info.length > 0) { %>
+        <% messages.info.forEach(function(msg) { %>
+          <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700 animate-fadeOut">
+            <i class="fas fa-info-circle"></i> <%= msg %>
+          </div>
+        <% }) %>
+      <% } %>
+
+      <!-- Legacy flash message support -->
       <% if (typeof error !== 'undefined' && error) { %>
         <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700 animate-fadeOut">
           <i class="fas fa-exclamation-triangle"></i> <%= error %>
         </div>
       <% } %>
+
       <% if (typeof success !== 'undefined' && success) { %>
         <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700 animate-fadeOut">
           <i class="fas fa-check-circle"></i> <%= success %>
         </div>
       <% } %>
+
       <form method="POST" action="/notifications/broadcast" id="broadcastForm" class="space-y-6">
         <div>
           <label for="title" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 flex items-center gap-2">
-            <i class="fas fa-heading"></i> Title
+            <i class="fas fa-heading"></i> Title <span class="text-red-500">*</span>
           </label>
           <input type="text" id="title" name="title" maxlength="255" required placeholder="Enter a short title..."
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
           <div class="text-right text-xs mt-1" id="titleCounter"></div>
         </div>
+
         <div>
           <label for="message" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 flex items-center gap-2">
-            <i class="fas fa-comment"></i> Message
+            <i class="fas fa-comment"></i> Message <span class="text-red-500">*</span>
           </label>
           <textarea id="message" name="message" rows="4" maxlength="1000" required placeholder="Enter your message..."
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"></textarea>
           <div class="text-right text-xs mt-1" id="messageCounter"></div>
         </div>
+
         <div>
           <label for="url" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 flex items-center gap-2">
             <i class="fas fa-link"></i> Link (optional)
           </label>
           <input type="url" id="url" name="url" placeholder="https://example.com/page"
             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Optional: Add a link that users can click to navigate to relevant content</p>
         </div>
+
         <div>
           <label class="block font-semibold mb-2 text-gray-700 dark:text-gray-200">Live Preview:</label>
           <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -55,6 +88,7 @@
             </div>
           </div>
         </div>
+
         <div class="flex gap-2 justify-end mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button type="submit" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition flex items-center gap-2" id="broadcastSubmit">
             <span id="broadcastSpinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
@@ -65,9 +99,19 @@
           </a>
         </div>
       </form>
+
+      <!-- Test notification button for admins -->
+      <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">Testing</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Send a test notification to yourself to verify the system is working.</p>
+        <button id="testNotification" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition flex items-center gap-2">
+          <i class="fas fa-flask"></i> Send Test Notification
+        </button>
+      </div>
     </div>
   </div>
 </div>
+
 <style>
 @media (max-width: 640px) {
   .max-w-xl { padding: 0 !important; }
@@ -80,6 +124,7 @@
   to { opacity: 0; height: 0; margin: 0; padding: 0; }
 }
 </style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const titleInput = document.getElementById('title');
@@ -90,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const broadcastForm = document.getElementById('broadcastForm');
   const broadcastSubmit = document.getElementById('broadcastSubmit');
   const broadcastSpinner = document.getElementById('broadcastSpinner');
+  const testNotificationBtn = document.getElementById('testNotification');
 
   function updatePreview() {
     const title = titleInput.value.trim();
@@ -104,20 +150,25 @@ document.addEventListener('DOMContentLoaded', function() {
       previewText.textContent = 'Your message will appear here...';
     }
   }
+
   function updateCounter(input, counter, max) {
+    const remaining = max - input.value.length;
     counter.textContent = `${input.value.length}/${max} characters`;
-    counter.className = (max - input.value.length) < 50
+    counter.className = remaining < 50
       ? "text-xs mt-1 text-red-600 dark:text-red-400 text-right"
       : "text-xs mt-1 text-gray-500 dark:text-gray-400 text-right";
   }
+
   titleInput.addEventListener('input', function() {
     updatePreview();
     updateCounter(titleInput, titleCounter, 255);
   });
+
   messageInput.addEventListener('input', function() {
     updatePreview();
     updateCounter(messageInput, messageCounter, 1000);
   });
+
   updatePreview();
   updateCounter(titleInput, titleCounter, 255);
   updateCounter(messageInput, messageCounter, 1000);
@@ -126,5 +177,65 @@ document.addEventListener('DOMContentLoaded', function() {
     broadcastSubmit.disabled = true;
     broadcastSpinner.style.display = 'inline-block';
   });
+
+  // Test notification functionality
+  testNotificationBtn.addEventListener('click', async function() {
+    const originalText = testNotificationBtn.innerHTML;
+    testNotificationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    testNotificationBtn.disabled = true;
+
+    try {
+      const response = await fetch('/notifications/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        testNotificationBtn.innerHTML = '<i class="fas fa-check"></i> Test Sent!';
+        testNotificationBtn.className = 'px-4 py-2 bg-green-600 text-white font-medium rounded-md';
+
+        // Show success message
+        const successDiv = document.createElement('div');
+        successDiv.className = 'mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700';
+        successDiv.innerHTML = '<i class="fas fa-check-circle"></i> Test notification sent successfully! Check your notifications.';
+        testNotificationBtn.parentNode.appendChild(successDiv);
+
+        setTimeout(() => {
+          successDiv.remove();
+          testNotificationBtn.innerHTML = originalText;
+          testNotificationBtn.className = 'px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition flex items-center gap-2';
+          testNotificationBtn.disabled = false;
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'Failed to send test notification');
+      }
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      testNotificationBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+      testNotificationBtn.className = 'px-4 py-2 bg-red-600 text-white font-medium rounded-md';
+
+      setTimeout(() => {
+        testNotificationBtn.innerHTML = originalText;
+        testNotificationBtn.className = 'px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition flex items-center gap-2';
+        testNotificationBtn.disabled = false;
+      }, 3000);
+    }
+  });
+
+  // Auto-dismiss flash messages after 5 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.animate-fadeOut').forEach(el => {
+      el.style.transition = 'all 0.5s ease-out';
+      el.style.opacity = '0';
+      el.style.height = '0';
+      el.style.margin = '0';
+      el.style.padding = '0';
+      setTimeout(() => el.remove(), 500);
+    });
+  }, 5000);
 });
 </script>

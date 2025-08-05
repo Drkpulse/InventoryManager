@@ -22,9 +22,9 @@
           <div class="flex items-center gap-4">
             <div class="text-sm text-gray-500 dark:text-gray-300 flex items-center gap-2">
               <% if (title === 'Dashboard') { %>
-                <span class="font-semibold text-indigo-900 dark:text-indigo-300">Dashboard</span>
+                <span class="font-semibold text-indigo-900 dark:text-indigo-300"><%= t('dashboard') %></span>
               <% } else { %>
-                <a href="/" class="hover:underline text-indigo-900 dark:text-indigo-300">Dashboard</a>
+                <a href="/" class="hover:underline text-indigo-900 dark:text-indigo-300"><%= t('dashboard') %></a>
                 <i class="fas fa-chevron-right text-xs"></i>
                 <span class="font-semibold"><%= title %></span>
               <% } %>
@@ -39,14 +39,14 @@
               </button>
               <div class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl z-50 border border-gray-100 dark:border-gray-700 hidden transition-all duration-200" id="notificationMenu">
                 <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-2xl">
-                  <h3 class="font-semibold text-gray-900 dark:text-white text-base">Notifications</h3>
-                  <a href="#" class="text-xs text-indigo-700 dark:text-indigo-300 hover:underline font-medium" id="markAllRead">Mark all as read</a>
+                  <h3 class="font-semibold text-gray-900 dark:text-white text-base"><%= t('notifications') %></h3>
+                  <a href="#" class="text-xs text-indigo-700 dark:text-indigo-300 hover:underline font-medium" id="markAllRead"><%= t('mark_all_as_read') %></a>
                 </div>
                 <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700" id="notificationList">
-                  <div class="px-5 py-4 text-gray-500 dark:text-gray-300 text-center" id="notificationLoading">Loading notifications...</div>
+                  <div class="px-5 py-4 text-gray-500 dark:text-gray-300 text-center" id="notificationLoading"><%= t('loading_notifications') %></div>
                 </div>
                 <div class="px-5 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-b-2xl text-right">
-                  <a href="/notifications/history" class="text-indigo-700 dark:text-indigo-300 hover:underline text-sm font-medium">View all notifications</a>
+                  <a href="/notifications/history" class="text-indigo-700 dark:text-indigo-300 hover:underline text-sm font-medium"><%= t('view_all_notifications') %></a>
                 </div>
               </div>
             </div>
@@ -104,14 +104,14 @@
                 </div>
                 <div class="flex flex-col py-2">
                   <a href="/users/profile" class="flex items-center gap-2 px-6 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-900 dark:text-white">
-                    <i class="fas fa-user-circle"></i> My Profile
+                    <i class="fas fa-user-circle"></i> <%= t('my_profile') %>
                   </a>
                   <a href="/users/settings" class="flex items-center gap-2 px-6 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-900 dark:text-white">
-                    <i class="fas fa-cog"></i> Settings
+                    <i class="fas fa-cog"></i> <%= t('settings') %>
                   </a>
                   <div class="border-t border-gray-100 dark:border-gray-700 my-2"></div>
                   <a href="/auth/logout" class="flex items-center gap-2 px-6 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-900">
-                    <i class="fas fa-sign-out-alt"></i> Logout
+                    <i class="fas fa-sign-out-alt"></i> <%= t('logout') %>
                   </a>
                 </div>
               </div>

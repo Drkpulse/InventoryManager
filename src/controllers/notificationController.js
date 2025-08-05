@@ -1,4 +1,4 @@
-// src/controllers/notificationController.js - Fixed version
+// src/controllers/notificationController.js - Enhanced version with connect-flash integration
 const db = require('../config/db');
 
 // Service functions for creating notifications
@@ -40,11 +40,11 @@ const createBroadcastNotification = async ({ type_name, title, message, url = nu
     const type_id = typeResult.rows[0].id;
 
     // Get all user IDs except the excluded one
-    let userQuery = 'SELECT id FROM users';
+    let userQuery = 'SELECT id FROM users WHERE active = true';
     let queryParams = [];
 
     if (excludeUserId) {
-      userQuery += ' WHERE id != $1';
+      userQuery += ' AND id != $1';
       queryParams = [excludeUserId];
     }
 
@@ -265,19 +265,15 @@ exports.updateNotificationSettings = async (req, res) => {
   }
 };
 
-// Broadcast notification
+// Enhanced broadcast notification with flash integration
 exports.broadcastNotification = async (req, res) => {
   try {
     const { title, message, url } = req.body;
     const senderId = req.session.user.id;
 
     if (!title || !title.trim() || !message || !message.trim()) {
-      return res.render('layout', {
-        title: 'Send Notification',
-        body: 'notifications/broadcast',
-        user: req.session.user,
-        error: 'Title and message are required'
-      });
+      req.flash('error', 'Title and message are required');
+      return res.redirect('/notifications/broadcast');
     }
 
     const userCount = await createBroadcastNotification({
@@ -289,32 +285,20 @@ exports.broadcastNotification = async (req, res) => {
     });
 
     if (userCount === false) {
-      return res.render('layout', {
-        title: 'Send Notification',
-        body: 'notifications/broadcast',
-        user: req.session.user,
-        error: 'Failed to send notification. Please try again.'
-      });
+      req.flash('error', 'Failed to send notification. Please try again.');
+      return res.redirect('/notifications/broadcast');
     }
 
-    res.render('layout', {
-      title: 'Send Notification',
-      body: 'notifications/broadcast',
-      user: req.session.user,
-      success: `Notification sent to ${userCount} users successfully!`
-    });
+    req.flash('success', `Notification sent to ${userCount} users successfully!`);
+    res.redirect('/notifications/broadcast');
   } catch (error) {
     console.error('Error broadcasting notification:', error);
-    res.render('layout', {
-      title: 'Send Notification',
-      body: 'notifications/broadcast',
-      user: req.session.user,
-      error: 'Failed to broadcast notification. Please try again.'
-    });
+    req.flash('error', 'Failed to broadcast notification. Please try again.');
+    res.redirect('/notifications/broadcast');
   }
 };
 
-// History page
+// History page with flash messages
 exports.getNotificationHistory = async (req, res) => {
   try {
     const userId = req.session.user.id;
@@ -335,12 +319,12 @@ exports.getNotificationHistory = async (req, res) => {
     });
   } catch (error) {
     console.error('Error loading notifications history:', error);
-    res.status(500).render('layout', {
+    req.flash('error', 'Failed to load notifications history');
+    res.render('layout', {
       title: 'Notifications History',
       body: 'notifications/history',
       notifications: [],
-      user: req.session.user,
-      error: 'Failed to load notifications history'
+      user: req.session.user
     });
   }
 };
@@ -385,6 +369,7 @@ const checkWarrantyExpiration = async () => {
         EXTRACT(DAY FROM (CURRENT_DATE - i.warranty_end_date)) as days_expired,
         e.id as employee_id,
         e.name as employee_name,
+        u.id as user_id,
         u.name as user_name
       FROM items i
       LEFT JOIN employees e ON i.assigned_to = e.id
@@ -525,8 +510,92 @@ const createItemAssignmentNotification = async (itemId, employeeId, action = 'as
   }
 };
 
+// Initialize notification system - creates required tables if they don't exist
+const initializeNotificationSystem = async () => {
+  try {
+    console.log('🔧 Initializing notification system...');
+
+    // Create notification_types table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS notification_types (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(50) UNIQUE NOT NULL,
+        description TEXT,
+        icon VARCHAR(50) DEFAULT 'fas fa-bell',
+        color VARCHAR(20) DEFAULT 'blue',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create notifications table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        type_id INTEGER REFERENCES notification_types(id),
+        user_id INTEGER REFERENCES users(id),
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        url VARCHAR(500),
+        data JSONB,
+        is_read BOOLEAN DEFAULT FALSE,
+        read_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create notification_settings table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS notification_settings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        type_id INTEGER REFERENCES notification_types(id),
+        enabled BOOLEAN DEFAULT TRUE,
+        email_enabled BOOLEAN DEFAULT FALSE,
+        browser_enabled BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, type_id)
+      )
+    `);
+
+    // Insert default notification types
+    const defaultTypes = [
+      { name: 'admin_broadcast', description: 'Admin broadcast messages', icon: 'fas fa-bullhorn', color: 'red' },
+      { name: 'warranty_expiring', description: 'Warranty expiring soon', icon: 'fas fa-exclamation-triangle', color: 'yellow' },
+      { name: 'warranty_expired', description: 'Warranty has expired', icon: 'fas fa-times-circle', color: 'red' },
+      { name: 'item_assignment', description: 'Item assigned to you', icon: 'fas fa-hand-holding', color: 'green' },
+      { name: 'item_unassignment', description: 'Item unassigned from you', icon: 'fas fa-hand', color: 'orange' },
+      { name: 'system_update', description: 'System updates and maintenance', icon: 'fas fa-cog', color: 'blue' },
+      { name: 'security_alert', description: 'Security alerts', icon: 'fas fa-shield-alt', color: 'red' }
+    ];
+
+    for (const type of defaultTypes) {
+      await db.query(`
+        INSERT INTO notification_types (name, description, icon, color)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (name) DO UPDATE SET
+          description = EXCLUDED.description,
+          icon = EXCLUDED.icon,
+          color = EXCLUDED.color
+      `, [type.name, type.description, type.icon, type.color]);
+    }
+
+    // Create indexes for better performance
+    await db.query('CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id)');
+    await db.query('CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read)');
+    await db.query('CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at)');
+    await db.query('CREATE INDEX IF NOT EXISTS idx_notifications_type_id ON notifications(type_id)');
+
+    console.log('✅ Notification system initialized successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Error initializing notification system:', error);
+    return false;
+  }
+};
+
 // Export notification helper functions
 exports.createNotification = createNotification;
 exports.createBroadcastNotification = createBroadcastNotification;
 exports.checkWarrantyExpiration = checkWarrantyExpiration;
 exports.createItemAssignmentNotification = createItemAssignmentNotification;
+exports.initializeNotificationSystem = initializeNotificationSystem;

@@ -61,15 +61,15 @@ app.use((req, res, next) => {
 // Load permissions
 app.use(loadUserPermissions);
 
+// Language switcher middleware
+app.use(languageSwitcher);
+
+// Translation middleware
+app.use(translationMiddleware);
+
 // Global template variables and permission helpers
 app.use((req, res, next) => {
   const user = req.user || req.session?.user || { settings: {} };
-  const lang = user?.settings?.language || req.session?.language || 'en';
-
-  res.locals.t = (key) =>
-    translations[lang]?.[key] ||
-    translations['en'][key] ||
-    key;
   res.locals.user = user;
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');

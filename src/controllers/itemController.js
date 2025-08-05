@@ -122,7 +122,9 @@ exports.getAllItems = async (req, res) => {
       totalPages: totalPages,
       totalItems: totalItems,
       perPage: perPage,
-      user: req.session.user
+      user: req.session.user,
+      t: req.t, // Pass translation function
+      currentLanguage: req.language
     });
   } catch (error) {
     console.error('Error fetching items:', error);

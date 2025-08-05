@@ -5,7 +5,7 @@
 
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
-const { supportedLanguages } = require('../utils/translations');
+const { supportedLanguages, translate } = require('../utils/translations');
 
 /**
  * Display user settings page
@@ -16,7 +16,7 @@ exports.showSettings = async (req, res) => {
     const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
 
     if (userResult.rows.length === 0) {
-      req.flash('error', 'User not found');
+      req.flash('error', translate('error', req.session.language || 'en'));
       return res.redirect('/');
     }
 
@@ -31,17 +31,18 @@ exports.showSettings = async (req, res) => {
     const showUpdated = req.query.updated === 'true';
 
     res.render('layout', {
-      title: 'User Settings',
+      title: translate('user_settings', user.settings.language || 'en'),
       body: 'users/settings',
       user,
       supportedLanguages,
       showUpdated,
       success: req.flash('success'),
-      error: req.flash('error')
+      error: req.flash('error'),
+      t: (key) => translate(key, user.settings.language || 'en')
     });
   } catch (error) {
     console.error('Error loading settings:', error);
-    req.flash('error', 'Failed to load settings');
+    req.flash('error', translate('error', req.session.language || 'en'));
     res.redirect('/');
   }
 };

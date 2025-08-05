@@ -1,25 +1,20 @@
-/**
- * Translation middleware for Express.js
- * Adds translation functionality to all routes
- */
-
 const { translate, supportedLanguages } = require('../utils/translations');
+const db = require('../config/db');
 
-/**
- * Middleware to add translation support to Express
- */
-function translationMiddleware(req, res, next) {
-  // Get user's preferred language from:
-  // 1. User settings (if logged in)
-  // 2. Session
-  // 3. Accept-Language header
-  // 4. Default to 'en'
+async function translationMiddleware(req, res, next) {
+  let userLanguage = 'pt';
 
-  let userLanguage = 'en';
-
-  // Check if user is logged in and has language preference
-  if (req.user && req.user.settings && req.user.settings.language) {
-    userLanguage = req.user.settings.language;
+  // If user is logged in, check database for preferred language
+  if (req.session && req.session.user && req.session.user.id) {
+    try {
+      const userId = req.session.user.id;
+      const userResult = await db.query('SELECT settings FROM users WHERE id = $1', [userId]);
+      if (userResult.rows.length > 0 && userResult.rows[0].settings && userResult.rows[0].settings.language) {
+        userLanguage = userResult.rows[0].settings.language;
+      }
+    } catch (err) {
+      console.error('Error fetching user language from DB:', err);
+    }
   }
   // Check session for language preference
   else if (req.session && req.session.language) {
@@ -31,13 +26,11 @@ function translationMiddleware(req, res, next) {
       .split(',')
       .map(lang => lang.split(';')[0].trim());
 
-    // Find first supported language
     for (const lang of acceptedLanguages) {
       if (supportedLanguages.includes(lang)) {
         userLanguage = lang;
         break;
       }
-      // Check for language without region (e.g., 'pt' from 'pt-BR')
       const baseLang = lang.split('-')[0];
       const matchingLang = supportedLanguages.find(supported =>
         supported.startsWith(baseLang)
@@ -54,20 +47,14 @@ function translationMiddleware(req, res, next) {
     userLanguage = 'en';
   }
 
-  // Store language in request for easy access
   req.language = userLanguage;
-
-  // Store language in session
   if (req.session) {
     req.session.language = userLanguage;
   }
 
-  // Add translation function to response locals for use in templates
   res.locals.t = (key, lang = userLanguage) => translate(key, lang);
   res.locals.currentLanguage = userLanguage;
   res.locals.supportedLanguages = supportedLanguages;
-
-  // Add translation function to request for use in controllers
   req.t = (key, lang = userLanguage) => translate(key, lang);
 
   next();
@@ -83,11 +70,16 @@ function languageSwitcher(req, res, next) {
     // Store in session
     req.session.language = lang;
 
-    // If user is logged in, update their settings
+    // If user is logged in, update their settings in the database
     if (req.user) {
-      // This would be handled by the settings controller
-      // Just set it in session for now
-      req.session.pendingLanguageUpdate = lang;
+      const db = require('../config/db');
+      db.query(
+        'UPDATE users SET settings = jsonb_set(settings, \'{"language"}\', $1::jsonb, true), updated_at = NOW() WHERE id = $2',
+        [JSON.stringify(lang), req.user.id]
+      ).catch(err => {
+        console.error('Failed to update user language setting:', err);
+      });
+      req.user.settings.language = lang;
     }
 
     // Redirect back to the same page without the lang parameter

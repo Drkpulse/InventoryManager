@@ -107,11 +107,33 @@ router.post('/register', async (req, res) => {
 
 // Logout
 router.get('/logout', (req, res) => {
+  const userName = req.session?.user?.name || 'Unknown';
+
   req.session.destroy((err) => {
     if (err) {
       console.error('Logout error:', err);
+
+      if (req.isAjax) {
+        return res.status(500).json({
+          success: false,
+          message: 'Error logging out'
+        });
+      }
+      req.flash('error', 'Error logging out');
+      return res.redirect('/');
     }
-    res.redirect('/');
+
+    console.log(`User logged out: ${userName}`);
+
+    if (req.isAjax) {
+      return res.json({
+        success: true,
+        message: 'Logged out successfully',
+        redirect: '/auth/login'
+      });
+    }
+
+    res.redirect('/auth/login');
   });
 });
 

@@ -4,7 +4,7 @@
     <div>
       <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
         <a href="/employees" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
-          <i class="fas fa-users"></i> Employees
+          <i class="fas fa-users"></i> <%= t('employees') %>
         </a>
         <i class="fas fa-chevron-right mx-2"></i>
         <span class="text-gray-700 dark:text-gray-200"><%= employee.name %></span>
@@ -29,19 +29,19 @@
     </div>
     <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
       <a href="/employees" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> Back to Employees
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> <%= t('back_to_employees') %>
       </a>
       <a href="/employees/<%= employee.id %>/edit" class="group px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform duration-300"></i> Edit
+        <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform duration-300"></i> <%= t('edit') %>
       </a>
       <a href="/employees/<%= employee.id %>/history" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-history mr-2 group-hover:scale-110 transition-transform duration-300"></i> History
+        <i class="fas fa-history mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('history') %>
       </a>
       <button onclick="generateFullAssetReport()" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-file-pdf mr-2 group-hover:scale-110 transition-transform duration-300"></i> Assets Report (PDF)
+        <i class="fas fa-file-pdf mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('assets_report') %> (PDF)
       </button>
       <button type="button" class="group px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg" id="deleteEmployeeBtn">
-        <i class="fas fa-trash mr-2 group-hover:scale-110 transition-transform duration-300"></i> Delete
+        <i class="fas fa-trash mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('delete') %>
       </button>
     </div>
   </div>
@@ -52,15 +52,15 @@
       <!-- Employee Information (now first) -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-6">
-          <i class="fas fa-user"></i> Employee Information
+          <i class="fas fa-user"></i> <%= t('employee_information') %>
         </h2>
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
           <div>
-            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Employee ID</dt>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('employee_id') %></dt>
             <dd class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-1 rounded text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 inline-block"><%= employee.cep %></dd>
           </div>
           <div>
-            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Email Address</dt>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('email_address') %></dt>
             <dd>
               <a href="mailto:<%= employee.email %>" class="text-gray-700 dark:text-gray-200 hover:underline flex items-center gap-1">
                 <i class="fas fa-envelope"></i> <%= employee.email %>
@@ -68,31 +68,31 @@
             </dd>
           </div>
           <div>
-            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Department</dt>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('department') %></dt>
             <dd>
               <% if (employee.department_name) { %>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
                   <i class="fas fa-building"></i> <%= employee.department_name %>
                 </span>
               <% } else { %>
-                <span class="text-gray-400 dark:text-gray-500 text-xs">Not assigned</span>
+                <span class="text-gray-400 dark:text-gray-500 text-xs"><%= t('not_assigned') %></span>
               <% } %>
             </dd>
           </div>
           <div>
-            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Location</dt>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('location') %></dt>
             <dd>
               <% if (employee.location_name) { %>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-semibold">
                   <i class="fas fa-map-marker-alt"></i> <%= employee.location_name %>
                 </span>
               <% } else { %>
-                <span class="text-gray-400 dark:text-gray-500 text-xs">Not assigned</span>
+                <span class="text-gray-400 dark:text-gray-500 text-xs"><%= t('not_assigned') %></span>
               <% } %>
             </dd>
           </div>
           <div>
-            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Start Date</dt>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('start_date') %></dt>
             <dd class="flex items-center gap-1">
               <i class="fas fa-calendar-plus"></i>
               <span>
@@ -106,7 +106,7 @@
           </div>
           <% if (employee.left_date) { %>
           <div>
-            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">End Date</dt>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('end_date') %></dt>
             <dd class="flex items-center gap-1">
               <i class="fas fa-calendar-times"></i>
               <span>
@@ -121,7 +121,7 @@
           <% } %>
           <% if (employee.job_title) { %>
           <div>
-            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400">Job Title</dt>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('job_title') %></dt>
             <dd class="flex items-center gap-1">
               <i class="fas fa-user-tie"></i> <span><%= employee.job_title %></span>
             </dd>
@@ -134,18 +134,18 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            <i class="fas fa-boxes"></i> Assigned Assets
+            <i class="fas fa-boxes"></i> <%= t('assigned_assets') %>
             <% if (items && items.length > 0) { %>
               <span class="ml-2 bg-blue-600 text-white px-2 py-0.5 rounded text-xs font-semibold"><%= items.length %></span>
             <% } %>
           </h2>
           <!-- Add Assign Asset Button -->
           <button type="button" id="openAssignAssetModal" class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition">
-            <i class="fas fa-plus mr-1"></i> Assign Asset
+            <i class="fas fa-plus mr-1"></i> <%= t('assign_asset') %>
           </button>
           <!-- Total Assets Price -->
           <div class="flex items-center gap-2">
-            <span class="text-xs text-gray-500 dark:text-gray-400">Total Value:</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400"><%= t('total_value') %>:</span>
             <span class="font-bold text-green-700 dark:text-green-300 text-base">
               <%
                 let totalAssetsPrice = 0;
@@ -160,10 +160,16 @@
             </span>
           </div>
         </div>
+        <!-- Asset Search Field -->
         <% if (items && items.length > 0) { %>
-          <div class="flex flex-col gap-4 max-h-96 overflow-y-auto">
+        <div class="mb-4">
+          <input type="text" id="assetSearchInput" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Search assigned assets...">
+        </div>
+        <% } %>
+        <% if (items && items.length > 0) { %>
+          <div class="flex flex-col gap-4 max-h-96 overflow-y-auto" id="assignedAssetsContainer">
             <% items.forEach(item => { %>
-              <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2">
+              <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2 asset-row" data-name="<%= item.name %>" data-id="<%= item.cep_brc %>" data-type="<%= item.type_name %>" data-brand="<%= item.brand_name %>">
                 <div class="flex items-center justify-between">
                   <span class="font-mono bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-semibold"><%= item.cep_brc %></span>
                   <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="group inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg" title="View Asset">
@@ -173,18 +179,18 @@
                 <div>
                   <h4 class="font-semibold text-gray-800 dark:text-gray-100"><a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="hover:underline"><%= item.name %></a></h4>
                   <div class="grid grid-cols-1 gap-1 text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    <div><span class="font-semibold">Type:</span> <%= item.type_name || 'N/A' %></div>
+                    <div><span class="font-semibold"><%= t('type') %>:</span> <%= item.type_name || 'N/A' %></div>
                     <% if (item.brand_name) { %>
-                      <div><span class="font-semibold">Brand:</span> <%= item.brand_name %></div>
+                      <div><span class="font-semibold"><%= t('brand') %>:</span> <%= item.brand_name %></div>
                     <% } %>
                     <% if (item.model) { %>
-                      <div><span class="font-semibold">Model:</span> <%= item.model %></div>
+                      <div><span class="font-semibold"><%= t('model') %>:</span> <%= item.model %></div>
                     <% } %>
                     <% if (item.date_assigned) { %>
-                      <div><span class="font-semibold">Assigned:</span> <i class="fas fa-calendar"></i> <%= new Date(item.date_assigned).toLocaleDateString() %></div>
+                      <div><span class="font-semibold"><%= t('assigned') %>:</span> <i class="fas fa-calendar"></i> <%= new Date(item.date_assigned).toLocaleDateString() %></div>
                     <% } %>
                     <% if (item.price && !isNaN(parseFloat(item.price))) { %>
-                      <div><span class="font-semibold">Price:</span> $<%= parseFloat(item.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></div>
+                      <div><span class="font-semibold"><%= t('price') %>:</span> $<%= parseFloat(item.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></div>
                     <% } %>
                   </div>
                 </div>
@@ -194,11 +200,11 @@
           <div class="mt-6 flex gap-8">
             <div>
               <span class="block text-2xl font-bold text-blue-700 dark:text-blue-300"><%= items.length %></span>
-              <span class="block text-xs text-gray-500 dark:text-gray-400">Total Assets</span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400"><%= t('total_assets') %></span>
             </div>
             <div>
               <span class="block text-2xl font-bold text-blue-700 dark:text-blue-300"><%= [...new Set(items.map(item => item.type_name).filter(Boolean))].length %></span>
-              <span class="block text-xs text-gray-500 dark:text-gray-400">Asset Types</span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400"><%= t('asset_types') %></span>
             </div>
           </div>
         <% } else { %>
@@ -206,8 +212,8 @@
             <div class="text-4xl text-blue-500 mb-2">
               <i class="fas fa-box-open"></i>
             </div>
-            <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No Assets Assigned</h4>
-            <p class="text-gray-500 dark:text-gray-400">This employee doesn't have any assets assigned currently.</p>
+            <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1"><%= t('no_assets_assigned') %></h4>
+            <p class="text-gray-500 dark:text-gray-400"><%= t('no_assets_assigned_description') %></p>
           </div>
         <% } %>
       </div>
@@ -219,17 +225,19 @@
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            <i class="fas fa-laptop-code"></i> Software Assignments
+            <i class="fas fa-laptop-code"></i> <%= t('software_assignments') %>
           </h2>
-          <!-- Software Price Toggle -->
+          <button type="button" id="openAssignSoftwareModal" class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition">
+            <i class="fas fa-plus mr-1"></i> <%= t('assign_software') %>
+          </button>
           <div>
             <form id="softwarePriceForm">
               <select id="softwarePriceType" name="softwarePriceType" class="text-xs rounded border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-2 py-1">
-                <option value="monthly">Monthly</option>
-                <option value="annual">Annual</option>
+                <option value="monthly"><%= t('monthly') %></option>
+                <option value="annual"><%= t('annual') %></option>
               </select>
             </form>
-            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">Total:</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2"><%= t('total') %>:</span>
             <span id="totalSoftwarePrice" class="font-bold text-blue-700 dark:text-blue-300 text-base"></span>
           </div>
         </div>
@@ -282,8 +290,8 @@
             <div class="text-4xl text-blue-500 mb-2">
               <i class="fas fa-laptop-code"></i>
             </div>
-            <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No Software Assigned</h4>
-            <p class="text-gray-500 dark:text-gray-400">This employee doesn't have any software licenses assigned yet.</p>
+            <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1"><%= t('no_software_assigned') %></h4>
+            <p class="text-gray-500 dark:text-gray-400"><%= t('no_software_assigned_description') %></p>
           </div>
         <% } %>
       </div>
@@ -295,29 +303,29 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
       <div class="flex items-center gap-3 mb-4">
         <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 text-2xl"></i>
-        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Confirm Employee Deletion</h4>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100"><%= t('confirm_employee_deletion') %></h4>
       </div>
       <div class="mb-4">
         <div id="noAssignedItems" style="display: none;">
-          <p>Are you sure you want to delete <strong><%= employee.name %></strong>? This action cannot be undone.</p>
+          <p><%= t('confirm_employee_deletion_message', { employeeName: employee.name }) %></p>
         </div>
         <div id="hasAssignedItems" style="display: none;">
-          <p>This employee has assigned assets that will be unassigned:</p>
+          <p><%= t('employee_assigned_assets_unassigned') %></p>
           <div class="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 my-3">
             <div id="assignedAssetsList" class="p-3"></div>
           </div>
           <div class="flex items-center gap-2 px-3 py-2 bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded text-yellow-800 dark:text-yellow-200 text-sm">
             <i class="fas fa-exclamation-triangle"></i>
-            <span>All these assets will be unassigned and the employee will be deleted. This cannot be undone.</span>
+            <span><%= t('confirm_employee_deletion_warning') %></span>
           </div>
         </div>
       </div>
       <div class="flex gap-2 justify-end">
-        <button type="button" class="group px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg" id="confirmDelete">
-          <i class="fas fa-trash mr-2 group-hover:scale-110 transition-transform duration-300"></i> Delete Employee
+        <button type="button" class="group px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2" id="confirmDelete">
+          <i class="fas fa-trash mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('delete_employee') %>
         </button>
-        <button type="button" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg" id="cancelDelete">
-          <i class="fas fa-times mr-2 group-hover:-rotate-12 transition-transform duration-300"></i> Cancel
+        <button type="button" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2" id="cancelDelete">
+          <i class="fas fa-times mr-2 group-hover:-rotate-12 transition-transform duration-300"></i> <%= t('cancel') %>
         </button>
       </div>
     </div>
@@ -328,14 +336,39 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-2xl w-full p-6">
       <div class="flex items-center gap-3 mb-4">
         <i class="fas fa-box-open text-blue-600 dark:text-blue-300 text-2xl"></i>
-        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Assign Asset to <%= employee.name %></h4>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100"><%= t('assign_asset_to', { employeeName: employee.name }) %></h4>
+      </div>
+      <!-- Search field for assign modal -->
+      <div class="mb-4">
+        <input type="text" id="assignAssetSearchInput" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Search available assets...">
       </div>
       <div id="assignAssetList" class="max-h-96 overflow-y-auto mb-4">
-        <div class="text-center text-gray-500 dark:text-gray-400 py-8">Loading available assets...</div>
+        <div class="text-center text-gray-500 dark:text-gray-400 py-8"><%= t('loading_available_assets') %></div>
       </div>
       <div class="flex gap-2 justify-end">
-        <button type="button" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg" id="closeAssignAssetModal">
-          <i class="fas fa-times mr-2 group-hover:-rotate-12 transition-transform duration-300"></i> Cancel
+        <button type="button" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2" id="closeAssignAssetModal">
+          <i class="fas fa-times mr-2 group-hover:-rotate-12 transition-transform duration-300"></i> <%= t('cancel') %>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Software Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" id="assignSoftwareModal" style="display:none;">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-2xl w-full p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <i class="fas fa-laptop-code text-blue-600 dark:text-blue-300 text-2xl"></i>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100"><%= t('assign_software_to', { employeeName: employee.name }) %></h4>
+      </div>
+      <div class="mb-4">
+        <input type="text" id="assignSoftwareSearchInput" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Search available software...">
+      </div>
+      <div id="assignSoftwareList" class="max-h-96 overflow-y-auto mb-4">
+        <div class="text-center text-gray-500 dark:text-gray-400 py-8"><%= t('loading_available_software') %></div>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button type="button" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2" id="closeAssignSoftwareModal">
+          <i class="fas fa-times mr-2 group-hover:-rotate-12 transition-transform duration-300"></i> <%= t('cancel') %>
         </button>
       </div>
     </div>
@@ -484,12 +517,8 @@ function loadAvailableAssets() {
               <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">${item.type_name || 'N/A'}</span>
               <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">${item.brand_name || ''}</span>
             </div>
-            <button type="button" class="comment-toggle-btn text-blue-500 hover:text-blue-700 mr-2" title="Add a comment" tabindex="0">
-              <i class="fas fa-comment-dots"></i>
-            </button>
             <input type="hidden" name="assigned_to" value="<%= employee.id %>">
             <input type="hidden" name="date_assigned" value="${today}">
-            <input type="text" name="comment" class="comment-input border rounded px-2 py-1 text-xs ml-2" placeholder="Add comment..." style="display:none; max-width: 180px;">
             <button type="submit" class="assign-btn px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded transition">
               Assign
             </button>
@@ -510,6 +539,78 @@ function loadAvailableAssets() {
           } else {
             input.style.display = 'none';
           }
+        });
+      });
+
+      // Add search filter for assign modal
+      if (assignAssetSearchInput) {
+        assignAssetSearchInput.value = '';
+        assignAssetSearchInput.addEventListener('input', function() {
+          const query = this.value.trim().toLowerCase();
+          assignAssetList.querySelectorAll('form.assign-asset-form').forEach(form => {
+            // Get all relevant text for searching
+            const name = form.querySelector('.font-semibold')?.textContent.toLowerCase() || '';
+            const id = form.querySelector('.font-mono')?.textContent.toLowerCase() || '';
+            // Get all .text-xs spans (type, brand, etc.)
+            const textXs = Array.from(form.querySelectorAll('.text-xs')).map(el => el.textContent.toLowerCase()).join(' ');
+            // Combine all for search
+            const haystack = [name, id, textXs].join(' ');
+            if (haystack.includes(query)) {
+              form.parentElement.style.display = '';
+            } else {
+              form.parentElement.style.display = 'none';
+            }
+          });
+        });
+      }
+
+      // Add event listeners for form submission
+      assignAssetList.querySelectorAll('form.assign-asset-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault(); // Prevent normal form submission
+
+          const formData = new FormData(form);
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const originalText = submitBtn.innerHTML;
+
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+
+          fetch(form.action, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              assigned_to: formData.get('assigned_to'),
+              date_assigned: formData.get('date_assigned'),
+              assignment_notes: formData.get('comment') || ''
+            })
+          })
+          .then(res => {
+            if (!res.ok) {
+              throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+            }
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+              throw new Error('Server did not return JSON response');
+            }
+            return res.json();
+          })
+          .then(data => {
+            if (data.success) {
+              assignAssetModal.style.display = 'none';
+              window.location.reload();
+            } else {
+              throw new Error(data.error || 'Assignment failed');
+            }
+          })
+          .catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+            alert('Failed to assign asset: ' + err.message);
+          });
         });
       });
     })
@@ -574,6 +675,149 @@ function loadAvailableAssets() {
     updateSoftwareTotal();
   }
 
+  // Asset search filter
+  const assetSearchInput = document.getElementById('assetSearchInput');
+  const assignedAssetsContainer = document.getElementById('assignedAssetsContainer');
+  if (assetSearchInput && assignedAssetsContainer) {
+    assetSearchInput.addEventListener('input', function() {
+      const query = this.value.trim().toLowerCase();
+      assignedAssetsContainer.querySelectorAll('.asset-row').forEach(row => {
+        const name = row.dataset.name?.toLowerCase() || '';
+        const id = row.dataset.id?.toLowerCase() || '';
+        const type = row.dataset.type?.toLowerCase() || '';
+        const brand = row.dataset.brand?.toLowerCase() || '';
+        if (
+          name.includes(query) ||
+          id.includes(query) ||
+          type.includes(query) ||
+          brand.includes(query)
+        ) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Assign Software Modal logic
+  const assignSoftwareModal = document.getElementById('assignSoftwareModal');
+  const openAssignSoftwareModalBtn = document.getElementById('openAssignSoftwareModal');
+  const closeAssignSoftwareModalBtn = document.getElementById('closeAssignSoftwareModal');
+  const assignSoftwareList = document.getElementById('assignSoftwareList');
+  const assignSoftwareSearchInput = document.getElementById('assignSoftwareSearchInput');
+
+  if (openAssignSoftwareModalBtn) {
+    openAssignSoftwareModalBtn.addEventListener('click', function() {
+      assignSoftwareModal.style.display = 'flex';
+      loadAvailableSoftware();
+    });
+  }
+
+  if (closeAssignSoftwareModalBtn) {
+    closeAssignSoftwareModalBtn.addEventListener('click', function() {
+      assignSoftwareModal.style.display = 'none';
+    });
+  }
+
+  assignSoftwareModal.addEventListener('click', function(event) {
+    if (event.target === assignSoftwareModal) {
+      assignSoftwareModal.style.display = 'none';
+    }
+  });
+
+  function loadAvailableSoftware() {
+    assignSoftwareList.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 py-8">Loading available software...</div>';
+    fetch('/software/api/available?employee_id=<%= employee.id %>')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.software || data.software.length === 0) {
+          assignSoftwareList.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 py-8">No available software found.</div>';
+          return;
+        }
+        assignSoftwareList.innerHTML = '';
+        data.software.forEach(sw => {
+          const swDiv = document.createElement('div');
+          swDiv.className = 'flex items-center justify-between border-b border-gray-200 dark:border-gray-700 py-2';
+          swDiv.innerHTML = `
+            <form method="POST" action="/software/${sw.id}/assign" class="flex items-center w-full gap-4 assign-software-form">
+              <div class="flex-1">
+                <span class="font-semibold text-gray-800 dark:text-gray-100 ml-2">${sw.name}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">${sw.version || ''}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">${sw.vendor || ''}</span>
+              </div>
+              <input type="hidden" name="employee_id" value="<%= employee.id %>">
+              <button type="submit" class="assign-btn px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded transition">
+                Assign
+              </button>
+            </form>
+          `;
+          assignSoftwareList.appendChild(swDiv);
+        });
+
+        // Add search filter for assign modal
+        if (assignSoftwareSearchInput) {
+          assignSoftwareSearchInput.value = '';
+          assignSoftwareSearchInput.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            assignSoftwareList.querySelectorAll('form.assign-software-form').forEach(form => {
+              const name = form.querySelector('.font-semibold')?.textContent.toLowerCase() || '';
+              const version = form.querySelectorAll('.text-xs')[0]?.textContent.toLowerCase() || '';
+              const vendor = form.querySelectorAll('.text-xs')[1]?.textContent.toLowerCase() || '';
+              const haystack = [name, version, vendor].join(' ');
+              if (haystack.includes(query)) {
+                form.parentElement.style.display = '';
+              } else {
+                form.parentElement.style.display = 'none';
+              }
+            });
+          });
+        }
+
+        // Add event listeners for form submission
+        assignSoftwareList.querySelectorAll('form.assign-software-form').forEach(form => {
+          form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+            fetch(form.action, {
+              method: 'POST',
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                employee_id: formData.get('employee_id'),
+                notes: formData.get('notes') || ''
+              })
+            })
+            .then(res => {
+              if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+              return res.json();
+            })
+            .then(data => {
+              if (data.success) {
+                assignSoftwareModal.style.display = 'none';
+                window.location.reload();
+              } else {
+                throw new Error(data.error || 'Assignment failed');
+              }
+            })
+            .catch(err => {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalText;
+              alert('Failed to assign software: ' + err.message);
+            });
+          });
+        });
+      })
+      .catch(() => {
+        assignSoftwareList.innerHTML = '<div class="text-center text-red-500 py-8">Error loading software.</div>';
+      });
+  }
 });
 
 

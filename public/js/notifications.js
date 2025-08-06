@@ -7,9 +7,13 @@ class NotificationManager {
   }
 
   async init() {
-    // Only initialize if notification elements exist
     const notificationCount = document.getElementById('notificationCount');
     const notificationToggle = document.getElementById('notificationToggle');
+
+    console.log('Notification elements found:', {
+      count: !!notificationCount,
+      toggle: !!notificationToggle
+    });
 
     if (notificationCount && notificationToggle) {
       console.log('Initializing notification manager...');
@@ -30,6 +34,13 @@ class NotificationManager {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+          // Check if response is JSON
+       const contentType = response.headers.get('content-type');
+       if (!contentType || !contentType.includes('application/json')) {
+         const text = await response.text();
+         console.error('Expected JSON, got:', text.substring(0, 200));
+         throw new Error('Server returned non-JSON response');
+        }
 
       const data = await response.json();
 

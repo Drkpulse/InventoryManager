@@ -34,12 +34,17 @@ const {
 // Import warranty scheduler
 const warrantyScheduler = require('./services/warrantyScheduler');
 
+const detectAjaxRequest = require('./middleware/ajaxDetection');
+
 // Set up view engine
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 // Middlewares - CRITICAL ORDER
 app.use(express.static(path.join(__dirname, '../public')));
+
+// Add AJAX detection middleware BEFORE body parsing
+app.use(detectAjaxRequest);
 
 // BODY PARSING MIDDLEWARE
 app.use(express.urlencoded({ extended: true }));
@@ -58,25 +63,32 @@ app.use(session({
 // Flash messages
 app.use(flash());
 
+app.use((req, res, next) => {
+  res.locals.messages = req.flash();
+  next();
+});
+
 // Initialize notification system on startup
 const { initializeNotificationSystem } = require('./controllers/notificationController');
 let notificationSystemReady = false;
 
-// Initialize notification system
-(async () => {
+// Move this initialization to after routes are set up
+const initializeNotificationSystemAsync = async () => {
   try {
-    const db = require('./config/db');
+    console.log('🔧 Initializing notification system...');
+    const { initializeNotificationSystem } = require('./controllers/notificationController');
     const result = await initializeNotificationSystem();
     if (result) {
       notificationSystemReady = true;
       console.log('✅ Notification system initialized successfully');
+
     } else {
       console.error('❌ Failed to initialize notification system');
     }
   } catch (error) {
     console.error('❌ Error initializing notification system:', error);
   }
-})();
+};
 
 // Add notification helpers early in middleware chain
 app.use(addNotificationHelpers);
@@ -222,10 +234,13 @@ process.on('SIGINT', () => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Notification system: ${notificationSystemReady ? '✅ Ready' : '❌ Not Ready'}`);
 
   // Start warranty scheduler after server is running and notification system is ready
-  setTimeout(() => {
+  setTimeout(async () => {
+    await initializeNotificationSystemAsync();
+    console.log(`📊 Notification system: ${notificationSystemReady ? '✅ Ready' : '❌ Not Ready'}`);
+
+    // Start warranty scheduler only after notifications are ready
     if (notificationSystemReady) {
       try {
         warrantyScheduler.start();
@@ -233,10 +248,8 @@ app.listen(PORT, () => {
       } catch (error) {
         console.error('❌ Failed to start warranty scheduler:', error);
       }
-    } else {
-      console.log('⚠️ Warranty scheduler not started - notification system not ready');
     }
-  }, 5000);
+  }, 2000);
 });
 
 module.exports = app;

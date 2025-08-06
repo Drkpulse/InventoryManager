@@ -339,3 +339,39 @@ exports.export = async (req, res) => {
     res.status(500).send('Error exporting software list');
   }
 };
+
+exports.getAvailableSoftware = async (req, res) => {
+  try {
+    const employeeId = req.query.employee_id;
+    if (!employeeId) {
+      return res.status(400).json({ error: 'employee_id is required' });
+    }
+
+    // Get software not assigned to this employee and with available licenses
+    const result = await db.query(`
+      SELECT
+        s.id,
+        s.name,
+        s.version,
+        s.vendor,
+        s.license_type,
+        s.cost_per_license,
+        s.max_licenses,
+        COALESCE(s.description, '') as description,
+        COUNT(es.employee_id) as current_assignments
+      FROM software s
+      LEFT JOIN employee_software es ON s.id = es.software_id
+      WHERE s.id NOT IN (
+        SELECT software_id FROM employee_software WHERE employee_id = $1
+      )
+      GROUP BY s.id, s.name, s.version, s.vendor, s.license_type, s.cost_per_license, s.max_licenses, s.description
+      HAVING (COALESCE(s.max_licenses, 1) > COUNT(es.employee_id))
+      ORDER BY s.name
+    `, [employeeId]);
+
+    res.json({ software: result.rows });
+  } catch (error) {
+    console.error('Error fetching available software:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};

@@ -16,22 +16,28 @@ exports.login = async (req, res) => {
     const { email, login, password } = req.body;
     const loginInput = email || login; // Support both field names
 
+    console.log('Login attempt:', {
+      loginInput,
+      isAjax: req.isAjax,
+      headers: req.headers['x-requested-with'],
+      contentType: req.headers['content-type'],
+      body: req.body,
+      bodyKeys: Object.keys(req.body)
+    });
+
     // Validate input
     if (!loginInput || !password) {
+      const errorMessage = 'Email/CEP ID and password are required';
+      console.log('Validation failed:', { loginInput: !!loginInput, password: !!password });
+
       if (req.isAjax) {
         return res.status(400).json({
           success: false,
-          message: 'Email/CEP ID and password are required'
+          message: errorMessage
         });
       }
-
-      return res.render('layout', {
-        title: 'Login',
-        body: 'auth/login',
-        error: 'Email/CEP ID and password are required',
-        email: loginInput,
-        user: null
-      });
+      req.flash('error', errorMessage);
+      return res.redirect('/auth/login');
     }
 
     // Query for user using the helper function (case-insensitive)
@@ -39,45 +45,50 @@ exports.login = async (req, res) => {
 
     if (rows.length === 0) {
       console.log('User not found:', loginInput);
+      const errorMessage = 'Invalid email/CEP ID or password';
 
       if (req.isAjax) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid email/CEP ID or password'
+          message: errorMessage
         });
       }
-
-      return res.render('layout', {
-        title: 'Login',
-        body: 'auth/login',
-        error: 'Invalid email/CEP ID or password',
-        email: loginInput,
-        user: null
-      });
+      req.flash('error', errorMessage);
+      return res.redirect('/auth/login');
     }
 
     const user = rows[0];
+
+    // Check if user is active
+    if (user.active === false) {
+      console.log('Inactive user attempted login:', loginInput);
+      const errorMessage = 'Account is disabled. Please contact administrator.';
+
+      if (req.isAjax) {
+        return res.status(401).json({
+          success: false,
+          message: errorMessage
+        });
+      }
+      req.flash('error', errorMessage);
+      return res.redirect('/auth/login');
+    }
 
     // Compare password
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
       console.log('Password mismatch for user:', loginInput);
+      const errorMessage = 'Invalid email/CEP ID or password';
 
       if (req.isAjax) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid email/CEP ID or password'
+          message: errorMessage
         });
       }
-
-      return res.render('layout', {
-        title: 'Login',
-        body: 'auth/login',
-        error: 'Invalid email/CEP ID or password',
-        email: loginInput,
-        user: null
-      });
+      req.flash('error', errorMessage);
+      return res.redirect('/auth/login');
     }
 
     // Load user permissions and roles
@@ -130,20 +141,37 @@ exports.login = async (req, res) => {
       };
     }
 
-    if (req.isAjax) {
-      return res.json({
-        success: true,
-        redirect: '/',
-        user: {
-          name: req.session.user.name,
-          cep_id: req.session.user.cep_id,
-          roles: req.session.user.roleNames
-        }
-      });
-    }
+    // Save session before responding
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error during login:', err);
 
-    req.flash('success', `Welcome back, ${user.name}! You have been logged in successfully.`);
-    res.redirect('/');
+        if (req.isAjax) {
+          return res.status(500).json({
+            success: false,
+            message: 'Login failed. Please try again.'
+          });
+        }
+        req.flash('error', 'Login failed. Please try again.');
+        return res.redirect('/auth/login');
+      }
+
+      if (req.isAjax) {
+        return res.json({
+          success: true,
+          message: `Welcome back, ${user.name}!`,
+          redirect: '/',
+          user: {
+            name: req.session.user.name,
+            cep_id: req.session.user.cep_id,
+            roles: req.session.user.roleNames
+          }
+        });
+      }
+
+      req.flash('success', `Welcome back, ${user.name}! You have been logged in successfully.`);
+      res.redirect('/');
+    });
 
   } catch (error) {
     console.error('Login error:', error);

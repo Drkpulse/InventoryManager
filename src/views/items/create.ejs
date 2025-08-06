@@ -2,15 +2,15 @@
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
     <div>
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
-        <i class="fas fa-plus"></i> Add New Asset
+        <i class="fas fa-plus"></i> <%= t('add_new_asset') %>
       </h1>
     </div>
     <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
       <a href="/items" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-        <i class="fas fa-arrow-left mr-2"></i> Back to Assets
+        <i class="fas fa-arrow-left mr-2"></i> <%= t('back_to_assets') %>
       </a>
       <a href="/items/new-receipt" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
-        <i class="fas fa-receipt mr-2"></i> Add with Receipt
+        <i class="fas fa-receipt mr-2"></i> <%= t('add_with_receipt') %>
       </a>
     </div>
   </div>
@@ -20,7 +20,7 @@
       <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
         <i class="fas fa-exclamation-triangle"></i>
         <div>
-          <strong>Please fix the following errors:</strong>
+          <strong><%= t('please_fix_errors') %>:</strong>
           <ul class="list-disc ml-6">
             <% errors.forEach(error => { %>
               <li><%= error %></li>
@@ -34,11 +34,11 @@
       <!-- Asset Identification Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-tag"></i> Asset Identification
+          <i class="fas fa-tag"></i> <%= t('asset_identification') %>
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="col-span-1 md:col-span-2">
-            <label for="cep_brc" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset ID (CEP/BRC) <span class="text-red-500">*</span></label>
+            <label for="cep_brc" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_id') %> (CEP/BRC) <span class="text-red-500">*</span></label>
             <div>
               <input type="text" id="cep_brc" name="cep_brc"
                 value="<%= typeof formData !== 'undefined' ? formData.cep_brc : 'CEXPT' %>"
@@ -47,31 +47,31 @@
               <div class="text-xs mt-1" id="cepValidation"></div>
               <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                 <i class="fas fa-info-circle"></i>
-                Unique identifier for this asset (e.g., CEP001, BRC-2024-001)
+                <%= t('unique_identifier_info') %>
               </small>
             </div>
           </div>
           <div class="col-span-1 md:col-span-2">
-            <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset Name <span class="text-red-500">*</span></label>
+            <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_name') %> <span class="text-red-500">*</span></label>
             <input type="text" id="name" name="name"
               value="<%= typeof formData !== 'undefined' ? formData.name : '' %>"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               required placeholder="Enter descriptive name for this asset">
           </div>
           <div class="col-span-1 md:col-span-2">
-            <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Description</label>
+            <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('description') %></label>
             <textarea id="description" name="description" rows="3"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-vertical"
               placeholder="Enter detailed description of the asset (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
             <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
               <i class="fas fa-info-circle"></i>
-              Provide additional details about the asset, its purpose, or any special characteristics
+              <%= t('provide_additional_details') %>
             </small>
           </div>
           <div>
-            <label for="type_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset Type <span class="text-red-500">*</span></label>
+            <label for="type_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_type') %> <span class="text-red-500">*</span></label>
             <select id="type_id" name="type_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
-              <option value="">Select Asset Type</option>
+              <option value=""><%= t('select_asset_type') %></option>
               <% types.forEach(type => { %>
                 <option value="<%= type.id %>" <%= typeof formData !== 'undefined' && formData.type_id == type.id ? 'selected' : '' %>>
                   <%= type.name %>
@@ -89,15 +89,15 @@
             <div class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed">
               <div class="flex items-center gap-2">
                 <i class="fas fa-star text-blue-600 dark:text-blue-400"></i>
-                <span class="font-medium">New</span>
+                <span class="font-medium"><%= t('new') %></span>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-                  Default for new assets
+                  <%= t('default_for_new_assets') %>
                 </span>
               </div>
             </div>
             <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
               <i class="fas fa-info-circle"></i>
-              New assets are automatically assigned "New" status. You can change this after creation.
+              <%= t('new_assets_info') %>
             </small>
           </div>
         </div>
@@ -106,13 +106,13 @@
       <!-- Product Details Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-cog"></i> Product Details
+          <i class="fas fa-cog"></i> <%= t('product_details') %>
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="brand_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Brand</label>
+            <label for="brand_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('brand') %></label>
             <select id="brand_id" name="brand_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-              <option value="">Select Brand</option>
+              <option value=""><%= t('select_brand') %></option>
               <% brands.forEach(brand => { %>
                 <option value="<%= brand.id %>" <%= typeof formData !== 'undefined' && formData.brand_id == brand.id ? 'selected' : '' %>>
                   <%= brand.name %>
@@ -121,21 +121,21 @@
             </select>
           </div>
           <div>
-            <label for="model" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Model</label>
+            <label for="model" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('model') %></label>
             <input type="text" id="model" name="model"
               value="<%= typeof formData !== 'undefined' ? formData.model : '' %>"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              placeholder="Product model number">
+              placeholder="<%= t('product_model_placeholder') %>">
           </div>
           <div>
-            <label for="serial_cod" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Serial Number</label>
+            <label for="serial_cod" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('serial_number') %></label>
             <input type="text" id="serial_cod" name="serial_cod"
               value="<%= typeof formData !== 'undefined' ? formData.serial_cod : '' %>"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              placeholder="Unique serial number">
+              placeholder="<%= t('unique_serial_number') %>">
           </div>
           <div>
-            <label for="price" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Purchase Price (€)</label>
+            <label for="price" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('purchase_price') %> (€)</label>
             <div class="flex">
               <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400">€</span>
               <input type="number" id="price" name="price" min="0" step="0.01"
@@ -150,12 +150,12 @@
       <!-- Purchase Information Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-receipt"></i> Purchase Information
+          <i class="fas fa-receipt"></i> <%= t('purchase_information') %>
         </h3>
         <div>
-          <label for="receipt" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Purchase Receipt</label>
+          <label for="receipt" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('purchase_receipt') %></label>
           <select id="receipt" name="receipt" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-            <option value="">Select Receipt (Optional)</option>
+            <option value=""><%= t('select_receipt') %> (<%= t('optional') %>)</option>
             <% sales.forEach(sale => { %>
               <option value="<%= sale.receipt %>" <%= typeof formData !== 'undefined' && formData.receipt === sale.receipt ? 'selected' : '' %>>
                 <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
@@ -164,7 +164,7 @@
           </select>
           <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
             <i class="fas fa-info-circle"></i>
-            Link this asset to an existing purchase receipt, or leave blank to add later
+            <%= t('link_existing_receipt') %>
           </small>
         </div>
       </div>
@@ -172,29 +172,29 @@
       <!-- Warranty Information Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-shield-alt"></i> Warranty Information
+          <i class="fas fa-shield-alt"></i> <%= t('warranty_information') %>
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label for="warranty_start_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty Start Date</label>
+            <label for="warranty_start_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('warranty_start_date') %></label>
             <input type="date" id="warranty_start_date" name="warranty_start_date"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               value="<%= typeof formData !== 'undefined' && formData.warranty_start_date ? formData.warranty_start_date : (typeof item !== 'undefined' && item.warranty_start_date ? new Date(item.warranty_start_date).toISOString().split('T')[0] : '') %>">
           </div>
           <div>
-            <label for="warranty_months" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty Period (Months)</label>
+            <label for="warranty_months" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('warranty_period') %> (<%= t('months') %>)</label>
             <select id="warranty_months" name="warranty_months" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-              <option value="">No Warranty</option>
-              <option value="6" <%= (typeof formData !== 'undefined' && formData.warranty_months == 6) || (typeof item !== 'undefined' && item.warranty_months == 6) ? 'selected' : '' %>>6 months</option>
+              <option value=""><%= t('no_warranty') %></option>
+              <option value="6" <%= (typeof formData !== 'undefined' && formData.warranty_months == 6) || (typeof item !== 'undefined' && item.warranty_months == 6) ? 'selected' : '' %>>6 <%= t('months') %></option>
               <option value="12"
                 <%= (typeof formData !== 'undefined' && formData.warranty_months == 12)
                     || (typeof item !== 'undefined' && item.warranty_months == 12)
                     || (typeof formData === 'undefined' && typeof item === 'undefined') ? 'selected' : '' %>
-              >12 months</option>
-              <option value="24" <%= (typeof formData !== 'undefined' && formData.warranty_months == 24) || (typeof item !== 'undefined' && item.warranty_months == 24) ? 'selected' : '' %>>24 months</option>
-              <option value="36" <%= (typeof formData !== 'undefined' && formData.warranty_months == 36) || (typeof item !== 'undefined' && item.warranty_months == 36) ? 'selected' : '' %>>36 months</option>
-              <option value="48" <%= (typeof formData !== 'undefined' && formData.warranty_months == 48) || (typeof item !== 'undefined' && item.warranty_months == 48) ? 'selected' : '' %>>48 months</option>
-              <option value="60" <%= (typeof formData !== 'undefined' && formData.warranty_months == 60) || (typeof item !== 'undefined' && item.warranty_months == 60) ? 'selected' : '' %>>60 months</option>
+              >12 <%= t('months') %></option>
+              <option value="24" <%= (typeof formData !== 'undefined' && formData.warranty_months == 24) || (typeof item !== 'undefined' && item.warranty_months == 24) ? 'selected' : '' %>>24 <%= t('months') %></option>
+              <option value="36" <%= (typeof formData !== 'undefined' && formData.warranty_months == 36) || (typeof item !== 'undefined' && item.warranty_months == 36) ? 'selected' : '' %>>36 <%= t('months') %></option>
+              <option value="48" <%= (typeof formData !== 'undefined' && formData.warranty_months == 48) || (typeof item !== 'undefined' && item.warranty_months == 48) ? 'selected' : '' %>>48 <%= t('months') %></option>
+              <option value="60" <%= (typeof formData !== 'undefined' && formData.warranty_months == 60) || (typeof item !== 'undefined' && item.warranty_months == 60) ? 'selected' : '' %>>60 <%= t('months') %></option>
             </select>
           </div>
           <div>
@@ -211,20 +211,20 @@
         </div>
         <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-2">
           <i class="fas fa-info-circle"></i>
-          Warranty end date is automatically calculated when you set the start date and period
+          <%= t('warranty_end_date_info') %>
         </small>
       </div>
 
       <!-- Assignment Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-user"></i> Asset Assignment
+          <i class="fas fa-user"></i> <%= t('asset_assignment') %>
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="assigned_to" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assign To Employee</label>
+            <label for="assigned_to" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('assign_to_employee') %></label>
             <select id="assigned_to" name="assigned_to" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-              <option value="">Leave Unassigned</option>
+              <option value=""><%= t('leave_unassigned') %></option>
               <% employees.forEach(employee => { %>
                 <option value="<%= employee.id %>" <%= typeof formData !== 'undefined' && formData.assigned_to == employee.id ? 'selected' : '' %>>
                   <%= employee.name %> (<%= employee.cep %>)
@@ -233,13 +233,13 @@
             </select>
           </div>
           <div>
-            <label for="date_assigned" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assignment Date</label>
+            <label for="date_assigned" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('assignment_date') %></label>
             <input type="date" id="date_assigned" name="date_assigned"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               value="<%= typeof formData !== 'undefined' && formData.date_assigned ? formData.date_assigned : '' %>">
             <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
               <i class="fas fa-info-circle"></i>
-              Date when asset is assigned to employee (auto-fills when employee is selected)
+              <%= t('assignment_date_info') %>
             </small>
           </div>
         </div>
@@ -248,10 +248,10 @@
       <!-- Form Actions -->
       <div class="flex flex-wrap gap-2 mt-8">
         <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
-          <i class="fas fa-plus"></i> Create Asset
+          <i class="fas fa-plus"></i> <%= t('create_asset') %>
         </button>
         <a href="/items" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
-          <i class="fas fa-times"></i> Cancel
+          <i class="fas fa-times"></i> <%= t('cancel') %>
         </a>
       </div>
     </form>
@@ -262,19 +262,19 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
       <div class="flex items-center gap-3 mb-4">
         <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 text-2xl"></i>
-        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Asset ID Already Exists</h4>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100"><%= t('asset_id_exists') %></h4>
       </div>
       <div class="mb-4">
-        <p class="mb-2">This Asset ID is already in use by another asset:</p>
+        <p class="mb-2"><%= t('asset_id_in_use') %></p>
         <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 mb-2" id="duplicateAssetInfo"></div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Please choose a different Asset ID or review the existing asset.</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400"><%= t('choose_different_asset_id') %></p>
       </div>
       <div class="flex gap-2 justify-end">
         <button id="viewExistingAsset" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
-          <i class="fas fa-eye mr-2"></i> View Existing Asset
+          <i class="fas fa-eye mr-2"></i> <%= t('view_existing_asset') %>
         </button>
         <button id="closeDuplicateModal" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-          <i class="fas fa-times mr-2"></i> Close
+          <i class="fas fa-times mr-2"></i> <%= t('close') %>
         </button>
       </div>
     </div>

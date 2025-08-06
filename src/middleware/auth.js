@@ -37,6 +37,15 @@ const isAuthenticated = (req, res, next) => {
   if (req.session && req.session.user) {
     return next();
   }
+
+  if (req.isAjax) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required',
+      redirect: '/auth/login'
+    });
+  }
+
   res.redirect('/auth/login');
 };
 

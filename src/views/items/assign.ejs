@@ -4,25 +4,25 @@
     <div>
       <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
         <a href="/items" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
-          <i class="fas fa-boxes"></i> Assets
+          <i class="fas fa-boxes"></i> <%= t('Assets') %>
         </a>
         <i class="fas fa-chevron-right mx-2"></i>
         <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
           <%= item.cep_brc %>
         </a>
         <i class="fas fa-chevron-right mx-2"></i>
-        <span class="text-gray-700 dark:text-gray-200">Assign</span>
+        <span class="text-gray-700 dark:text-gray-200"><%= t('Assign') %></span>
       </nav>
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-        <i class="fas fa-user-plus"></i> Assign Asset
+        <i class="fas fa-user-plus"></i> <%= t('assign_asset') %>
       </h1>
     </div>
     <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
       <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> Back to Asset
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> <%= t('back_to_asset') %>
       </a>
       <a href="/items" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-list mr-2 group-hover:scale-110 transition-transform duration-300"></i> All Assets
+        <i class="fas fa-list mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('all_assets') %>
       </a>
     </div>
   </div>
@@ -31,7 +31,7 @@
     <!-- Asset Summary Panel -->
     <div class="md:col-span-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow p-6">
       <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-4">
-        <i class="fas fa-info-circle"></i> Asset Details
+        <i class="fas fa-info-circle"></i> <%= t('asset_details') %>
       </h2>
       <div>
         <div class="mb-2">
@@ -40,49 +40,49 @@
         </div>
         <dl class="divide-y divide-gray-200 dark:divide-gray-700">
           <div class="py-2 flex items-center justify-between">
-            <dt class="text-gray-500 dark:text-gray-400">Type</dt>
+            <dt class="text-gray-500 dark:text-gray-400"><%= t('type') %></dt>
             <dd>
               <% if (item.type_name) { %>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
                   <i class="fas fa-tag"></i> <%= item.type_name %>
                 </span>
               <% } else { %>
-                <span class="text-gray-400 dark:text-gray-500 text-xs">Not specified</span>
+                <span class="text-gray-400 dark:text-gray-500 text-xs"><%= t('not_specified') %></span>
               <% } %>
             </dd>
           </div>
           <div class="py-2 flex items-center justify-between">
-            <dt class="text-gray-500 dark:text-gray-400">Brand</dt>
+            <dt class="text-gray-500 dark:text-gray-400"><%= t('brand') %></dt>
             <dd>
               <% if (item.brand_name) { %>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 text-xs font-semibold">
                   <i class="fas fa-building"></i> <%= item.brand_name %>
                 </span>
               <% } else { %>
-                <span class="text-gray-400 dark:text-gray-500 text-xs">Not specified</span>
+                <span class="text-gray-400 dark:text-gray-500 text-xs"><%= t('not_specified') %></span>
               <% } %>
             </dd>
           </div>
           <div class="py-2 flex items-center justify-between">
-            <dt class="text-gray-500 dark:text-gray-400">Model</dt>
-            <dd class="text-gray-700 dark:text-gray-200 text-xs"><%= item.model || 'Not specified' %></dd>
+            <dt class="text-gray-500 dark:text-gray-400"><%= t('model') %></dt>
+            <dd class="text-gray-700 dark:text-gray-200 text-xs"><%= item.model || t('not_specified') %></dd>
           </div>
           <% if (item.serial_cod) { %>
           <div class="py-2 flex items-center justify-between">
-            <dt class="text-gray-500 dark:text-gray-400">Serial Number</dt>
+            <dt class="text-gray-500 dark:text-gray-400"><%= t('serial_number') %></dt>
             <dd class="font-mono text-xs text-gray-700 dark:text-gray-200"><%= item.serial_cod %></dd>
           </div>
           <% } %>
           <% if (item.price) { %>
           <div class="py-2 flex items-center justify-between">
-            <dt class="text-gray-500 dark:text-gray-400">Value</dt>
+            <dt class="text-gray-500 dark:text-gray-400"><%= t('value') %></dt>
             <dd class="text-green-700 dark:text-green-300 font-semibold text-xs">€<%= parseFloat(item.price).toFixed(2) %></dd>
           </div>
           <% } %>
         </dl>
         <div class="mt-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300 text-sm">
           <i class="fas fa-user-slash"></i>
-          <span>Currently Unassigned</span>
+          <span><%= t('currently_unassigned') %></span>
         </div>
       </div>
     </div>
@@ -92,13 +92,13 @@
       <form method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/assign" id="assignForm" class="space-y-8" data-no-ajax="true">
         <div>
           <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <i class="fas fa-user-plus"></i> Assignment Details
+            <i class="fas fa-user-plus"></i> <%= t('assignment_details') %>
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label for="assigned_to" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assign To Employee <span class="text-red-500">*</span></label>
               <select id="assigned_to" name="assigned_to" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
-                <option value="">Select Employee</option>
+                <option value=""><%= t('select_employee') %></option>
                 <% employees.forEach(employee => { %>
                   <option value="<%= employee.id %>" data-department="<%= employee.dept_name || '' %>">
                     <%= employee.name %> (<%= employee.cep %>)<% if (employee.dept_name) { %> - <%= employee.dept_name %><% } %>
@@ -107,27 +107,27 @@
               </select>
               <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                 <i class="fas fa-info-circle"></i>
-                Select the employee who will be responsible for this asset
+                <%= t('select_employee_info') %>
               </small>
             </div>
             <div>
-              <label for="date_assigned" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assignment Date <span class="text-red-500">*</span></label>
+              <label for="date_assigned" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('assignment_date') %> <span class="text-red-500">*</span></label>
               <input type="date" id="date_assigned" name="date_assigned"
                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 value="<%= new Date().toISOString().split('T')[0] %>" required>
               <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                 <i class="fas fa-calendar"></i>
-                Date when the asset is officially assigned
+                <%= t('assignment_date_info') %>
               </small>
             </div>
             <div class="md:col-span-2">
-              <label for="assignment_notes" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Notes (Optional)</label>
+              <label for="assignment_notes" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('assignment_notes') %></label>
               <textarea id="assignment_notes" name="assignment_notes"
                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-vertical"
                 rows="3" placeholder="Any additional notes about this assignment..."></textarea>
               <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                 <i class="fas fa-sticky-note"></i>
-                Optional notes about the assignment purpose or conditions
+                <%= t('assignment_notes_info') %>
               </small>
             </div>
           </div>
@@ -136,23 +136,23 @@
         <!-- Assignment Preview -->
         <div id="assignmentPreview" class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mt-4 hidden">
           <h4 class="font-semibold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
-            <i class="fas fa-eye"></i> Assignment Preview
+            <i class="fas fa-eye"></i> <%= t('assignment_preview') %>
           </h4>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div><strong>Asset:</strong> <span><%= item.name %> (<%= item.cep_brc %>)</span></div>
-            <div><strong>Employee:</strong> <span id="previewEmployee">-</span></div>
-            <div><strong>Department:</strong> <span id="previewDepartment">-</span></div>
-            <div><strong>Assignment Date:</strong> <span id="previewDate">-</span></div>
+            <div><strong><%= t('asset') %>:</strong> <span><%= item.name %> (<%= item.cep_brc %>)</span></div>
+            <div><strong><%= t('employee') %>:</strong> <span id="previewEmployee">-</span></div>
+            <div><strong><%= t('department') %>:</strong> <span id="previewDepartment">-</span></div>
+            <div><strong><%= t('assignment_date') %>:</strong> <span id="previewDate">-</span></div>
           </div>
         </div>
 
         <!-- Form Actions -->
         <div class="flex flex-wrap gap-2 mt-8">
           <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2" id="assignButton">
-            <i class="fas fa-user-plus"></i> Assign Asset
+            <i class="fas fa-user-plus"></i> <%= t('assign_asset') %>
           </button>
           <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
-            <i class="fas fa-times"></i> Cancel
+            <i class="fas fa-times"></i> <%= t('cancel') %>
           </a>
         </div>
       </form>
@@ -164,24 +164,24 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
       <div class="flex items-center gap-3 mb-4">
         <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-2xl"></i>
-        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Confirm Assignment</h4>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100"><%= t('confirm_assignment') %></h4>
       </div>
       <div class="mb-4">
-        <p class="mb-2">You are about to assign this asset:</p>
+        <p class="mb-2"><%= t('confirm_assignment_info') %></p>
         <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 mb-2">
-          <div class="mb-1"><strong>Asset:</strong> <%= item.name %> (<%= item.cep_brc %>)</div>
-          <div class="mb-1"><strong>To Employee:</strong> <span id="confirmEmployee">-</span></div>
-          <div class="mb-1"><strong>Department:</strong> <span id="confirmDepartment">-</span></div>
-          <div class="mb-1"><strong>Date:</strong> <span id="confirmDate">-</span></div>
+          <div class="mb-1"><strong><%= t('asset') %>:</strong> <%= item.name %> (<%= item.cep_brc %>)</div>
+          <div class="mb-1"><strong><%= t('employee') %>:</strong> <span id="confirmEmployee">-</span></div>
+          <div class="mb-1"><strong><%= t('department') %>:</strong> <span id="confirmDepartment">-</span></div>
+          <div class="mb-1"><strong><%= t('assignment_date') %>:</strong> <span id="confirmDate">-</span></div>
         </div>
-        <p>Are you sure you want to proceed with this assignment?</p>
+        <p><%= t('confirm_assignment_proceed') %></p>
       </div>
       <div class="flex gap-2 justify-end">
         <button id="confirmAssign" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
-          <i class="fas fa-check mr-2"></i> Confirm Assignment
+          <i class="fas fa-check mr-2"></i> <%= t('confirm_assignment') %>
         </button>
         <button id="cancelConfirm" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-          <i class="fas fa-times mr-2"></i> Cancel
+          <i class="fas fa-times mr-2"></i> <%= t('cancel') %>
         </button>
       </div>
     </div>

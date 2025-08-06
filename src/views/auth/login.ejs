@@ -12,7 +12,7 @@
       <h1 class="text-2xl font-bold text-white mt-4 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent animate-gradient-x">AssetTrack</h1>
       <p class="text-gray-200">IT Asset Management</p>
     </div>
-    <form id="loginForm" method="POST" action="/auth/login" class="space-y-6" data-no-ajax="true">
+    <form id="loginForm" method="POST" action="/auth/login" class="space-y-6" >
       <div>
         <label for="login" class="block text-sm font-medium text-gray-200">
           <i class="fas fa-user mr-1"></i>
@@ -25,7 +25,7 @@
             id="login"
             required
             autofocus
-            class="block w-full rounded-lg border border-gray-300 bg-white/60 py-2 pl-12 pr-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 peer"
+            class="block w-full rounded-lg border border-gray-300 bg-white/60 py-2 pl-5 pr-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 peer"
             placeholder="Enter your email or CEP ID"
             value="<%= typeof login !== 'undefined' ? login : '' %>"
             autocomplete="username"
@@ -47,7 +47,7 @@
             name="password"
             id="password"
             required
-            class="block w-full rounded-lg border border-gray-300 bg-white/60 py-2 pl-12 pr-10 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 peer"
+            class="block w-full rounded-lg border border-gray-300 bg-white/60 py-2 pl-5 pr-10 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 peer"
             placeholder="Password"
             autocomplete="current-password"
           >
@@ -67,12 +67,6 @@
           </label>
         </div>
       </div>
-      <% if (typeof error !== 'undefined' && error) { %>
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 animate-shake flex items-center gap-2" role="alert">
-          <i class="fas fa-exclamation-circle text-red-500"></i>
-          <span class="block sm:inline"><%= error %></span>
-        </div>
-      <% } %>
       <button type="submit" class="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold shadow-lg hover:scale-105 transition-transform duration-300 flex items-center justify-center gap-2 animate-fade-in-up">
         <span class="btn-text"><%= t('sign_in') %></span>
       </button>
@@ -99,22 +93,166 @@ function togglePasswordPro() {
   }
 }
 
-// Remember me: set cookie on submit if checked
-document.getElementById('loginForm').addEventListener('submit', function(e) {
-  const remember = document.getElementById('remember').checked;
-  const login = document.getElementById('login').value;
-  if (remember) {
-    document.cookie = `remember_login=${encodeURIComponent(login)}; path=/; max-age=2592000`; // 30 days
-  } else {
-    document.cookie = 'remember_login=; path=/; max-age=0';
+// Show error message
+function showError(message) {
+  // Remove existing error
+  const existingError = document.querySelector('.error-message');
+  if (existingError) {
+    existingError.remove();
   }
-});
+
+  // Create new error element
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'error-message bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 animate-shake flex items-center gap-2';
+  errorDiv.setAttribute('role', 'alert');
+  errorDiv.innerHTML = `
+    <i class="fas fa-exclamation-circle text-red-500"></i>
+    <span class="block sm:inline">${message}</span>
+  `;
+
+  // Insert before the submit button
+  const submitButton = document.querySelector('button[type="submit"]');
+  if (submitButton && submitButton.parentNode) {
+    submitButton.parentNode.insertBefore(errorDiv, submitButton);
+  }
+
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (errorDiv && errorDiv.parentNode) {
+      errorDiv.remove();
+    }
+  }, 5000);
+}
+
+// Show loading state
+function setLoading(isLoading) {
+  const submitButton = document.querySelector('button[type="submit"]');
+  const buttonText = submitButton?.querySelector('.btn-text');
+
+  if (!submitButton) return;
+
+  if (isLoading) {
+    submitButton.disabled = true;
+    submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+    if (buttonText) {
+      buttonText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...';
+    }
+  } else {
+    submitButton.disabled = false;
+    submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+    if (buttonText) {
+      buttonText.innerHTML = '<%= t("sign_in") || "Sign In" %>';
+    }
+  }
+}
+
 window.addEventListener('DOMContentLoaded', function() {
   // Autofill login field from cookie if present
   const match = document.cookie.match(/(?:^|; )remember_login=([^;]*)/);
   if (match) {
-    document.getElementById('login').value = decodeURIComponent(match[1]);
-    document.getElementById('remember').checked = true;
+    const loginField = document.getElementById('login');
+    const rememberField = document.getElementById('remember');
+    if (loginField) loginField.value = decodeURIComponent(match[1]);
+    if (rememberField) rememberField.checked = true;
+  }
+});
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const loginInput = document.getElementById('login')?.value?.trim() || '';
+  const password = document.getElementById('password')?.value || '';
+  const remember = document.getElementById('remember')?.checked || false;
+
+  // Basic validation
+  if (!loginInput || !password) {
+    showError('Please enter both email/CEP ID and password.');
+    return;
+  }
+
+  // Handle remember me functionality
+  if (remember) {
+    document.cookie = `remember_login=${encodeURIComponent(loginInput)}; path=/; max-age=2592000`; // 30 days
+  } else {
+    document.cookie = 'remember_login=; path=/; max-age=0';
+  }
+
+  try {
+    setLoading(true);
+
+    // Use URLSearchParams for proper form encoding
+    const formData = new URLSearchParams();
+    formData.append('login', loginInput);
+    formData.append('password', password);
+    if (remember) {
+      formData.append('remember', 'on');
+    }
+
+    const response = await fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+      },
+      body: formData
+    });
+
+    const contentType = response.headers.get('content-type');
+    console.log('Response status:', response.status);
+    console.log('Response content-type:', contentType);
+
+    if (contentType && contentType.includes('application/json')) {
+      const result = await response.json();
+      console.log('JSON response:', result);
+
+      if (result.success) {
+        // Show success message briefly before redirect
+        const successDiv = document.createElement('div');
+        successDiv.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 flex items-center gap-2';
+        successDiv.innerHTML = `
+          <i class="fas fa-check-circle text-green-500"></i>
+          <span class="block sm:inline">${result.message || 'Login successful!'}</span>
+        `;
+
+        const submitButton = document.querySelector('button[type="submit"]');
+        if (submitButton && submitButton.parentNode) {
+          submitButton.parentNode.insertBefore(successDiv, submitButton);
+        }
+
+        // Redirect after brief delay
+        setTimeout(() => {
+          window.location.href = result.redirect || '/';
+        }, 1000);
+      } else {
+        // Show error message
+        showError(result.message || 'Login failed. Please try again.');
+      }
+    } else {
+      // Handle non-JSON responses
+      const responseText = await response.text();
+
+      if (response.status >= 400) {
+        showError('An error occurred during login. Please try again.');
+      } else if (response.redirected || response.url !== form.action) {
+        // Handle redirect
+        window.location.href = response.url || '/';
+      } else {
+        // Check if response contains error indicators
+        if (responseText.includes('error') || responseText.includes('Invalid')) {
+          showError('Invalid login credentials. Please try again.');
+        } else {
+          // Assume success and redirect
+          window.location.href = '/';
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    showError('Network error. Please check your connection and try again.');
+  } finally {
+    setLoading(false);
   }
 });
 </script>

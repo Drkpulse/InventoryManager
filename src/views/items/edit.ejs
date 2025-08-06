@@ -2,7 +2,7 @@
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
     <div>
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
-        <i class="fas fa-edit"></i> Edit Asset
+        <i class="fas fa-edit"></i> <%= t('edit_asset') %>
       </h1>
       <!-- Asset badges with modern styling -->
       <div class="flex items-center gap-3 mt-2">
@@ -17,7 +17,7 @@
     <!-- Action buttons with modern hover effects -->
     <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
       <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> Back to Asset
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> <%= t('back_to_asset') %>
       </a>
     </div>
   </div>
@@ -27,7 +27,7 @@
       <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
         <i class="fas fa-exclamation-triangle"></i>
         <div>
-          <strong>Please fix the following errors:</strong>
+          <strong><%= t('please_fix_errors') %>:</strong>
           <ul class="list-disc ml-6">
             <% errors.forEach(error => { %>
               <li><%= error %></li>
@@ -41,11 +41,11 @@
       <!-- Asset Identification Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-tag"></i> Asset Identification
+          <i class="fas fa-tag"></i> <%= t('asset_identification') %>
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="col-span-1 md:col-span-2">
-            <label for="cep_brc" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset ID (CEP/BRC) <span class="text-red-500">*</span></label>
+            <label for="cep_brc" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_id') %> (CEP/BRC) <span class="text-red-500">*</span></label>
             <div>
               <% if (user && user.role === 'admin') { %>
                 <input type="text" id="cep_brc" name="cep_brc" value="<%= item.cep_brc %>"
@@ -54,33 +54,33 @@
                 <div class="text-xs mt-1" id="cepValidation"></div>
                 <div class="text-xs mt-2 text-yellow-800 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded px-3 py-2">
                   <i class="fas fa-exclamation-triangle"></i>
-                  Warning: Changing Asset ID may affect system relationships. Admin only.
+                  <%= t('warning_changing_asset_id') %>
                 </div>
               <% } else { %>
                 <input type="text" id="cep_brc" value="<%= item.cep_brc %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100" disabled>
-                <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Asset ID cannot be changed (admin only)</div>
+                <div class="text-xs mt-1 text-gray-500 dark:text-gray-400"><%= t('asset_id_cannot_be_changed') %></div>
                 <input type="hidden" name="cep_brc" value="<%= item.cep_brc %>">
               <% } %>
             </div>
           </div>
           <div class="col-span-1 md:col-span-2">
-            <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset Name <span class="text-red-500">*</span></label>
+            <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_name') %> <span class="text-red-500">*</span></label>
             <input type="text" id="name" name="name" value="<%= item.name %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required placeholder="Enter descriptive name for this asset">
           </div>
           <div class="col-span-1 md:col-span-2">
-            <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Description</label>
+            <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('description') %></label>
             <textarea id="description" name="description" rows="3"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-vertical"
-              placeholder="Enter detailed description of the asset (optional)"><%= item.description || '' %></textarea>
+              placeholder="<%= t('enter_detailed_description') %>"><%= item.description || '' %></textarea>
             <div class="text-xs mt-1 text-gray-500 dark:text-gray-400 flex items-center gap-1">
               <i class="fas fa-info-circle"></i>
-              Provide additional details about the asset, its purpose, or any special characteristics
+              <%= t('provide_additional_details') %>
             </div>
           </div>
           <div>
-            <label for="type_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset Type <span class="text-red-500">*</span></label>
+            <label for="type_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_type') %> <span class="text-red-500">*</span></label>
             <select id="type_id" name="type_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
-              <option value="">Select Asset Type</option>
+              <option value=""><%= t('select_asset_type') %></option>
               <% types.forEach(type => { %>
                 <option value="<%= type.id %>" <%= item.type_id == type.id ? 'selected' : '' %>>
                   <%= type.name %>
@@ -94,13 +94,13 @@
       <!-- Product Details Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-cog"></i> Product Details
+          <i class="fas fa-cog"></i> <%= t('product_details') %>
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="brand_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Brand</label>
+            <label for="brand_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('brand') %></label>
             <select id="brand_id" name="brand_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-              <option value="">Select Brand</option>
+              <option value=""><%= t('select_brand') %></option>
               <% brands.forEach(brand => { %>
                 <option value="<%= brand.id %>" <%= item.brand_id == brand.id ? 'selected' : '' %>>
                   <%= brand.name %>
@@ -109,15 +109,15 @@
             </select>
           </div>
           <div>
-            <label for="model" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Model</label>
-            <input type="text" id="model" name="model" value="<%= item.model || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Product model number">
+            <label for="model" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('model') %></label>
+            <input type="text" id="model" name="model" value="<%= item.model || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="<%= t('enter_product_model') %>">
           </div>
           <div>
-            <label for="serial_cod" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Serial Number</label>
-            <input type="text" id="serial_cod" name="serial_cod" value="<%= item.serial_cod || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Unique serial number">
+            <label for="serial_cod" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('serial_number') %></label>
+            <input type="text" id="serial_cod" name="serial_cod" value="<%= item.serial_cod || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="<%= t('enter_serial_number') %>">
           </div>
           <div>
-            <label for="price" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Purchase Price (€)</label>
+            <label for="price" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('purchase_price') %> (€)</label>
             <div class="flex">
               <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400">€</span>
               <input type="number" id="price" name="price" min="0" step="0.01" value="<%= item.price || '' %>"
@@ -130,12 +130,12 @@
       <!-- Purchase Information Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-receipt"></i> Purchase Information
+          <i class="fas fa-receipt"></i> <%= t('purchase_information') %>
         </h3>
         <div>
-          <label for="receipt" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Purchase Receipt</label>
+          <label for="receipt" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('purchase_receipt') %></label>
           <select id="receipt" name="receipt" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-            <option value="">Select Receipt (Optional)</option>
+            <option value=""><%= t('select_receipt') %></option>
             <% sales.forEach(sale => { %>
               <option value="<%= sale.receipt %>" <%= item.receipt === sale.receipt ? 'selected' : '' %>>
                 <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
@@ -148,29 +148,29 @@
       <!-- Warranty Information Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-shield-alt"></i> Warranty Information
+          <i class="fas fa-shield-alt"></i> <%= t('warranty_information') %>
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label for="warranty_start_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty Start Date</label>
+            <label for="warranty_start_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('warranty_start_date') %></label>
             <input type="date" id="warranty_start_date" name="warranty_start_date"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               value="<%= typeof formData !== 'undefined' && formData.warranty_start_date ? formData.warranty_start_date : (typeof item !== 'undefined' && item.warranty_start_date ? new Date(item.warranty_start_date).toISOString().split('T')[0] : '') %>">
           </div>
           <div>
-            <label for="warranty_months" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty Period (Months)</label>
+            <label for="warranty_months" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('warranty_period') %> (<%= t('months') %>)</label>
             <select id="warranty_months" name="warranty_months" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-              <option value="">No Warranty</option>
-              <option value="6" <%= (typeof formData !== 'undefined' && formData.warranty_months == 6) || (typeof item !== 'undefined' && item.warranty_months == 6) ? 'selected' : '' %>>6 months</option>
-              <option value="12" <%= (typeof formData !== 'undefined' && formData.warranty_months == 12) || (typeof item !== 'undefined' && item.warranty_months == 12) || (typeof formData === 'undefined' && typeof item !== 'undefined' && !item.warranty_months) ? 'selected' : '' %>>12 months</option>
-              <option value="24" <%= (typeof formData !== 'undefined' && formData.warranty_months == 24) || (typeof item !== 'undefined' && item.warranty_months == 24) ? 'selected' : '' %>>24 months</option>
-              <option value="36" <%= (typeof formData !== 'undefined' && formData.warranty_months == 36) || (typeof item !== 'undefined' && item.warranty_months == 36) ? 'selected' : '' %>>36 months</option>
-              <option value="48" <%= (typeof formData !== 'undefined' && formData.warranty_months == 48) || (typeof item !== 'undefined' && item.warranty_months == 48) ? 'selected' : '' %>>48 months</option>
-              <option value="60" <%= (typeof formData !== 'undefined' && formData.warranty_months == 60) || (typeof item !== 'undefined' && item.warranty_months == 60) ? 'selected' : '' %>>60 months</option>
+              <option value=""><%= t('no_warranty') %></option>
+              <option value="6" <%= (typeof formData !== 'undefined' && formData.warranty_months == 6) || (typeof item !== 'undefined' && item.warranty_months == 6) ? 'selected' : '' %>>6 <%= t('months') %></option>
+              <option value="12" <%= (typeof formData !== 'undefined' && formData.warranty_months == 12) || (typeof item !== 'undefined' && item.warranty_months == 12) || (typeof formData === 'undefined' && typeof item !== 'undefined' && !item.warranty_months) ? 'selected' : '' %>>12 <%= t('months') %></option>
+              <option value="24" <%= (typeof formData !== 'undefined' && formData.warranty_months == 24) || (typeof item !== 'undefined' && item.warranty_months == 24) ? 'selected' : '' %>>24 <%= t('months') %></option>
+              <option value="36" <%= (typeof formData !== 'undefined' && formData.warranty_months == 36) || (typeof item !== 'undefined' && item.warranty_months == 36) ? 'selected' : '' %>>36 <%= t('months') %></option>
+              <option value="48" <%= (typeof formData !== 'undefined' && formData.warranty_months == 48) || (typeof item !== 'undefined' && item.warranty_months == 48) ? 'selected' : '' %>>48 <%= t('months') %></option>
+              <option value="60" <%= (typeof formData !== 'undefined' && formData.warranty_months == 60) || (typeof item !== 'undefined' && item.warranty_months == 60) ? 'selected' : '' %>>60 <%= t('months') %></option>
             </select>
           </div>
           <div>
-            <label for="warranty_end_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty End Date</label>
+            <label for="warranty_end_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('warranty_end_date') %></label>
             <input type="date" id="warranty_end_date" name="warranty_end_date" readonly
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed"
               value="<%= typeof formData !== 'undefined' && formData.warranty_end_date ? formData.warranty_end_date : (typeof item !== 'undefined' && item.warranty_end_date ? new Date(item.warranty_end_date).toISOString().split('T')[0] : '') %>">
@@ -183,20 +183,20 @@
         </div>
         <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-2">
           <i class="fas fa-info-circle"></i>
-          Warranty end date is automatically calculated when you set the start date and period
+          <%= t('warranty_end_date_info') %>
         </small>
       </div>
 
       <!-- Assignment Section -->
       <div>
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-user"></i> Asset Assignment
+          <i class="fas fa-user"></i> <%= t('asset_assignment') %>
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="assigned_to" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assigned To</label>
+            <label for="assigned_to" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('assigned_to') %></label>
             <select id="assigned_to" name="assigned_to" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-              <option value="">Unassigned</option>
+              <option value=""><%= t('unassigned') %></option>
               <% employees.forEach(employee => { %>
                 <option value="<%= employee.id %>" <%= item.assigned_to == employee.id ? 'selected' : '' %>>
                   <%= employee.name %> (<%= employee.cep %>)
@@ -205,7 +205,7 @@
             </select>
           </div>
           <div>
-            <label for="date_assigned" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Date Assigned</label>
+            <label for="date_assigned" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('date_assigned') %></label>
             <input type="date" id="date_assigned" name="date_assigned"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               value="<%= item.date_assigned ? new Date(item.date_assigned).toISOString().split('T')[0] : '' %>">
@@ -215,9 +215,9 @@
 
       <!-- Asset Status Section -->
       <div>
-        <label for="status_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status <span class="text-red-500">*</span></label>
+        <label for="status_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('status') %> <span class="text-red-500">*</span></label>
         <select id="status_id" name="status_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
-          <option value="">Select Status</option>
+          <option value=""><%= t('select_status') %></option>
           <% if (typeof statuses !== 'undefined') { %>
             <% statuses.forEach(status => { %>
               <option value="<%= status.id %>"
@@ -229,16 +229,16 @@
             <% }) %>
           <% } %>
         </select>
-        <small class="text-gray-500 dark:text-gray-400">Current operational status of this asset</small>
+        <small class="text-gray-500 dark:text-gray-400"><%= t('current_status_info') %></small>
       </div>
 
       <!-- Form Actions -->
       <div class="flex flex-wrap gap-2 mt-8">
         <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
-          <i class="fas fa-save"></i> Update Asset
+          <i class="fas fa-save"></i> <%= t('update_asset') %>
         </button>
         <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
-          <i class="fas fa-times"></i> Cancel
+          <i class="fas fa-times"></i> <%= t('cancel') %>
         </a>
       </div>
     </form>
@@ -249,26 +249,26 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
       <div class="flex items-center gap-3 mb-4">
         <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 text-2xl"></i>
-        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Confirm Asset ID Change</h4>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100"><%= t('confirm_asset_id_change') %></h4>
       </div>
       <div class="mb-4">
-        <p class="mb-2">You are about to change the Asset ID (CEP/BRC). This is a critical identifier that may affect:</p>
+        <p class="mb-2"><%= t('asset_id_change_warning') %></p>
         <ul class="list-disc ml-6 text-sm text-yellow-800 dark:text-yellow-200">
-          <li>System relationships and references</li>
-          <li>Historical records and tracking</li>
-          <li>Integration with external systems</li>
+          <li><%= t('system_relationships_info') %></li>
+          <li><%= t('historical_records_info') %></li>
+          <li><%= t('external_systems_info') %></li>
         </ul>
         <div class="mt-4 text-sm">
-          <strong>Current ID:</strong> <span id="currentIdDisplay"><%= item.cep_brc %></span><br>
-          <strong>New ID:</strong> <span id="newIdDisplay"></span>
+          <strong><%= t('current') %> ID:</strong> <span id="currentIdDisplay"><%= item.cep_brc %></span><br>
+          <strong><%= t('new') %> ID:</strong> <span id="newIdDisplay"></span>
         </div>
       </div>
       <div class="flex gap-2 justify-end">
         <button id="confirmIdChange" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition">
-          <i class="fas fa-check mr-2"></i> Confirm Change
+          <i class="fas fa-check mr-2"></i> <%= t('confirm_change') %>
         </button>
         <button id="cancelIdChange" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-          <i class="fas fa-times mr-2"></i> Cancel
+          <i class="fas fa-times mr-2"></i> <%= t('cancel') %>
         </button>
       </div>
     </div>
@@ -279,19 +279,19 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
       <div class="flex items-center gap-3 mb-4">
         <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 text-2xl"></i>
-        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Duplicate Asset ID Detected</h4>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100"><%= t('duplicate_asset_id_detected') %></h4>
       </div>
       <div class="mb-4">
-        <p class="mb-2">This Asset ID is already in use by another asset:</p>
+        <p class="mb-2"><%= t('duplicate_asset_id_warning') %></p>
         <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 mb-2" id="duplicateAssetInfo"></div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Please choose a different Asset ID or review the existing asset.</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400"><%= t('duplicate_asset_id_info') %></p>
       </div>
       <div class="flex gap-2 justify-end">
         <button id="viewDuplicateAsset" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
-          <i class="fas fa-eye mr-2"></i> View Existing Asset
+          <i class="fas fa-eye mr-2"></i> <%= t('view_existing_asset') %>
         </button>
         <button id="closeDuplicateModal" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-          <i class="fas fa-times mr-2"></i> Close
+          <i class="fas fa-times mr-2"></i> <%= t('close') %>
         </button>
       </div>
     </div>

@@ -46,10 +46,10 @@ function setupNotifications() {
   if (notificationToggle && notificationMenu) {
     notificationToggle.addEventListener('click', function(e) {
       e.stopPropagation();
-      notificationMenu.classList.toggle('hidden');
+      notificationMenu.classList.toggle('show');
 
       // Load notifications when opened
-      if (!notificationMenu.classList.contains('hidden')) {
+      if (notificationMenu.classList.contains('show')) {
         loadNotifications();
       }
     });
@@ -57,7 +57,7 @@ function setupNotifications() {
     // Close on outside click
     document.addEventListener('click', function(e) {
       if (!notificationToggle.contains(e.target) && !notificationMenu.contains(e.target)) {
-        notificationMenu.classList.add('hidden');
+        notificationMenu.classList.remove('show');
       }
     });
   }
@@ -256,7 +256,7 @@ function updateActiveMenuItems() {
 
 // Load notifications
 function loadNotifications() {
-  fetch('/api/notifications')
+  fetch('/notifications')
     .then(response => response.json())
     .then(data => {
       const notificationList = document.getElementById('notificationList');
@@ -442,14 +442,24 @@ window.assignAsset = function(assetId, cepBrc) {
   fetch(`/items/${assetId}/${cepBrc}/assign`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
     },
     body: JSON.stringify({
       assigned_to: employeeId,
       date_assigned: new Date().toISOString().split('T')[0]
     })
   })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Server did not return JSON response');
+    }
+    return response.json();
+  })
   .then(data => {
     if (data.success) {
       window.location.reload();
@@ -459,7 +469,7 @@ window.assignAsset = function(assetId, cepBrc) {
   })
   .catch(error => {
     console.error('Error assigning asset:', error);
-    alert('Failed to assign asset');
+    alert('Failed to assign asset: ' + error.message);
   });
 };
 

@@ -446,8 +446,12 @@ exports.assignItem = async (req, res) => {
 
       await db.query('COMMIT');
 
-      // Redirect based on request type
-      if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+      // With this more robust version:
+      const isAjax = req.xhr ||
+        req.headers['x-requested-with'] === 'XMLHttpRequest' ||
+        (req.headers.accept && req.headers.accept.indexOf('json') > -1);
+
+      if (isAjax) {
         res.json({
           success: true,
           message: `Asset successfully assigned to ${employee.name}`,
@@ -466,13 +470,23 @@ exports.assignItem = async (req, res) => {
   } catch (error) {
     console.error('Error assigning item:', error);
 
-    if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+    // Always return JSON for AJAX requests
+    const isAjax = req.xhr ||
+      req.headers['x-requested-with'] === 'XMLHttpRequest' ||
+      (req.headers.accept && req.headers.accept.indexOf('json') > -1) ||
+      req.headers['content-type'] === 'application/json';
+
+    if (isAjax) {
       res.status(500).json({
         success: false,
         error: 'Failed to assign asset'
       });
     } else {
-      res.status(500).render('error', { error: 'Failed to assign asset' });
+      res.status(500).render('error', {
+        error: 'Failed to assign asset',
+        title: 'Error',
+        user: req.session.user
+      });
     }
   }
 };
@@ -1099,3 +1113,4 @@ exports.deleteItem = async (req, res) => {
     res.redirect('/items');
   }
 };
+

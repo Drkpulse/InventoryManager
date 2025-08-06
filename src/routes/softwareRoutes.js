@@ -11,7 +11,9 @@ router.get('/:id/edit', hasPermission('software.edit'), softwareController.showE
 router.post('/:id', hasPermission('software.edit'), softwareController.update);
 router.post('/:id/delete', hasPermission('software.delete'), softwareController.delete);
 
+
 // Assignment routes
+router.get('/api/available', hasPermission('software.assign'), softwareController.getAvailableSoftware);
 router.get('/:id/assignments', hasPermission('software.view'), softwareController.getAssignments);
 router.post('/:id/assign', hasPermission('software.assign'), softwareController.assign);
 router.post('/:id/unassign', hasPermission('software.assign'), softwareController.unassign);

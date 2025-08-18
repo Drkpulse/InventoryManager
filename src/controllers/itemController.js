@@ -33,13 +33,39 @@ const validateItemData = (data) => {
   return errors;
 };
 
+// Helper to get perPage from query, user settings, or default
+function getItemsPerPage(req) {
+  const DEFAULT_PER_PAGE = 20;
+
+  // First check URL parameter
+  if (req.query.perPage && !isNaN(parseInt(req.query.perPage, 10))) {
+    const perPage = parseInt(req.query.perPage, 10);
+    if (perPage > 0 && perPage <= 1000) {
+      return perPage;
+    }
+  }
+
+  // Then check user settings
+  if (req.session &&
+      req.session.user &&
+      req.session.user.settings &&
+      req.session.user.settings.items_per_page) {
+    const userPerPage = parseInt(req.session.user.settings.items_per_page, 10);
+    if (!isNaN(userPerPage) && userPerPage > 0 && userPerPage <= 1000) {
+      return userPerPage;
+    }
+  }
+
+  return DEFAULT_PER_PAGE;
+}
+
 exports.getAllItems = async (req, res) => {
   try {
     // Parse query parameters for filtering
     const typeFilter = req.query.type || '';
     const assignmentFilter = req.query.assigned || '';
     const page = parseInt(req.query.page) || 1;
-    const perPage = 20;
+    const perPage = getItemsPerPage(req);
     const offset = (page - 1) * perPage;
 
     // Build the query conditions
@@ -108,29 +134,54 @@ exports.getAllItems = async (req, res) => {
       price: item.price ? parseFloat(item.price) : 0
     }));
 
-    res.render('layout', {
-      title: 'Inventory Items',
-      body: 'items/index',
-      items: items,
-      types: typesResult.rows,
-      brands: brandsResult.rows,
-      departments: departmentsResult.rows,
-      statuses: statusesResult.rows,
-      selectedType: typeFilter,
-      assignmentFilter: assignmentFilter,
-      currentPage: page,
-      totalPages: totalPages,
-      totalItems: totalItems,
-      perPage: perPage,
-      user: req.session.user,
-      t: req.t, // Pass translation function
-      currentLanguage: req.language
-    });
+  const startIndex = offset;
+  const endIndex = Math.min(offset + items.length, totalItems);
+
+  res.render('layout', {
+    title: 'Inventory Items',
+    body: 'items/index',
+    items: items,
+    types: typesResult.rows,
+    brands: brandsResult.rows,
+    departments: departmentsResult.rows,
+    statuses: statusesResult.rows,
+    selectedType: typeFilter,
+    assignmentFilter: assignmentFilter,
+    currentPage: page,
+    totalPages: totalPages,
+    totalItems: totalItems,
+    perPage,
+    startIndex,
+    endIndex,
+    user: req.session.user,
+    t: req.t,
+    currentLanguage: req.language,
+    req
+  });
   } catch (error) {
     console.error('Error fetching items:', error);
     res.status(500).send('Server error: ' + error.message);
   }
 };
+
+// exports.getItemById = async (req, res) => {
+//   const DEFAULT_PER_PAGE = 20;
+//   if (req.query.perPage && !isNaN(parseInt(req.query.perPage, 10))) {
+//     return parseInt(req.query.perPage, 10);
+//   }
+//   if (
+//     req.session &&
+//     req.session.user &&
+//     req.session.user.settings &&
+//     req.session.user.settings.items_per_page
+//   ) {
+//     const val = parseInt(req.session.user.settings.items_per_page, 10);
+//     if (!isNaN(val) && val > 0) {
+//       return val;
+//     }
+//   }
+//   return DEFAULT_PER_PAGE;
+// }
 
 // Update this method to handle the composite key
 exports.getItemById = async (req, res) => {
@@ -1113,4 +1164,5 @@ exports.deleteItem = async (req, res) => {
     res.redirect('/items');
   }
 };
+
 

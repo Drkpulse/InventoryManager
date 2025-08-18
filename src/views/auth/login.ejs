@@ -16,7 +16,7 @@
       <div>
         <label for="login" class="block text-sm font-medium text-gray-200">
           <i class="fas fa-user mr-1"></i>
-        <%= t('login') || 'Email or CEP' %>
+        Email or CEP
         </label>
         <div class="relative mt-1">
           <input
@@ -36,11 +36,11 @@
         </div>
         <div class="mt-1 text-xs text-gray-400">
           <i class="fas fa-info-circle mr-1"></i>
-          <%= t('login_hint') || 'Use your email or CEP ID to log in.' %>
+          Use your email or CEP ID to log in.
         </div>
       </div>
       <div>
-        <label for="password" class="block text-sm font-medium text-gray-200"><%= t('password') %></label>
+        <label for="password" class="block text-sm font-medium text-gray-200">Password</label>
         <div class="relative mt-1">
           <input
             type="password"
@@ -63,12 +63,12 @@
         <div class="flex items-center">
           <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded" <%= typeof remember !== 'undefined' && remember ? 'checked' : '' %>>
           <label for="remember" class="ml-2 text-sm text-gray-400">
-            <%= t('remember_me') %>
+            Remember Me
           </label>
         </div>
       </div>
       <button type="submit" class="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold shadow-lg hover:scale-105 transition-transform duration-300 flex items-center justify-center gap-2 animate-fade-in-up">
-        <span class="btn-text"><%= t('sign_in') %></span>
+        <span class="btn-text">Sign In</span>
       </button>
     </form>
     <div class="flex flex-col items-center mt-6 gap-2 animate-fade-in">
@@ -80,6 +80,15 @@
   </div>
 </div>
 <script>
+
+  // Save last visited page (except auth pages)
+(function() {
+  const skipPaths = ['/auth/login', '/auth/register', '/auth/logout'];
+  if (!skipPaths.includes(window.location.pathname)) {
+    document.cookie = `last_page=${encodeURIComponent(window.location.pathname + window.location.search)}; path=/; max-age=1800; SameSite=Strict;`;
+  }
+})();
+
 // Password toggle
 function togglePasswordPro() {
   const passwordInput = document.getElementById('password');
@@ -173,9 +182,9 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
   // Handle remember me functionality
   if (remember) {
-    document.cookie = `remember_login=${encodeURIComponent(loginInput)}; path=/; max-age=2592000`; // 30 days
+    document.cookie = `remember_login=${encodeURIComponent(loginInput)}; path=/; max-age=2592000; Secure; SameSite=Strict;`;
   } else {
-    document.cookie = 'remember_login=; path=/; max-age=0';
+    document.cookie = 'remember_login=; path=/; max-age=0; Secure; SameSite=Strict;';
   }
 
   try {
@@ -223,7 +232,16 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
         // Redirect after brief delay
         setTimeout(() => {
-          window.location.href = result.redirect || '/';
+          // Try to redirect to last_page cookie if present and not /auth/*
+          const match = document.cookie.match(/(?:^|; )last_page=([^;]*)/);
+          let redirectUrl = result.redirect || '/';
+          if (match) {
+            const lastPage = decodeURIComponent(match[1]);
+            if (lastPage && !lastPage.startsWith('/auth/')) {
+              redirectUrl = lastPage;
+            }
+          }
+          window.location.href = redirectUrl;
         }, 1000);
       } else {
         // Show error message

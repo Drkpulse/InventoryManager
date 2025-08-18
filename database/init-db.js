@@ -484,7 +484,7 @@ async function setupTrackingSystem(client) {
   await client.query(`
     CREATE TABLE item_history (
       id SERIAL PRIMARY KEY,
-      item_id INTEGER REFERENCES items(id),
+      item_id INTEGER REFERENCES items(id) ON DELETE CASCADE,
       action_type VARCHAR(50) NOT NULL,
       action_details JSONB,
       performed_by INTEGER REFERENCES users(id),
@@ -771,11 +771,10 @@ async function insertSampleData(client) {
   await client.query(`
     INSERT INTO roles (name, display_name, description, is_system_role) VALUES
     ('developer', 'Developer', 'Full system access with development tools and debugging capabilities', true),
-    ('super_admin', 'Super Administrator', 'Full system access with all permissions', true),
-    ('admin', 'Administrator', 'Administrative access with most permissions', true),
+    ('admin', 'Administrator', 'Administrative access with most permissions', false),
     ('manager', 'Manager', 'Management level access', false),
-    ('user', 'Regular User', 'Basic user access', true),
-    ('viewer', 'Viewer', 'Read-only access', false)
+    ('user', 'Regular User', 'Basic user access', false),
+    ('viewer', 'Viewer', 'Read-only access', true)
   `);
 
   // Insert comprehensive permissions
@@ -889,8 +888,9 @@ async function insertSampleData(client) {
     ['New', 'Newly acquired asset, not yet assigned or deployed', 'fas fa-star', 'blue', true, 1],
     ['Available', 'Asset is ready for assignment and available for use', 'fas fa-check-circle', 'green', true, 2],
     ['Assigned', 'Asset is currently assigned to an employee', 'fas fa-user-check', 'red', true, 3],
-    ['Maintenance', 'Asset is under maintenance or repair', 'fas fa-wrench', 'yellow', false, 4],
-    ['Retired', 'Asset has been retired and is no longer in active use', 'fas fa-archive', 'gray', false, 5]
+    ['Lost', 'Asset is reported lost', 'fas fa-exclamation-triangle', 'orange', false, 4],
+    ['Maintenance', 'Asset is under maintenance or repair', 'fas fa-wrench', 'yellow', false, 5],
+    ['Retired', 'Asset has been retired and is no longer in active use', 'fas fa-archive', 'gray', false, 6]
   ];
 
   for (const [name, description, icon, color, is_active, status_order] of statuses) {
@@ -1177,14 +1177,15 @@ async function assignRolesToUsers(client) {
     roleMap[role.name] = role.id;
   });
 
-  // Assign roles based on email patterns
+  // Assign roles based on user id and email patterns
   for (const user of users.rows) {
     let roleId;
 
-    if (user.email.includes('dev')) {
+    if (user.id === 1) {
+      // Always assign developer role to user with id 1
       roleId = roleMap.developer;
     } else if (user.email.includes('admin')) {
-      roleId = roleMap.super_admin;
+      roleId = roleMap.admin;
     } else if (user.email.includes('manager')) {
       roleId = roleMap.manager;
     } else {
@@ -1194,7 +1195,7 @@ async function assignRolesToUsers(client) {
     await client.query(`
       INSERT INTO user_roles (user_id, role_id, assigned_by)
       VALUES ($1, $2, $3)
-    `, [user.id, roleId, 1]); // Assigned by admin user (id=1)
+    `, [user.id, roleId, 1]); // Assigned by developer user (id=1)
   }
 }
 

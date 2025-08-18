@@ -127,36 +127,42 @@ class NotificationManager {
     }
   }
 
-  renderNotification(notification) {
-    const isUnread = !notification.is_read;
-    const timeAgo = this.timeAgo(new Date(notification.created_at));
-    const bgClass = isUnread ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 dark:border-blue-400' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50';
-    const iconColor = isUnread ? 'text-blue-500 dark:text-blue-300' : 'text-gray-400 dark:text-gray-500';
+renderNotification(notification) {
+  const isUnread = !notification.is_read;
+  const timeAgo = this.timeAgo(new Date(notification.created_at));
+  const bgClass = isUnread ? 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 dark:border-blue-400' : 'hover:bg-gray-50 dark:hover:bg-gray-700';
+  const iconColor = isUnread ? 'text-blue-500 dark:text-blue-300' : 'text-gray-400 dark:text-gray-500';
 
-    return `
-      <div class="notification-item ${bgClass} ${isUnread ? 'unread' : ''} cursor-pointer transition-colors duration-200"
-           data-notification-id="${notification.id}"
-           ${notification.url ? `onclick="window.location.href='${notification.url}'"` : ''}>
-        <div class="flex items-start gap-3 px-5 py-4">
-          <div class="flex-shrink-0 ${iconColor} mt-0.5">
-            <i class="${notification.icon || 'fas fa-bell'} text-lg"></i>
+  // Use short_error for sidebar
+  let shortError = notification.message;
+  if (notification.type_name === 'security_alert' && notification.data && notification.data.short_error) {
+    shortError = notification.data.short_error;
+  }
+
+  return `
+    <div class="notification-item ${bgClass} ${isUnread ? 'unread' : ''} cursor-pointer transition-colors duration-200"
+         data-notification-id="${notification.id}"
+         ${notification.url ? `onclick="window.location.href='${notification.url}'"` : ''}>
+      <div class="flex items-start gap-3 px-5 py-4">
+        <div class="flex-shrink-0 ${iconColor} mt-0.5">
+          <i class="${notification.icon || 'fas fa-bell'} text-lg"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium text-gray-900 dark:text-white mb-1 line-clamp-2">
+            ${notification.title || shortError}
           </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-sm font-medium text-gray-900 dark:text-white mb-1 line-clamp-2">
-              ${notification.title || notification.message}
-            </div>
-            ${notification.title && notification.message && notification.title !== notification.message ?
-              `<div class="text-xs text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">${notification.message}</div>` : ''
-            }
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-gray-500 dark:text-gray-400">${timeAgo}</span>
-              ${isUnread ? '<span class="w-2 h-2 bg-blue-500 rounded-full"></span>' : ''}
-            </div>
+          ${notification.title && shortError && notification.title !== shortError ?
+            `<div class="text-xs text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">${shortError}</div>` : ''
+          }
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400">${timeAgo}</span>
+            ${isUnread ? '<span class="w-2 h-2 bg-blue-500 rounded-full"></span>' : ''}
           </div>
         </div>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   async markAsRead(notificationId) {
     try {

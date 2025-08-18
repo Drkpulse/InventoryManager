@@ -38,176 +38,210 @@
     </div>
   </div>
 
-  <!-- Quick Filters -->
-  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-    <div class="flex flex-wrap gap-2">
-      <button class="filter-tab active px-3 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-blue-900 transition" data-filter="all">
-        <i class="fas fa-list"></i> All Software
-      </button>
-      <button class="filter-tab px-3 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-green-100 dark:hover:bg-green-900 transition" data-filter="available">
-        <i class="fas fa-check-circle"></i> Available
-      </button>
-      <button class="filter-tab px-3 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-yellow-100 dark:hover:bg-yellow-900 transition" data-filter="full">
-        <i class="fas fa-exclamation-triangle"></i> At Limit
-      </button>
-      <button class="filter-tab px-3 py-1 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition" data-filter="unused">
-        <i class="fas fa-user-slash"></i> Unused
-      </button>
+<!-- Advanced Filters Panel -->
+<div class="mb-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+  <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" id="swFiltersToggle">
+    <div class="flex items-center gap-2">
+      <i class="fas fa-filter"></i>
+      <h3 class="font-semibold text-gray-700 dark:text-gray-200">Advanced Filters</h3>
+      <span class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold" id="swFilterBadge">0</span>
     </div>
-    <div class="flex gap-2 items-center">
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input type="text" id="licenseSearch" placeholder="Search software..." autocomplete="off"
-          class="pl-10 pr-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none transition w-56">
-      </div>
-      <select id="vendorFilter"
-        class="rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
-        <option value="">All Vendors</option>
-        <% if (software) { %>
-          <%
-            const uniqueVendors = [...new Set(software.map(sw => sw.vendor).filter(Boolean))].sort();
-            uniqueVendors.forEach(vendor => {
-          %>
-            <option value="<%= vendor %>"><%= vendor %></option>
-          <% }); %>
-        <% } %>
-      </select>
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-gray-500 dark:text-gray-400" id="swAppliedFiltersPreview">No filters applied</span>
+      <i class="fas fa-chevron-down sw-toggle-icon"></i>
     </div>
   </div>
+  <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 hidden" id="swFiltersContent">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+      <div>
+        <label for="swVendorFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Vendor</label>
+        <select id="swVendorFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <option value="">All Vendors</option>
+          <%
+            const vendors = Array.from(new Set((software || []).map(sw => sw.vendor).filter(Boolean)));
+            vendors.sort();
+            vendors.forEach(vendor => {
+          %>
+            <option value="<%= vendor %>"><%= vendor %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div>
+        <label for="swLicenseTypeFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">License Type</label>
+        <select id="swLicenseTypeFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <option value="">All Types</option>
+          <%
+            const licenseTypes = Array.from(new Set((software || []).map(sw => sw.license_type).filter(Boolean)));
+            licenseTypes.sort();
+            licenseTypes.forEach(type => {
+          %>
+            <option value="<%= type %>"><%= type %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div>
+        <label for="swStatusFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Status</label>
+        <select id="swStatusFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <option value="">All Statuses</option>
+          <option value="available">Available</option>
+          <option value="near-limit">Near Limit</option>
+          <option value="at-limit">At Limit</option>
+          <option value="unused">Unused</option>
+        </select>
+      </div>
+      <div>
+        <label for="swSearch" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Search</label>
+        <input type="text" id="swSearch" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Name, vendor, version...">
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-wrap gap-2 text-xs" id="swAppliedFilters"></div>
+      <div class="flex gap-2">
+        <button type="button" id="swApplyFilters" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-search group-hover:scale-110 transition-transform duration-300"></i> Apply Filters
+        </button>
+        <button type="button" id="swResetFilters" class="group px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-times group-hover:-rotate-12 transition-transform duration-300"></i> Reset All
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Content Section -->
   <div>
     <% if (software && software.length > 0) { %>
-      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
-              <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-laptop-code"></i> Software & Version</th>
-              <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-building"></i> Vendor</th>
-              <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-certificate"></i> License Type</th>
-              <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-users"></i> Usage</th>
-              <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-euro-sign"></i> Cost</th>
-              <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-info-circle"></i> Status</th>
-              <th class="px-4 py-3 text-left font-semibold">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% software.forEach(sw => { %>
-              <%
-                const maxLicenses = parseInt(sw.max_licenses) || 1;
-                const usedCount = parseInt(sw.employee_count) || 0;
-                const availableCount = maxLicenses - usedCount;
-                const usagePercentage = (usedCount / maxLicenses * 100).toFixed(0);
+      <div id="softwareTableBlock">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-laptop-code"></i> Software & Version</th>
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-building"></i> Vendor</th>
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-certificate"></i> License Type</th>
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-users"></i> Usage</th>
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-euro-sign"></i> Cost</th>
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-info-circle"></i> Status</th>
+                <th class="px-4 py-3 text-left font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% software.forEach(sw => { %>
+                <%
+                  const maxLicenses = parseInt(sw.max_licenses) || 1;
+                  const usedCount = parseInt(sw.employee_count) || 0;
+                  const availableCount = maxLicenses - usedCount;
+                  const usagePercentage = (usedCount / maxLicenses * 100).toFixed(0);
 
-                let statusClass = 'available';
-                let statusIcon = 'fas fa-check-circle';
-                let statusText = 'Available';
+                  let statusClass = 'available';
+                  let statusIcon = 'fas fa-check-circle';
+                  let statusText = 'Available';
 
-                if (usedCount >= maxLicenses) {
-                  statusClass = 'at-limit';
-                  statusIcon = 'fas fa-exclamation-triangle';
-                  statusText = 'At Limit';
-                } else if (usedCount > maxLicenses * 0.8) {
-                  statusClass = 'near-limit';
-                  statusIcon = 'fas fa-exclamation-circle';
-                  statusText = 'Near Limit';
-                } else if (usedCount === 0) {
-                  statusClass = 'unused';
-                  statusIcon = 'fas fa-user-slash';
-                  statusText = 'Unused';
-                }
-              %>
-              <tr class="license-row border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition"
-                  data-license-type="<%= sw.license_type || '' %>"
-                  data-vendor="<%= sw.vendor || '' %>"
-                  data-status="<%= statusClass %>"
-                  data-search="<%= (sw.name + ' ' + (sw.vendor || '') + ' ' + (sw.version || '')).toLowerCase() %>">
-                <!-- Software Name & Version -->
-                <td class="px-4 py-3">
-                  <div>
-                    <div class="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-100">
-                      <i class="fas fa-laptop-code"></i>
-                      <%= sw.name %>
-                      <% if (sw.version) { %>
-                        <span class="ml-2 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">v<%= sw.version %></span>
-                      <% } %>
-                    </div>
-                    <% if (sw.description) { %>
-                      <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate" title="<%= sw.description %>">
-                        <%= sw.description.length > 50 ? sw.description.substring(0, 50) + '...' : sw.description %>
-                      </div>
-                    <% } %>
-                  </div>
-                </td>
-                <!-- Vendor -->
-                <td class="px-4 py-3">
-                  <% if (sw.vendor) { %>
-                    <span class="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded px-2 py-0.5 text-xs text-gray-700 dark:text-gray-200">
-                      <i class="fas fa-building"></i> <%= sw.vendor %>
-                    </span>
-                  <% } else { %>
-                    <span class="text-gray-400 dark:text-gray-500">-</span>
-                  <% } %>
-                </td>
-                <!-- License Type -->
-                <td class="px-4 py-3">
-                  <% if (sw.license_type) { %>
-                    <span class="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded px-2 py-0.5 text-xs text-blue-800 dark:text-blue-200">
-                      <i class="fas fa-certificate"></i> <%= sw.license_type %>
-                    </span>
-                  <% } else { %>
-                    <span class="text-gray-400 dark:text-gray-500">-</span>
-                  <% } %>
-                </td>
-                <!-- Usage with Progress Bar -->
-                <td class="px-4 py-3">
-                  <div>
-                    <div class="flex items-center gap-1 font-semibold">
-                      <span class="text-blue-700 dark:text-blue-300"><%= usedCount %></span>
-                      <span class="mx-1 text-gray-400 dark:text-gray-500">/</span>
-                      <span class="text-gray-700 dark:text-gray-200"><%= maxLicenses %></span>
-                    </div>
-                    <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded mt-1">
-                      <div
-                        class="<%=
-                          statusClass === 'available' ? 'bg-green-500' :
-                          statusClass === 'near-limit' ? 'bg-yellow-400' :
-                          statusClass === 'at-limit' ? 'bg-red-500' :
-                          'bg-gray-400'
-                        %> h-2 rounded transition-all"
-                        style="width: <%= Math.min(usagePercentage, 100) %>%"
-                        title="<%= usagePercentage %>% used">
-                      </div>
-                    </div>
-                    <div class="text-xs mt-1 <%= statusClass === 'at-limit' || statusClass === 'near-limit' ? 'text-red-600 dark:text-red-400 font-semibold' : statusClass === 'unused' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-600 dark:text-gray-300' %>">
-                      <% if (availableCount > 0) { %>
-                        <%= availableCount %> available
-                      <% } else if (availableCount === 0) { %>
-                        At capacity
-                      <% } else { %>
-                        <%= Math.abs(availableCount) %> over limit
-                      <% } %>
-                    </div>
-                  </div>
-                </td>
-                <!-- Cost -->
-                <td class="px-4 py-3">
-                  <% if (sw.cost_per_license) { %>
+                  if (usedCount >= maxLicenses) {
+                    statusClass = 'at-limit';
+                    statusIcon = 'fas fa-exclamation-triangle';
+                    statusText = 'At Limit';
+                  } else if (usedCount > maxLicenses * 0.8) {
+                    statusClass = 'near-limit';
+                    statusIcon = 'fas fa-exclamation-circle';
+                    statusText = 'Near Limit';
+                  } else if (usedCount === 0) {
+                    statusClass = 'unused';
+                    statusIcon = 'fas fa-user-slash';
+                    statusText = 'Unused';
+                  }
+                %>
+                <tr class="license-row border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition"
+                    data-license-type="<%= sw.license_type || '' %>"
+                    data-vendor="<%= sw.vendor || '' %>"
+                    data-status="<%= statusClass %>"
+                    data-search="<%= (sw.name + ' ' + (sw.vendor || '') + ' ' + (sw.version || '')).toLowerCase() %>">
+                  <!-- Software Name & Version -->
+                  <td class="px-4 py-3">
                     <div>
-                      <div class="font-semibold text-green-700 dark:text-green-400">€<%= parseFloat(sw.cost_per_license).toFixed(2) %></div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">Total: €<%= (parseFloat(sw.cost_per_license) * maxLicenses).toFixed(2) %></div>
+                      <div class="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-100">
+                        <i class="fas fa-laptop-code"></i>
+                        <%= sw.name %>
+                        <% if (sw.version) { %>
+                          <span class="ml-2 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">v<%= sw.version %></span>
+                        <% } %>
+                      </div>
+                      <% if (sw.description) { %>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate" title="<%= sw.description %>">
+                          <%= sw.description.length > 50 ? sw.description.substring(0, 50) + '...' : sw.description %>
+                        </div>
+                      <% } %>
                     </div>
-                  <% } else { %>
-                    <span class="text-gray-400 dark:text-gray-500">-</span>
-                  <% } %>
-                </td>
-                <!-- Status -->
-                <td class="px-4 py-3">
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold
-                    <%= statusClass === 'available' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' :
-                        statusClass === 'near-limit' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' :
-                        statusClass === 'at-limit' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' :
-                        'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400' %>">
+                  </td>
+                  <!-- Vendor -->
+                  <td class="px-4 py-3">
+                    <% if (sw.vendor) { %>
+                      <span class="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded px-2 py-0.5 text-xs text-gray-700 dark:text-gray-200">
+                        <i class="fas fa-building"></i> <%= sw.vendor %>
+                      </span>
+                    <% } else { %>
+                      <span class="text-gray-400 dark:text-gray-500">-</span>
+                    <% } %>
+                  </td>
+                  <!-- License Type -->
+                  <td class="px-4 py-3">
+                    <% if (sw.license_type) { %>
+                      <span class="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded px-2 py-0.5 text-xs text-blue-800 dark:text-blue-200">
+                        <i class="fas fa-certificate"></i> <%= sw.license_type %>
+                      </span>
+                    <% } else { %>
+                      <span class="text-gray-400 dark:text-gray-500">-</span>
+                    <% } %>
+                  </td>
+                  <!-- Usage with Progress Bar -->
+                  <td class="px-4 py-3">
+                    <div>
+                      <div class="flex items-center gap-1 font-semibold">
+                        <span class="text-blue-700 dark:text-blue-300"><%= usedCount %></span>
+                        <span class="mx-1 text-gray-400 dark:text-gray-500">/</span>
+                        <span class="text-gray-700 dark:text-gray-200"><%= maxLicenses %></span>
+                      </div>
+                      <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded mt-1">
+                        <div
+                          class="<%=
+                            statusClass === 'available' ? 'bg-green-500' :
+                            statusClass === 'near-limit' ? 'bg-yellow-400' :
+                            statusClass === 'at-limit' ? 'bg-red-500' :
+                            'bg-gray-400'
+                          %> h-2 rounded transition-all"
+                          style="width: <%= Math.min(usagePercentage, 100) %>%"
+                          title="<%= usagePercentage %>% used">
+                        </div>
+                      </div>
+                      <div class="text-xs mt-1 <%= statusClass === 'at-limit' || statusClass === 'near-limit' ? 'text-red-600 dark:text-red-400 font-semibold' : statusClass === 'unused' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-600 dark:text-gray-300' %>">
+                        <% if (availableCount > 0) { %>
+                          <%= availableCount %> available
+                        <% } else if (availableCount === 0) { %>
+                          At capacity
+                        <% } else { %>
+                          <%= Math.abs(availableCount) %> over limit
+                        <% } %>
+                      </div>
+                    </div>
+                  </td>
+                  <!-- Cost -->
+                  <td class="px-4 py-3">
+                    <% if (sw.cost_per_license) { %>
+                      <div>
+                        <div class="font-semibold text-green-700 dark:text-green-400">€<%= parseFloat(sw.cost_per_license).toFixed(2) %></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Total: €<%= (parseFloat(sw.cost_per_license) * maxLicenses).toFixed(2) %></div>
+                      </div>
+                    <% } else { %>
+                      <span class="text-gray-400 dark:text-gray-500">-</span>
+                    <% } %>
+                  </td>
+                  <!-- Status -->
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold
+                      <%= statusClass === 'available' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' :
+                          statusClass === 'near-limit' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' :
+                          statusClass === 'at-limit' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' :
+                          'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400' %>">
                     <i class="<%= statusIcon %>"></i> <%= statusText %>
                   </span>
                   <% if (availableCount < 0) { %>
@@ -220,66 +254,74 @@
                 <!-- Actions -->
                 <td class="px-4 py-3">
                   <div class="flex gap-1">
+                    <!-- Edit Button -->
                     <a href="/software/<%= sw.id %>/edit"
                       class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition"
                       title="Edit Software">
                       <i class="fas fa-edit"></i>
                     </a>
-                    <% if (parseInt(sw.employee_count || 0) > 0) { %>
-                      <button type="button"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
-                        title="View Assignments (<%= sw.employee_count %> users)"
-                        onclick="showAssignments('<%= sw.id %>', '<%= sw.name %>')">
-                        <i class="fas fa-users"></i>
+                    <!-- Show Assigned Button (opens modal) -->
+                    <button type="button"
+                      class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+                      title="Show Assigned (<%= sw.employee_count %> users)"
+                      onclick="showAssignmentsModal('<%= sw.id %>', '<%= sw.name %>')">
+                      <i class="fas fa-users"></i>
+                    </button>
+                    <!-- Delete Button -->
+                    <% if (parseInt(sw.employee_count || 0) === 0) { %>
+                      <button type="button" onclick="confirmDelete('<%= sw.name %>', '<%= sw.id %>')"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition"
+                        title="Delete Software">
+                        <i class="fas fa-trash"></i>
                       </button>
                     <% } else { %>
                       <button type="button"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition"
-                        title="Assign License"
-                        onclick="assignLicense('<%= sw.id %>', '<%= sw.name %>', <%= availableCount %>)">
-                        <i class="fas fa-user-plus"></i>
+                        class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                        title="Cannot delete software with assignments" disabled>
+                        <i class="fas fa-trash"></i>
                       </button>
                     <% } %>
-                    <div class="relative group">
-                      <button type="button"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 transition dropdown-toggle"
-                        title="More Options">
-                        <i class="fas fa-ellipsis-v"></i>
-                      </button>
-                      <div class="absolute z-10 hidden group-hover:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg mt-2 right-0 min-w-[180px] dropdown-menu">
-                        <a href="/software/<%= sw.id %>/duplicate" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
-                          <i class="fas fa-copy mr-2"></i> Duplicate Software
-                        </a>
-                        <a href="/software/<%= sw.id %>/history" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200">
-                          <i class="fas fa-history mr-2"></i> View History
-                        </a>
-                        <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                        <% if (parseInt(sw.employee_count || 0) === 0) { %>
-                          <button type="button" onclick="confirmDelete('<%= sw.name %>', '<%= sw.id %>')"
-                            class="block w-full text-left px-4 py-2 hover:bg-red-100 dark:hover:bg-red-900 text-red-700 dark:text-red-300">
-                            <i class="fas fa-trash mr-2"></i> Delete Software
-                          </button>
-                        <% } else { %>
-                          <span class="block px-4 py-2 text-gray-400 dark:text-gray-500 cursor-not-allowed">
-                            <i class="fas fa-trash mr-2"></i> Delete Software
-                          </span>
-                        <% } %>
-                      </div>
-                    </div>
                   </div>
                 </td>
               </tr>
             <% }) %>
           </tbody>
         </table>
-        <!-- Results Summary -->
+        <!-- Results Summary & Pagination -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
           <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
             <i class="fas fa-laptop-code"></i>
-            Showing <strong id="visibleCount"><%= software.length %></strong> of <%= software.length %> software packages
+            Showing <strong id="visibleCount"><%= software.length %></strong> of <%= typeof totalSoftware !== 'undefined' ? totalSoftware : software.length %> software packages
           </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400 italic">
-            License limits can be changed in the edit page
+          <div class="flex items-center gap-4">
+            <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
+              <div class="flex items-center gap-2">
+                <% if (currentPage > 1) { %>
+                  <a href="?page=<%= currentPage - 1 %><%
+                    const urlParams = new URLSearchParams(req.query);
+                    urlParams.delete('page');
+                    for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>"
+                    class="pagination-link px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">« Previous</a>
+                <% } %>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Page <%= currentPage %> of <%= totalPages %></span>
+                <% if (currentPage < totalPages) { %>
+                  <a href="?page=<%= currentPage + 1 %><%
+                    const urlParams = new URLSearchParams(req.query);
+                    urlParams.delete('page');
+                    for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>"
+                    class="pagination-link px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">Next »</a>
+                <% } %>
+              </div>
+            <% } %>
+            <div>
+              <select id="softwarePerPage" class="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                <option value="10" <%= typeof perPage !== 'undefined' && perPage == 10 ? 'selected' : '' %>>10</option>
+                <option value="25" <%= typeof perPage !== 'undefined' && perPage == 25 ? 'selected' : '' %>>25</option>
+                <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
+                <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
+              </select>
+              <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">per page</span>
+            </div>
           </div>
         </div>
       </div>
@@ -302,4 +344,440 @@
     <% } %>
   </div>
 </div>
-<!-- Keep your modals and scripts as in your original file -->
+
+<!-- Modal for showing assignments (place at the end of the file, outside the table) -->
+<div id="assignmentsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+    <button type="button" id="closeAssignmentsModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 text-xl">&times;</button>
+    <h3 class="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+      <i class="fas fa-users"></i> Assigned Employees for <span id="modalSoftwareName"></span>
+    </h3>
+    <div id="assignmentsModalContent" class="overflow-x-auto"></div>
+  </div>
+</div>
+
+<script>
+function showAssignmentsModal(softwareId, softwareName) {
+  // Show modal
+  document.getElementById('assignmentsModal').style.display = 'flex';
+  document.getElementById('modalSoftwareName').textContent = softwareName;
+  // Show loading spinner or text
+  document.getElementById('assignmentsModalContent').innerHTML = '<div class="text-center py-8 text-gray-500"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+  // Fetch assignments via AJAX
+  fetch(`/software/${softwareId}/assignments`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.assignments && data.assignments.length > 0) {
+        let html = `
+          <div class="overflow-x-auto ${data.assignments.length > 10 ? 'max-h-96 overflow-y-auto' : ''}">
+            <table class="min-w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded">
+              <thead>
+                <tr>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Name</th>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Employee ID</th>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Department</th>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Assigned Date</th>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.assignments.map(a => `
+                  <tr class="border-t border-gray-100 dark:border-gray-800">
+                    <td class="px-4 py-2">
+                      <a href="/employees/${a.employee_id}" class="text-blue-600 dark:text-blue-300 hover:underline font-semibold" target="_blank" rel="noopener">
+                        ${a.employee_name}
+                      </a>
+                    </td>
+                    <td class="px-4 py-2">${a.employee_cep}</td>
+                    <td class="px-4 py-2">${a.department_name || '-'}</td>
+                    <td class="px-4 py-2">${a.assigned_date ? new Date(a.assigned_date).toISOString().slice(0,10) : '-'}</td>
+                    <td class="px-4 py-2">${a.notes || ''}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+        document.getElementById('assignmentsModalContent').innerHTML = html;
+      } else {
+        document.getElementById('assignmentsModalContent').innerHTML = '<div class="text-center py-8 text-gray-500">No employees assigned.</div>';
+      }
+    })
+    .catch(() => {
+      document.getElementById('assignmentsModalContent').innerHTML = '<div class="text-center py-8 text-red-500">Failed to load assignments.</div>';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Modal close logic
+  const assignmentsModal = document.getElementById('assignmentsModal');
+  const closeAssignmentsModal = document.getElementById('closeAssignmentsModal');
+  if (closeAssignmentsModal && assignmentsModal) {
+    closeAssignmentsModal.addEventListener('click', function() {
+      assignmentsModal.style.display = 'none';
+    });
+  }
+  if (assignmentsModal) {
+    assignmentsModal.addEventListener('click', function(e) {
+      if (e.target === assignmentsModal) {
+        assignmentsModal.style.display = 'none';
+      }
+    });
+  }
+  function ajaxLoad(url) {
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newBlock = doc.getElementById('softwareTableBlock');
+        if (newBlock) {
+          document.getElementById('softwareTableBlock').innerHTML = newBlock.innerHTML;
+          attachHandlers();
+        }
+      });
+  }
+
+  function attachHandlers() {
+    // Per-page dropdown
+    const perPageSelect = document.getElementById('softwarePerPage');
+    if (perPageSelect) {
+      perPageSelect.addEventListener('change', function() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('perPage', this.value);
+        url.searchParams.set('page', 1);
+        ajaxLoad(url);
+      });
+    }
+    // Pagination links
+    document.querySelectorAll('#softwareTableBlock .pagination-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        ajaxLoad(this.href);
+      });
+    });
+  }
+
+  attachHandlers();
+});
+
+// --- FILTERS & SEARCH LOGIC ---
+document.addEventListener('DOMContentLoaded', function() {
+  // Modal close logic
+  const assignmentsModal = document.getElementById('assignmentsModal');
+  const closeAssignmentsModal = document.getElementById('closeAssignmentsModal');
+  if (closeAssignmentsModal && assignmentsModal) {
+    closeAssignmentsModal.addEventListener('click', function() {
+      assignmentsModal.style.display = 'none';
+    });
+  }
+  if (assignmentsModal) {
+    assignmentsModal.addEventListener('click', function(e) {
+      if (e.target === assignmentsModal) {
+        assignmentsModal.style.display = 'none';
+      }
+    });
+  }
+
+  // --- FILTERS & SEARCH ---
+  const filterTabs = document.querySelectorAll('.filter-tab');
+  const vendorFilter = document.getElementById('vendorFilter');
+  const searchInput = document.getElementById('licenseSearch');
+  const tableRows = document.querySelectorAll('.license-row');
+  const visibleCount = document.getElementById('visibleCount');
+
+  function filterTable() {
+    const activeTab = document.querySelector('.filter-tab.active');
+    const status = activeTab ? activeTab.getAttribute('data-filter') : 'all';
+    const vendor = vendorFilter ? vendorFilter.value : '';
+    const search = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+    let count = 0;
+    tableRows.forEach(row => {
+      const rowStatus = row.getAttribute('data-status');
+      const rowVendor = row.getAttribute('data-vendor');
+      const rowSearch = row.getAttribute('data-search');
+
+      let show = true;
+
+      // Status filter
+      if (status !== 'all' && rowStatus !== status) show = false;
+
+      // Vendor filter
+      if (vendor && rowVendor !== vendor) show = false;
+
+      // Search filter
+      if (search && !rowSearch.includes(search)) show = false;
+
+      row.style.display = show ? '' : 'none';
+      if (show) count++;
+    });
+
+    if (visibleCount) visibleCount.textContent = count;
+  }
+
+  // Tab click
+  filterTabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      filterTabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      filterTable();
+    });
+  });
+
+  // Vendor filter
+  if (vendorFilter) {
+    vendorFilter.addEventListener('change', filterTable);
+  }
+
+  // Search input
+  if (searchInput) {
+    searchInput.addEventListener('input', filterTable);
+  }
+
+  // Initial filter
+  filterTable();
+
+  // --- AJAX pagination and per-page handlers (existing) ---
+  function ajaxLoad(url) {
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newBlock = doc.getElementById('softwareTableBlock');
+        if (newBlock) {
+          document.getElementById('softwareTableBlock').innerHTML = newBlock.innerHTML;
+          attachHandlers();
+        }
+      });
+  }
+
+  function attachHandlers() {
+    // Per-page dropdown
+    const perPageSelect = document.getElementById('softwarePerPage');
+    if (perPageSelect) {
+      perPageSelect.addEventListener('change', function() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('perPage', this.value);
+        url.searchParams.set('page', 1);
+        ajaxLoad(url);
+      });
+    }
+    // Pagination links
+    document.querySelectorAll('#softwareTableBlock .pagination-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        ajaxLoad(this.href);
+      });
+    });
+  }
+
+  attachHandlers();
+});
+
+// --- Advanced Software Filters ---
+function setupSoftwareFilters() {
+  const swFiltersToggle = document.getElementById('swFiltersToggle');
+  const swFiltersContent = document.getElementById('swFiltersContent');
+  const swFilterBadge = document.getElementById('swFilterBadge');
+  const swAppliedFiltersPreview = document.getElementById('swAppliedFiltersPreview');
+  const swAppliedFilters = document.getElementById('swAppliedFilters');
+  const swApplyFiltersBtn = document.getElementById('swApplyFilters');
+  const swResetFiltersBtn = document.getElementById('swResetFilters');
+  const swVendorFilter = document.getElementById('swVendorFilter');
+  const swLicenseTypeFilter = document.getElementById('swLicenseTypeFilter');
+  const swStatusFilter = document.getElementById('swStatusFilter');
+  const swSearch = document.getElementById('swSearch');
+  const visibleCount = document.getElementById('visibleCount');
+
+  // Store last applied filters globally
+  window.lastAppliedSoftwareFilters = window.lastAppliedSoftwareFilters || {
+    vendor: '',
+    licenseType: '',
+    status: '',
+    search: ''
+  };
+
+  function getSwFilterValues() {
+    return {
+      vendor: swVendorFilter ? swVendorFilter.value : '',
+      licenseType: swLicenseTypeFilter ? swLicenseTypeFilter.value : '',
+      status: swStatusFilter ? swStatusFilter.value : '',
+      search: swSearch ? swSearch.value.trim().toLowerCase() : ''
+    };
+  }
+
+  function countSwActiveFilters(filters) {
+    let count = 0;
+    for (const key in filters) {
+      if (filters[key]) count++;
+    }
+    return count;
+  }
+
+  function updateSwFiltersUI() {
+    const filters = getSwFilterValues();
+    const count = countSwActiveFilters(filters);
+    if (swFilterBadge) swFilterBadge.textContent = count;
+    // Preview
+    let preview = [];
+    if (filters.vendor) preview.push('Vendor');
+    if (filters.licenseType) preview.push('License Type');
+    if (filters.status) preview.push('Status');
+    if (filters.search) preview.push('Search');
+    if (swAppliedFiltersPreview) swAppliedFiltersPreview.textContent = preview.length ? preview.join(', ') : 'No filters applied';
+    // Pills
+    if (swAppliedFilters) {
+      swAppliedFilters.innerHTML = '';
+      if (filters.vendor) swAppliedFilters.innerHTML += `<span class="bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">${swVendorFilter.selectedOptions[0].text}</span>`;
+      if (filters.licenseType) swAppliedFilters.innerHTML += `<span class="bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-0.5 rounded">${swLicenseTypeFilter.selectedOptions[0].text}</span>`;
+      if (filters.status) swAppliedFilters.innerHTML += `<span class="bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 px-2 py-0.5 rounded">${swStatusFilter.selectedOptions[0].text}</span>`;
+      if (filters.search) swAppliedFilters.innerHTML += `<span class="bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-0.5 rounded">${filters.search}</span>`;
+    }
+  }
+
+  function filterSwTable(filters) {
+    const swRows = document.querySelectorAll('.license-row');
+    let count = 0;
+    swRows.forEach(row => {
+      const rowVendor = row.getAttribute('data-vendor') || '';
+      const rowLicenseType = row.getAttribute('data-license-type') || '';
+      const rowStatus = row.getAttribute('data-status') || '';
+      const rowSearch = row.getAttribute('data-search') || '';
+      let show = true;
+      if (filters.vendor && rowVendor !== filters.vendor) show = false;
+      if (filters.licenseType && rowLicenseType !== filters.licenseType) show = false;
+      if (filters.status && rowStatus !== filters.status) show = false;
+      if (filters.search && !rowSearch.includes(filters.search)) show = false;
+      row.style.display = show ? '' : 'none';
+      if (show) count++;
+    });
+    if (visibleCount) visibleCount.textContent = count;
+  }
+
+  // Toggle advanced filters panel
+  if (swFiltersToggle && swFiltersContent) {
+    swFiltersToggle.onclick = function() {
+      swFiltersContent.classList.toggle('hidden');
+      this.querySelector('.sw-toggle-icon').classList.toggle('rotate-180');
+    };
+  }
+
+  // Only apply filters when button is clicked
+  if (swApplyFiltersBtn) {
+    swApplyFiltersBtn.onclick = function() {
+      window.lastAppliedSoftwareFilters = getSwFilterValues();
+      updateSwFiltersUI();
+      filterSwTable(window.lastAppliedSoftwareFilters);
+      updatePaginationLinksWithFilters();
+    };
+  }
+
+  // Reset filters and apply
+  if (swResetFiltersBtn) {
+    swResetFiltersBtn.onclick = function() {
+      if (swVendorFilter) swVendorFilter.value = '';
+      if (swLicenseTypeFilter) swLicenseTypeFilter.value = '';
+      if (swStatusFilter) swStatusFilter.value = '';
+      if (swSearch) swSearch.value = '';
+      window.lastAppliedSoftwareFilters = getSwFilterValues();
+      updateSwFiltersUI();
+      filterSwTable(window.lastAppliedSoftwareFilters);
+      updatePaginationLinksWithFilters();
+    };
+  }
+
+  // On load, show all (no filters applied)
+  updateSwFiltersUI();
+  filterSwTable(window.lastAppliedSoftwareFilters);
+  updatePaginationLinksWithFilters();
+}
+
+// Update pagination links and per-page dropdown to include filter params as URL hash
+function updatePaginationLinksWithFilters() {
+  // Get current filters
+  const filters = window.lastAppliedSoftwareFilters || {};
+  // Build hash string
+  const hash = encodeURIComponent(JSON.stringify(filters));
+  // Update pagination links
+  document.querySelectorAll('#softwareTableBlock .pagination-link').forEach(link => {
+    let url = new URL(link.href, window.location.origin);
+    url.hash = 'filters=' + hash;
+    link.href = url.toString();
+  });
+  // Update per-page dropdown
+  const perPageSelect = document.getElementById('softwarePerPage');
+  if (perPageSelect) {
+    perPageSelect.dataset.filters = hash;
+  }
+}
+
+// On AJAX load, re-apply filters and update pagination links
+function afterSoftwareTableAjaxLoad() {
+  setupSoftwareFilters();
+  // If filters are present in hash, re-apply them
+  if (window.location.hash.startsWith('#filters=')) {
+    try {
+      const filters = JSON.parse(decodeURIComponent(window.location.hash.replace('#filters=', '')));
+      // Set filter fields
+      if (filters.vendor !== undefined) document.getElementById('swVendorFilter').value = filters.vendor;
+      if (filters.licenseType !== undefined) document.getElementById('swLicenseTypeFilter').value = filters.licenseType;
+      if (filters.status !== undefined) document.getElementById('swStatusFilter').value = filters.status;
+      if (filters.search !== undefined) document.getElementById('swSearch').value = filters.search;
+      window.lastAppliedSoftwareFilters = filters;
+      // Apply filters
+      const swApplyFiltersBtn = document.getElementById('swApplyFilters');
+      if (swApplyFiltersBtn) swApplyFiltersBtn.click();
+    } catch (e) {}
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  setupSoftwareFilters();
+
+  // Patch ajaxLoad to re-setup filters after AJAX
+  window.ajaxLoad = function(url) {
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newBlock = doc.getElementById('softwareTableBlock');
+        if (newBlock) {
+          document.getElementById('softwareTableBlock').innerHTML = newBlock.innerHTML;
+          attachHandlers();
+          afterSoftwareTableAjaxLoad();
+        }
+      });
+  };
+
+  // Patch attachHandlers to update pagination links and per-page dropdown
+  window.attachHandlers = function() {
+    // Per-page dropdown
+    const perPageSelect = document.getElementById('softwarePerPage');
+    if (perPageSelect) {
+      perPageSelect.addEventListener('change', function() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('perPage', this.value);
+        url.searchParams.set('page', 1);
+        // Add filters hash
+        if (this.dataset.filters) url.hash = 'filters=' + this.dataset.filters;
+        ajaxLoad(url);
+      });
+    }
+    // Pagination links
+    document.querySelectorAll('#softwareTableBlock .pagination-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        ajaxLoad(this.href);
+      });
+    });
+    updatePaginationLinksWithFilters();
+  };
+});
+</script>
+
+<style>
+.max-h-96 { max-height: 24rem; }
+</style>

@@ -19,6 +19,15 @@ router.get('/statuses/:id/edit', hasPermission('references.edit'), referenceCont
 router.post('/statuses/:id', hasPermission('references.edit'), referenceController.editStatus);
 router.post('/statuses/:id/delete', hasPermission('references.delete'), referenceController.deleteStatus);
 
+// Department routes
+router.get('/departments', hasPermission('departments.view'), referenceController.departments);
+router.get('/departments/new', hasPermission('departments.create'), referenceController.showAddDepartmentForm);
+router.post('/departments', hasPermission('departments.create'), referenceController.addDepartment);
+router.get('/departments/:id', hasPermission('departments.view'), referenceController.showDepartment);
+router.get('/departments/:id/edit', hasPermission('departments.edit'), referenceController.showEditDepartmentForm);
+router.post('/departments/:id', hasPermission('departments.edit'), referenceController.editDepartment);
+router.post('/departments/:id/delete', hasPermission('departments.delete'), referenceController.deleteDepartment);
+
 // Location routes
 router.get('/locations', hasPermission('references.view'), referenceController.locations);
 router.get('/locations/add', hasPermission('references.create'), referenceController.showAddLocationForm);

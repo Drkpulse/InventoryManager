@@ -10,7 +10,10 @@ const {
   updateNotificationSettings,
   broadcastNotification,
   getNotificationHistory,
-  checkWarrantyExpiration
+  checkWarrantyExpiration,
+  markAsUnread,
+  deleteNotification,
+  deleteAllNotifications
 } = require('../controllers/notificationController');
 
 // Get user notifications (API endpoint)
@@ -160,5 +163,14 @@ router.post('/test', isAdmin, async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to create test notification' });
   }
 });
+
+// Mark notification as unread
+router.put('/:id/unread', isAuthenticated, markAsUnread);
+
+// Delete notification
+router.delete('/:id', isAuthenticated, deleteNotification);
+
+// Delete all notifications
+router.delete('/delete-all', isAuthenticated, deleteAllNotifications);
 
 module.exports = router;

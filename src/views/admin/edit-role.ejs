@@ -77,36 +77,39 @@
 			  </div>
 
 			  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<% Object.keys(permissionsByModule).forEach(module => { %>
-				  <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-					<h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
-					  <i class="fas fa-folder"></i>
-					  <%= module.charAt(0).toUpperCase() + module.slice(1).replace('_', ' ') %>
-					  <button type="button" class="module-toggle text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition" data-module="<%= module %>">
-						Toggle All
-					  </button>
-					</h3>
-					<div class="space-y-2 max-h-48 overflow-y-auto">
-					  <% permissionsByModule[module].forEach(permission => { %>
-						<div class="flex items-start gap-2">
-						  <input type="checkbox" id="perm_<%= permission.id %>" name="selectedPermissions" value="<%= permission.id %>"
-							class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded permission-checkbox"
-							data-module="<%= module %>"
-							<%= rolePermissionIds.includes(permission.id) ? 'checked' : '' %>>
-						  <div class="flex-1">
-							<label for="perm_<%= permission.id %>" class="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
-							  <%= permission.display_name %>
-							</label>
-							<% if (permission.description) { %>
-							  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= permission.description %></p>
-							<% } %>
-						  </div>
-						</div>
-					  <% }) %>
-					</div>
-				  </div>
-				<% }) %>
-			  </div>
+				<% Object.keys(permissionsByModule).forEach(module => {
+                     // Only show "developer" module if user has dev.view permission
+                     if (module === 'developer' && !(typeof can === 'function' && can('dev.view'))) return;
+                %>
+                  <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
+                      <i class="fas fa-folder"></i>
+                      <%= module.charAt(0).toUpperCase() + module.slice(1).replace('_', ' ') %>
+                      <button type="button" class="module-toggle text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition" data-module="<%= module %>">
+                        Toggle All
+                      </button>
+                    </h3>
+                    <div class="space-y-2 max-h-48 overflow-y-auto">
+                      <% permissionsByModule[module].forEach(permission => { %>
+                        <div class="flex items-start gap-2">
+                          <input type="checkbox" id="perm_<%= permission.id %>" name="selectedPermissions" value="<%= permission.id %>"
+                            class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded permission-checkbox"
+                            data-module="<%= module %>"
+                            <%= rolePermissionIds.includes(permission.id) ? 'checked' : '' %>>
+                          <div class="flex-1">
+                            <label for="perm_<%= permission.id %>" class="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                              <%= permission.display_name %>
+                            </label>
+                            <% if (permission.description) { %>
+                              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= permission.description %></p>
+                            <% } %>
+                          </div>
+                        </div>
+                      <% }) %>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
 			<% } else { %>
 			  <p class="text-gray-500 dark:text-gray-400 text-sm">No permissions available</p>
 			<% } %>

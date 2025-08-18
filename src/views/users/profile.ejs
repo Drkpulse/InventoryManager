@@ -1,41 +1,43 @@
-<h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">My Profile</h1>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">My Profile</h1>
 
-<form method="POST" action="/users/profile" class="max-w-lg mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-  <div class="mb-4">
-    <label for="name" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Name</label>
-    <input type="text" id="name" name="name" value="<%= profile.name %>" required
-      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-  </div>
+  <form method="POST" action="/users/profile" class="max-w-lg mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+    <div class="mb-4">
+      <label for="name" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Name</label>
+      <input type="text" id="name" name="name" value="<%= profile.name %>" required
+        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+    </div>
 
-  <div class="mb-4">
-    <label for="email" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Email</label>
-    <input type="email" id="email" name="email" value="<%= profile.email %>" required
-      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-  </div>
+    <div class="mb-4">
+      <label for="email" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Email</label>
+      <input type="email" id="email" name="email" value="<%= profile.email %>" required
+        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+    </div>
 
-  <!-- Additional Profile Information -->
-  <div class="mb-4">
-    <label class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">CEP ID</label>
-    <input type="text" value="<%= profile.cep_id || '' %>" disabled
-      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed">
-  </div>
-  <div class="mb-4">
-    <label class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Account Created</label>
-    <input type="text" value="<%= profile.created_at ? profile.created_at.toLocaleString ? profile.created_at.toLocaleString() : profile.created_at : '' %>" disabled
-      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed">
-  </div>
-  <!-- End Additional Profile Information -->
+    <!-- Additional Profile Information -->
+    <div class="mb-4">
+      <label class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">CEP ID</label>
+      <input type="text" value="<%= profile.cep_id || '' %>" disabled
+        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed">
+    </div>
+    <div class="mb-4">
+      <label class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Account Created</label>
+      <input type="text" value="<%= profile.created_at ? profile.created_at.toLocaleString ? profile.created_at.toLocaleString() : profile.created_at : '' %>" disabled
+        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed">
+    </div>
+    <!-- End Additional Profile Information -->
 
-  <div class="mb-6">
-    <label for="roles" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Roles</label>
-    <input type="text" id="roles"
-      value="<%= Array.isArray(userRoles) && userRoles.length ? userRoles.join(', ') : (Array.isArray(profile.roles) ? profile.roles.join(', ') : (profile.roleNames ? profile.roleNames.join(', ') : (profile.role || ''))) %>"
-      disabled
-      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed">
-  </div>
+    <div class="mb-6">
+      <label for="roles" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Roles</label>
+      <input type="text" id="roles"
+        value="<%= Array.isArray(userRoles) && userRoles.length ? userRoles.join(', ') : (Array.isArray(profile.roles) ? profile.roles.join(', ') : (profile.roleNames ? profile.roleNames.join(', ') : (profile.role || ''))) %>"
+        disabled
+        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed">
+    </div>
 
-  <div>
-    <button type="submit"
-      class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">Update Profile</button>
-  </div>
-</form>
+    <div>
+      <button type="submit"
+        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">Update Profile</button>
+    </div>
+  </form>
+</div>

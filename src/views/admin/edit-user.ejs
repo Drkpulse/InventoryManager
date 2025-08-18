@@ -282,14 +282,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function checkCepIdAvailability(cepId) {
-    fetch('/api/check-cep-availability', {
+    fetch('/admin/check-cep-availability', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         cep_id: cepId,
-        exclude_user_id: '<%= editUser.id %>' // Exclude current user from check
+        exclude_user_id: '<%= editUser.id %>'
       })
     })
     .then(response => response.json())

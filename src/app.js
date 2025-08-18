@@ -4,7 +4,6 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const routes = require('./routes');
-const i18n = require('./config/i18n');
 const { isAuthenticated } = require('./middleware/auth');
 const { translationMiddleware, languageSwitcher } = require('./middleware/translationMiddleware');
 const app = express();
@@ -20,6 +19,7 @@ const softwareRoutes = require('./routes/softwareRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const translations = require('./utils/translations');
 const { loadUserPermissions, addPermissionHelpers } = require('./middleware/permissions');
+const { requireValidLicense } = require('./middleware/licenseValidator');
 
 // Add notification routes and middleware
 const notificationRoutes = require('./routes/notificationRoutes');
@@ -65,6 +65,9 @@ app.use(flash());
 
 app.use((req, res, next) => {
   res.locals.messages = req.flash();
+  res.locals.can = typeof req.can === 'function'
+    ? req.can
+    : () => false;
   next();
 });
 
@@ -126,9 +129,6 @@ app.use(convertFlashToNotifications);
 // Add permission helper functions
 app.use(addPermissionHelpers);
 
-// Add i18n middleware
-app.use(i18n.init);
-
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -142,11 +142,22 @@ app.get('/health', (req, res) => {
 // Add admin routes
 const adminRoutes = require('./routes/adminRoutes');
 
+// Auth routes (no license check needed for login/logout)
+app.use('/auth', authRoutes);
+
+// Admin routes (admins can access even without valid license)
+app.use('/admin', adminRoutes);
+
+// Add license validation middleware for all protected routes
+// This will check license for non-admin users before allowing access
+app.use(requireValidLicense);
+
+// API routes with license check
+app.use('/api', apiRoutes);
+
 // Routes
 app.use('/notifications', isAuthenticated, notificationRoutes);
 app.use('/api', apiRoutes);
-app.use('/auth', authRoutes);
-app.use('/admin', adminRoutes);
 app.use('/items', itemRoutes);
 app.use('/employees', employeeRoutes);
 app.use('/reports', reportRoutes);
@@ -166,26 +177,61 @@ app.use((req, res) => {
   });
 });
 
+// Initialize license validation on startup
+const { licenseValidator } = require('./middleware/licenseValidator');
+
+// Check license on startup
+licenseValidator.checkLicense().then(licenseStatus => {
+  console.log('License Status:', licenseStatus.status);
+  if (licenseStatus.status === 'active') {
+    console.log(`Licensed to: ${licenseStatus.company}`);
+    console.log(`Valid until: ${licenseStatus.valid_until}`);
+  } else {
+    console.warn('License Issue:', licenseStatus.msg);
+    console.warn('Only administrator access will be available.');
+  }
+}).catch(err => {
+  console.error('License check failed:', err.message);
+});
+
+const DEVELOPER_USER_ID = 3;
+
 // Global error handler with notification support
 app.use((err, req, res, next) => {
   console.error('Global error handler:', err.stack);
 
-  // Create error notification for authenticated users
-  if (req.session?.user?.id && notificationSystemReady) {
+  if (notificationSystemReady) {
     try {
       req.createNotification({
         type_name: 'security_alert',
-        user_id: req.session.user.id,
+        user_id: DEVELOPER_USER_ID,
         title: 'System Error Occurred',
-        message: 'An error occurred while processing your request. Our team has been notified.',
+        message: err.message, // Short error for sidebar
         data: {
-          error: err.message,
+          short_error: err.message,
+          full_error: `${err.message}\n\n${err.stack}\n\nURL: ${req.url}\nMethod: ${req.method}\nUser: ${req.session?.user?.id || null}`,
           stack: err.stack,
           url: req.url,
           method: req.method,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          user: req.session?.user?.id || null
         }
       });
+
+      // Optionally, notify the user with a generic message (no error details)
+      if (req.session?.user?.id && req.session.user.id !== DEVELOPER_USER_ID) {
+        req.createNotification({
+          type_name: 'security_alert',
+          user_id: req.session.user.id,
+          title: 'System Error Occurred',
+          message: 'An error occurred while processing your request. Our team has been notified.',
+          data: {
+            url: req.url,
+            method: req.method,
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
     } catch (notificationError) {
       console.error('Failed to create error notification:', notificationError);
     }

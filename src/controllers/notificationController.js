@@ -599,3 +599,43 @@ exports.createBroadcastNotification = createBroadcastNotification;
 exports.checkWarrantyExpiration = checkWarrantyExpiration;
 exports.createItemAssignmentNotification = createItemAssignmentNotification;
 exports.initializeNotificationSystem = initializeNotificationSystem;
+exports.markAsUnread = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.session.user.id;
+    await db.query(
+      'UPDATE notifications SET is_read = FALSE, read_at = NULL WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to mark as unread' });
+  }
+};
+
+exports.deleteNotification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.session.user.id;
+    await db.query(
+      'DELETE FROM notifications WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to delete notification' });
+  }
+};
+
+exports.deleteAllNotifications = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    await db.query(
+      'DELETE FROM notifications WHERE user_id = $1',
+      [userId]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to delete all notifications' });
+  }
+};

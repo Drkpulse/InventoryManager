@@ -129,6 +129,7 @@ router.get(
         totalEmployees,
         perPage,
         currentFilters: req.query,
+        req,
         showDeletedMessage: req.query.deleted === 'true',
         user: req.session.user
       });
@@ -201,7 +202,8 @@ router.get(
         itemsPerPage: perPage,
         profileChanges,
         itemActivities,
-        // ...any other locals...
+        req,
+        user: req.session.user
       });
     } catch (error) {
       console.error('Error fetching employee history:', error);

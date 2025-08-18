@@ -1049,3 +1049,193 @@ exports.updateStatus = async (req, res) => {
     res.status(500).render('error', { error: 'Failed to update status' });
   }
 };
+
+// Departments
+
+exports.departments = async (req, res) => {
+  try {
+    // Get departments with employee counts
+    const result = await db.query(`
+      SELECT d.*, COUNT(e.id) as employee_count
+      FROM departments d
+      LEFT JOIN employees e ON d.id = e.dept_id AND e.left_date IS NULL
+      GROUP BY d.id
+      ORDER BY d.name
+    `);
+
+    res.render('layout', {
+      title: 'Departments',
+      body: 'references/departments',
+      departments: result.rows,
+      user: req.session.user,
+      isDepartmentPage: true
+    });
+  } catch (error) {
+    console.error('Error fetching departments:', error);
+    res.status(500).render('layout', {
+      title: 'Error',
+      body: 'error',
+      message: 'Could not fetch departments',
+      user: req.session.user
+    });
+  }
+};
+
+exports.showDepartment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get department details
+    const deptResult = await db.query('SELECT * FROM departments WHERE id = $1', [id]);
+
+    if (deptResult.rows.length === 0) {
+      req.flash('error', 'Department not found');
+      return res.redirect('/references/departments');
+    }
+
+    // Get employees in department
+    const employeesResult = await db.query(`
+      SELECT e.*, l.name as location_name
+      FROM employees e
+      LEFT JOIN locations l ON e.location_id = l.id
+      WHERE e.dept_id = $1 AND e.left_date IS NULL
+      ORDER BY e.name
+    `, [id]);
+
+    res.render('layout', {
+      title: deptResult.rows[0].name + ' Department',
+      body: 'references/show-departments',
+      department: deptResult.rows[0],
+      employees: employeesResult.rows,
+      user: req.session.user,
+      isDepartmentPage: true
+    });
+  } catch (error) {
+    console.error('Error fetching department:', error);
+    res.status(500).render('layout', {
+      title: 'Error',
+      body: 'error',
+      message: 'Could not fetch department',
+      user: req.session.user
+    });
+  }
+};
+
+exports.showAddDepartmentForm = (req, res) => {
+  res.render('layout', {
+    title: 'Add New Department',
+    body: 'references/add-departments',
+    user: req.session.user,
+    isDepartmentPage: true
+  });
+};
+
+exports.addDepartment = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    // Enhanced validation
+    if (!name || name.trim() === '') {
+      req.flash('error', 'Department name is required');
+      return res.render('layout', {
+        title: 'Add New Department',
+        body: 'references/add-departments',
+        user: req.session.user,
+        isDepartmentPage: true
+      });
+    }
+
+    const result = await db.query(
+      'INSERT INTO departments (name) VALUES ($1) RETURNING *',
+      [name.trim()]
+    );
+
+    req.flash('success', 'Department created successfully');
+    res.redirect('/references/departments');
+  } catch (error) {
+    console.error('Error creating department:', error);
+
+    // Handle unique constraint violation
+    if (error.code === '23505') {
+      req.flash('error', 'A department with this name already exists');
+      return res.render('layout', {
+        title: 'Add New Department',
+        body: 'references/add-departments',
+        user: req.session.user,
+        isDepartmentPage: true
+      });
+    }
+
+    req.flash('error', 'Failed to create department');
+    res.render('layout', {
+      title: 'Add New Department',
+      body: 'references/add-departments',
+      user: req.session.user,
+      isDepartmentPage: true
+    });
+  }
+};
+
+exports.showEditDepartmentForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await db.query('SELECT * FROM departments WHERE id = $1', [id]);
+
+    if (result.rows.length === 0) {
+      req.flash('error', 'Department not found');
+      return res.redirect('/references/departments');
+    }
+
+    res.render('layout', {
+      title: 'Edit Department',
+      body: 'references/edit-departments',
+      department: result.rows[0],
+      user: req.session.user,
+      isDepartmentPage: true
+    });
+  } catch (error) {
+    console.error('Error fetching department:', error);
+    req.flash('error', 'Could not fetch department');
+    res.redirect('/references/departments');
+  }
+};
+
+exports.editDepartment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    await db.query('UPDATE departments SET name = $1 WHERE id = $2', [name, id]);
+
+    req.flash('success', 'Department updated successfully');
+    res.redirect('/references/departments');
+  } catch (error) {
+    console.error('Error updating department:', error);
+    req.flash('error', 'Failed to update department');
+    res.redirect(`/references/departments/${req.params.id}/edit`);
+  }
+};
+
+exports.deleteDepartment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if there are employees in this department
+    const employeeCheck = await db.query('SELECT COUNT(*) as count FROM employees WHERE dept_id = $1', [id]);
+
+    if (parseInt(employeeCheck.rows[0].count) > 0) {
+      req.flash('error', 'Cannot delete department: There are employees assigned to this department');
+      return res.redirect('/references/departments');
+    }
+
+    await db.query('DELETE FROM departments WHERE id = $1', [id]);
+
+    req.flash('success', 'Department deleted successfully');
+    res.redirect('/references/departments');
+  } catch (error) {
+    console.error('Error deleting department:', error);
+    req.flash('error', 'Failed to delete department');
+    res.redirect('/references/departments');
+  }
+};

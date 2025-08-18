@@ -85,13 +85,6 @@
       <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
         <i class="fas fa-history mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('history') %>
       </a>
-      <button type="button" onclick="printAssetLabel()" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
-        <i class="fas fa-print mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('print_label') %>
-      </button>
-      <form style="display: inline;" method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/delete" class="inline-form" onsubmit="return confirmDelete('<%= item.name %>');">
-        <button type="submit" class="group px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
-          <i class="fas fa-trash mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('delete') %>
-        </button>
       </form>
     </div>
   </div>

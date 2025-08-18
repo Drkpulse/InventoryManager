@@ -231,6 +231,7 @@
   "acquired": "Adquirido",
   "showing": "A mostrar",
   "assets": "ativos",
+  "Assets": "Ativos",
   "no_assets_match": "Nenhum ativo corresponde aos filtros.",
   "clear_all_filters": "Limpar todos os filtros",
   "add_first_asset": "Adicionar primeiro ativo",
@@ -459,5 +460,8 @@
 "assets_report": "Relatório de Ativos",
 "monthly": "Mensal",
 "annual": "Anual",
-"total": "Total"
+"total": "Total",
+"admin.license": "Licença",
+"mark_all_as_read": "Marcar tudo como lido",
+"view_all_notifications": "Ver todas as notificações"
 }

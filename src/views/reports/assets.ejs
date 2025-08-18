@@ -256,21 +256,21 @@
       <div class="flex flex-wrap gap-2">
         <select id="tableTypeFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
           <option value="">All Types</option>
-          <% topTypes.forEach(([type, count]) => { %>
-            <option value="<%= type %>"><%= type %> (<%= count %>)</option>
+          <% allTypes.forEach(type => { %>
+            <option value="<%= type.name %>"><%= type.name %></option>
           <% }) %>
         </select>
         <select id="tableStatusFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-          <option value="">All Status</option>
-          <option value="assigned">Assigned</option>
-          <option value="unassigned">Unassigned</option>
+          <option value="">All Statuses</option>
+          <% allStatuses.forEach(status => { %>
+            <option value="<%= status.name.toLowerCase() %>"><%= status.name %></option>
+          <% }) %>
         </select>
         <select id="tableConditionFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
           <option value="">All Conditions</option>
-          <option value="active">Active</option>
-          <option value="maintenance">Maintenance</option>
-          <option value="retired">Retired</option>
-          <option value="damaged">Damaged</option>
+          <% allConditions.forEach(condition => { %>
+            <option value="<%= condition %>"><%= condition.charAt(0).toUpperCase() + condition.slice(1) %></option>
+          <% }) %>
         </select>
         <button onclick="exportTableData()" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition">
           <i class="fas fa-download mr-2"></i> Export Table
@@ -439,283 +439,46 @@
     </div>
   </div>
 
-  <!-- Key Insights Section -->
+  <!-- Asset Summary Breakdown -->
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-10">
     <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2 mb-4">
-      <i class="fas fa-lightbulb"></i> Key Insights & Actionable Recommendations
+      <i class="fas fa-info-circle"></i> Asset Summary Breakdown
     </h2>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      <!-- Utilization Analysis -->
-      <% if (utilizationRate < 70) { %>
-        <div class="insight-card warning">
-          <div class="insight-icon">
-            <i class="fas fa-chart-line"></i>
-          </div>
-          <div class="insight-content">
-            <h4>Improve Asset Utilization</h4>
-            <p><strong><%= utilizationRate.toFixed(1) %>%</strong> utilization rate is below optimal (70-85%).</p>
-            <div class="insight-actions">
-              <strong>Actions:</strong>
-              <ul>
-                <li>Review <%= unassignedAssets %> unassigned assets for potential assignment</li>
-                <li>Consider redistributing underutilized assets</li>
-                <li>Evaluate disposal of obsolete equipment</li>
-              </ul>
-            </div>
-            <div class="insight-priority high">
-              <i class="fas fa-exclamation-circle"></i> High Priority
-            </div>
-          </div>
-        </div>
-      <% } else if (utilizationRate > 95) { %>
-        <div class="insight-card success">
-          <div class="insight-icon">
-            <i class="fas fa-trophy"></i>
-          </div>
-          <div class="insight-content">
-            <h4>Excellent Utilization Rate</h4>
-            <p><strong><%= utilizationRate.toFixed(1) %>%</strong> utilization is excellent! Consider planning for future growth.</p>
-            <div class="insight-actions">
-              <strong>Recommendations:</strong>
-              <ul>
-                <li>Plan for additional asset procurement</li>
-                <li>Monitor for potential over-allocation</li>
-                <li>Consider backup equipment for critical assets</li>
-              </ul>
-            </div>
-            <div class="insight-priority low">
-              <i class="fas fa-check-circle"></i> Monitoring
-            </div>
-          </div>
-        </div>
-      <% } %>
-
-      <!-- Asset Age Analysis -->
-      <% if (ageBreakdown['5+'] > totalAssets * 0.3) { %>
-        <div class="insight-card info">
-          <div class="insight-icon">
-            <i class="fas fa-calendar-times"></i>
-          </div>
-          <div class="insight-content">
-            <h4>Asset Replacement Planning</h4>
-            <p><strong><%= ageBreakdown['5+'] %> assets</strong> are over 5 years old (<%= (ageBreakdown['5+'] / totalAssets * 100).toFixed(1) %>% of inventory).</p>
-            <div class="insight-actions">
-              <strong>Recommendations:</strong>
-              <ul>
-                <li>Create a 3-year replacement roadmap</li>
-                <li>Budget for technology refresh cycles</li>
-                <li>Prioritize mission-critical aging equipment</li>
-                <li>Consider maintenance cost vs replacement value</li>
-              </ul>
-            </div>
-            <div class="insight-priority medium">
-              <i class="fas fa-clock"></i> Plan Ahead
-            </div>
-          </div>
-        </div>
-      <% } %>
-
-      <!-- Maintenance Issues -->
-      <% if ((conditionBreakdown['maintenance'] || 0) > 0) { %>
-        <div class="insight-card warning">
-          <div class="insight-icon">
-            <i class="fas fa-tools"></i>
-          </div>
-          <div class="insight-content">
-            <h4>Maintenance Attention Required</h4>
-            <p><strong><%= conditionBreakdown['maintenance'] %> assets</strong> are currently under maintenance (<%= maintenanceRate.toFixed(1) %>%).</p>
-            <div class="insight-actions">
-              <strong>Immediate Actions:</strong>
-              <ul>
-                <li>Review maintenance tickets for completion timelines</li>
-                <li>Ensure adequate spare/backup equipment</li>
-                <% if (maintenanceRate > 15) { %>
-                  <li>Investigate recurring maintenance patterns</li>
-                  <li>Consider equipment upgrade evaluation</li>
-                <% } %>
-              </ul>
-            </div>
-            <div class="insight-priority high">
-              <i class="fas fa-wrench"></i> Action Required
-            </div>
-          </div>
-        </div>
-      <% } %>
-
-      <!-- Damaged Assets -->
-      <% if ((conditionBreakdown['damaged'] || 0) > 0) { %>
-        <div class="insight-card danger">
-          <div class="insight-icon">
-            <i class="fas fa-exclamation-triangle"></i>
-          </div>
-          <div class="insight-content">
-            <h4>Damaged Assets Need Resolution</h4>
-            <p><strong><%= conditionBreakdown['damaged'] %> assets</strong> are marked as damaged and require immediate attention.</p>
-            <div class="insight-actions">
-              <strong>Urgent Actions:</strong>
-              <ul>
-                <li>Assess repair feasibility and costs</li>
-                <li>Determine replacement vs repair economics</li>
-                <li>Update insurance claims if applicable</li>
-                <li>Consider impact on operations</li>
-              </ul>
-            </div>
-            <div class="insight-priority critical">
-              <i class="fas fa-bolt"></i> Critical
-            </div>
-          </div>
-        </div>
-      <% } %>
-
-      <!-- High Value Assets -->
-      <% if (highValueAssets > 0) { %>
-        <div class="insight-card primary">
-          <div class="insight-icon">
-            <i class="fas fa-shield-alt"></i>
-          </div>
-          <div class="insight-content">
-            <h4>High-Value Asset Protection</h4>
-            <p><strong><%= highValueAssets %> assets</strong> valued over €5,000 represent significant investment.</p>
-            <div class="insight-actions">
-              <strong>Protection Measures:</strong>
-              <ul>
-                <li>Verify insurance coverage adequacy</li>
-                <li>Implement enhanced security protocols</li>
-                <li>Schedule regular condition assessments</li>
-                <li>Consider extended warranty options</li>
-              </ul>
-            </div>
-            <div class="insight-priority medium">
-              <i class="fas fa-lock"></i> Risk Management
-            </div>
-          </div>
-        </div>
-      <% } %>
-
-      <!-- Asset Concentration Risk -->
-      <% if (topTypes.length > 0 && topTypes[0][1] > totalAssets * 0.4) { %>
-        <div class="insight-card info">
-          <div class="insight-icon">
-            <i class="fas fa-balance-scale"></i>
-          </div>
-          <div class="insight-content">
-            <h4>Asset Portfolio Diversification</h4>
-            <p><strong><%= topTypes[0][0] %></strong> represents <%= (topTypes[0][1] / totalAssets * 100).toFixed(1) %>% of your inventory.</p>
-            <div class="insight-actions">
-              <strong>Risk Mitigation:</strong>
-              <ul>
-                <li>Evaluate single-supplier dependency risks</li>
-                <li>Consider alternative technology options</li>
-                <li>Develop contingency plans for critical systems</li>
-                <li>Review standardization vs diversification balance</li>
-              </ul>
-            </div>
-            <div class="insight-priority medium">
-              <i class="fas fa-chart-pie"></i> Portfolio Review
-            </div>
-          </div>
-        </div>
-      <% } %>
-
-      <!-- Unassigned Value Opportunity -->
-      <% if (unassignedValue > 5000) { %>
-        <div class="insight-card warning">
-          <div class="insight-icon">
-            <i class="fas fa-money-bill-wave"></i>
-          </div>
-          <div class="insight-content">
-            <h4>Unlock Asset Value</h4>
-            <p><strong>€<%= unassignedValue.toLocaleString() %></strong> in unassigned assets represents untapped potential.</p>
-            <div class="insight-actions">
-              <strong>Value Optimization:</strong>
-              <ul>
-                <li>Identify assignment opportunities for idle assets</li>
-                <li>Consider asset sharing between departments</li>
-                <li>Evaluate disposal of truly obsolete items</li>
-                <li>Update asset assignment procedures</li>
-              </ul>
-            </div>
-            <div class="insight-priority medium">
-              <i class="fas fa-chart-line"></i> ROI Opportunity
-            </div>
-          </div>
-        </div>
-      <% } %>
-
-      <!-- Department Imbalance -->
-      <% if (topDepartments.length > 0 && topDepartments[0][1] > assignedAssets * 0.5) { %>
-        <div class="insight-card info">
-          <div class="insight-icon">
-            <i class="fas fa-building"></i>
-          </div>
-          <div class="insight-content">
-            <h4>Department Asset Distribution</h4>
-            <p><strong><%= topDepartments[0][0] %></strong> holds <%= (topDepartments[0][1] / assignedAssets * 100).toFixed(1) %>% of assigned assets.</p>
-            <div class="insight-actions">
-              <strong>Balance Considerations:</strong>
-              <ul>
-                <li>Review department-specific asset needs</li>
-                <li>Consider cross-department sharing opportunities</li>
-                <li>Evaluate budget allocation fairness</li>
-                <li>Plan for department growth/contraction</li>
-              </ul>
-            </div>
-            <div class="insight-priority low">
-              <i class="fas fa-balance-scale"></i> Review
-            </div>
-          </div>
-        </div>
-      <% } %>
-
-      <!-- Success Story -->
-      <% if (utilizationRate >= 80 && utilizationRate <= 95 && maintenanceRate < 10 && (conditionBreakdown['damaged'] || 0) === 0) { %>
-        <div class="insight-card success">
-          <div class="insight-icon">
-            <i class="fas fa-star"></i>
-          </div>
-          <div class="insight-content">
-            <h4>Excellent Asset Management</h4>
-            <p>Your asset portfolio shows strong management with optimal utilization and low maintenance issues.</p>
-            <div class="insight-actions">
-              <strong>Continue Best Practices:</strong>
-              <ul>
-                <li>Maintain current assignment processes</li>
-                <li>Share success metrics with stakeholders</li>
-                <li>Consider this as a model for other asset categories</li>
-                <li>Plan for sustainable growth</li>
-              </ul>
-            </div>
-            <div class="insight-priority low">
-              <i class="fas fa-thumbs-up"></i> Keep It Up!
-            </div>
-          </div>
-        </div>
-      <% } %>
-
-      <!-- No Major Issues -->
-      <% if (utilizationRate >= 70 && maintenanceRate < 10 && (conditionBreakdown['damaged'] || 0) === 0 && ageBreakdown['5+'] <= totalAssets * 0.3) { %>
-        <div class="insight-card success">
-          <div class="insight-icon">
-            <i class="fas fa-check-double"></i>
-          </div>
-          <div class="insight-content">
-            <h4>Healthy Asset Portfolio</h4>
-            <p>Your asset management shows no critical issues. Focus on continuous improvement.</p>
-            <div class="insight-actions">
-              <strong>Optimization Opportunities:</strong>
-              <ul>
-                <li>Set up automated monitoring alerts</li>
-                <li>Implement predictive maintenance</li>
-                <li>Consider asset lifecycle automation</li>
-                <li>Plan for future technology trends</li>
-              </ul>
-            </div>
-            <div class="insight-priority low">
-              <i class="fas fa-cog"></i> Optimize
-            </div>
-          </div>
-        </div>
-      <% } %>
+      <!-- Top Asset Types -->
+      <div>
+        <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+          <i class="fas fa-tags"></i> Top Asset Types
+        </h3>
+        <ul class="text-sm text-gray-600 dark:text-gray-300">
+          <% topTypes.forEach(([type, count]) => { %>
+            <li><strong><%= type %></strong>: <%= count %> (<%= (count / totalAssets * 100).toFixed(1) %>%)</li>
+          <% }) %>
+        </ul>
+      </div>
+      <!-- Top Departments -->
+      <div>
+        <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+          <i class="fas fa-building"></i> Top Departments by Asset Count
+        </h3>
+        <ul class="text-sm text-gray-600 dark:text-gray-300">
+          <% topDepartments.forEach(([dept, count]) => { %>
+            <li><strong><%= dept %></strong>: <%= count %> (<%= assignedAssets > 0 ? (count / assignedAssets * 100).toFixed(1) : 0 %>%)</li>
+          <% }) %>
+        </ul>
+      </div>
+      <!-- Unassigned Value & Maintenance -->
+      <div>
+        <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+          <i class="fas fa-euro-sign"></i> Unassigned & Maintenance
+        </h3>
+        <ul class="text-sm text-gray-600 dark:text-gray-300">
+          <li><strong>Unassigned Assets:</strong> <%= unassignedAssets %> (<%= unassignedValue > 0 ? '€' + unassignedValue.toLocaleString() : '€0' %>)</li>
+          <li><strong>Under Maintenance:</strong> <%= conditionBreakdown['maintenance'] || 0 %></li>
+          <li><strong>Damaged:</strong> <%= conditionBreakdown['damaged'] || 0 %></li>
+          <li><strong>Retired:</strong> <%= conditionBreakdown['retired'] || 0 %></li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>

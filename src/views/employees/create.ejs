@@ -57,9 +57,9 @@
           <div>
             <label for="cep" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('employee_id') %> <span class="text-red-500">*</span></label>
             <input type="text" id="cep" name="cep"
-              value="<%= typeof formData !== 'undefined' ? formData.cep : '' %>"
+              value="<%= typeof formData !== 'undefined' ? formData.cep : 'CEP' %>"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              required placeholder="e.g., EMP001, CEP123">
+              required placeholder="e.g. CEP123">
             <div class="text-xs mt-1" id="cepValidation"></div>
             <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
               <i class="fas fa-id-badge"></i>

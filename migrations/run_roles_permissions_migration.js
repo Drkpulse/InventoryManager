@@ -155,12 +155,15 @@ async function executeDirectMigration() {
     ['users.edit', 'Edit Users', 'Can edit user information', 'users'],
     ['users.delete', 'Delete Users', 'Can delete users', 'users'],
     ['users.manage_roles', 'Manage User Roles', 'Can assign/remove roles from users', 'users'],
+    ['users.reset_password', 'Reset User Password', 'Can reset user passwords', 'users'],
+    ['users.activate', 'Activate/Deactivate Users', 'Can activate or deactivate user accounts', 'users'],
 
     // Role Management
     ['roles.view', 'View Roles', 'Can view roles and permissions', 'roles'],
     ['roles.create', 'Create Roles', 'Can create new roles', 'roles'],
     ['roles.edit', 'Edit Roles', 'Can edit roles and their permissions', 'roles'],
     ['roles.delete', 'Delete Roles', 'Can delete non-system roles', 'roles'],
+    ['roles.assign', 'Assign Roles', 'Can assign roles to users', 'roles'],
 
     // Item Management
     ['items.view', 'View Items', 'Can view inventory items', 'items'],
@@ -168,12 +171,16 @@ async function executeDirectMigration() {
     ['items.edit', 'Edit Items', 'Can edit item information', 'items'],
     ['items.delete', 'Delete Items', 'Can delete items from inventory', 'items'],
     ['items.assign', 'Assign Items', 'Can assign items to employees', 'items'],
+    ['items.import', 'Import Items', 'Can import items in bulk', 'items'],
+    ['items.export', 'Export Items', 'Can export item data', 'items'],
+    ['items.audit', 'Audit Items', 'Can perform inventory audits', 'items'],
 
     // Employee Management
     ['employees.view', 'View Employees', 'Can view employee list and details', 'employees'],
     ['employees.create', 'Create Employees', 'Can add new employees', 'employees'],
     ['employees.edit', 'Edit Employees', 'Can edit employee information', 'employees'],
     ['employees.delete', 'Delete Employees', 'Can delete employees', 'employees'],
+    ['employees.assign_items', 'Assign Items to Employees', 'Can assign items to employees', 'employees'],
 
     // Software Management
     ['software.view', 'View Software', 'Can view software licenses', 'software'],
@@ -181,24 +188,28 @@ async function executeDirectMigration() {
     ['software.edit', 'Edit Software', 'Can edit software information', 'software'],
     ['software.delete', 'Delete Software', 'Can delete software licenses', 'software'],
     ['software.assign', 'Assign Software', 'Can assign software to employees', 'software'],
+    ['software.audit', 'Audit Software', 'Can audit software usage and licenses', 'software'],
 
     // Reports and Analytics
     ['reports.view', 'View Reports', 'Can view system reports and analytics', 'reports'],
     ['reports.export', 'Export Reports', 'Can export reports and data', 'reports'],
+    ['reports.create', 'Create Reports', 'Can create custom reports', 'reports'],
 
     // System Administration
     ['admin.settings', 'System Settings', 'Can modify system settings', 'admin'],
     ['admin.logs', 'View Activity Logs', 'Can view system activity logs', 'admin'],
     ['admin.notifications', 'Manage Notifications', 'Can manage system notifications', 'admin'],
-    ['admin.database', 'Database Access', 'Can access database administration tools', 'admin'],
-    ['admin.debug', 'Debug Mode', 'Can enable debug mode and view system internals', 'admin'],
 
-    // Developer-specific permissions
+    // Developer-specific permissions (renamed and expanded)
+    ['dev.view', 'View Developer Tools', 'Can view developer tools and diagnostics', 'developer'],
+    ['dev.database', 'Database Access', 'Can access database administration tools', 'developer'],
+    ['dev.debug', 'Debug Mode', 'Can enable debug mode and view system internals', 'developer'],
     ['dev.console', 'Developer Console', 'Can access developer console and tools', 'developer'],
     ['dev.api', 'API Management', 'Can manage API endpoints and documentation', 'developer'],
     ['dev.migrations', 'Database Migrations', 'Can run database migrations and schema changes', 'developer'],
     ['dev.logs', 'System Logs', 'Can view detailed system and error logs', 'developer'],
     ['dev.performance', 'Performance Monitoring', 'Can access performance monitoring tools', 'developer'],
+    ['dev.test', 'Run Tests', 'Can run automated tests and diagnostics', 'developer'],
 
     // Clients and Equipment
     ['clients.view', 'View Clients', 'Can view client information', 'clients'],
@@ -219,7 +230,41 @@ async function executeDirectMigration() {
     ['sim_cards.view', 'View SIM Cards', 'Can view SIM card information', 'sim_cards'],
     ['sim_cards.create', 'Create SIM Cards', 'Can add new SIM cards', 'sim_cards'],
     ['sim_cards.edit', 'Edit SIM Cards', 'Can edit SIM card information', 'sim_cards'],
-    ['sim_cards.delete', 'Delete SIM Cards', 'Can delete SIM cards', 'sim_cards']
+    ['sim_cards.delete', 'Delete SIM Cards', 'Can delete SIM cards', 'sim_cards'],
+
+    // Reference Data
+    ['references.view', 'View Reference Data', 'Access to reference data section', 'references'],
+    ['references.manage', 'Manage Reference Data', 'Full access to manage all reference data', 'references'],
+
+    // Asset Types
+    ['asset_types.view', 'View Asset Types', 'View asset type listings and details', 'references'],
+    ['asset_types.create', 'Create Asset Types', 'Create new asset types', 'references'],
+    ['asset_types.edit', 'Edit Asset Types', 'Edit existing asset types', 'references'],
+    ['asset_types.delete', 'Delete Asset Types', 'Delete asset types', 'references'],
+
+    // Brands
+    ['brands.view', 'View Brands', 'View brand listings and details', 'references'],
+    ['brands.create', 'Create Brands', 'Create new brands', 'references'],
+    ['brands.edit', 'Edit Brands', 'Edit existing brands', 'references'],
+    ['brands.delete', 'Delete Brands', 'Delete brands', 'references'],
+
+    // Statuses
+    ['statuses.view', 'View Statuses', 'View status listings and details', 'references'],
+    ['statuses.create', 'Create Statuses', 'Create new statuses', 'references'],
+    ['statuses.edit', 'Edit Statuses', 'Edit existing statuses', 'references'],
+    ['statuses.delete', 'Delete Statuses', 'Delete statuses', 'references'],
+
+    // Locations
+    ['locations.view', 'View Locations', 'View location listings and details', 'references'],
+    ['locations.create', 'Create Locations', 'Create new locations', 'references'],
+    ['locations.edit', 'Edit Locations', 'Edit existing locations', 'references'],
+    ['locations.delete', 'Delete Locations', 'Delete locations', 'references'],
+
+    // Departments
+    ['departments.view', 'View Departments', 'View department listings and details', 'references'],
+    ['departments.create', 'Create Departments', 'Create new departments', 'references'],
+    ['departments.edit', 'Edit Departments', 'Edit existing departments', 'references'],
+    ['departments.delete', 'Delete Departments', 'Delete departments', 'references']
   ];
 
   for (const [name, display_name, description, module] of permissions) {
@@ -238,7 +283,6 @@ async function executeDirectMigration() {
   console.log('Inserting roles...');
   const roles = [
     ['developer', 'Developer', 'Full system access with development tools and debugging capabilities', true],
-    ['super_admin', 'Super Administrator', 'Full system access with all permissions', true],
     ['admin', 'Administrator', 'Administrative access with most permissions', true],
     ['manager', 'Manager', 'Management level access', false],
     ['user', 'Regular User', 'Basic user access', true],
@@ -267,17 +311,6 @@ async function executeDirectMigration() {
       (SELECT id FROM roles WHERE name = 'developer'),
       id
     FROM permissions
-    ON CONFLICT (role_id, permission_id) DO NOTHING
-  `);
-
-  // Assign all permissions to super_admin role (except dev permissions)
-  await db.query(`
-    INSERT INTO role_permissions (role_id, permission_id)
-    SELECT
-      (SELECT id FROM roles WHERE name = 'super_admin'),
-      id
-    FROM permissions
-    WHERE name NOT LIKE 'dev.%'
     ON CONFLICT (role_id, permission_id) DO NOTHING
   `);
 
@@ -466,7 +499,7 @@ async function fixUserRoles() {
       if (user.email && (user.email.toLowerCase().includes('dev') || user.email.toLowerCase().includes('developer'))) {
         roleName = 'developer';
       } else if (user.old_role === 'admin') {
-        roleName = 'super_admin';
+        roleName = 'admin';
       } else if (user.old_role === 'manager') {
         roleName = 'manager';
       }

@@ -28,10 +28,12 @@
       <a href="/software" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
         <i class="fas fa-arrow-left mr-2"></i> Back to Software
       </a>
-      <% if (typeof software.employee_count !== 'undefined' && parseInt(software.employee_count) > 0) { %>
-        <a href="/software/<%= software.id %>/assignments" class="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 font-semibold rounded-md transition">
+      <% if (typeof software.employee_count !== 'undefined' && parseInt(software.employee_count) > 0 && assignments && assignments.length > 0) { %>
+        <button type="button"
+          id="showAssignmentsBtn"
+          class="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 font-semibold rounded-md transition">
           <i class="fas fa-users mr-2"></i> View Assignments (<%= software.employee_count %>)
-        </a>
+        </button>
       <% } %>
     </div>
   </div>
@@ -181,13 +183,6 @@
               <div class="<%= statusClass %> h-3 rounded transition-all" style="width: <%= Math.min(usagePercentage, 100) %>%"></div>
             </div>
             <div class="text-center text-xs text-gray-600 dark:text-gray-400 font-semibold mb-2"><%= usagePercentage %>% utilized</div>
-            <% if (usedCount > 0) { %>
-              <div class="text-center mt-4">
-                <a href="/software/<%= software.id %>/assignments" class="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 font-semibold rounded-md transition text-sm">
-                  <i class="fas fa-users mr-2"></i> View Current Assignments
-                </a>
-              </div>
-            <% } %>
           </div>
         </div>
       <% } %>
@@ -242,6 +237,46 @@
       </div>
     </div>
   </div>
+
+  <!-- Assignments Modal -->
+  <% if (typeof software.employee_count !== 'undefined' && parseInt(software.employee_count) > 0 && assignments && assignments.length > 0) { %>
+    <div id="assignmentsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+        <button type="button" id="closeAssignmentsModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 text-xl">&times;</button>
+        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+          <i class="fas fa-users"></i> Assigned Employees
+        </h3>
+        <div class="overflow-x-auto <%= assignments.length > 10 ? 'max-h-96 overflow-y-auto' : '' %>">
+          <table class="min-w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded">
+            <thead>
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Name</th>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Employee ID</th>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Department</th>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Assigned Date</th>
+                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% assignments.forEach(a => { %>
+                <tr class="border-t border-gray-100 dark:border-gray-800">
+                  <td class="px-4 py-2">
+                    <a href="/employees/<%= a.employee_id %>" class="text-blue-600 dark:text-blue-300 hover:underline font-semibold">
+                      <%= a.employee_name %>
+                    </a>
+                  </td>
+                  <td class="px-4 py-2"><%= a.employee_cep %></td>
+                  <td class="px-4 py-2"><%= a.department_name || '-' %></td>
+                  <td class="px-4 py-2"><%= a.assigned_date ? a.assigned_date.toISOString().slice(0,10) : '-' %></td>
+                  <td class="px-4 py-2"><%= a.notes || '' %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% } %>
 </div>
 
 <script>
@@ -249,6 +284,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('editSoftwareForm');
   const maxLicensesInput = document.getElementById('max_licenses');
   const deleteModal = document.getElementById('deleteModal');
+  const showAssignmentsBtn = document.getElementById('showAssignmentsBtn');
+  const assignmentsModal = document.getElementById('assignmentsModal');
+  const closeAssignmentsModal = document.getElementById('closeAssignmentsModal');
 
   // Auto-focus the software name field
   const nameInput = document.getElementById('name');
@@ -349,6 +387,25 @@ document.addEventListener('DOMContentLoaded', function() {
       deleteModal.style.display = 'none';
     }
   });
+
+  // Assignment modal logic
+  if (showAssignmentsBtn && assignmentsModal) {
+    showAssignmentsBtn.addEventListener('click', function() {
+      assignmentsModal.style.display = 'flex';
+    });
+  }
+  if (closeAssignmentsModal && assignmentsModal) {
+    closeAssignmentsModal.addEventListener('click', function() {
+      assignmentsModal.style.display = 'none';
+    });
+  }
+  if (assignmentsModal) {
+    assignmentsModal.addEventListener('click', function(e) {
+      if (e.target === assignmentsModal) {
+        assignmentsModal.style.display = 'none';
+      }
+    });
+  }
 
   // Calculate total cost when cost per license changes
   const costInput = document.getElementById('cost_per_license');
@@ -613,4 +670,6 @@ document.addEventListener('DOMContentLoaded', function() {
     color: #333 !important;
   }
 }
+
+.max-h-96 { max-height: 24rem; }
 </style>

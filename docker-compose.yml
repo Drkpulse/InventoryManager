@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build: .
@@ -38,6 +36,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
     restart: unless-stopped
     networks:
       - app-network

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "build:css": "tailwindcss -i ./src/input.css -o ./public/css/styles.css --watch",
+    "build:css": "npx tailwindcss -i ./src/input.css -o ./public/css/tailwind.css --minify",
     "init-db": "node database/init-db.js",
     "add-settings": "node database/add-settings-column.js",
     "gen-pwd": "node tools/generate-password.js",
@@ -39,6 +39,7 @@
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "connect-flash": "^0.1.1",
+    "connect-redis": "^9.0.0",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
@@ -50,7 +51,8 @@
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
     "pm2": "^6.0.8",
-    "puppeteer": "^24.15.0"
+    "puppeteer": "^24.15.0",
+    "redis": "^5.8.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",

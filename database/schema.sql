@@ -19,6 +19,16 @@ DROP TABLE IF EXISTS statuses CASCADE;
 DROP TABLE IF EXISTS locations CASCADE;
 DROP TABLE IF EXISTS employee_software CASCADE;
 
+-- Create license_config table
+CREATE TABLE IF NOT EXISTS license_config (
+  id SERIAL PRIMARY KEY,
+  license_key VARCHAR(255) NOT NULL,
+  valid_until TIMESTAMP,
+  issued_to VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create users table
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
@@ -137,6 +147,9 @@ CREATE TABLE items (
   assigned_to INTEGER REFERENCES employees(id),
   status_id INTEGER REFERENCES statuses(id),
   location_id INTEGER REFERENCES locations(id),
+  warranty_start_date DATE,
+  warranty_end_date DATE,
+  warranty_months INTEGER,
   notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -582,3 +595,58 @@ CREATE TRIGGER trigger_create_settings_for_new_type
   AFTER INSERT ON notification_types
   FOR EACH ROW
   EXECUTE FUNCTION create_notification_settings_for_new_type();
+
+-- Create warranty status view
+CREATE OR REPLACE VIEW warranty_status_view AS
+SELECT
+  i.id,
+  i.cep_brc,
+  i.name,
+  i.warranty_start_date,
+  i.warranty_end_date,
+  i.warranty_months,
+  -- Calculate days until expiry
+  CASE
+    WHEN i.warranty_end_date IS NULL THEN NULL
+    ELSE (i.warranty_end_date - CURRENT_DATE)
+  END AS days_until_expiry,
+  -- Status logic
+  CASE
+    WHEN i.warranty_end_date IS NULL THEN 'no_warranty'
+    WHEN i.warranty_end_date < CURRENT_DATE THEN 'expired'
+    WHEN i.warranty_end_date <= CURRENT_DATE + INTERVAL '30 days' THEN 'expiring_soon'
+    WHEN i.warranty_end_date <= CURRENT_DATE + INTERVAL '90 days' THEN 'expiring_later'
+    ELSE 'active'
+  END AS warranty_status,
+  t.name AS type_name,
+  b.name AS brand_name,
+  e.name AS employee_name,
+  d.name AS department_name
+FROM items i
+LEFT JOIN types t ON i.type_id = t.id
+LEFT JOIN brands b ON i.brand_id = b.id
+LEFT JOIN employees e ON i.assigned_to = e.id
+LEFT JOIN departments d ON e.dept_id = d.id;
+
+CREATE OR REPLACE FUNCTION find_user_by_login(login_input TEXT)
+RETURNS TABLE(
+  id INTEGER,
+  name VARCHAR,
+  email VARCHAR,
+  password VARCHAR,
+  role VARCHAR,
+  cep_id VARCHAR,
+  active BOOLEAN,
+  settings JSONB,
+  last_login TIMESTAMP,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT u.id, u.name, u.email, u.password, u.role, u.cep_id, u.active, u.settings, u.last_login, u.created_at, u.updated_at
+  FROM users u
+  WHERE (LOWER(u.email) = LOWER(login_input) OR LOWER(u.cep_id) = LOWER(login_input))
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;

@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const session = require('express-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const routes = require('./routes');
@@ -53,11 +52,69 @@ app.use(express.json());
 app.use(methodOverride('_method'));
 
 // Session configuration
+const session = require('express-session');
+const RedisStore = require('connect-redis').default;
+const { createClient } = require('redis');
+
+// Create Redis client with better error handling
+const redisClient = createClient({
+  url: process.env.REDIS_URL || 'redis://redis:6379',
+  socket: {
+    reconnectStrategy: (retries) => Math.min(retries * 50, 500)
+  }
+});
+
+// Handle Redis connection events
+redisClient.on('error', (error) => {
+  console.error('❌ Redis Client Error:', error);
+});
+
+redisClient.on('connect', () => {
+  console.log('✅ Redis connected successfully');
+});
+
+redisClient.on('ready', () => {
+  console.log('✅ Redis ready for operations');
+});
+
+redisClient.on('end', () => {
+  console.log('⚠️ Redis connection ended');
+});
+
+// Connect to Redis
+let redisConnected = false;
+redisClient.connect()
+  .then(() => {
+    redisConnected = true;
+    console.log('✅ Redis connection established');
+  })
+  .catch((error) => {
+    console.error('❌ Redis connection failed:', error);
+    console.log('⚠️ Application will use memory store for sessions');
+  });
+
+// Session store configuration with fallback
+const getSessionStore = () => {
+  if (redisConnected) {
+    return new RedisStore({
+      client: redisClient,
+      prefix: 'inv_mgr:',
+      ttl: 24 * 60 * 60 // 24 hours in seconds
+    });
+  }
+  return undefined; // Use default memory store
+};
+
 app.use(session({
+  store: getSessionStore(),
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
-  saveUninitialized: true,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true
+  }
 }));
 
 // Flash messages
@@ -258,7 +315,18 @@ process.on('SIGTERM', () => {
     }
   }
 
-  process.exit(0);
+  // Close Redis connection
+  if (redisClient && redisConnected) {
+    redisClient.quit().then(() => {
+      console.log('✅ Redis connection closed');
+      process.exit(0);
+    }).catch((error) => {
+      console.error('❌ Error closing Redis connection:', error);
+      process.exit(1);
+    });
+  } else {
+    process.exit(0);
+  }
 });
 
 process.on('SIGINT', () => {
@@ -274,7 +342,18 @@ process.on('SIGINT', () => {
     }
   }
 
-  process.exit(0);
+  // Close Redis connection
+  if (redisClient && redisConnected) {
+    redisClient.quit().then(() => {
+      console.log('✅ Redis connection closed');
+      process.exit(0);
+    }).catch((error) => {
+      console.error('❌ Error closing Redis connection:', error);
+      process.exit(1);
+    });
+  } else {
+    process.exit(0);
+  }
 });
 
 // Start server

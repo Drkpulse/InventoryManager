@@ -100,6 +100,38 @@ async function runDatabaseSetup(pool) {
     console.log('📊 Creating indexes and optimizations...');
     await createIndexes(client);
 
+    // Add this after all tables are created, before finishing setup
+    await client.query(`
+      CREATE OR REPLACE VIEW warranty_status_view AS
+      SELECT
+        i.id,
+        i.cep_brc,
+        i.name,
+        i.warranty_start_date,
+        i.warranty_end_date,
+        i.warranty_months,
+        CASE
+          WHEN i.warranty_end_date IS NULL THEN NULL
+          ELSE (i.warranty_end_date - CURRENT_DATE)
+        END AS days_until_expiry,
+        CASE
+          WHEN i.warranty_end_date IS NULL THEN 'no_warranty'
+          WHEN i.warranty_end_date < CURRENT_DATE THEN 'expired'
+          WHEN i.warranty_end_date <= CURRENT_DATE + INTERVAL '30 days' THEN 'expiring_soon'
+          WHEN i.warranty_end_date <= CURRENT_DATE + INTERVAL '90 days' THEN 'expiring_later'
+          ELSE 'active'
+        END AS warranty_status,
+        t.name AS type_name,
+        b.name AS brand_name,
+        e.name AS employee_name,
+        d.name AS department_name
+      FROM items i
+      LEFT JOIN types t ON i.type_id = t.id
+      LEFT JOIN brands b ON i.brand_id = b.id
+      LEFT JOIN employees e ON i.assigned_to = e.id
+      LEFT JOIN departments d ON e.dept_id = d.id;
+    `);
+
     await client.query('COMMIT');
     console.log('✅ Database setup completed successfully!');
 
@@ -415,6 +447,9 @@ async function setupEmployeeAndSoftware(client) {
       location_id INTEGER REFERENCES locations(id),
       description TEXT,
       notes TEXT,
+      warranty_start_date DATE,
+      warranty_end_date DATE,
+      warranty_months INTEGER,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
@@ -592,6 +627,17 @@ async function setupSystemComponents(client) {
     )
   `);
 
+  await client.query(`
+  CREATE TABLE IF NOT EXISTS license_config (
+    id SERIAL PRIMARY KEY,
+    license_key VARCHAR(255) NOT NULL,
+    valid_until TIMESTAMP,
+    issued_to VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
   // Create helpful functions
   await createDatabaseFunctions(client);
 
@@ -602,8 +648,22 @@ async function setupSystemComponents(client) {
 async function createDatabaseFunctions(client) {
   // Function to find user by email or CEP ID for login
   await client.query(`
+    DROP FUNCTION IF EXISTS find_user_by_login(TEXT);
+
     CREATE OR REPLACE FUNCTION find_user_by_login(login_input TEXT)
-    RETURNS TABLE(id INTEGER, name VARCHAR, email VARCHAR, password VARCHAR, role VARCHAR, cep_id VARCHAR, active BOOLEAN, settings JSONB, last_login TIMESTAMP, created_at TIMESTAMP, updated_at TIMESTAMP) AS $$
+    RETURNS TABLE(
+      id INTEGER,
+      name VARCHAR,
+      email VARCHAR,
+      password VARCHAR,
+      role VARCHAR,
+      cep_id VARCHAR,
+      active BOOLEAN,
+      settings JSONB,
+      last_login TIMESTAMP,
+      created_at TIMESTAMP,
+      updated_at TIMESTAMP
+    ) AS $$
     BEGIN
       RETURN QUERY
       SELECT u.id, u.name, u.email, u.password, u.role, u.cep_id, u.active, u.settings, u.last_login, u.created_at, u.updated_at

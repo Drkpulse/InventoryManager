@@ -11,10 +11,16 @@ RUN apk add --no-cache postgresql-client
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy application code
 COPY . .
+
+# Build CSS
+RUN npm run build:css
+
+# Remove devDependencies for production (modern syntax)
+RUN npm prune --omit=dev
 
 # Create uploads directory and set permissions
 RUN mkdir -p uploads && chmod 755 uploads

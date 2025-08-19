@@ -33,7 +33,15 @@ const isAdmin = async (req, res, next) => {
   }
 };
 
+// Update the isAuthenticated function
 const isAuthenticated = (req, res, next) => {
+  console.log('Auth check:', {
+    sessionExists: !!req.session,
+    userExists: !!req.session?.user,
+    sessionId: req.sessionID,
+    userId: req.session?.user?.id
+  });
+
   if (req.session && req.session.user) {
     return next();
   }

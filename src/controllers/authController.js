@@ -145,16 +145,21 @@ exports.login = async (req, res) => {
     req.session.save((err) => {
       if (err) {
         console.error('Session save error during login:', err);
+        console.error('Redis connected:', redisConnected);
+        console.error('Session store type:', req.session.store?.constructor?.name);
 
         if (req.isAjax) {
           return res.status(500).json({
             success: false,
-            message: 'Login failed. Please try again.'
+            message: 'Login failed due to session error. Please try again.'
           });
         }
-        req.flash('error', 'Login failed. Please try again.');
+        req.flash('error', 'Login failed due to session error. Please try again.');
         return res.redirect('/auth/login');
       }
+
+      console.log('✅ Session saved successfully for user:', user.name);
+      console.log('Session ID:', req.sessionID);
 
       if (req.isAjax) {
         return res.json({

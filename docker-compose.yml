@@ -1,11 +1,6 @@
-version: '3.8'
-
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
+    image: d4rkpulse/it-asset-manager:test
     ports:
       - "3000:3000"
     environment:
@@ -17,6 +12,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - SESSION_SECRET=${SESSION_SECRET}
       - REDIS_URL=redis://redis:6379
+      - TZ=UTC
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
     depends_on:
       postgres:
         condition: service_healthy
@@ -26,13 +23,14 @@ services:
     volumes:
       - uploads:/app/uploads:rw
       - logs:/app/logs:rw
+      - ./data:/app/data:rw
     networks:
       - app-network
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '0.5'
+          memory: 1.5G  # Increased for Puppeteer
+          cpus: '0.75'
         reservations:
           memory: 512M
           cpus: '0.25'
@@ -41,7 +39,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 45s  # Increased for app startup
     logging:
       driver: "json-file"
       options:
@@ -49,17 +47,18 @@ services:
         max-file: "3"
     security_opt:
       - no-new-privileges:true
-    read_only: true
     tmpfs:
-      - /tmp:noexec,nosuid,size=100m
+      - /tmp:noexec,nosuid,size=200m  # Increased for Puppeteer
+      - /app/tmp:noexec,nosuid,size=100m
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     environment:
       - POSTGRES_DB=${DB_NAME:-inventory_db}
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+      - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
@@ -75,10 +74,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 1G
           cpus: '0.5'
         reservations:
-          memory: 256M
+          memory: 512M
           cpus: '0.25'
     security_opt:
       - no-new-privileges:true
@@ -96,12 +95,17 @@ services:
       -c log_min_duration_statement=1000
       -c shared_preload_libraries=''
       -c max_connections=100
-      -c shared_buffers=256MB
-      -c effective_cache_size=512MB
-      -c maintenance_work_mem=64MB
+      -c shared_buffers=512MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=128MB
       -c checkpoint_completion_target=0.9
       -c wal_buffers=16MB
       -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=4MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
 
   redis:
     image: redis:7-alpine
@@ -142,10 +146,12 @@ services:
       --appendfsync everysec
       --auto-aof-rewrite-percentage 100
       --auto-aof-rewrite-min-size 64mb
+      --tcp-keepalive 300
+      --timeout 0
 
   # Nginx reverse proxy for production
   nginx:
-    image: nginx:alpine
+    image: nginx:1.27-alpine
     ports:
       - "80:80"
       - "443:443"
@@ -173,6 +179,11 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   postgres_data:
@@ -187,6 +198,3 @@ volumes:
 networks:
   app-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16

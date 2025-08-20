@@ -14,3 +14,643 @@
 2025-08-19 23:01:39 - INFO: Starting pre-flight checks...
 2025-08-19 23:01:39 - SUCCESS: Pre-flight checks passed
 2025-08-19 23:01:39 - INFO: Setting up environment...
+2025-08-20 09:19:50 - Starting production deployment...
+2025-08-20 09:19:50 - INFO: Starting pre-flight checks...
+2025-08-20 09:19:51 - ERROR: Docker daemon is not running or you don't have permission to access it
+2025-08-20 09:24:47 - Starting production deployment...
+2025-08-20 09:24:47 - INFO: Starting pre-flight checks...
+2025-08-20 09:24:48 - SUCCESS: Pre-flight checks passed
+2025-08-20 09:24:48 - INFO: Setting up environment...
+2025-08-20 09:50:44 - Starting production deployment...
+2025-08-20 09:50:44 - INFO: Starting pre-flight checks...
+2025-08-20 09:50:45 - SUCCESS: Pre-flight checks passed
+2025-08-20 09:50:45 - INFO: Setting up environment...
+2025-08-20 09:57:24 - Starting production deployment...
+2025-08-20 09:57:24 - INFO: Starting pre-flight checks...
+2025-08-20 09:57:24 - SUCCESS: Pre-flight checks passed
+2025-08-20 09:57:24 - INFO: Setting up environment...
+2025-08-20 09:58:59 - Starting production deployment...
+2025-08-20 09:59:00 - INFO: Starting pre-flight checks...
+2025-08-20 09:59:00 - SUCCESS: Pre-flight checks passed
+2025-08-20 09:59:00 - INFO: Setting up environment...
+2025-08-20 09:59:00 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 09:59:00 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 09:59:00 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 09:59:00 - INFO: Loaded environment variable: DB_USER
+2025-08-20 09:59:00 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 09:59:00 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 09:59:00 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 09:59:00 - INFO: Loaded environment variable: PORT
+2025-08-20 09:59:00 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 09:59:00 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 09:59:00 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 09:59:00 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 09:59:00 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 09:59:00 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 09:59:00 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 09:59:00 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 09:59:00 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 09:59:00 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 09:59:00 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 09:59:00 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 09:59:00 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 09:59:00 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 09:59:00 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 09:59:00 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 09:59:00 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 09:59:00 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 09:59:00 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 09:59:00 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 09:59:00 - ERROR: DB_PASSWORD is still set to default value. Please change it in .env
+2025-08-20 09:59:37 - Starting production deployment...
+2025-08-20 09:59:37 - INFO: Starting pre-flight checks...
+2025-08-20 09:59:38 - SUCCESS: Pre-flight checks passed
+2025-08-20 09:59:38 - INFO: Setting up environment...
+2025-08-20 09:59:38 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 09:59:38 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 09:59:38 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 09:59:38 - INFO: Loaded environment variable: DB_USER
+2025-08-20 09:59:38 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 09:59:38 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 09:59:38 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 09:59:38 - INFO: Loaded environment variable: PORT
+2025-08-20 09:59:38 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 09:59:38 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 09:59:38 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 09:59:38 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 09:59:38 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 09:59:38 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 09:59:38 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 09:59:38 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 09:59:38 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 09:59:38 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 09:59:38 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 09:59:38 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 09:59:38 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 09:59:38 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 09:59:38 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 09:59:38 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 09:59:38 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 09:59:38 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 09:59:38 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 09:59:38 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 09:59:38 - SUCCESS: Environment setup completed
+2025-08-20 09:59:38 - INFO: Checking package versions...
+2025-08-20 09:59:40 - WARNING: Some packages have updates available
+2025-08-20 09:59:40 - WARNING: Run 'npm run update-deps' to update non-breaking changes
+2025-08-20 09:59:40 - SUCCESS: No moderate+ security vulnerabilities found
+2025-08-20 09:59:40 - INFO: Running security checks...
+2025-08-20 09:59:40 - WARNING: SSL certificates not found in ssl/ directory
+2025-08-20 09:59:40 - WARNING: HTTPS will not work without proper SSL certificates
+2025-08-20 09:59:40 - INFO: Generating self-signed SSL certificates for testing...
+2025-08-20 09:59:41 - WARNING: Self-signed certificates generated. Replace with proper certificates for production!
+2025-08-20 09:59:41 - INFO: Running security audit...
+2025-08-20 09:59:42 - SUCCESS: No high-severity vulnerabilities found
+2025-08-20 09:59:42 - SUCCESS: Security checks completed
+2025-08-20 09:59:42 - INFO: Checking Docker optimization...
+2025-08-20 09:59:42 - SUCCESS: Multi-stage Docker build detected
+2025-08-20 09:59:42 - SUCCESS: .dockerignore file found
+2025-08-20 09:59:42 - INFO: Docker image size: 
+2025-08-20 09:59:42 - INFO: Creating backup of existing data...
+2025-08-20 09:59:42 - INFO: No running containers found, skipping backup
+2025-08-20 09:59:42 - INFO: Deploying application...
+2025-08-20 09:59:42 - INFO: Stopping existing containers...
+2025-08-20 09:59:42 - INFO: Cleaning up Docker resources...
+2025-08-20 10:00:08 - INFO: Building and starting services...
+2025-08-20 10:06:31 - Starting production deployment...
+2025-08-20 10:06:31 - INFO: Starting pre-flight checks...
+2025-08-20 10:06:31 - INFO: Checking Node.js version...
+2025-08-20 10:06:31 - SUCCESS: Node.js version 22.18.0 is compatible
+2025-08-20 10:06:33 - SUCCESS: Pre-flight checks passed
+2025-08-20 10:06:33 - INFO: Checking npm dependencies...
+2025-08-20 10:06:33 - INFO: Installing/updating npm dependencies...
+2025-08-20 10:06:35 - WARNING: Normal npm install failed, trying with --legacy-peer-deps...
+2025-08-20 10:14:21 - Starting production deployment...
+2025-08-20 10:14:21 - INFO: Starting pre-flight checks...
+2025-08-20 10:14:21 - INFO: Checking Node.js version...
+2025-08-20 10:14:21 - SUCCESS: Node.js version 22.18.0 is compatible
+2025-08-20 10:14:21 - SUCCESS: Pre-flight checks passed
+2025-08-20 10:14:21 - INFO: Checking npm dependencies...
+2025-08-20 10:14:21 - SUCCESS: Dependencies are up to date
+2025-08-20 10:14:21 - INFO: Setting up environment...
+2025-08-20 10:14:21 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 10:14:21 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 10:14:21 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 10:14:21 - INFO: Loaded environment variable: DB_USER
+2025-08-20 10:14:21 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 10:14:21 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 10:14:21 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 10:14:21 - INFO: Loaded environment variable: PORT
+2025-08-20 10:14:21 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 10:14:21 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 10:14:21 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 10:14:21 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 10:14:21 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 10:14:21 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 10:14:21 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 10:14:21 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 10:14:21 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 10:14:21 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 10:14:21 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 10:14:21 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 10:14:21 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 10:14:21 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 10:14:21 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 10:14:21 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 10:14:21 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 10:14:21 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 10:14:21 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 10:14:21 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 10:14:21 - SUCCESS: Environment setup completed
+2025-08-20 10:14:21 - INFO: Checking package versions...
+2025-08-20 10:14:23 - WARNING: Some packages have updates available
+2025-08-20 10:14:23 - WARNING: Run 'npm run update-deps:safe' to update non-breaking changes
+2025-08-20 10:14:24 - SUCCESS: No moderate+ security vulnerabilities found
+2025-08-20 10:14:24 - INFO: Running security checks...
+2025-08-20 10:14:24 - INFO: Running security audit...
+2025-08-20 10:14:25 - SUCCESS: No high-severity vulnerabilities found
+2025-08-20 10:14:25 - SUCCESS: Security checks completed
+2025-08-20 10:14:25 - INFO: Checking Docker optimization...
+2025-08-20 10:14:25 - SUCCESS: Multi-stage Docker build detected
+2025-08-20 10:14:25 - SUCCESS: .dockerignore file found
+2025-08-20 10:14:25 - INFO: Docker image size: 
+2025-08-20 10:14:25 - INFO: Creating backup of existing data...
+2025-08-20 10:14:25 - INFO: No running containers found, skipping backup
+2025-08-20 10:14:25 - INFO: Deploying application...
+2025-08-20 10:14:25 - INFO: Stopping existing containers...
+2025-08-20 10:14:25 - INFO: Cleaning up Docker resources...
+2025-08-20 10:14:26 - INFO: Building and starting services...
+2025-08-20 10:18:41 - Starting production deployment...
+2025-08-20 10:19:18 - Starting production deployment...
+2025-08-20 10:19:18 - INFO: Starting pre-flight checks...
+2025-08-20 10:19:18 - INFO: Checking Node.js version...
+2025-08-20 10:19:18 - SUCCESS: Node.js version 22.18.0 is compatible
+2025-08-20 10:19:19 - SUCCESS: Pre-flight checks passed
+2025-08-20 10:19:19 - INFO: Checking npm dependencies...
+2025-08-20 10:19:19 - SUCCESS: Dependencies are up to date
+2025-08-20 10:19:19 - INFO: Setting up environment...
+2025-08-20 10:19:19 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 10:19:19 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 10:19:19 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 10:19:19 - INFO: Loaded environment variable: DB_USER
+2025-08-20 10:19:19 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 10:19:19 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 10:19:19 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 10:19:19 - INFO: Loaded environment variable: PORT
+2025-08-20 10:19:19 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 10:19:19 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 10:19:19 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 10:19:19 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 10:19:19 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 10:19:19 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 10:19:19 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 10:19:19 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 10:19:19 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 10:19:19 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 10:19:19 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 10:19:19 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 10:19:19 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 10:19:19 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 10:19:19 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 10:19:19 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 10:19:19 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 10:19:19 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 10:19:19 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 10:19:19 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 10:19:19 - SUCCESS: Environment setup completed
+2025-08-20 10:19:19 - INFO: Checking package versions...
+2025-08-20 10:19:21 - WARNING: Some packages have updates available
+2025-08-20 10:19:21 - WARNING: Run 'npm run update-deps:safe' to update non-breaking changes
+2025-08-20 10:19:22 - SUCCESS: No moderate+ security vulnerabilities found
+2025-08-20 10:19:22 - INFO: Running security checks...
+2025-08-20 10:19:22 - INFO: Running security audit...
+2025-08-20 10:19:22 - SUCCESS: No high-severity vulnerabilities found
+2025-08-20 10:19:22 - SUCCESS: Security checks completed
+2025-08-20 10:19:22 - INFO: Checking Docker optimization...
+2025-08-20 10:19:22 - SUCCESS: Multi-stage Docker build detected
+2025-08-20 10:19:22 - SUCCESS: .dockerignore file found
+2025-08-20 10:19:23 - INFO: Docker image size: 
+2025-08-20 10:19:23 - INFO: Creating backup of existing data...
+2025-08-20 10:19:23 - INFO: No running containers found, skipping backup
+2025-08-20 10:19:23 - INFO: Deploying application...
+2025-08-20 10:19:23 - INFO: Stopping existing containers...
+2025-08-20 10:19:23 - INFO: Cleaning up Docker resources...
+2025-08-20 10:19:24 - INFO: Building and starting services...
+2025-08-20 10:41:02 - Starting production deployment...
+2025-08-20 10:41:02 - INFO: Starting pre-flight checks...
+2025-08-20 10:41:02 - INFO: Checking Node.js version...
+2025-08-20 10:41:02 - SUCCESS: Node.js version 22.18.0 is compatible
+2025-08-20 10:41:03 - SUCCESS: Pre-flight checks passed
+2025-08-20 10:41:03 - INFO: Checking npm dependencies...
+2025-08-20 10:41:03 - INFO: Installing/updating npm dependencies...
+2025-08-20 10:42:29 - SUCCESS: Dependencies are up to date
+2025-08-20 10:42:29 - INFO: Setting up environment...
+2025-08-20 10:42:29 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 10:42:29 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 10:42:29 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 10:42:29 - INFO: Loaded environment variable: DB_USER
+2025-08-20 10:42:29 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 10:42:29 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 10:42:29 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 10:42:29 - INFO: Loaded environment variable: PORT
+2025-08-20 10:42:29 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 10:42:29 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 10:42:29 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 10:42:29 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 10:42:29 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 10:42:29 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 10:42:29 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 10:42:29 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 10:42:29 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 10:42:29 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 10:42:29 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 10:42:29 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 10:42:29 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 10:42:29 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 10:42:29 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 10:42:29 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 10:42:29 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 10:42:29 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 10:42:29 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 10:42:29 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 10:42:29 - SUCCESS: Environment setup completed
+2025-08-20 10:42:29 - INFO: Preparing build environment...
+2025-08-20 10:42:29 - SUCCESS: Build environment prepared
+2025-08-20 10:42:29 - INFO: Checking package versions...
+2025-08-20 10:42:31 - WARNING: Some packages have updates available
+2025-08-20 10:42:31 - WARNING: Run 'npm run update-deps:safe' to update non-breaking changes
+2025-08-20 10:42:32 - SUCCESS: No moderate+ security vulnerabilities found
+2025-08-20 10:42:32 - INFO: Running security checks...
+2025-08-20 10:42:32 - INFO: Running security audit...
+2025-08-20 10:42:33 - SUCCESS: No high-severity vulnerabilities found
+2025-08-20 10:42:33 - SUCCESS: Security checks completed
+2025-08-20 10:42:33 - INFO: Checking Docker optimization...
+2025-08-20 10:42:33 - SUCCESS: Multi-stage Docker build detected
+2025-08-20 10:42:33 - SUCCESS: .dockerignore file found
+2025-08-20 10:42:33 - INFO: Docker image size: 
+2025-08-20 10:42:33 - INFO: Creating backup of existing data...
+2025-08-20 10:42:33 - INFO: No running containers found, skipping backup
+2025-08-20 10:42:33 - INFO: Deploying application...
+2025-08-20 10:42:33 - INFO: Stopping existing containers...
+2025-08-20 10:42:33 - INFO: Cleaning up Docker resources...
+2025-08-20 10:42:35 - INFO: Building and starting services...
+2025-08-20 10:45:04 - Starting production deployment...
+2025-08-20 10:45:04 - INFO: Starting pre-flight checks...
+2025-08-20 10:45:04 - INFO: Checking Node.js version...
+2025-08-20 10:45:04 - SUCCESS: Node.js version 22.18.0 is compatible
+2025-08-20 10:45:05 - SUCCESS: Pre-flight checks passed
+2025-08-20 10:45:05 - INFO: Checking npm dependencies...
+2025-08-20 10:45:05 - INFO: Installing/updating npm dependencies...
+2025-08-20 10:46:37 - SUCCESS: Dependencies are up to date
+2025-08-20 10:46:37 - INFO: Setting up environment...
+2025-08-20 10:46:37 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 10:46:37 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 10:46:37 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 10:46:37 - INFO: Loaded environment variable: DB_USER
+2025-08-20 10:46:37 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 10:46:37 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 10:46:37 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 10:46:37 - INFO: Loaded environment variable: PORT
+2025-08-20 10:46:37 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 10:46:37 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 10:46:37 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 10:46:37 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 10:46:37 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 10:46:37 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 10:46:37 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 10:46:37 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 10:46:37 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 10:46:37 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 10:46:37 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 10:46:37 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 10:46:37 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 10:46:37 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 10:46:37 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 10:46:37 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 10:46:37 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 10:46:37 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 10:46:37 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 10:46:37 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 10:46:37 - SUCCESS: Environment setup completed
+2025-08-20 10:46:38 - INFO: Preparing build environment...
+2025-08-20 10:46:38 - SUCCESS: Build environment prepared
+2025-08-20 10:46:38 - INFO: Checking package versions...
+2025-08-20 10:46:39 - WARNING: Some packages have updates available
+2025-08-20 10:46:39 - WARNING: Run 'npm run update-deps:safe' to update non-breaking changes
+2025-08-20 10:46:40 - SUCCESS: No moderate+ security vulnerabilities found
+2025-08-20 10:46:40 - INFO: Running security checks...
+2025-08-20 10:46:40 - INFO: Running security audit...
+2025-08-20 10:46:41 - SUCCESS: No high-severity vulnerabilities found
+2025-08-20 10:46:41 - SUCCESS: Security checks completed
+2025-08-20 10:46:41 - INFO: Checking Docker optimization...
+2025-08-20 10:46:41 - SUCCESS: Multi-stage Docker build detected
+2025-08-20 10:46:41 - SUCCESS: .dockerignore file found
+2025-08-20 10:46:41 - INFO: Docker image size: 
+2025-08-20 10:46:41 - INFO: Creating backup of existing data...
+2025-08-20 10:46:41 - INFO: No running containers found, skipping backup
+2025-08-20 10:46:41 - INFO: Deploying application...
+2025-08-20 10:46:41 - INFO: Stopping existing containers...
+2025-08-20 10:46:41 - INFO: Cleaning up Docker resources...
+2025-08-20 10:46:45 - INFO: Building and starting services...
+2025-08-20 10:47:59 - INFO: Waiting for services to start...
+2025-08-20 10:49:30 - ERROR: Deployment interrupted by user
+2025-08-20 10:49:39 - Starting production deployment...
+2025-08-20 10:49:39 - INFO: Starting pre-flight checks...
+2025-08-20 10:49:39 - INFO: Checking Node.js version...
+2025-08-20 10:49:39 - SUCCESS: Node.js version 22.18.0 is compatible
+2025-08-20 10:49:40 - SUCCESS: Pre-flight checks passed
+2025-08-20 10:49:40 - INFO: Checking npm dependencies...
+2025-08-20 10:49:40 - INFO: Installing/updating npm dependencies...
+2025-08-20 10:51:19 - SUCCESS: Dependencies are up to date
+2025-08-20 10:51:19 - INFO: Setting up environment...
+2025-08-20 10:51:19 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 10:51:19 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 10:51:19 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 10:51:19 - INFO: Loaded environment variable: DB_USER
+2025-08-20 10:51:19 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 10:51:19 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 10:51:19 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 10:51:19 - INFO: Loaded environment variable: PORT
+2025-08-20 10:51:19 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 10:51:19 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 10:51:19 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 10:51:19 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 10:51:19 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 10:51:19 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 10:51:19 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 10:51:19 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 10:51:19 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 10:51:19 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 10:51:19 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 10:51:19 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 10:51:19 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 10:51:19 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 10:51:19 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 10:51:19 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 10:51:19 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 10:51:19 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 10:51:19 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 10:51:19 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 10:51:19 - SUCCESS: Environment setup completed
+2025-08-20 10:51:19 - INFO: Preparing build environment...
+2025-08-20 10:51:19 - SUCCESS: Build environment prepared
+2025-08-20 10:51:19 - INFO: Checking package versions...
+2025-08-20 10:51:21 - WARNING: Some packages have updates available
+2025-08-20 10:51:21 - WARNING: Run 'npm run update-deps:safe' to update non-breaking changes
+2025-08-20 10:51:22 - SUCCESS: No moderate+ security vulnerabilities found
+2025-08-20 10:51:22 - INFO: Running security checks...
+2025-08-20 10:51:22 - INFO: Running security audit...
+2025-08-20 10:51:23 - SUCCESS: No high-severity vulnerabilities found
+2025-08-20 10:51:23 - SUCCESS: Security checks completed
+2025-08-20 10:51:23 - INFO: Checking Docker optimization...
+2025-08-20 10:51:23 - SUCCESS: Multi-stage Docker build detected
+2025-08-20 10:51:23 - SUCCESS: .dockerignore file found
+2025-08-20 10:51:23 - INFO: Docker image size: 
+2025-08-20 10:51:23 - INFO: Creating backup of existing data...
+2025-08-20 10:51:23 - INFO: Creating database backup...
+2025-08-20 10:51:23 - SUCCESS: Database backup created: db_backup_20250820_105123.sql
+2025-08-20 10:51:23 - SUCCESS: File backup created: backups/backup_20250820_105123.tar.gz
+2025-08-20 10:51:23 - INFO: Deploying application...
+2025-08-20 10:51:23 - INFO: Stopping existing containers...
+2025-08-20 10:51:25 - INFO: Cleaning up Docker resources...
+2025-08-20 10:51:28 - INFO: Building and starting services...
+2025-08-20 10:52:42 - INFO: Waiting for services to start...
+2025-08-20 10:56:10 - ERROR: Deployment interrupted by user
+2025-08-20 11:12:54 - Starting production deployment...
+2025-08-20 11:12:54 - INFO: Starting pre-flight checks...
+2025-08-20 11:12:54 - INFO: Checking Node.js version...
+2025-08-20 11:12:54 - SUCCESS: Node.js version 22.18.0 is compatible
+2025-08-20 11:12:55 - SUCCESS: Pre-flight checks passed
+2025-08-20 11:12:55 - INFO: Checking npm dependencies...
+2025-08-20 11:12:55 - INFO: Installing/updating npm dependencies...
+2025-08-20 11:14:27 - SUCCESS: Dependencies are up to date
+2025-08-20 11:14:27 - INFO: Setting up environment...
+2025-08-20 11:14:27 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 11:14:27 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 11:14:27 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 11:14:27 - INFO: Loaded environment variable: DB_USER
+2025-08-20 11:14:27 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 11:14:27 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 11:14:27 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 11:14:27 - INFO: Loaded environment variable: PORT
+2025-08-20 11:14:27 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 11:14:27 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 11:14:27 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 11:14:27 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 11:14:27 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 11:14:27 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 11:14:27 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 11:14:27 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 11:14:27 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 11:14:27 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 11:14:27 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 11:14:27 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 11:14:27 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 11:14:27 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 11:14:27 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 11:14:27 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 11:14:27 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 11:14:27 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 11:14:27 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 11:14:27 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 11:14:27 - SUCCESS: Environment setup completed
+2025-08-20 11:14:27 - INFO: Preparing build environment...
+2025-08-20 11:14:27 - SUCCESS: Build environment prepared
+2025-08-20 11:14:27 - INFO: Checking package versions...
+2025-08-20 11:14:29 - WARNING: Some packages have updates available
+2025-08-20 11:14:29 - WARNING: Run 'npm run update-deps:safe' to update non-breaking changes
+2025-08-20 11:14:30 - SUCCESS: No moderate+ security vulnerabilities found
+2025-08-20 11:14:30 - INFO: Running security checks...
+2025-08-20 11:14:30 - INFO: Running security audit...
+2025-08-20 11:14:31 - SUCCESS: No high-severity vulnerabilities found
+2025-08-20 11:14:31 - SUCCESS: Security checks completed
+2025-08-20 11:14:31 - INFO: Checking Docker optimization...
+2025-08-20 11:14:31 - SUCCESS: Multi-stage Docker build detected
+2025-08-20 11:14:31 - SUCCESS: .dockerignore file found
+2025-08-20 11:14:31 - INFO: Docker image size: 
+2025-08-20 11:14:31 - INFO: Creating backup of existing data...
+2025-08-20 11:14:31 - INFO: Creating database backup...
+2025-08-20 11:14:31 - SUCCESS: Database backup created: db_backup_20250820_111431.sql
+2025-08-20 11:14:31 - SUCCESS: File backup created: backups/backup_20250820_111431.tar.gz
+2025-08-20 11:14:31 - INFO: Deploying application...
+2025-08-20 11:14:31 - INFO: Stopping existing containers...
+2025-08-20 11:14:34 - INFO: Cleaning up Docker resources...
+2025-08-20 11:14:36 - INFO: Building and starting services...
+2025-08-20 11:16:20 - Starting production deployment...
+2025-08-20 11:16:20 - INFO: Starting pre-flight checks...
+2025-08-20 11:16:20 - INFO: Checking Node.js version...
+2025-08-20 11:16:21 - SUCCESS: Node.js version 22.18.0 is compatible
+2025-08-20 11:16:22 - SUCCESS: Pre-flight checks passed
+2025-08-20 11:16:22 - INFO: Checking npm dependencies...
+2025-08-20 11:16:22 - SUCCESS: Dependencies are up to date
+2025-08-20 11:16:22 - INFO: Setting up environment...
+2025-08-20 11:16:22 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 11:16:22 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 11:16:22 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 11:16:22 - INFO: Loaded environment variable: DB_USER
+2025-08-20 11:16:22 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 11:16:22 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 11:16:22 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 11:16:22 - INFO: Loaded environment variable: PORT
+2025-08-20 11:16:22 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 11:16:22 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 11:16:22 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 11:16:22 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 11:16:22 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 11:16:22 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 11:16:22 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 11:16:22 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 11:16:22 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 11:16:22 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 11:16:22 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 11:16:22 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 11:16:22 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 11:16:22 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 11:16:22 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 11:16:22 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 11:16:22 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 11:16:22 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 11:16:22 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 11:16:22 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 11:16:22 - SUCCESS: Environment setup completed
+2025-08-20 11:16:22 - INFO: Preparing build environment...
+2025-08-20 11:16:22 - SUCCESS: Build environment prepared
+2025-08-20 11:16:22 - INFO: Checking package versions...
+2025-08-20 11:16:24 - WARNING: Some packages have updates available
+2025-08-20 11:16:24 - WARNING: Run 'npm run update-deps:safe' to update non-breaking changes
+2025-08-20 11:16:25 - SUCCESS: No moderate+ security vulnerabilities found
+2025-08-20 11:16:25 - INFO: Running security checks...
+2025-08-20 11:16:25 - INFO: Running security audit...
+2025-08-20 11:16:26 - SUCCESS: No high-severity vulnerabilities found
+2025-08-20 11:16:26 - SUCCESS: Security checks completed
+2025-08-20 11:16:26 - INFO: Checking Docker optimization...
+2025-08-20 11:16:26 - SUCCESS: Multi-stage Docker build detected
+2025-08-20 11:16:26 - SUCCESS: .dockerignore file found
+2025-08-20 11:16:26 - INFO: Docker image size: 
+2025-08-20 11:16:26 - INFO: Creating backup of existing data...
+2025-08-20 11:16:26 - INFO: No running containers found, skipping backup
+2025-08-20 11:16:26 - INFO: Deploying application...
+2025-08-20 11:16:26 - INFO: Stopping existing containers...
+2025-08-20 11:16:26 - INFO: Cleaning up Docker resources...
+2025-08-20 11:16:28 - INFO: Building and starting services...
+2025-08-20 11:18:30 - Starting production deployment...
+2025-08-20 11:18:30 - INFO: Starting pre-flight checks...
+2025-08-20 11:18:30 - INFO: Checking Node.js version...
+2025-08-20 11:18:30 - SUCCESS: Node.js version 22.18.0 is compatible
+2025-08-20 11:18:31 - SUCCESS: Pre-flight checks passed
+2025-08-20 11:18:31 - INFO: Checking npm dependencies...
+2025-08-20 11:18:31 - SUCCESS: Dependencies are up to date
+2025-08-20 11:18:31 - INFO: Setting up environment...
+2025-08-20 11:18:31 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 11:18:31 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 11:18:31 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 11:18:31 - INFO: Loaded environment variable: DB_USER
+2025-08-20 11:18:31 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 11:18:31 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 11:18:31 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 11:18:31 - INFO: Loaded environment variable: PORT
+2025-08-20 11:18:31 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 11:18:31 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 11:18:31 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 11:18:31 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 11:18:31 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 11:18:31 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 11:18:31 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 11:18:31 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 11:18:31 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 11:18:31 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 11:18:31 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 11:18:31 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 11:18:31 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 11:18:31 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 11:18:31 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 11:18:31 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 11:18:31 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 11:18:31 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 11:18:31 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 11:18:31 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 11:18:31 - SUCCESS: Environment setup completed
+2025-08-20 11:18:31 - INFO: Preparing build environment...
+2025-08-20 11:18:31 - SUCCESS: Build environment prepared
+2025-08-20 11:18:31 - INFO: Checking package versions...
+2025-08-20 11:18:32 - WARNING: Some packages have updates available
+2025-08-20 11:18:32 - WARNING: Run 'npm run update-deps:safe' to update non-breaking changes
+2025-08-20 11:18:33 - SUCCESS: No moderate+ security vulnerabilities found
+2025-08-20 11:18:33 - INFO: Running security checks...
+2025-08-20 11:18:33 - INFO: Running security audit...
+2025-08-20 11:18:34 - SUCCESS: No high-severity vulnerabilities found
+2025-08-20 11:18:34 - SUCCESS: Security checks completed
+2025-08-20 11:18:34 - INFO: Checking Docker optimization...
+2025-08-20 11:18:34 - SUCCESS: Multi-stage Docker build detected
+2025-08-20 11:18:34 - SUCCESS: .dockerignore file found
+2025-08-20 11:18:34 - INFO: Docker image size: 
+2025-08-20 11:18:34 - INFO: Creating backup of existing data...
+2025-08-20 11:18:34 - INFO: No running containers found, skipping backup
+2025-08-20 11:18:34 - INFO: Deploying application...
+2025-08-20 11:18:34 - INFO: Stopping existing containers...
+2025-08-20 11:18:34 - INFO: Cleaning up Docker resources...
+2025-08-20 11:18:34 - INFO: Building and starting services...
+2025-08-20 11:19:47 - INFO: Waiting for services to start...
+2025-08-20 11:24:55 - ERROR: Services failed to start within expected time
+2025-08-20 12:06:36 - Starting production deployment...
+2025-08-20 12:06:36 - INFO: Starting pre-flight checks...
+2025-08-20 12:06:36 - INFO: Checking Node.js version...
+2025-08-20 12:06:36 - SUCCESS: Node.js version 22.18.0 is compatible
+2025-08-20 12:06:37 - SUCCESS: Pre-flight checks passed
+2025-08-20 12:06:37 - INFO: Checking npm dependencies...
+2025-08-20 12:06:37 - INFO: Installing/updating npm dependencies...
+2025-08-20 12:08:06 - SUCCESS: Dependencies are up to date
+2025-08-20 12:08:06 - INFO: Setting up environment...
+2025-08-20 12:08:06 - INFO: Loaded environment variable: DB_HOST
+2025-08-20 12:08:06 - INFO: Loaded environment variable: DB_PORT
+2025-08-20 12:08:06 - INFO: Loaded environment variable: DB_NAME
+2025-08-20 12:08:06 - INFO: Loaded environment variable: DB_USER
+2025-08-20 12:08:06 - INFO: Loaded environment variable: DB_PASSWORD
+2025-08-20 12:08:06 - INFO: Loaded environment variable: SESSION_SECRET
+2025-08-20 12:08:06 - INFO: Loaded environment variable: NODE_ENV
+2025-08-20 12:08:06 - INFO: Loaded environment variable: PORT
+2025-08-20 12:08:06 - INFO: Loaded environment variable: REDIS_URL
+2025-08-20 12:08:06 - INFO: Loaded environment variable: TRUST_PROXY
+2025-08-20 12:08:06 - INFO: Loaded environment variable: SECURE_COOKIES
+2025-08-20 12:08:06 - INFO: Loaded environment variable: CORS_ORIGIN
+2025-08-20 12:08:06 - INFO: Loaded environment variable: EMAIL_HOST
+2025-08-20 12:08:06 - INFO: Loaded environment variable: EMAIL_PORT
+2025-08-20 12:08:06 - INFO: Loaded environment variable: EMAIL_USER
+2025-08-20 12:08:06 - INFO: Loaded environment variable: EMAIL_PASS
+2025-08-20 12:08:06 - INFO: Loaded environment variable: MAX_FILE_SIZE
+2025-08-20 12:08:06 - INFO: Loaded environment variable: UPLOAD_PATH
+2025-08-20 12:08:06 - INFO: Loaded environment variable: BACKUP_RETENTION_DAYS
+2025-08-20 12:08:06 - INFO: Loaded environment variable: BACKUP_SCHEDULE
+2025-08-20 12:08:06 - INFO: Loaded environment variable: RATE_LIMIT_WINDOW_MS
+2025-08-20 12:08:06 - INFO: Loaded environment variable: RATE_LIMIT_MAX_REQUESTS
+2025-08-20 12:08:06 - INFO: Loaded environment variable: SSL_CERT_PATH
+2025-08-20 12:08:06 - INFO: Loaded environment variable: SSL_KEY_PATH
+2025-08-20 12:08:06 - INFO: Loaded environment variable: HEALTH_CHECK_INTERVAL
+2025-08-20 12:08:06 - INFO: Loaded environment variable: LOG_LEVEL
+2025-08-20 12:08:06 - INFO: Loaded environment variable: LOG_FORMAT
+2025-08-20 12:08:06 - INFO: Loaded environment variable: CLUSTER_WORKERS
+2025-08-20 12:08:06 - SUCCESS: Environment setup completed
+2025-08-20 12:08:06 - INFO: Preparing build environment...
+2025-08-20 12:08:06 - SUCCESS: Build environment prepared
+2025-08-20 12:08:06 - INFO: Checking package versions...
+2025-08-20 12:08:08 - WARNING: Some packages have updates available
+2025-08-20 12:08:09 - WARNING: Run 'npm run update-deps:safe' to update non-breaking changes
+2025-08-20 12:08:09 - SUCCESS: No moderate+ security vulnerabilities found
+2025-08-20 12:08:09 - INFO: Running security checks...
+2025-08-20 12:08:09 - INFO: Running security audit...
+2025-08-20 12:08:10 - SUCCESS: No high-severity vulnerabilities found
+2025-08-20 12:08:10 - SUCCESS: Security checks completed
+2025-08-20 12:08:10 - INFO: Checking Docker optimization...
+2025-08-20 12:08:10 - SUCCESS: Multi-stage Docker build detected
+2025-08-20 12:08:10 - SUCCESS: .dockerignore file found
+2025-08-20 12:08:10 - INFO: Docker image size: 
+2025-08-20 12:08:10 - INFO: Creating backup of existing data...
+2025-08-20 12:08:10 - INFO: Creating database backup...
+2025-08-20 12:08:11 - SUCCESS: Database backup created: db_backup_20250820_120810.sql
+2025-08-20 12:08:11 - SUCCESS: File backup created: backups/backup_20250820_120810.tar.gz
+2025-08-20 12:08:11 - INFO: Deploying application...
+2025-08-20 12:08:11 - INFO: Stopping existing containers...
+2025-08-20 12:08:13 - INFO: Cleaning up Docker resources...
+2025-08-20 12:08:15 - INFO: Building and starting services...
+2025-08-20 12:09:30 - INFO: Waiting for services to start...
+2025-08-20 12:14:38 - ERROR: Services failed to start within expected time

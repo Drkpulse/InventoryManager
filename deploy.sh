@@ -42,9 +42,60 @@ info() {
     log "INFO: $1"
 }
 
+# Check Node.js version
+check_node_version() {
+    info "Checking Node.js version..."
+
+    if ! command -v node &> /dev/null; then
+        error_exit "Node.js is not installed. Please install Node.js 18.x or higher."
+    fi
+
+    local node_version=$(node --version | sed 's/v//')
+    local required_major=18
+    local current_major=$(echo "$node_version" | cut -d. -f1)
+
+    if [[ $current_major -lt $required_major ]]; then
+        error_exit "Node.js version $node_version is too old. Required: $required_major.x or higher. Consider using nvm to update."
+    fi
+
+    success "Node.js version $node_version is compatible"
+}
+
+# Function to safely load environment variables
+load_env_vars() {
+    if [[ -f "$ENV_FILE" ]]; then
+        # Use a more robust method to load environment variables
+        while IFS= read -r line; do
+            # Skip empty lines and comments
+            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+
+            # Check if line contains an assignment
+            if [[ "$line" =~ ^[[:space:]]*([a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*=[[:space:]]*(.*)[[:space:]]*$ ]]; then
+                var_name="${BASH_REMATCH[1]}"
+                var_value="${BASH_REMATCH[2]}"
+
+                # Remove quotes if present
+                var_value="${var_value%\"}"
+                var_value="${var_value#\"}"
+                var_value="${var_value%\'}"
+                var_value="${var_value#\'}"
+
+                # Export the variable
+                export "$var_name=$var_value"
+                info "Loaded environment variable: $var_name"
+            fi
+        done < "$ENV_FILE"
+    else
+        warning "Environment file $ENV_FILE not found"
+    fi
+}
+
 # Pre-flight checks
 preflight_checks() {
     info "Starting pre-flight checks..."
+
+    # Check Node.js version first
+    check_node_version
 
     # Check if running as root
     if [[ $EUID -eq 0 ]]; then
@@ -57,8 +108,15 @@ preflight_checks() {
     fi
 
     # Check Docker Compose
-    if ! command -v docker-compose &> /dev/null; then
+    if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
         error_exit "Docker Compose is not installed. Please install Docker Compose first."
+    fi
+
+    # Support both docker-compose and docker compose commands
+    if command -v docker-compose &> /dev/null; then
+        DOCKER_COMPOSE="docker-compose"
+    else
+        DOCKER_COMPOSE="docker compose"
     fi
 
     # Check Docker daemon
@@ -76,12 +134,38 @@ preflight_checks() {
     success "Pre-flight checks passed"
 }
 
+# Check and fix npm dependencies
+check_dependencies() {
+    info "Checking npm dependencies..."
+
+    if [[ -f "package.json" ]]; then
+        # Check if node_modules exists and is up to date
+        if [[ ! -d "node_modules" ]] || [[ "package.json" -nt "node_modules" ]]; then
+            info "Installing/updating npm dependencies..."
+
+            # Clean install for consistency
+            rm -rf node_modules package-lock.json
+
+            # Try normal install first
+            if ! npm install 2>/dev/null; then
+                warning "Normal npm install failed, trying with --legacy-peer-deps..."
+                if ! npm install --legacy-peer-deps; then
+                    warning "Legacy peer deps install failed, trying with --force..."
+                    npm install --force
+                fi
+            fi
+        fi
+
+        success "Dependencies are up to date"
+    fi
+}
+
 # Environment setup
 setup_environment() {
     info "Setting up environment..."
 
     # Create necessary directories
-    mkdir -p "$BACKUP_DIR" logs ssl
+    mkdir -p "$BACKUP_DIR" logs ssl data
 
     # Check if .env exists
     if [[ ! -f "$ENV_FILE" ]]; then
@@ -93,7 +177,7 @@ setup_environment() {
             # Generate secure session secret
             if command -v openssl &> /dev/null; then
                 session_secret=$(openssl rand -base64 64 | tr -d '\n')
-                sed -i "s/your-super-secret-session-key-change-in-production/$session_secret/" "$ENV_FILE"
+                sed -i.bak "s/your-super-secret-session-key-change-in-production/$session_secret/" "$ENV_FILE"
                 info "Generated secure session secret"
             fi
 
@@ -108,9 +192,10 @@ setup_environment() {
         fi
     fi
 
-    # Validate critical environment variables
-    export $(grep -v '^#' "$ENV_FILE" | xargs)
+    # Load environment variables safely
+    load_env_vars
 
+    # Validate critical environment variables
     if [[ "${DB_PASSWORD:-}" == "postgres" ]] || [[ "${DB_PASSWORD:-}" == "postgres123" ]]; then
         error_exit "DB_PASSWORD is still set to default value. Please change it in $ENV_FILE"
     fi
@@ -120,6 +205,28 @@ setup_environment() {
     fi
 
     success "Environment setup completed"
+}
+
+# Package version check
+check_package_versions() {
+    info "Checking package versions..."
+
+    if [[ -f "package.json" ]] && command -v npm &> /dev/null; then
+        # Check for outdated packages
+        if npm outdated --json > /dev/null 2>&1; then
+            info "All packages are up to date"
+        else
+            warning "Some packages have updates available"
+            warning "Run 'npm run update-deps:safe' to update non-breaking changes"
+        fi
+
+        # Check for security vulnerabilities
+        if npm audit --audit-level moderate --json > /dev/null 2>&1; then
+            success "No moderate+ security vulnerabilities found"
+        else
+            warning "Security vulnerabilities detected. Review with 'npm audit'"
+        fi
+    fi
 }
 
 # Security checks
@@ -158,6 +265,31 @@ security_checks() {
     success "Security checks completed"
 }
 
+# Docker optimization check
+check_docker_optimization() {
+    info "Checking Docker optimization..."
+
+    # Check if multi-stage build is being used
+    if grep -q "FROM.*AS.*" Dockerfile 2>/dev/null; then
+        success "Multi-stage Docker build detected"
+    else
+        warning "Consider using multi-stage Docker build for optimization"
+    fi
+
+    # Check .dockerignore
+    if [[ -f ".dockerignore" ]]; then
+        success ".dockerignore file found"
+    else
+        warning "Consider adding .dockerignore for better build performance"
+    fi
+
+    # Check image size after build
+    if docker images it-asset-manager:latest &>/dev/null; then
+        local image_size=$(docker images it-asset-manager:latest --format "{{.Size}}")
+        info "Docker image size: $image_size"
+    fi
+}
+
 # Backup existing data
 backup_data() {
     info "Creating backup of existing data..."
@@ -166,11 +298,11 @@ backup_data() {
     backup_file="$BACKUP_DIR/backup_$timestamp.tar.gz"
 
     # Check if containers are running
-    if docker-compose ps -q | grep -q .; then
+    if $DOCKER_COMPOSE ps -q 2>/dev/null | grep -q .; then
         info "Creating database backup..."
 
         # Create database backup
-        if docker-compose exec -T postgres pg_dump -U postgres inventory_db > "$BACKUP_DIR/db_backup_$timestamp.sql" 2>/dev/null; then
+        if $DOCKER_COMPOSE exec -T postgres pg_dump -U postgres inventory_db > "$BACKUP_DIR/db_backup_$timestamp.sql" 2>/dev/null; then
             success "Database backup created: db_backup_$timestamp.sql"
         else
             warning "Failed to create database backup"
@@ -192,7 +324,7 @@ deploy_application() {
 
     # Stop existing containers
     info "Stopping existing containers..."
-    docker-compose down --remove-orphans || true
+    $DOCKER_COMPOSE down --remove-orphans || true
 
     # Clean up unused Docker resources
     info "Cleaning up Docker resources..."
@@ -200,7 +332,7 @@ deploy_application() {
 
     # Build and start services
     info "Building and starting services..."
-    docker-compose up --build -d
+    $DOCKER_COMPOSE up --build -d
 
     # Wait for services to be ready
     info "Waiting for services to start..."
@@ -208,7 +340,7 @@ deploy_application() {
     local attempt=0
 
     while [[ $attempt -lt $max_attempts ]]; do
-        if docker-compose ps | grep -q "Up"; then
+        if $DOCKER_COMPOSE ps | grep -q "Up"; then
             if curl -f http://localhost:3000/health >/dev/null 2>&1; then
                 break
             fi
@@ -239,9 +371,9 @@ post_deployment_checks() {
     fi
 
     # Check container status
-    local failed_containers=$(docker-compose ps --filter "status=exited" -q | wc -l)
+    local failed_containers=$($DOCKER_COMPOSE ps --filter "status=exited" -q | wc -l)
     if [[ $failed_containers -gt 0 ]]; then
-        error_exit "Some containers failed to start. Check logs with: docker-compose logs"
+        error_exit "Some containers failed to start. Check logs with: $DOCKER_COMPOSE logs"
     fi
 
     # Check disk usage
@@ -252,7 +384,7 @@ post_deployment_checks() {
 
     # Display container status
     info "Container status:"
-    docker-compose ps
+    $DOCKER_COMPOSE ps
 
     success "Post-deployment checks completed"
 }
@@ -268,6 +400,32 @@ cleanup_backups() {
     success "Old backups cleaned up"
 }
 
+# Add this function before deploy_application()
+prepare_build_environment() {
+    info "Preparing build environment..."
+
+    # Create necessary directories
+    mkdir -p public/css logs uploads data
+
+    # Check if input.css exists
+    if [[ ! -f "src/input.css" ]]; then
+        info "Creating src/input.css..."
+        cat > src/input.css << 'EOF'
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+EOF
+    fi
+
+    # Verify TailwindCSS config
+    if [[ ! -f "tailwind.config.js" ]]; then
+        warning "tailwind.config.js not found. Build may fail."
+    fi
+
+    success "Build environment prepared"
+}
+
+
 # Main deployment process
 main() {
     echo -e "${BLUE}"
@@ -278,8 +436,12 @@ main() {
     log "Starting production deployment..."
 
     preflight_checks
+    check_dependencies
     setup_environment
+	prepare_build_environment
+    check_package_versions
     security_checks
+    check_docker_optimization
     backup_data
     deploy_application
     post_deployment_checks
@@ -298,11 +460,11 @@ main() {
     echo -e "${YELLOW}⚠️  IMPORTANT: Change the default admin password immediately!${NC}"
     echo ""
     echo -e "${BLUE}📋 Useful commands:${NC}"
-    echo -e "   View logs: ${YELLOW}docker-compose logs -f${NC}"
-    echo -e "   Stop application: ${YELLOW}docker-compose down${NC}"
-    echo -e "   Restart application: ${YELLOW}docker-compose restart${NC}"
-    echo -e "   View status: ${YELLOW}docker-compose ps${NC}"
-    echo -e "   Backup database: ${YELLOW}./tools/backup.sh${NC}"
+    echo -e "   View logs: ${YELLOW}$DOCKER_COMPOSE logs -f${NC}"
+    echo -e "   Stop application: ${YELLOW}$DOCKER_COMPOSE down${NC}"
+    echo -e "   Restart application: ${YELLOW}$DOCKER_COMPOSE restart${NC}"
+    echo -e "   View status: ${YELLOW}$DOCKER_COMPOSE ps${NC}"
+    echo -e "   Backup database: ${YELLOW}npm run backup:db${NC}"
 
     log "Production deployment completed successfully"
 }

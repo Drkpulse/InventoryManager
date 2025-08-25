@@ -100,15 +100,11 @@ exports.createEmployeeForm = async (req, res) => {
     // Get locations for dropdown
     const locations = await db.query('SELECT * FROM locations ORDER BY name');
 
-    // Get software for dropdown
-    const software = await db.query('SELECT * FROM software ORDER BY name');
-
     res.render('layout', {
       title: 'Add New Employee',
       body: 'employees/create',
       departments: departments.rows,
       locations: locations.rows,
-      software: software.rows,
       user: req.session.user
     });
   } catch (error) {
@@ -122,8 +118,7 @@ exports.createEmployee = async (req, res) => {
 
   try {
     const {
-      name, cep, email, location_id, dept_id, joined_date,
-      software_assignments // Array of software IDs
+      name, cep, email, location_id, dept_id, joined_date
     } = req.body;
 
     await client.query('BEGIN');
@@ -137,26 +132,9 @@ exports.createEmployee = async (req, res) => {
 
     const employeeId = result.rows[0].id;
 
-    // Handle software assignments
-    const assignedSoftware = [];
-    if (software_assignments && Array.isArray(software_assignments)) {
-      for (const softwareId of software_assignments) {
-        if (softwareId) {
-          await client.query(`
-            INSERT INTO employee_software (employee_id, software_id, assigned_date)
-            VALUES ($1, $2, CURRENT_DATE)
-          `, [employeeId, softwareId]);
+    await client.query('COMMIT');
 
-          // Get software name for history
-          const softwareResult = await client.query('SELECT name FROM software WHERE id = $1', [softwareId]);
-          if (softwareResult.rows.length > 0) {
-            assignedSoftware.push(softwareResult.rows[0].name);
-          }
-        }
-      }
-    }
-
-    // Log the creation in history
+    // Log the creation in history after transaction commits
     try {
       await historyLogger.logEmployeeHistory(
         employeeId,
@@ -168,7 +146,6 @@ exports.createEmployee = async (req, res) => {
           location_id,
           dept_id,
           joined_date,
-          software_assigned: assignedSoftware,
           created_by: req.session.user.name
         },
         req.session.user.id
@@ -177,7 +154,6 @@ exports.createEmployee = async (req, res) => {
       console.error('Failed to log history, but employee was created:', historyError);
     }
 
-    await client.query('COMMIT');
     res.redirect(`/employees/${employeeId}`);
   } catch (error) {
     await client.query('ROLLBACK');
@@ -214,24 +190,12 @@ exports.updateEmployeeForm = async (req, res) => {
     // Get locations for dropdown
     const locations = await db.query('SELECT * FROM locations ORDER BY name');
 
-    // Get software for dropdown
-    const software = await db.query('SELECT * FROM software ORDER BY name');
-
-    // Get currently assigned software
-    const assignedSoftware = await db.query(`
-      SELECT software_id FROM employee_software WHERE employee_id = $1
-    `, [id]);
-
-    const assignedSoftwareIds = assignedSoftware.rows.map(row => row.software_id);
-
     res.render('layout', {
       title: 'Edit Employee',
       body: 'employees/edit',
       employee: employeeResult.rows[0],
       departments: departments.rows,
       locations: locations.rows,
-      software: software.rows,
-      assignedSoftwareIds: assignedSoftwareIds,
       user: req.session.user
     });
   } catch (error) {
@@ -246,8 +210,7 @@ exports.updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      name, cep, email, location_id, dept_id, joined_date, left_date,
-      software_assignments
+      name, cep, email, location_id, dept_id, joined_date, left_date
     } = req.body;
 
     await client.query('BEGIN');
@@ -260,15 +223,7 @@ exports.updateEmployee = async (req, res) => {
       return res.status(404).send('Employee not found');
     }
 
-    // Get original software assignments
-    const originalSoftwareResult = await client.query(`
-      SELECT s.name, es.software_id
-      FROM employee_software es
-      JOIN software s ON es.software_id = s.id
-      WHERE es.employee_id = $1
-    `, [id]);
-    const originalSoftware = originalSoftwareResult.rows;
-
+    // Update employee
     await client.query(`
       UPDATE employees SET
         name = $1,
@@ -281,29 +236,6 @@ exports.updateEmployee = async (req, res) => {
         updated_at = NOW()
       WHERE id = $8
     `, [name, cep, email, location_id, dept_id, joined_date, left_date || null, id]);
-
-    // Update software assignments
-    // First, remove all existing assignments
-    await client.query('DELETE FROM employee_software WHERE employee_id = $1', [id]);
-
-    // Then add new assignments and track changes
-    const newSoftware = [];
-    if (software_assignments && Array.isArray(software_assignments)) {
-      for (const softwareId of software_assignments) {
-        if (softwareId) {
-          await client.query(`
-            INSERT INTO employee_software (employee_id, software_id, assigned_date)
-            VALUES ($1, $2, CURRENT_DATE)
-          `, [id, softwareId]);
-
-          // Get software name for history
-          const softwareResult = await client.query('SELECT name FROM software WHERE id = $1', [softwareId]);
-          if (softwareResult.rows.length > 0) {
-            newSoftware.push(softwareResult.rows[0].name);
-          }
-        }
-      }
-    }
 
     // Log what has changed
     const changes = {};
@@ -324,21 +256,12 @@ exports.updateEmployee = async (req, res) => {
       }
     }
 
-    // Track software changes
-    const oldSoftwareNames = originalSoftware.map(s => s.name);
-    const addedSoftware = newSoftware.filter(s => !oldSoftwareNames.includes(s));
-    const removedSoftware = oldSoftwareNames.filter(s => !newSoftware.includes(s));
-
-    if (addedSoftware.length > 0 || removedSoftware.length > 0) {
-      changes.software_changes = {
-        added: addedSoftware,
-        removed: removedSoftware,
-        current: newSoftware
-      };
-    }
-
     changes.updated_by = req.session.user.name;
 
+    // Commit the transaction BEFORE logging history
+    await client.query('COMMIT');
+
+    // Log history AFTER the transaction is committed to avoid deadlocks
     if (Object.keys(changes).length > 0) {
       try {
         await historyLogger.logEmployeeHistory(
@@ -348,24 +271,15 @@ exports.updateEmployee = async (req, res) => {
           req.session.user.id
         );
       } catch (historyError) {
-        console.error('Failed to log history:', historyError);
+        console.error('Failed to log history (transaction already committed):', historyError);
+        // Don't fail the entire operation if history logging fails
       }
     }
 
-    await client.query('COMMIT');
     res.redirect(`/employees/${id}`);
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error updating employee:', error);
-
-    if (error.code === '23505') {
-      return res.status(400).send('Email or CEP already exists');
-    }
-
-    if (error.code === '23503') {
-      return res.status(400).send('Invalid reference: Check department or location');
-    }
-
     res.status(500).send('Server error');
   } finally {
     client.release();

@@ -75,7 +75,7 @@
               required placeholder="employee@company.com">
             <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
               <i class="fas fa-envelope"></i>
-            </small><%= t('corporate_email_address') %>
+              <%= t('corporate_email_address') %>
             </small>
           </div>
         </div>
@@ -151,62 +151,6 @@
             </small>
           </div>
         </div>
-      </div>
-
-      <!-- Software Assignments Section -->
-      <div>
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="fas fa-laptop-code"></i> <%= t('software_assignments') %>
-        </h3>
-        <div class="border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 p-4 max-h-80 overflow-y-auto mb-2">
-          <% if (software && software.length > 0) { %>
-            <% software.forEach(sw => { %>
-              <div class="mb-4 pb-4 border-b border-gray-100 dark:border-gray-800 last:border-b-0 last:mb-0 last:pb-0">
-                <label class="flex items-start gap-3 cursor-pointer">
-                  <input type="checkbox"
-                         name="software_assignments"
-                         value="<%= sw.id %>"
-                         class="mt-1 accent-blue-600"
-                         <%= assignedSoftwareIds.includes(sw.id) ? 'checked' : '' %>>
-                  <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                      <strong class="text-gray-800 dark:text-gray-100"><%= sw.name %></strong>
-                      <% if (sw.version) { %>
-                        <span class="bg-gray-200 dark:bg-gray-700 text-xs rounded px-2 py-0.5">v<%= sw.version %></span>
-                      <% } %>
-                    </div>
-                    <div class="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400 mt-1">
-                      <% if (sw.vendor) { %>
-                        <span><i class="fas fa-building"></i> <%= sw.vendor %></span>
-                      <% } %>
-                      <% if (sw.license_type) { %>
-                        <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded px-2 py-0.5"><i class="fas fa-certificate"></i> <%= sw.license_type %></span>
-                      <% } %>
-                      <% if (sw.cost_per_license) { %>
-                        <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded px-2 py-0.5"><i class="fas fa-euro-sign"></i> €<%= parseFloat(sw.cost_per_license).toFixed(2) %>/license</span>
-                      <% } %>
-                    </div>
-                    <% if (sw.description) { %>
-                      <div class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= sw.description %></div>
-                    <% } %>
-                  </div>
-                </label>
-              </div>
-            <% }) %>
-          <% } else { %>
-            <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
-              <div class="text-4xl text-blue-500 mb-2">
-                <i class="fas fa-laptop-code"></i>
-              </div>
-              <p class="text-gray-700 dark:text-gray-200 mb-1"><%= t('no_software_licenses') %></p>
-              <small class="text-gray-500 dark:text-gray-400"><%= t('software_licenses_management') %></small>
-            </div>
-          <% } %>
-        </div>
-        <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
-          <i class="fas fa-info-circle"></i>
-          <%= t('select_software_licenses') %>
-        </small>
       </div>
 
       <!-- Additional Information Section -->
@@ -420,42 +364,5 @@ document.addEventListener('DOMContentLoaded', function() {
   if (firstInput) {
     firstInput.focus();
   }
-
-  // Track software assignment changes
-  const softwareCheckboxes = form.querySelectorAll('input[name="software_assignments"]');
-  const originalAssignments = Array.from(softwareCheckboxes)
-    .filter(cb => cb.checked)
-    .map(cb => cb.value);
-
-  let changesWarningShown = false;
-
-  softwareCheckboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-      const currentAssignments = Array.from(softwareCheckboxes)
-        .filter(cb => cb.checked)
-        .map(cb => cb.value);
-
-      const hasChanges = JSON.stringify(originalAssignments.sort()) !== JSON.stringify(currentAssignments.sort());
-
-      if (hasChanges && !changesWarningShown) {
-        const warningAlert = document.createElement('div');
-        warningAlert.className = 'mb-4 flex items-center gap-2 px-4 py-3 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700';
-        warningAlert.innerHTML = `
-          <i class="fas fa-info-circle"></i>
-          <div>
-            <strong>Software assignment changes detected</strong>
-            <p>Changes to software assignments will be logged in the employee's history.</p>
-          </div>
-        `;
-
-        // Find software section and insert warning
-        const softwareSection = document.querySelector('.border.border-gray-200');
-        if (softwareSection) {
-          softwareSection.parentNode.insertBefore(warningAlert, softwareSection);
-          changesWarningShown = true;
-        }
-      }
-    });
-  });
 });
 </script>

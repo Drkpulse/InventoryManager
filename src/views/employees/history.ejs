@@ -1,3 +1,41 @@
+<%
+  function getActionStyle(actionType) {
+    switch(actionType) {
+      case 'created':
+        return { icon: 'fas fa-user-plus', color: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' };
+      case 'updated':
+        return { icon: 'fas fa-user-edit', color: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' };
+      case 'assigned':
+        return { icon: 'fas fa-arrow-right', color: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' };
+      case 'unassigned':
+        return { icon: 'fas fa-arrow-left', color: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' };
+      case 'deleted':
+        return { icon: 'fas fa-user-times', color: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' };
+      default:
+        return { icon: 'fas fa-history', color: 'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400' };
+    }
+  }
+
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diffInMs = now - date;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    const diffInMonths = Math.floor(diffInDays / 30);
+    const diffInYears = Math.floor(diffInDays / 365);
+
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
+    if (diffInMonths < 12) return `${diffInMonths}mo ago`;
+    return `${diffInYears}y ago`;
+  }
+%>
+
 <div class="container mx-auto px-4 py-8">
   <!-- Modern Header with Glassmorphism -->
   <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 mb-8 animate-[fadeInUp_0.6s_ease-out]">
@@ -64,7 +102,6 @@
           <option value="updated"><%= t('updated') %></option>
           <option value="assigned"><%= t('assigned') %></option>
           <option value="unassigned"><%= t('unassigned') %></option>
-          <option value="software_comment"><%= t('software_comment') %></option>
           <option value="deleted"><%= t('deleted') %></option>
         </select>
       </div>
@@ -77,7 +114,6 @@
           <option value=""><%= t('all_types') %></option>
           <option value="employee"><%= t('employee') %></option>
           <option value="item"><%= t('item') %></option>
-          <option value="software"><%= t('software') %></option>
         </select>
       </div>
 
@@ -554,44 +590,3 @@ function printHistory() {
   }, 500);
 }
 </script>
-
-<%
-function getActionStyle(actionType, historyType) {
-  if (historyType === 'software_comment') {
-    return { icon: 'fas fa-comment-dots', color: 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300' };
-  }
-  switch(actionType) {
-    case 'created':
-      return { icon: 'fas fa-user-plus', color: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' };
-    case 'updated':
-      return { icon: 'fas fa-user-edit', color: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' };
-    case 'assigned':
-      return { icon: 'fas fa-arrow-right', color: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' };
-    case 'unassigned':
-      return { icon: 'fas fa-arrow-left', color: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' };
-    case 'deleted':
-      return { icon: 'fas fa-user-times', color: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' };
-    default:
-      return { icon: 'fas fa-history', color: 'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400' };
-  }
-}
-
-function getTimeAgo(date) {
-  const now = new Date();
-  const diffInMs = now - date;
-  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-  const diffInWeeks = Math.floor(diffInDays / 7);
-  const diffInMonths = Math.floor(diffInDays / 30);
-  const diffInYears = Math.floor(diffInDays / 365);
-
-  if (diffInMinutes < 1) return 'Just now';
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-  if (diffInHours < 24) return `${diffInHours}h ago`;
-  if (diffInDays < 7) return `${diffInDays}d ago`;
-  if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
-  if (diffInMonths < 12) return `${diffInMonths}mo ago`;
-  return `${diffInYears}y ago`;
-}
-%>

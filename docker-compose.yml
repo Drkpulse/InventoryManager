@@ -1,6 +1,6 @@
 services:
   app:
-    image: d4rkpulse/it-asset-manager:test
+    image: d4rkpulse/it-asset-manager:alpha-0.0.1
     ports:
       - "3000:3000"
     environment:
@@ -10,7 +10,7 @@ services:
       - DB_NAME=${DB_NAME:-inventory_db}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD}
-      - SESSION_SECRET=${SESSION_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}error	"Too many requests from this IP, please try again later."
       - REDIS_URL=redis://redis:6379
       - TZ=UTC
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
@@ -29,7 +29,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1.5G  # Increased for Puppeteer
+          memory: 1.5G
           cpus: '0.75'
         reservations:
           memory: 512M

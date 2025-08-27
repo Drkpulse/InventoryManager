@@ -48,36 +48,6 @@
     "prestart": "npm run security:audit",
     "prebuild": "mkdir -p public/css logs uploads data"
   },
-  "dependencies": {
-    "axios": "^1.11.0",
-    "bcrypt": "^6.0.0",
-    "bcryptjs": "^2.4.3",
-    "compression": "^1.7.4",
-    "connect-flash": "^0.1.1",
-    "connect-redis": "^7.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.6.1",
-    "ejs": "^3.1.10",
-    "express": "^4.19.2",
-    "express-rate-limit": "^7.2.0",
-    "express-session": "^1.18.0",
-    "express-validator": "^7.0.1",
-    "glob": "^10.3.15",
-    "helmet": "^7.1.0",
-    "hpp": "^0.2.3",
-    "i18n": "^0.15.1",
-    "method-override": "^3.0.0",
-    "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
-    "node-cron": "^3.0.3",
-    "pg": "^8.11.5",
-    "pg-hstore": "^2.3.4",
-    "puppeteer": "^22.6.5",
-    "redis": "^4.6.13",
-    "uuid": "^9.0.1",
-    "winston": "^3.13.0",
-    "winston-daily-rotate-file": "^5.0.0"
-  },
   "devDependencies": {
     "@types/node": "^20.12.12",
     "autoprefixer": "^10.4.19",
@@ -88,9 +58,6 @@
     "postcss": "^8.4.38",
     "supertest": "^7.0.0",
     "tailwindcss": "^3.4.3"
-  },
-  "overrides": {
-    "redis": "^4.6.13"
   },
   "repository": {
     "type": "git",
@@ -111,5 +78,35 @@
   "bugs": {
     "url": "https://github.com/Drkpulse/inv_manager/issues"
   },
-  "homepage": "https://github.com/Drkpulse/inv_manager#readme"
+  "homepage": "https://github.com/Drkpulse/inv_manager#readme",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "compression": "^1.8.1",
+    "connect-flash": "^0.1.1",
+    "connect-redis": "^9.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "express-session": "^1.18.2",
+    "express-validator": "^7.2.1",
+    "glob": "^11.0.3",
+    "helmet": "^8.1.0",
+    "hpp": "^0.2.3",
+    "i18n": "^0.15.1",
+    "method-override": "^3.0.0",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
+    "puppeteer": "^24.17.0",
+    "redis": "^5.8.2",
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  }
 }

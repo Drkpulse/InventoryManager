@@ -10,10 +10,13 @@ services:
       - DB_NAME=${DB_NAME:-inventory_db}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD}
-      - SESSION_SECRET=${SESSION_SECRET}error	"Too many requests from this IP, please try again later."
+      - SESSION_SECRET=${SESSION_SECRET}
       - REDIS_URL=redis://redis:6379
       - TZ=UTC
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-900000}
+      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-500}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
     depends_on:
       postgres:
         condition: service_healthy

@@ -42,6 +42,52 @@ info() {
     log "INFO: $1"
 }
 
+# Add these helper functions at the top of the script
+check_url_health() {
+    local url="$1"
+    local timeout="${2:-10}"
+    curl -f -s -m "$timeout" --connect-timeout 5 "$url" >/dev/null 2>&1
+}
+
+check_service_health() {
+    local service="$1"
+    case "$service" in
+        "postgres")
+            $DOCKER_COMPOSE exec -T postgres pg_isready -U postgres -d inventory_db >/dev/null 2>&1
+            ;;
+        "redis")
+            $DOCKER_COMPOSE exec -T redis redis-cli ping >/dev/null 2>&1
+            ;;
+        "app")
+            check_url_health "http://localhost:3000/health"
+            ;;
+        "nginx")
+            check_url_health "http://localhost:80/health"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+debug_services() {
+    info "=== SERVICE DEBUG INFORMATION ==="
+
+    echo "Docker Compose PS Output:"
+    $DOCKER_COMPOSE ps
+
+    echo -e "\nContainer Health Status:"
+    docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" --filter "label=com.docker.compose.project"
+
+    echo -e "\nRecent logs from all services:"
+    $DOCKER_COMPOSE logs --tail=10 --timestamps
+
+    echo -e "\nNetwork connectivity:"
+    docker network ls | grep "$(basename "$(pwd)")"
+
+    echo "=== END DEBUG INFORMATION ==="
+}
+
 # Check Node.js version
 check_node_version() {
     info "Checking Node.js version..."
@@ -334,59 +380,207 @@ deploy_application() {
     info "Building and starting services..."
     $DOCKER_COMPOSE up --build -d
 
-    # Wait for services to be ready
-    info "Waiting for services to start..."
-    local max_attempts=60
-    local attempt=0
-
-    while [[ $attempt -lt $max_attempts ]]; do
-        if $DOCKER_COMPOSE ps | grep -q "Up"; then
-            if curl -f http://localhost:3000/health >/dev/null 2>&1; then
-                break
-            fi
-        fi
-
-        attempt=$((attempt + 1))
-        sleep 5
-        echo -n "."
-    done
-    echo ""
-
-    if [[ $attempt -ge $max_attempts ]]; then
-        error_exit "Services failed to start within expected time"
-    fi
+    # Wait for all services to be healthy
+    wait_for_services
 
     success "Application deployed successfully"
 }
 
-# Post-deployment checks
+# New comprehensive health check function
+wait_for_services() {
+    info "Waiting for all services to become healthy..."
+
+    local max_attempts=120  # 10 minutes total
+    local attempt=0
+    local check_interval=5
+
+    # Define health check endpoints
+    local app_health_url="http://localhost:3000/health"
+    local nginx_health_url="http://localhost:80/health"
+
+    while [[ $attempt -lt $max_attempts ]]; do
+        local all_healthy=true
+        local services_status=""
+
+        # Check Docker Compose service health
+        local compose_status=$($DOCKER_COMPOSE ps --format json 2>/dev/null || echo "[]")
+
+        # Check individual services
+        echo -n "Checking services [$(($attempt * $check_interval))s]: "
+
+        # 1. Check PostgreSQL
+        if $DOCKER_COMPOSE exec -T postgres pg_isready -U postgres -d inventory_db >/dev/null 2>&1; then
+            echo -n "✅ DB "
+            services_status+="DB:OK "
+        else
+            echo -n "❌ DB "
+            services_status+="DB:FAIL "
+            all_healthy=false
+        fi
+
+        # 2. Check Redis
+        if $DOCKER_COMPOSE exec -T redis redis-cli ping >/dev/null 2>&1; then
+            echo -n "✅ Redis "
+            services_status+="Redis:OK "
+        else
+            echo -n "❌ Redis "
+            services_status+="Redis:FAIL "
+            all_healthy=false
+        fi
+
+        # 3. Check Application
+        if curl -f -s -m 10 "$app_health_url" >/dev/null 2>&1; then
+            echo -n "✅ App "
+            services_status+="App:OK "
+        else
+            echo -n "❌ App "
+            services_status+="App:FAIL "
+            all_healthy=false
+        fi
+
+        # 4. Check Nginx (if port 80 is mapped)
+        if netstat -tuln 2>/dev/null | grep -q ":80 " || ss -tuln 2>/dev/null | grep -q ":80 "; then
+            if curl -f -s -m 10 "$nginx_health_url" >/dev/null 2>&1; then
+                echo -n "✅ Nginx "
+                services_status+="Nginx:OK "
+            else
+                echo -n "❌ Nginx "
+                services_status+="Nginx:FAIL "
+                all_healthy=false
+            fi
+        else
+            echo -n "⚠️ Nginx "
+            services_status+="Nginx:SKIP "
+        fi
+
+        echo "" # New line
+
+        # If all services are healthy, break
+        if [[ $all_healthy == true ]]; then
+            success "All services are healthy!"
+
+            # Additional health verification
+            local health_response=$(curl -s "$app_health_url" 2>/dev/null || echo "{}")
+            if echo "$health_response" | grep -q '"status":"healthy"'; then
+                info "Application health check passed"
+                break
+            else
+                warning "Application responded but health status unclear"
+            fi
+        fi
+
+        # Check for failed containers
+        local failed_containers=$($DOCKER_COMPOSE ps --filter "status=exited" -q | wc -l)
+        if [[ $failed_containers -gt 0 ]]; then
+            error_exit "Some containers have exited. Check logs: $DOCKER_COMPOSE logs"
+        fi
+
+        attempt=$((attempt + 1))
+
+        # Show progress every 30 seconds
+        if [[ $((attempt % 6)) -eq 0 ]]; then
+            info "Still waiting... (${attempt}/${max_attempts}) - Status: $services_status"
+
+            # Show container status
+            info "Container status:"
+            $DOCKER_COMPOSE ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
+        fi
+
+        sleep $check_interval
+    done
+
+    if [[ $attempt -ge $max_attempts ]]; then
+        error_exit "Services failed to start within $(($max_attempts * $check_interval)) seconds. Check logs: $DOCKER_COMPOSE logs"
+    fi
+}
+
+# Enhanced post-deployment checks
 post_deployment_checks() {
-    info "Running post-deployment checks..."
+    info "Running comprehensive post-deployment checks..."
 
-    # Health check
-    if curl -f http://localhost:3000/health >/dev/null 2>&1; then
-        success "Health check passed"
+    # 1. Application Health Check
+    info "Checking application health endpoint..."
+    local health_response=$(curl -s -m 10 http://localhost:3000/health 2>/dev/null || echo "{}")
+
+    if echo "$health_response" | grep -q '"status":"healthy"'; then
+        success "Application health check passed"
+
+        # Parse health response for detailed status
+        if command -v jq >/dev/null 2>&1; then
+            echo "$health_response" | jq '.' 2>/dev/null || echo "$health_response"
+        else
+            echo "Health Response: $health_response"
+        fi
     else
-        error_exit "Health check failed"
+        warning "Application health check unclear. Response: $health_response"
     fi
 
-    # Check container status
-    local failed_containers=$($DOCKER_COMPOSE ps --filter "status=exited" -q | wc -l)
-    if [[ $failed_containers -gt 0 ]]; then
-        error_exit "Some containers failed to start. Check logs with: $DOCKER_COMPOSE logs"
+    # 2. Database Connection Test
+    info "Testing database connection..."
+    if $DOCKER_COMPOSE exec -T postgres psql -U postgres -d inventory_db -c "SELECT 1;" >/dev/null 2>&1; then
+        success "Database connection test passed"
+    else
+        error_exit "Database connection test failed"
     fi
 
-    # Check disk usage
+    # 3. Redis Connection Test
+    info "Testing Redis connection..."
+    if $DOCKER_COMPOSE exec -T redis redis-cli ping | grep -q "PONG"; then
+        success "Redis connection test passed"
+    else
+        error_exit "Redis connection test failed"
+    fi
+
+    # 4. Check container resource usage
+    info "Checking container resource usage..."
+    $DOCKER_COMPOSE top
+
+    # 5. Check container logs for errors
+    info "Checking for critical errors in logs..."
+    local error_count=$($DOCKER_COMPOSE logs --tail=50 2>/dev/null | grep -i -c "error\|fatal\|exception" || echo "0")
+    if [[ $error_count -gt 0 ]]; then
+        warning "Found $error_count potential errors in logs. Review with: $DOCKER_COMPOSE logs"
+    else
+        success "No critical errors found in recent logs"
+    fi
+
+    # 6. Port accessibility check
+    info "Checking port accessibility..."
+    local ports_to_check=(3000 80)
+    for port in "${ports_to_check[@]}"; do
+        if netstat -tuln 2>/dev/null | grep -q ":$port " || ss -tuln 2>/dev/null | grep -q ":$port "; then
+            success "Port $port is accessible"
+        else
+            warning "Port $port may not be accessible"
+        fi
+    done
+
+    # 7. SSL Certificate check (if applicable)
+    if [[ -f "ssl/cert.pem" ]]; then
+        info "Checking SSL certificate..."
+        local cert_expiry=$(openssl x509 -in ssl/cert.pem -noout -enddate 2>/dev/null | cut -d= -f2)
+        if [[ -n "$cert_expiry" ]]; then
+            info "SSL certificate expires: $cert_expiry"
+        fi
+    fi
+
+    # 8. Disk space check
     local disk_usage=$(df . | awk 'NR==2 {print $5}' | sed 's/%//')
     if [[ $disk_usage -gt 90 ]]; then
-        warning "Disk usage is above 90%. Consider cleaning up old data."
+        warning "Disk usage is above 90% ($disk_usage%). Consider cleaning up."
+    else
+        success "Disk usage is acceptable ($disk_usage%)"
     fi
 
-    # Display container status
-    info "Container status:"
-    $DOCKER_COMPOSE ps
+    # 9. Memory usage check
+    local memory_info=$(free -h | grep "Mem:")
+    info "Memory usage: $memory_info"
 
-    success "Post-deployment checks completed"
+    # 10. Final container status
+    info "Final container status:"
+    $DOCKER_COMPOSE ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}\t{{.Ports}}"
+
+    success "All post-deployment checks completed"
 }
 
 # Cleanup old backups

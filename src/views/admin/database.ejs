@@ -1,0 +1,603 @@
+<!-- Database Tools Page -->
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900 py-8">
+  <div class="max-w-7xl mx-auto px-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+          <i class="fas fa-database text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Database Tools</h1>
+          <p class="text-gray-600 dark:text-gray-300">Comprehensive database management and maintenance tools</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="location.reload()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition">
+          <i class="fas fa-sync-alt mr-2"></i>Refresh
+        </button>
+        <button onclick="createManualBackup()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
+          <i class="fas fa-plus mr-2"></i>Create Backup
+        </button>
+      </div>
+    </div>
+
+    <!-- Database Status Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Database Size -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Database Size</h3>
+          <i class="fas fa-hdd text-blue-500"></i>
+        </div>
+        <div class="space-y-2" id="dbSize">
+          <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">Loading...</div>
+          <div class="text-sm text-gray-500">Total size</div>
+        </div>
+      </div>
+
+      <!-- Table Count -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tables</h3>
+          <i class="fas fa-table text-green-500"></i>
+        </div>
+        <div class="space-y-2" id="tableCount">
+          <div class="text-2xl font-bold text-green-600 dark:text-green-400">Loading...</div>
+          <div class="text-sm text-gray-500">User tables</div>
+        </div>
+      </div>
+
+      <!-- Active Connections -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Connections</h3>
+          <i class="fas fa-plug text-orange-500"></i>
+        </div>
+        <div class="space-y-2" id="connections">
+          <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">Loading...</div>
+          <div class="text-sm text-gray-500">Active</div>
+        </div>
+      </div>
+
+      <!-- Backup Count -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Backups</h3>
+          <i class="fas fa-archive text-purple-500"></i>
+        </div>
+        <div class="space-y-2" id="backupCount">
+          <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">Loading...</div>
+          <div class="text-sm text-gray-500">Available</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Tools Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Database Backups -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <i class="fas fa-archive text-indigo-500"></i>
+          Database Backups
+        </h3>
+
+        <!-- Backup Actions -->
+        <div class="space-y-4 mb-6">
+          <div class="flex gap-3">
+            <button onclick="createManualBackup()" class="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center justify-center gap-2">
+              <i class="fas fa-plus"></i>
+              Create Manual Backup
+            </button>
+            <button onclick="refreshBackups()" class="px-4 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+
+          <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+            <div class="flex items-center gap-2 text-blue-800 dark:text-blue-300 mb-2">
+              <i class="fas fa-info-circle"></i>
+              <span class="font-medium">Automatic Backups</span>
+            </div>
+            <p class="text-sm text-blue-700 dark:text-blue-400">
+              Daily backups at 1:00 AM • Retention: 30 days • Location: /app/backups
+            </p>
+          </div>
+        </div>
+
+        <!-- Recent Backups List -->
+        <div id="backupsList">
+          <div class="text-center py-4 text-gray-500">
+            <i class="fas fa-spinner fa-spin mr-2"></i>Loading backups...
+          </div>
+        </div>
+      </div>
+
+      <!-- Database Maintenance -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <i class="fas fa-wrench text-orange-500"></i>
+          Database Maintenance
+        </h3>
+
+        <div class="space-y-4">
+          <button onclick="analyzeDatabase()" class="w-full px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition flex items-center justify-center gap-2">
+            <i class="fas fa-search"></i>
+            Analyze Database
+          </button>
+
+          <button onclick="vacuumDatabase()" class="w-full px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition flex items-center justify-center gap-2">
+            <i class="fas fa-broom"></i>
+            Vacuum Database
+          </button>
+
+          <button onclick="reindexDatabase()" class="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition flex items-center justify-center gap-2">
+            <i class="fas fa-sort"></i>
+            Reindex Database
+          </button>
+
+          <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
+              <div class="flex items-center gap-2 text-yellow-800 dark:text-yellow-300 mb-2">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span class="font-medium">Maintenance Warning</span>
+              </div>
+              <p class="text-sm text-yellow-700 dark:text-yellow-400">
+                Database maintenance operations may temporarily impact performance. Schedule during low-usage periods.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Database Information -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <i class="fas fa-info-circle text-blue-500"></i>
+        Database Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="dbInfo">
+        <div class="text-center py-8 col-span-full text-gray-500">
+          <i class="fas fa-spinner fa-spin mr-2"></i>Loading database information...
+        </div>
+      </div>
+    </div>
+
+    <!-- Largest Tables -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <i class="fas fa-chart-bar text-green-500"></i>
+        Largest Tables
+      </h3>
+
+      <div class="overflow-x-auto" id="largestTables">
+        <div class="text-center py-8 text-gray-500">
+          <i class="fas fa-spinner fa-spin mr-2"></i>Loading table information...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Modal -->
+<div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-8 max-w-sm mx-4">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Processing...</h3>
+      <p class="text-gray-600 dark:text-gray-300" id="loadingMessage">Please wait while we process your request.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let dbStats = {};
+
+// Load initial data
+document.addEventListener('DOMContentLoaded', function() {
+  loadDatabaseStats();
+  loadBackups();
+  loadDatabaseInfo();
+  loadLargestTables();
+});
+
+async function loadDatabaseStats() {
+  try {
+    const response = await fetch('/admin/database/stats');
+    const data = await response.json();
+
+    if (data.success) {
+      dbStats = data.stats;
+
+      // Update cards
+      document.getElementById('dbSize').innerHTML = `
+        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">${formatBytes(data.stats.database_size)}</div>
+        <div class="text-sm text-gray-500">Total size</div>
+      `;
+
+      document.getElementById('tableCount').innerHTML = `
+        <div class="text-2xl font-bold text-green-600 dark:text-green-400">${data.stats.table_count}</div>
+        <div class="text-sm text-gray-500">User tables</div>
+      `;
+
+      document.getElementById('connections').innerHTML = `
+        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">${data.stats.active_connections}</div>
+        <div class="text-sm text-gray-500">Active / ${data.stats.max_connections} max</div>
+      `;
+    }
+  } catch (error) {
+    console.error('Error loading database stats:', error);
+  }
+}
+
+async function loadBackups() {
+  try {
+    const response = await fetch('/admin/database/backups');
+    const data = await response.json();
+
+    if (data.success) {
+      const backups = data.backups || [];
+
+      // Update backup count
+      document.getElementById('backupCount').innerHTML = `
+        <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">${backups.length}</div>
+        <div class="text-sm text-gray-500">Available</div>
+      `;
+
+      // Render backup list
+      const backupsList = document.getElementById('backupsList');
+      if (backups.length === 0) {
+        backupsList.innerHTML = `
+          <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-archive text-3xl mb-3 opacity-50"></i>
+            <p>No backups found</p>
+            <p class="text-sm">Create your first backup above</p>
+          </div>
+        `;
+      } else {
+        backupsList.innerHTML = `
+          <h4 class="font-medium text-gray-900 dark:text-white mb-3">Recent Backups</h4>
+          <div class="space-y-2 max-h-64 overflow-y-auto">
+            ${backups.slice(0, 5).map(backup => `
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white truncate">${backup.name}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">${formatBytes(backup.size)} • ${timeAgo(new Date(backup.date))}</div>
+                </div>
+                <div class="flex gap-2 ml-3">
+                  <button onclick="downloadBackup('${backup.name}')" class="p-2 text-gray-400 hover:text-green-600 transition" title="Download">
+                    <i class="fas fa-download"></i>
+                  </button>
+                  <button onclick="deleteBackup('${backup.name}')" class="p-2 text-gray-400 hover:text-red-600 transition" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          ${backups.length > 5 ? `<div class="text-center pt-3"><button onclick="viewAllBackups()" class="text-indigo-600 hover:text-indigo-700 text-sm">View all ${backups.length} backups</button></div>` : ''}
+        `;
+      }
+    }
+  } catch (error) {
+    console.error('Error loading backups:', error);
+    document.getElementById('backupsList').innerHTML = `
+      <div class="text-center py-4 text-red-500">
+        <i class="fas fa-exclamation-triangle mr-2"></i>Error loading backups
+      </div>
+    `;
+  }
+}
+
+async function loadDatabaseInfo() {
+  try {
+    const response = await fetch('/admin/database/info');
+    const data = await response.json();
+
+    if (data.success) {
+      const info = data.info;
+      document.getElementById('dbInfo').innerHTML = `
+        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div class="font-medium text-blue-900 dark:text-blue-300 mb-1">PostgreSQL Version</div>
+          <div class="text-lg font-semibold text-blue-700 dark:text-blue-400">${info.version}</div>
+        </div>
+        <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+          <div class="font-medium text-green-900 dark:text-green-300 mb-1">Database Name</div>
+          <div class="text-lg font-semibold text-green-700 dark:text-green-400">${info.database_name}</div>
+        </div>
+        <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+          <div class="font-medium text-purple-900 dark:text-purple-300 mb-1">Encoding</div>
+          <div class="text-lg font-semibold text-purple-700 dark:text-purple-400">${info.encoding}</div>
+        </div>
+        <div class="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+          <div class="font-medium text-orange-900 dark:text-orange-300 mb-1">Shared Buffers</div>
+          <div class="text-lg font-semibold text-orange-700 dark:text-orange-400">${info.shared_buffers || 'N/A'}</div>
+        </div>
+        <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+          <div class="font-medium text-red-900 dark:text-red-300 mb-1">Max Connections</div>
+          <div class="text-lg font-semibold text-red-700 dark:text-red-400">${info.max_connections}</div>
+        </div>
+        <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+          <div class="font-medium text-indigo-900 dark:text-indigo-300 mb-1">Uptime</div>
+          <div class="text-lg font-semibold text-indigo-700 dark:text-indigo-400">${formatUptime(info.uptime)}</div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error('Error loading database info:', error);
+    document.getElementById('dbInfo').innerHTML = `
+      <div class="text-center py-4 text-red-500 col-span-full">
+        <i class="fas fa-exclamation-triangle mr-2"></i>Error loading database information
+      </div>
+    `;
+  }
+}
+
+async function loadLargestTables() {
+  try {
+    const response = await fetch('/admin/database/tables');
+    const data = await response.json();
+
+    if (data.success) {
+      const tables = data.tables || [];
+
+      if (tables.length === 0) {
+        document.getElementById('largestTables').innerHTML = `
+          <div class="text-center py-8 text-gray-500">No table information available</div>
+        `;
+        return;
+      }
+
+      document.getElementById('largestTables').innerHTML = `
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700">
+              <th class="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Table Name</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Size</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Rows</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Indexes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tables.map(table => `
+              <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="py-3 px-4 font-medium text-gray-900 dark:text-white">${table.table_name}</td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">${table.pretty_size}</td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">${(table.n_live_tup || 0).toLocaleString()}</td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">${table.index_size || 'N/A'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+  } catch (error) {
+    console.error('Error loading table info:', error);
+    document.getElementById('largestTables').innerHTML = `
+      <div class="text-center py-4 text-red-500">
+        <i class="fas fa-exclamation-triangle mr-2"></i>Error loading table information
+      </div>
+    `;
+  }
+}
+
+// Action functions
+async function createManualBackup() {
+  showLoading('Creating manual backup...');
+
+  try {
+    const response = await fetch('/admin/backups/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showToast('success', 'Backup created successfully!');
+      loadBackups(); // Refresh the backup list
+    } else {
+      showToast('error', data.message || 'Failed to create backup');
+    }
+  } catch (error) {
+    console.error('Error creating backup:', error);
+    showToast('error', 'Error creating backup');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function analyzeDatabase() {
+  showLoading('Analyzing database...');
+
+  try {
+    const response = await fetch('/admin/database/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showToast('success', 'Database analysis completed successfully!');
+    } else {
+      showToast('error', data.message || 'Failed to analyze database');
+    }
+  } catch (error) {
+    console.error('Error analyzing database:', error);
+    showToast('error', 'Error analyzing database');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function vacuumDatabase() {
+  showLoading('Vacuuming database...');
+
+  try {
+    const response = await fetch('/admin/database/vacuum', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showToast('success', 'Database vacuum completed successfully!');
+      loadDatabaseStats(); // Refresh stats
+    } else {
+      showToast('error', data.message || 'Failed to vacuum database');
+    }
+  } catch (error) {
+    console.error('Error vacuuming database:', error);
+    showToast('error', 'Error vacuuming database');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function reindexDatabase() {
+  if (!confirm('Reindexing the database may take a long time and impact performance. Continue?')) {
+    return;
+  }
+
+  showLoading('Reindexing database...');
+
+  try {
+    const response = await fetch('/admin/database/reindex', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showToast('success', 'Database reindex completed successfully!');
+    } else {
+      showToast('error', data.message || 'Failed to reindex database');
+    }
+  } catch (error) {
+    console.error('Error reindexing database:', error);
+    showToast('error', 'Error reindexing database');
+  } finally {
+    hideLoading();
+  }
+}
+
+function downloadBackup(filename) {
+  window.location.href = `/admin/backups/download/${encodeURIComponent(filename)}`;
+}
+
+async function deleteBackup(filename) {
+  if (!confirm(`Are you sure you want to delete the backup "${filename}"?\\n\\nThis action cannot be undone.`)) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/admin/backups/delete/${encodeURIComponent(filename)}`, {
+      method: 'POST'
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showToast('success', 'Backup deleted successfully');
+      loadBackups(); // Refresh the backup list
+    } else {
+      showToast('error', data.message || 'Failed to delete backup');
+    }
+  } catch (error) {
+    console.error('Error deleting backup:', error);
+    showToast('error', 'Error deleting backup');
+  }
+}
+
+function refreshBackups() {
+  loadBackups();
+  showToast('info', 'Refreshing backup list...');
+}
+
+// Helper functions
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function formatUptime(seconds) {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function timeAgo(date) {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  return date.toLocaleDateString();
+}
+
+function showLoading(message = 'Loading...') {
+  document.getElementById('loadingMessage').textContent = message;
+  document.getElementById('loadingModal').classList.remove('hidden');
+}
+
+function hideLoading() {
+  document.getElementById('loadingModal').classList.add('hidden');
+}
+
+function showToast(type, message) {
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full`;
+
+  const colors = {
+    success: 'bg-green-500 text-white',
+    error: 'bg-red-500 text-white',
+    warning: 'bg-yellow-500 text-black',
+    info: 'bg-blue-500 text-white'
+  };
+
+  const icons = {
+    success: 'fas fa-check',
+    error: 'fas fa-times',
+    warning: 'fas fa-exclamation-triangle',
+    info: 'fas fa-info-circle'
+  };
+
+  toast.className += ` ${colors[type]}`;
+  toast.innerHTML = `
+    <div class="flex items-center gap-2">
+      <i class="${icons[type]}"></i>
+      <span>${message}</span>
+    </div>
+  `;
+
+  document.body.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => {
+    toast.classList.remove('translate-x-full');
+    toast.classList.add('translate-x-0');
+  }, 100);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove('translate-x-0');
+    toast.classList.add('translate-x-full');
+    setTimeout(() => document.body.removeChild(toast), 300);
+  }, 3000);
+}
+</script>

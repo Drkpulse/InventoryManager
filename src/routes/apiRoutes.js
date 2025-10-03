@@ -4,6 +4,7 @@ const db = require('../config/db');
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const WarrantyController = require('../controllers/warrantyController');
 
+
 // Employees API routes
 router.get('/employees/available', isAuthenticated, async (req, res) => {
   try {
@@ -95,13 +96,13 @@ router.get('/system/stats', isAuthenticated, async (req, res) => {
       totalItems,
       totalEmployees,
       unassignedItems,
-      activeNotifications,
+
       warrantyStats
     ] = await Promise.all([
       db.query('SELECT COUNT(*) as count FROM items'),
       db.query('SELECT COUNT(*) as count FROM employees WHERE left_date IS NULL'),
       db.query('SELECT COUNT(*) as count FROM items WHERE assigned_to IS NULL'),
-      db.query('SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND is_read = FALSE', [userId]),
+
       db.query(`
         SELECT
           COUNT(CASE WHEN warranty_status = 'expired' THEN 1 END) as expired,
@@ -118,7 +119,7 @@ router.get('/system/stats', isAuthenticated, async (req, res) => {
         totalItems: parseInt(totalItems.rows[0].count),
         totalEmployees: parseInt(totalEmployees.rows[0].count),
         unassignedItems: parseInt(unassignedItems.rows[0].count),
-        activeNotifications: parseInt(activeNotifications.rows[0].count),
+
         expiredWarranties: parseInt(warrantyData.expired) || 0,
         expiringWarranties: parseInt(warrantyData.expiring) || 0
       }
@@ -133,101 +134,12 @@ router.get('/system/stats', isAuthenticated, async (req, res) => {
   }
 });
 
-// Recent activity endpoint
-router.get('/activity/recent', isAuthenticated, async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 10;
 
-    // Get recent notifications for current user
-    const recentActivity = await db.query(`
-      SELECT
-        n.id,
-        n.title,
-        n.message,
-        n.url,
-        n.is_read,
-        n.created_at,
-        nt.icon,
-        nt.color
-      FROM notifications n
-      JOIN notification_types nt ON n.type_id = nt.id
-      WHERE n.user_id = $1
-      ORDER BY n.created_at DESC
-      LIMIT $2
-    `, [req.session.user.id, limit]);
 
-    res.json({
-      success: true,
-      activities: recentActivity.rows
-    });
 
-  } catch (error) {
-    console.error('Error fetching recent activity:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch recent activity'
-    });
-  }
-});
 
-// Admin-only: Get all users' notification statistics
-router.get('/notifications/stats', isAdmin, async (req, res) => {
-  try {
-    const stats = await db.query(`
-      SELECT
-        u.name as user_name,
-        COUNT(n.id) as total_notifications,
-        COUNT(CASE WHEN n.is_read = FALSE THEN 1 END) as unread_notifications,
-        MAX(n.created_at) as last_notification
-      FROM users u
-      LEFT JOIN notifications n ON u.id = n.user_id
-      GROUP BY u.id, u.name
-      ORDER BY unread_notifications DESC, total_notifications DESC
-    `);
 
-    res.json({
-      success: true,
-      userStats: stats.rows
-    });
 
-  } catch (error) {
-    console.error('Error fetching notification stats:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch notification statistics'
-    });
-  }
-});
 
-// Health check for notifications system
-router.get('/health/notifications', isAuthenticated, async (req, res) => {
-  try {
-    // Test database connections
-    const [typesTest, notificationsTest, settingsTest] = await Promise.all([
-      db.query('SELECT COUNT(*) FROM notification_types'),
-      db.query('SELECT COUNT(*) FROM notifications LIMIT 1'),
-      db.query('SELECT COUNT(*) FROM notification_settings LIMIT 1')
-    ]);
-
-    res.json({
-      success: true,
-      status: 'healthy',
-      checks: {
-        notification_types: parseInt(typesTest.rows[0].count),
-        notifications_accessible: true,
-        settings_accessible: true,
-        timestamp: new Date().toISOString()
-      }
-    });
-
-  } catch (error) {
-    console.error('Health check failed:', error);
-    res.status(500).json({
-      success: false,
-      status: 'unhealthy',
-      error: error.message
-    });
-  }
-});
 
 module.exports = router;

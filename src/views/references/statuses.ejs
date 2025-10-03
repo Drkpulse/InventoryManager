@@ -21,7 +21,7 @@
       <a href="/references" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
         <i class="fas fa-arrow-left mr-2"></i> Back to References
       </a>
-      <a href="/references/statuses/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+      <a href="/references/status/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
         <i class="fas fa-plus mr-2"></i> Add New Status
       </a>
     </div>
@@ -68,6 +68,26 @@
                           case 'blue':
                             colorClass = 'text-blue-600 dark:text-blue-400';
                             badgeClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700';
+                            break;
+                          case 'orange':
+                            colorClass = 'text-orange-600 dark:text-orange-400';
+                            badgeClass = 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-700';
+                            break;
+                          case 'purple':
+                            colorClass = 'text-purple-600 dark:text-purple-400';
+                            badgeClass = 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700';
+                            break;
+                          case 'indigo':
+                            colorClass = 'text-indigo-600 dark:text-indigo-400';
+                            badgeClass = 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700';
+                            break;
+                          case 'pink':
+                            colorClass = 'text-pink-600 dark:text-pink-400';
+                            badgeClass = 'bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-700';
+                            break;
+                          case 'teal':
+                            colorClass = 'text-teal-600 dark:text-teal-400';
+                            badgeClass = 'bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-700';
                             break;
                           case 'gray':
                             colorClass = 'text-gray-600 dark:text-gray-400';
@@ -148,6 +168,26 @@
                           colorBadgeClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
                           colorName = 'Blue';
                           break;
+                        case 'orange':
+                          colorBadgeClass = 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300';
+                          colorName = 'Orange';
+                          break;
+                        case 'purple':
+                          colorBadgeClass = 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300';
+                          colorName = 'Purple';
+                          break;
+                        case 'indigo':
+                          colorBadgeClass = 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300';
+                          colorName = 'Indigo';
+                          break;
+                        case 'pink':
+                          colorBadgeClass = 'bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300';
+                          colorName = 'Pink';
+                          break;
+                        case 'teal':
+                          colorBadgeClass = 'bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300';
+                          colorName = 'Teal';
+                          break;
                         case 'gray':
                           colorBadgeClass = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
                           colorName = 'Gray';
@@ -181,13 +221,13 @@
                 <!-- Actions -->
                 <td class="px-4 py-3">
                   <div class="flex gap-1">
-                    <a href="/references/statuses/<%= status.id %>/edit"
+                    <a href="/references/status/<%= status.id %>/edit"
                       class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition"
                       title="Edit Status">
                       <i class="fas fa-edit"></i>
                     </a>
                     <% if (parseInt(status.item_count) === 0) { %>
-                      <form method="POST" action="/references/statuses/<%= status.id %>/delete"
+                      <form method="POST" action="/references/status/<%= status.id %>/delete"
                             class="inline delete-form"
                             data-status-name="<%= status.name %>">
                         <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition" title="Delete Status">
@@ -230,7 +270,7 @@
         <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Status Options Found</h3>
         <p class="text-gray-500 dark:text-gray-400 mb-4">Status options help categorize and organize your assets. Start by adding your first status option.</p>
         <div class="flex gap-2">
-          <a href="/references/statuses/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+          <a href="/references/status/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
             <i class="fas fa-plus mr-2"></i> Add First Status
           </a>
           <a href="/references" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">

@@ -90,7 +90,7 @@ router.post('/register', async (req, res) => {
         });
       }
 
-      console.log('Registration and login successful for:', newUser.name);
+      // Registration and login successful
       return res.redirect('/');
     });
 
@@ -123,7 +123,7 @@ router.get('/logout', (req, res) => {
       return res.redirect('/');
     }
 
-    console.log(`User logged out: ${userName}`);
+    // User logout completed
 
     if (req.isAjax) {
       return res.json({

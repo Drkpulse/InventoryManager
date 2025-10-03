@@ -16,16 +16,54 @@
     </div>
   </div>
 
+  <!-- Error Messages -->
+  <% if (req.query.error) { %>
+    <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
+      <div class="flex items-center gap-2 text-red-800 dark:text-red-200">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span class="font-semibold">Error:</span>
+        <% if (req.query.error === 'employee_not_found') { %>
+          Employee not found.
+        <% } else if (req.query.error === 'invalid_cep_confirmation') { %>
+          Invalid CEP ID confirmation. Please enter the correct CEP ID to confirm deletion.
+        <% } else if (req.query.error === 'employee_has_items') { %>
+          Cannot delete employee with assigned items. Please unassign all items first.
+        <% } else if (req.query.error === 'server_error') { %>
+          A server error occurred. Please try again.
+        <% } else { %>
+          <%= req.query.error %>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Success Messages -->
+  <% if (showDeletedMessage) { %>
+    <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+      <div class="flex items-center gap-2 text-green-800 dark:text-green-200">
+        <i class="fas fa-check-circle"></i>
+        <span class="font-semibold">Success:</span>
+        Employee has been successfully deleted.
+      </div>
+    </div>
+  <% } %>
+
   <!-- Search Bar -->
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-    <div class="relative w-full md:w-1/2">
-      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
-      <input type="text" id="employeeSearch"
-        class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-        placeholder="Search employees by name, ID, or department..."
-        autocomplete="off"
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+        <i class="fas fa-search text-blue-600 dark:text-blue-300"></i>
+      </div>
+      <div>
+        <label class="block font-semibold text-gray-700 dark:text-gray-200">Search Employees</label>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Find employees by name, ID, or department</p>
+      </div>
+    </div>
+    <div class="relative">
+      <input type="text" id="employeeSearch" placeholder="Search by Employee Name, ID, or Department..." autocomplete="off"
+        class="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         value="<%= currentFilters && currentFilters.search || '' %>">
-      <div class="absolute left-0 right-0 z-10 bg-white dark:bg-gray-800 rounded-b shadow hidden" id="searchResults"></div>
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-blue-500 dark:text-blue-400"></i>
     </div>
   </div>
 
@@ -194,21 +232,23 @@
                   <% } %>
                 </td>
                 <td class="px-4 py-3">
-                  <div class="flex flex-wrap gap-2">
-                    <a href="/employees/<%= employee.id %>" class="group inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg" title="View Details">
+                  <div class="flex gap-1">
+                    <a href="/employees/<%= employee.id %>" class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition" title="Ver Detalhes">
                       <i class="fas fa-eye"></i>
                     </a>
-                    <a href="/employees/<%= employee.id %>/edit" class="group inline-flex items-center px-2 py-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg" title="Edit">
-                      <i class="fas fa-edit group-hover:rotate-12 transition-transform duration-300"></i>
+                    <a href="/employees/<%= employee.id %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="Editar">
+                      <i class="fas fa-edit"></i>
                     </a>
-                    <a href="/employees/<%= employee.id %>/history" class="group inline-flex items-center px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg" title="View History">
-                      <i class="fas fa-history group-hover:scale-110 transition-transform duration-300"></i>
+                    <a href="/employees/<%= employee.id %>/history" class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 transition" title="Ver Histórico">
+                      <i class="fas fa-history"></i>
                     </a>
-                    <form style="display: inline;" method="POST" action="/employees/<%= employee.id %>/delete" class="inline-form" onsubmit="return confirmDelete('<%= employee.name %>');">
-                      <button type="submit" class="group inline-flex items-center px-2 py-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg" title="Delete Employee">
-                        <i class="fas fa-trash group-hover:scale-110 transition-transform duration-300"></i>
-                      </button>
-                    </form>
+                    <button type="button" class="delete-employee-btn inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition group hover:scale-105 hover:shadow-lg"
+                      title="Delete Employee"
+                      data-employee-id="<%= employee.id %>"
+                      data-employee-name="<%= employee.name %>"
+                      data-employee-cep="<%= employee.cep %>">
+                      <i class="fas fa-trash group-hover:scale-110 transition-transform duration-300"></i>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -292,149 +332,467 @@
   <% } %>
 </div>
 
+<!-- Employee Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div id="modalContent" class="p-6">
+      <!-- Content will be populated by JavaScript -->
+    </div>
+  </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  function ajaxLoad(url) {
-    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-      .then(res => res.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newBlock = doc.getElementById('employeesTableBlock');
-        if (newBlock) {
-          document.getElementById('employeesTableBlock').innerHTML = newBlock.innerHTML;
-          attachHandlers();
+  // Simple search functionality
+  const searchInput = document.getElementById('employeeSearch');
+  if (searchInput) {
+    let searchTimeout;
+
+    searchInput.addEventListener('input', function(e) {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.trim().toLowerCase();
+
+      searchTimeout = setTimeout(() => {
+        const tableBody = document.querySelector('#employeesTableBlock tbody');
+        if (tableBody) {
+          const rows = tableBody.querySelectorAll('tr');
+
+          rows.forEach(row => {
+            if (query === '' || row.textContent.toLowerCase().includes(query)) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
         }
-      });
-  }
-
-  function attachHandlers() {
-    // Per-page dropdown
-    const perPageSelect = document.getElementById('employeesPerPage');
-    if (perPageSelect) {
-      perPageSelect.addEventListener('change', function() {
-        const url = new URL(window.location.href);
-        url.searchParams.set('perPage', this.value);
-        url.searchParams.set('page', 1);
-        ajaxLoad(url);
-      });
-    }
-    // Pagination links
-    document.querySelectorAll('#employeesTableBlock .pagination-link').forEach(link => {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        ajaxLoad(this.href);
-      });
+      }, 300);
     });
   }
 
-  // --- Advanced Filters Logic ---
-  const filtersToggle = document.getElementById('filtersToggle');
-  const filtersContent = document.getElementById('filtersContent');
-  const filterBadge = document.getElementById('filterBadge');
-  const appliedFiltersPreview = document.getElementById('appliedFiltersPreview');
-  const appliedFilters = document.getElementById('appliedFilters');
-  const applyFiltersBtn = document.getElementById('applyFilters');
-  const resetFiltersBtn = document.getElementById('resetFilters');
-  const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+  // Delete button functionality
+  document.querySelectorAll('.delete-employee-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const employeeId = this.dataset.employeeId;
+      const employeeName = this.dataset.employeeName;
+      const employeeCep = this.dataset.employeeCep;
 
-  function getFilterValues() {
-    return {
-      department: document.getElementById('departmentFilter').value,
-      location: document.getElementById('locationFilter').value,
-      status: document.getElementById('statusFilter').value,
-      joinedDateFrom: document.getElementById('joinedDateFrom').value,
-      joinedDateTo: document.getElementById('joinedDateTo').value,
-      search: document.getElementById('employeeSearch').value
-    };
-  }
-
-  function countActiveFilters(filters) {
-    let count = 0;
-    for (const key in filters) {
-      if (filters[key] && !(key === 'status' && filters[key] === 'active')) count++;
-    }
-    return count;
-  }
-
-  function updateFiltersUI() {
-    const filters = getFilterValues();
-    const count = countActiveFilters(filters);
-    filterBadge.textContent = count;
-    // Preview
-    let preview = [];
-    if (filters.department) preview.push('<%= t("department") %>');
-    if (filters.location) preview.push('<%= t("location") %>');
-    if (filters.status && filters.status !== 'active') preview.push('<%= t("employment_status") %>');
-    if (filters.joinedDateFrom || filters.joinedDateTo) preview.push('<%= t("joined_date_range") %>');
-    appliedFiltersPreview.textContent = preview.length ? preview.join(', ') : '<%= t("no_filters_applied") %>';
-    // Pills
-    appliedFilters.innerHTML = '';
-    if (filters.department) appliedFilters.innerHTML += `<span class="bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">${document.getElementById('departmentFilter').selectedOptions[0].text}</span>`;
-    if (filters.location) appliedFilters.innerHTML += `<span class="bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-0.5 rounded">${document.getElementById('locationFilter').selectedOptions[0].text}</span>`;
-    if (filters.status && filters.status !== 'active') appliedFilters.innerHTML += `<span class="bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-0.5 rounded">${document.getElementById('statusFilter').selectedOptions[0].text}</span>`;
-    if (filters.joinedDateFrom || filters.joinedDateTo) appliedFilters.innerHTML += `<span class="bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 px-2 py-0.5 rounded">${filters.joinedDateFrom || ''} - ${filters.joinedDateTo || ''}</span>`;
-    // Show clear filters button if any filter is active
-    if (clearFiltersBtn) clearFiltersBtn.style.display = count > 0 ? '' : 'none';
-  }
-
-  // Toggle advanced filters panel
-  if (filtersToggle && filtersContent) {
-    filtersToggle.addEventListener('click', function() {
-      filtersContent.classList.toggle('hidden');
-      this.querySelector('.toggle-icon').classList.toggle('rotate-180');
+      confirmEmployeeDelete(employeeId, employeeName, employeeCep);
     });
-  }
+  });
+});
 
-  // Update UI on filter change
-  ['departmentFilter', 'locationFilter', 'statusFilter', 'joinedDateFrom', 'joinedDateTo', 'employeeSearch'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', updateFiltersUI);
+// CSRF Helper Function - Prevents token duplication
+function createCSRFHeaders(additionalHeaders = {}) {
+  const csrfToken = document.querySelector('meta[name="csrf-token"]');
+
+  // Start with clean headers object - avoid spreading existing headers that might contain duplicates
+  const headers = {};
+
+  // Add additional headers first (but not x-csrf-token)
+  Object.keys(additionalHeaders).forEach(key => {
+    if (key.toLowerCase() !== 'x-csrf-token') {
+      headers[key] = additionalHeaders[key];
+    }
   });
 
-  updateFiltersUI();
+  // Ensure X-Requested-With is always present
+  if (!headers['X-Requested-With']) {
+    headers['X-Requested-With'] = 'XMLHttpRequest';
+  }
 
-  // Apply filters
-  if (applyFiltersBtn) {
-    applyFiltersBtn.addEventListener('click', function() {
-      const filters = getFilterValues();
-      const url = new URL(window.location.href);
-      // Set filters as query params
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value && !(key === 'status' && value === 'active')) {
-          url.searchParams.set(key, value);
+  // Add CSRF token - force overwrite to absolutely prevent duplication
+  if (csrfToken && csrfToken.getAttribute('content')) {
+    const tokenValue = csrfToken.getAttribute('content').trim();
+    if (tokenValue && !tokenValue.includes(',')) {  // Extra safety check
+      headers['x-csrf-token'] = tokenValue;
+    }
+  }
+
+  return headers;
+}
+
+// Employee delete confirmation function (same as in employee show page)
+function confirmEmployeeDelete(employeeId, employeeName, employeeCep) {
+  // Show loading state
+  document.getElementById('deleteModal').style.display = 'flex';
+  document.getElementById('modalContent').innerHTML = `
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-blue-500 text-2xl mb-4"></i>
+      <p class="text-gray-600 dark:text-gray-300">Checking employee assignments...</p>
+    </div>
+  `;
+
+  // Create headers with CSRF token
+  const headers = createCSRFHeaders({
+    'Content-Type': 'application/json'
+  });
+
+  // Fetch employee deletion info
+  fetch(`/employees/${employeeId}/delete`, {
+    method: 'POST',
+    headers: headers
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    const modalContent = document.getElementById('modalContent');
+
+    // Store the employee CEP in the modal for later use
+    modalContent.setAttribute('data-employee-cep', employeeCep);
+
+    if (data.hasAssignedItems) {
+      // Employee has assigned items - show items and prevent deletion
+      modalContent.innerHTML = `
+        <div class="text-center mb-6">
+          <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Cannot Delete Employee</h3>
+          <p class="text-gray-600 dark:text-gray-300">
+            <strong>${employeeName}</strong> (ID: ${employeeCep}) has <strong>${data.itemCount}</strong> assigned item(s).
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <h4 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">Assigned Items:</h4>
+          <div class="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md">
+            ${data.items.map(item => `
+              <div class="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0" id="item-row-${item.id}">
+                <div class="flex-1">
+                  <div class="font-medium text-gray-800 dark:text-gray-100">${item.name}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">${item.cep_brc} • ${item.type_name || 'N/A'}</div>
+                </div>
+                <div class="ml-3">
+                  <button type="button"
+                    class="unassign-item-btn px-3 py-1 text-xs bg-yellow-100 dark:bg-yellow-900 hover:bg-yellow-200 dark:hover:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-md transition border border-yellow-300 dark:border-yellow-700"
+                    data-item-id="${item.id}"
+                    data-item-name="${item.name}"
+                    data-employee-id="${employeeId}"
+                    data-employee-name="${employeeName}">
+                    <i class="fas fa-unlink mr-1"></i> Unassign
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-4 mb-6">
+          <div class="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+            <i class="fas fa-info-circle"></i>
+            <span class="text-sm">You can unassign items individually using the buttons above, or go to the employee profile to manage all assignments.</span>
+          </div>
+        </div>
+
+        <div class="flex gap-3 justify-end">
+          <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+            Close
+          </button>
+        </div>
+      `;
+
+      // Add event handlers for unassign buttons
+      document.querySelectorAll('.unassign-item-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const itemId = this.dataset.itemId;
+          const itemName = this.dataset.itemName;
+          const employeeId = this.dataset.employeeId;
+          const employeeName = this.dataset.employeeName;
+
+          confirmUnassignItem(employeeId, itemId, itemName, employeeName);
+        });
+      });
+    } else {
+      // Employee has no assigned items - show CEP confirmation
+      modalContent.innerHTML = `
+        <div class="text-center mb-6">
+          <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Confirm Employee Deletion</h3>
+          <p class="text-gray-600 dark:text-gray-300">
+            You are about to permanently delete <strong>${employeeName}</strong>.
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md p-4 mb-4">
+            <div class="flex items-center gap-2 text-green-800 dark:text-green-200">
+              <i class="fas fa-check-circle"></i>
+              <span class="text-sm">This employee has <strong>0 assigned items</strong>.</span>
+            </div>
+          </div>
+
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-4 mb-4">
+            <div class="flex items-center gap-2 text-red-800 dark:text-red-200">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span class="text-sm">This action cannot be undone. All employee data will be permanently deleted.</span>
+            </div>
+          </div>
+
+          <form id="deleteEmployeeForm" method="POST" action="/employees/${employeeId}/delete">
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              To confirm deletion, enter the employee CEP ID: <strong>${employeeCep}</strong>
+            </label>
+            <input type="text" name="cepConfirmation" id="cepConfirmation"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Enter CEP ID to confirm" required>
+            <div id="cepValidation" class="text-xs mt-1"></div>
+          </form>
+        </div>
+
+        <div class="flex gap-3 justify-end">
+          <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+            Cancel
+          </button>
+          <button type="button" id="confirmDeleteBtn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition" disabled>
+            Delete Employee
+          </button>
+        </div>
+      `;
+
+      // Add CEP validation
+      const cepInput = document.getElementById('cepConfirmation');
+      const confirmBtn = document.getElementById('confirmDeleteBtn');
+      const validation = document.getElementById('cepValidation');
+
+      cepInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value === employeeCep) {
+          confirmBtn.disabled = false;
+          confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          validation.className = 'text-xs mt-1 text-green-600';
+          validation.innerHTML = '<i class="fas fa-check"></i> CEP ID confirmed';
+        } else if (value.length > 0) {
+          confirmBtn.disabled = true;
+          confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          validation.className = 'text-xs mt-1 text-red-600';
+          validation.innerHTML = '<i class="fas fa-times"></i> CEP ID does not match';
         } else {
-          url.searchParams.delete(key);
+          confirmBtn.disabled = true;
+          confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          validation.className = 'text-xs mt-1';
+          validation.innerHTML = '';
         }
       });
-      url.searchParams.set('page', 1);
-      window.location.href = url.toString();
+
+      confirmBtn.addEventListener('click', function() {
+        if (cepInput.value.trim() === employeeCep) {
+          document.getElementById('deleteEmployeeForm').submit();
+        }
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error checking employee assignments:', error);
+
+    // Determine error message
+    let errorMessage = 'Unable to check employee assignments. Please try again.';
+    if (error.message.includes('403')) {
+      errorMessage = 'Permission denied. Please refresh the page and try again.';
+    } else if (error.message.includes('500')) {
+      errorMessage = 'Server error occurred. Please try again later.';
+    } else if (error.message.includes('CSRF')) {
+      errorMessage = 'Security token expired. Please refresh the page and try again.';
+    }
+
+    document.getElementById('modalContent').innerHTML = `
+      <div class="text-center">
+        <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-4"></i>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Error</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-2">${errorMessage}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Error details: ${error.message}</p>
+        <div class="flex gap-3 justify-end">
+          <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+            Close
+          </button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function confirmUnassignItem(employeeId, itemId, itemName, employeeName) {
+  if (confirm(`Are you sure you want to unassign "${itemName}" from ${employeeName}?\n\nThis action cannot be undone.`)) {
+    // Find the item row to show loading state
+    const itemRow = document.getElementById(`item-row-${itemId}`);
+    const unassignBtn = itemRow.querySelector('.unassign-item-btn');
+
+    // Show loading state
+    unassignBtn.disabled = true;
+    unassignBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Unassigning...';
+    unassignBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+    // Create headers with CSRF token
+    const headers = createCSRFHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    // Send unassign request
+    fetch(`/employees/${employeeId}/unassign-item/${itemId}`, {
+      method: 'POST',
+      headers: headers
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Remove the item row with animation
+        itemRow.style.transition = 'opacity 0.3s ease-out';
+        itemRow.style.opacity = '0';
+
+        setTimeout(() => {
+          itemRow.remove();
+
+          // Check if there are any items left
+          const remainingItems = document.querySelectorAll('[id^="item-row-"]');
+          if (remainingItems.length === 0) {
+            // No more items - show CEP confirmation form
+            const employeeCep = document.getElementById('modalContent').getAttribute('data-employee-cep');
+
+            document.getElementById('modalContent').innerHTML = `
+              <div class="text-center mb-6">
+                <i class="fas fa-check-circle text-green-500 text-3xl mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">All Items Unassigned!</h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                  All items have been successfully unassigned from <strong>${employeeName}</strong>.
+                  You can now proceed with deleting the employee.
+                </p>
+              </div>
+
+              <div class="mb-6">
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-4 mb-4">
+                  <div class="flex items-center gap-2 text-red-800 dark:text-red-200">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span class="text-sm">This action cannot be undone. All employee data will be permanently deleted.</span>
+                  </div>
+                </div>
+
+                <form id="deleteEmployeeFormFinal" method="POST" action="/employees/${employeeId}/delete">
+                  <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    To confirm deletion, enter the employee CEP ID: <strong>${employeeCep}</strong>
+                  </label>
+                  <input type="text" name="cepConfirmation" id="cepConfirmationFinal"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="Enter CEP ID to confirm" required>
+                  <div id="cepValidationFinal" class="text-xs mt-1"></div>
+                </form>
+              </div>
+
+              <div class="flex gap-3 justify-end">
+                <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+                  Cancel
+                </button>
+                <button type="button" id="confirmDeleteBtnFinal" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition" disabled>
+                  Delete Employee
+                </button>
+              </div>
+            `;
+
+            // Add CEP validation for the final confirmation
+            const cepInputFinal = document.getElementById('cepConfirmationFinal');
+            const confirmBtnFinal = document.getElementById('confirmDeleteBtnFinal');
+            const validationFinal = document.getElementById('cepValidationFinal');
+
+            cepInputFinal.addEventListener('input', function() {
+              const value = this.value.trim();
+              if (value === employeeCep) {
+                confirmBtnFinal.disabled = false;
+                confirmBtnFinal.classList.remove('opacity-50', 'cursor-not-allowed');
+                validationFinal.className = 'text-xs mt-1 text-green-600';
+                validationFinal.innerHTML = '<i class="fas fa-check"></i> CEP ID confirmed';
+              } else if (value.length > 0) {
+                confirmBtnFinal.disabled = true;
+                confirmBtnFinal.classList.add('opacity-50', 'cursor-not-allowed');
+                validationFinal.className = 'text-xs mt-1 text-red-600';
+                validationFinal.innerHTML = '<i class="fas fa-times"></i> CEP ID does not match';
+              } else {
+                confirmBtnFinal.disabled = true;
+                confirmBtnFinal.classList.add('opacity-50', 'cursor-not-allowed');
+                validationFinal.className = 'text-xs mt-1';
+                validationFinal.innerHTML = '';
+              }
+            });
+
+            confirmBtnFinal.addEventListener('click', function() {
+              if (cepInputFinal.value.trim() === employeeCep) {
+                document.getElementById('deleteEmployeeFormFinal').submit();
+              }
+            });
+          } else {
+            // Update the count in the modal header
+            const countElement = document.querySelector('.text-gray-600.dark\\:text-gray-300');
+            if (countElement) {
+              const newCount = remainingItems.length;
+              countElement.innerHTML = `<strong>${employeeName}</strong> (ID: ${document.getElementById('modalContent').getAttribute('data-employee-cep')}) has <strong>${newCount}</strong> assigned item(s).`;
+            }
+          }
+        }, 300);
+
+        // Show success notification
+        showNotification(data.message, 'success');
+
+        // Reload the page to refresh the assigned items list
+        setTimeout(() => {
+          location.reload();
+        }, 1500);
+      } else {
+        throw new Error(data.error || 'Failed to unassign item');
+      }
+    })
+    .catch(error => {
+      console.error('Error unassigning item:', error);
+
+      // Reset button state
+      unassignBtn.disabled = false;
+      unassignBtn.innerHTML = '<i class="fas fa-unlink mr-1"></i> Unassign';
+      unassignBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+      // Show error notification
+      showNotification('Failed to unassign item: ' + error.message, 'error');
     });
   }
+}
 
-  // Reset filters
-  if (resetFiltersBtn) {
-    resetFiltersBtn.addEventListener('click', function() {
-      document.getElementById('departmentFilter').value = '';
-      document.getElementById('locationFilter').value = '';
-      document.getElementById('statusFilter').value = 'active';
-      document.getElementById('joinedDateFrom').value = '';
-      document.getElementById('joinedDateTo').value = '';
-      document.getElementById('employeeSearch').value = '';
-      updateFiltersUI();
-    });
+function showNotification(message, type = 'info') {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
+
+  if (type === 'success') {
+    notification.classList.add('bg-green-500', 'text-white');
+    notification.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${message}`;
+  } else if (type === 'error') {
+    notification.classList.add('bg-red-500', 'text-white');
+    notification.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>${message}`;
+  } else {
+    notification.classList.add('bg-blue-500', 'text-white');
+    notification.innerHTML = `<i class="fas fa-info-circle mr-2"></i>${message}`;
   }
 
-  // Clear filters from empty state
-  if (clearFiltersBtn) {
-    clearFiltersBtn.addEventListener('click', function() {
-      const url = new URL(window.location.href);
-      ['department', 'location', 'status', 'joinedDateFrom', 'joinedDateTo', 'search', 'page'].forEach(param => url.searchParams.delete(param));
-      window.location.href = url.toString();
-    });
-  }
+  document.body.appendChild(notification);
 
-  attachHandlers();
-});
+  // Show notification
+  setTimeout(() => {
+    notification.classList.remove('translate-x-full');
+  }, 100);
+
+  // Hide notification after 4 seconds
+  setTimeout(() => {
+    notification.classList.add('translate-x-full');
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 4000);
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+}
 </script>
 

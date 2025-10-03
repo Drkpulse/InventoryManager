@@ -100,11 +100,19 @@ exports.createEmployeeForm = async (req, res) => {
     // Get locations for dropdown
     const locations = await db.query('SELECT * FROM locations ORDER BY name');
 
+    // Get software for assignments (optional)
+    const software = await db.query(`
+      SELECT id, name, version, vendor, license_type, cost_per_license, description
+      FROM software
+      ORDER BY name
+    `);
+
     res.render('layout', {
       title: 'Add New Employee',
       body: 'employees/create',
       departments: departments.rows,
       locations: locations.rows,
+      software: software.rows,
       user: req.session.user
     });
   } catch (error) {
@@ -286,37 +294,167 @@ exports.updateEmployee = async (req, res) => {
   }
 };
 
+exports.unassignItemFromEmployee = async (req, res) => {
+  const client = await db.getClient();
+
+  try {
+    const { id, itemId } = req.params;
+
+    await client.query('BEGIN');
+
+    // Get employee and item info for logging
+    const employeeResult = await client.query(`
+      SELECT name, cep FROM employees WHERE id = $1
+    `, [id]);
+
+    const itemResult = await client.query(`
+      SELECT i.*, t.name as type_name
+      FROM items i
+      LEFT JOIN types t ON i.type_id = t.id
+      WHERE i.id = $1 AND i.assigned_to = $2
+    `, [itemId, id]);
+
+    if (employeeResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    if (itemResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Item not found or not assigned to this employee' });
+    }
+
+    const employee = employeeResult.rows[0];
+    const item = itemResult.rows[0];
+
+    // Unassign the item
+    await client.query(`
+      UPDATE items
+      SET assigned_to = NULL, date_assigned = NULL, updated_at = NOW()
+      WHERE id = $1
+    `, [itemId]);
+
+    await client.query('COMMIT');
+
+    // Log the unassignment in item history
+    try {
+      const historyLogger = require('../utils/historyLogger');
+      await historyLogger.logItemHistory(
+        itemId,
+        'unassigned',
+        {
+          previous_employee: employee.name,
+          previous_employee_cep: employee.cep,
+          unassigned_by: req.session.user.name,
+          reason: 'Unassigned via employee delete process'
+        },
+        req.session.user.id
+      );
+
+      // Also log unassignment in employee history
+      await historyLogger.logEmployeeHistory(
+        id,
+        'unassigned',
+        {
+          item_id: itemId,
+          item_name: item.name,
+          item_cep_brc: item.cep_brc,
+          reason: 'Unassigned via employee delete process',
+          unassigned_by: req.session.user.name
+        },
+        req.session.user.id
+      );
+    } catch (historyError) {
+      console.error('Failed to log history:', historyError);
+    }
+
+    res.json({
+      success: true,
+      message: `Item "${item.name}" has been unassigned from ${employee.name}`
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error unassigning item:', error);
+    res.status(500).json({ error: 'Server error: ' + error.message });
+  } finally {
+    client.release();
+  }
+};
+
 exports.deleteEmployee = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if user wants to unassign items first
-    if (req.isAjax) {
+    // If this is an AJAX request, return employee and items info for confirmation
+    if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
+      // Get employee info
+      const employeeResult = await db.query(`
+        SELECT name, cep FROM employees WHERE id = $1
+      `, [id]);
+
+      if (employeeResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Employee not found' });
+      }
+
       // Check for assigned items
       const itemsResult = await db.query(`
-        SELECT i.cep_brc, i.name, t.name as type_name
+        SELECT i.id, i.cep_brc, i.name, t.name as type_name
         FROM items i
         LEFT JOIN types t ON i.type_id = t.id
         WHERE i.assigned_to = $1
       `, [id]);
 
       return res.json({
+        employee: employeeResult.rows[0],
         hasAssignedItems: itemsResult.rows.length > 0,
+        itemCount: itemsResult.rows.length,
         items: itemsResult.rows
       });
     }
 
-    // Direct deletion without unassigning
+    // Handle actual deletion (should come with CEP confirmation for employees with no items)
+    const { cepConfirmation } = req.body;
+
+    // Get employee info
+    const employeeResult = await db.query(`
+      SELECT name, cep FROM employees WHERE id = $1
+    `, [id]);
+
+    if (employeeResult.rows.length === 0) {
+      return res.status(404).redirect('/employees?error=employee_not_found');
+    }
+
+    const employee = employeeResult.rows[0];
+
+    // Check for assigned items
+    const itemsResult = await db.query(`
+      SELECT COUNT(*) as count FROM items WHERE assigned_to = $1
+    `, [id]);
+
+    const itemCount = parseInt(itemsResult.rows[0].count);
+
+    // If employee has no items, require CEP confirmation
+    if (itemCount === 0) {
+      if (!cepConfirmation || cepConfirmation !== employee.cep) {
+        return res.status(400).redirect('/employees?error=invalid_cep_confirmation');
+      }
+    } else {
+      // Employee has assigned items - should not delete directly
+      return res.status(400).redirect('/employees?error=employee_has_items');
+    }
+
+    // Delete employee (only if no items and CEP confirmed)
     await db.query('DELETE FROM employees WHERE id = $1', [id]);
-    return res.redirect('/employees');
+    return res.redirect('/employees?deleted=true');
   } catch (error) {
     console.error('Error deleting employee:', error);
 
-    if (req.isAjax) {
+    if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
       return res.status(500).json({ error: 'Server error: ' + error.message });
     }
 
-    res.status(500).send('Server error');
+    res.status(500).redirect('/employees?error=server_error');
   }
 };
 
@@ -374,6 +512,20 @@ exports.unassignAndDeleteEmployee = async (req, res) => {
             employee_name: employee.name,
             employee_cep: employee.cep,
             reason: 'Employee deleted'
+          },
+          req.session.user.id
+        );
+
+        // Also log unassignment in employee history
+        await historyLogger.logEmployeeHistory(
+          id,
+          'unassigned',
+          {
+            item_id: item.id,
+            item_name: item.name,
+            item_cep_brc: item.cep_brc,
+            reason: 'Employee deleted',
+            unassigned_by: req.session.user.name
           },
           req.session.user.id
         );

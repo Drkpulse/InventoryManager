@@ -1,92 +1,159 @@
-<div class="mb-8">
-  <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Add Status</h1>
-</div>
-
-<% if (typeof errors !== 'undefined' && errors.length > 0) { %>
-  <div class="mb-4 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-4 py-3 rounded">
-    <ul class="list-disc pl-5">
-      <% errors.forEach(error => { %>
-        <li><%= error %></li>
-      <% }) %>
-    </ul>
-  </div>
-<% } %>
-
-<div class="max-w-xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-  <form method="POST" action="/references/statuses" class="space-y-6" data-no-ajax="true">
-    <div>
-      <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status Name</label>
-      <input type="text" id="name" name="name"
-        value="<%= typeof formData !== 'undefined' ? formData.name : '' %>" required
-        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-      <small class="text-gray-500 dark:text-gray-400">Name of the status (e.g., Active, Inactive, Under Repair, Retired)</small>
-    </div>
-
-    <div>
-      <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Description</label>
-      <textarea id="description" name="description" rows="3"
-        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
-      <small class="text-gray-500 dark:text-gray-400">Optional description explaining what this status represents</small>
-    </div>
-
-    <div>
-      <label for="icon" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status Icon</label>
-      <select id="icon" name="icon"
-        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-        <option value="fas fa-check-circle" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-check-circle' ? 'selected' : '' %>>✓ Active/Working</option>
-        <option value="fas fa-wrench" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-wrench' ? 'selected' : '' %>>🔧 Maintenance/Repair</option>
-        <option value="fas fa-archive" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-archive' ? 'selected' : '' %>>📦 Retired/Archived</option>
-        <option value="fas fa-times-circle" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-times-circle' ? 'selected' : '' %>>❌ Lost/Missing</option>
-        <option value="fas fa-box" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-box' ? 'selected' : '' %>>📦 In Storage</option>
-        <option value="fas fa-exclamation-triangle" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-exclamation-triangle' ? 'selected' : '' %>>⚠️ Warning/Attention</option>
-        <option value="fas fa-pause-circle" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-pause-circle' ? 'selected' : '' %>>⏸️ Inactive/Paused</option>
-        <option value="fas fa-shield-alt" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-shield-alt' ? 'selected' : '' %>>🛡️ Protected/Warranty</option>
-        <option value="fas fa-clock" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-clock' ? 'selected' : '' %>>⏰ Pending/Waiting</option>
-        <option value="fas fa-tools" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-tools' ? 'selected' : '' %>>🛠️ Under Service</option>
-        <option value="fas fa-fire" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-fire' ? 'selected' : '' %>>🔥 Critical/Urgent</option>
-        <option value="fas fa-tag" <%= typeof formData !== 'undefined' && formData.icon === 'fas fa-tag' ? 'selected' : '' %>>🏷️ Generic/Other</option>
-      </select>
-      <small class="text-gray-500 dark:text-gray-400">Icon that represents this status visually</small>
-      <!-- Icon Preview -->
-      <div class="mt-2 p-2 bg-gray-100 dark:bg-gray-900 rounded">
-        <span class="text-sm text-gray-600 dark:text-gray-400">Preview: </span>
-        <i id="iconPreview" class="fas fa-check-circle text-lg"></i>
-        <span id="iconLabel" class="ml-2 text-sm">Active/Working</span>
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-2xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div>
+        <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <a href="/references" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
+            <i class="fas fa-cog"></i> References
+          </a>
+          <i class="fas fa-chevron-right mx-2"></i>
+          <a href="/references/status" class="hover:text-blue-600 dark:hover:text-blue-400">Status</a>
+          <i class="fas fa-chevron-right mx-2"></i>
+          <span class="text-gray-700 dark:text-gray-200">Add Status</span>
+        </nav>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Add Status</h1>
       </div>
     </div>
 
-    <div>
-      <label for="color" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status Color</label>
-      <select id="color" name="color"
-        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-        <option value="green" <%= typeof formData !== 'undefined' && formData.color === 'green' ? 'selected' : '' %>>Green (Active/Good)</option>
-        <option value="yellow" <%= typeof formData !== 'undefined' && formData.color === 'yellow' ? 'selected' : '' %>>Yellow (Warning/Attention)</option>
-        <option value="red" <%= typeof formData !== 'undefined' && formData.color === 'red' ? 'selected' : '' %>>Red (Problem/Inactive)</option>
-        <option value="blue" <%= typeof formData !== 'undefined' && formData.color === 'blue' ? 'selected' : '' %>>Blue (Information)</option>
-        <option value="gray" <%= typeof formData !== 'undefined' && formData.color === 'gray' ? 'selected' : '' %>>Gray (Neutral)</option>
-      </select>
-      <small class="text-gray-500 dark:text-gray-400">Color coding for this status in reports and displays</small>
-    </div>
+    <!-- Flash Messages -->
+    <% if (typeof error !== 'undefined' && error.length > 0) { %>
+      <div class="mb-4 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-4 py-3 rounded">
+        <% error.forEach(msg => { %>
+          <p><%= msg %></p>
+        <% }) %>
+      </div>
+    <% } %>
+    <% if (typeof success !== 'undefined' && success.length > 0) { %>
+      <div class="mb-4 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-4 py-3 rounded">
+        <% success.forEach(msg => { %>
+          <p><%= msg %></p>
+        <% }) %>
+      </div>
+    <% } %>
 
-    <div>
-      <label class="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" name="is_active" value="true"
-          <%= typeof formData !== 'undefined' && formData.is_active ? 'checked' : 'checked' %>
-          class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
-        <span class="font-semibold text-gray-700 dark:text-gray-200">Active Status</span>
-      </label>
-      <small class="text-gray-500 dark:text-gray-400">Whether items with this status are considered active/in-use</small>
-    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+      <form method="POST" action="/references/status" class="space-y-6">
+        <div>
+          <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+            Status Name <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="name" name="name" required
+                 value="<%= typeof formData !== 'undefined' && formData ? formData.name || '' : '' %>"
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                 placeholder="Enter status name (e.g., Active, Inactive, Under Repair, Retired)">
+        </div>
 
-    <div class="flex items-center gap-4 mt-8">
-      <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
-        <i class="fas fa-plus"></i> Add Status
-      </button>
-      <a href="/references/statuses" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
-        <i class="fas fa-times"></i> Cancel
-      </a>
+        <div>
+          <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+            Description
+          </label>
+          <textarea id="description" name="description" rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    placeholder="Enter status description (optional)"><%= typeof formData !== 'undefined' && formData ? formData.description || '' : '' %></textarea>
+        </div>
+
+        <div>
+          <label for="icon" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Status Icon</label>
+          <select id="icon" name="icon"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+            <% if (typeof availableIcons !== 'undefined' && availableIcons) { %>
+              <optgroup label="FontAwesome Icons">
+                <% availableIcons.filter(icon => icon.type === 'fontawesome').forEach(icon => { %>
+                  <option value="<%= icon.value %>" <%= typeof formData !== 'undefined' && formData && formData.icon === icon.value ? 'selected' : '' %>>
+                    <%= icon.label %>
+                  </option>
+                <% }) %>
+              </optgroup>
+              <optgroup label="Emoji Icons">
+                <% availableIcons.filter(icon => icon.type === 'emoji').forEach(icon => { %>
+                  <option value="<%= icon.value %>" <%= typeof formData !== 'undefined' && formData && formData.icon === icon.value ? 'selected' : '' %>>
+                    <%= icon.value %> <%= icon.label %>
+                  </option>
+                <% }) %>
+              </optgroup>
+            <% } else { %>
+              <option value="fas fa-tag">Tag (Default)</option>
+            <% } %>
+          </select>
+          <small class="text-gray-500 dark:text-gray-400">Choose FontAwesome icons or Emojis to represent this status</small>
+        </div>
+
+        <div>
+          <label for="color" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Status Color</label>
+          <select id="color" name="color"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+            <% if (typeof availableColors !== 'undefined' && availableColors) { %>
+              <% availableColors.forEach(color => { %>
+                <option value="<%= color.value %>"
+                        data-preview="<%= color.preview %>"
+                        <%= typeof formData !== 'undefined' && formData && formData.color === color.value ? 'selected' : '' %>>
+                  <%= color.label %>
+                </option>
+              <% }) %>
+            <% } else { %>
+              <option value="#6B7280" data-preview="#6B7280">Gray (Default)</option>
+            <% } %>
+          </select>
+          <small class="text-gray-500 dark:text-gray-400">RGB color values for better customization and consistency</small>
+        </div>
+
+        <!-- Combined Preview -->
+        <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Preview</label>
+          <div class="flex flex-col gap-4">
+            <!-- Status Badge Preview -->
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[80px]">Status Badge:</span>
+              <div id="statusBadgePreview" class="inline-flex items-center gap-2 px-3 py-1 rounded-lg border text-sm font-medium"
+                   style="background-color: rgba(107, 114, 128, 0.1); border-color: rgba(107, 114, 128, 0.3); color: #6B7280;">
+                <span id="iconPreview" class="text-base">🏷️</span>
+                <span>New Status</span>
+              </div>
+            </div>
+
+            <!-- Color Details -->
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[80px]">Color:</span>
+              <div class="flex items-center gap-2">
+                <div id="colorPreview" class="w-5 h-5 rounded border border-gray-300" style="background-color: #6B7280;"></div>
+                <span id="colorCode" class="text-sm font-mono text-gray-600 dark:text-gray-300">#6B7280</span>
+                <span id="colorName" class="text-sm text-gray-500 dark:text-gray-400">Gray (Default)</span>
+              </div>
+            </div>
+
+            <!-- Icon Details -->
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-gray-600 dark:text-gray-400 min-w-[80px]">Icon:</span>
+              <div class="flex items-center gap-2">
+                <span id="iconDisplay" class="text-lg">🏷️</span>
+                <span id="iconLabel" class="text-sm text-gray-600 dark:text-gray-300">Tag</span>
+                <span id="iconType" class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">Emoji</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="is_active" value="true"
+              <%= typeof formData !== 'undefined' && formData.is_active ? 'checked' : 'checked' %>
+              class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Active Status</span>
+          </label>
+          <small class="text-gray-500 dark:text-gray-400">Whether items with this status are considered active/in-use</small>
+        </div>
+
+        <div class="flex gap-3 pt-4">
+          <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+            <i class="fas fa-plus mr-2"></i> Add Status
+          </button>
+          <a href="/references/status" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+            <i class="fas fa-arrow-left mr-2"></i> Cancel
+          </a>
+        </div>
+      </form>
     </div>
-  </form>
+  </div>
 </div>
 
 <script>
@@ -94,32 +161,94 @@ document.addEventListener('DOMContentLoaded', function() {
   const iconSelect = document.getElementById('icon');
   const iconPreview = document.getElementById('iconPreview');
   const iconLabel = document.getElementById('iconLabel');
+  const iconDisplay = document.getElementById('iconDisplay');
+  const iconType = document.getElementById('iconType');
+  const colorSelect = document.getElementById('color');
+  const colorPreview = document.getElementById('colorPreview');
+  const colorCode = document.getElementById('colorCode');
+  const colorName = document.getElementById('colorName');
+  const statusBadgePreview = document.getElementById('statusBadgePreview');
 
-  const iconLabels = {
-    'fas fa-check-circle': 'Active/Working',
-    'fas fa-wrench': 'Maintenance/Repair',
-    'fas fa-archive': 'Retired/Archived',
-    'fas fa-times-circle': 'Lost/Missing',
-    'fas fa-box': 'In Storage',
-    'fas fa-exclamation-triangle': 'Warning/Attention',
-    'fas fa-pause-circle': 'Inactive/Paused',
-    'fas fa-shield-alt': 'Protected/Warranty',
-    'fas fa-clock': 'Pending/Waiting',
-    'fas fa-tools': 'Under Service',
-    'fas fa-fire': 'Critical/Urgent',
-    'fas fa-tag': 'Generic/Other'
-  };
+  function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
 
   function updateIconPreview() {
     const selectedIcon = iconSelect.value;
-    iconPreview.className = selectedIcon + ' text-lg';
-    iconLabel.textContent = iconLabels[selectedIcon] || 'Unknown';
+    const selectedOption = iconSelect.options[iconSelect.selectedIndex];
+
+    if (selectedIcon.startsWith('fas fa-')) {
+      // FontAwesome icon
+      iconPreview.innerHTML = `<i class="${selectedIcon}"></i>`;
+      iconDisplay.innerHTML = `<i class="${selectedIcon}"></i>`;
+      iconType.textContent = 'FontAwesome';
+      iconType.className = 'text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded';
+    } else {
+      // Emoji icon
+      iconPreview.textContent = selectedIcon;
+      iconDisplay.textContent = selectedIcon;
+      iconType.textContent = 'Emoji';
+      iconType.className = 'text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded';
+    }
+
+    // Extract label (remove emoji from text for emoji options)
+    let labelText = selectedOption.textContent;
+    if (!selectedIcon.startsWith('fas fa-')) {
+      labelText = labelText.replace(selectedIcon + ' ', '');
+    }
+    iconLabel.textContent = labelText;
+
+    updateStatusBadge();
+  }
+
+  function updateColorPreview() {
+    const selectedColor = colorSelect.value;
+    const selectedOption = colorSelect.options[colorSelect.selectedIndex];
+    const previewColor = selectedOption.dataset.preview || selectedColor;
+
+    colorPreview.style.backgroundColor = previewColor;
+    colorCode.textContent = previewColor;
+    colorName.textContent = selectedOption.textContent;
+
+    updateStatusBadge();
+  }
+
+  function updateStatusBadge() {
+    const selectedColor = colorSelect.value;
+    const selectedOption = colorSelect.options[colorSelect.selectedIndex];
+    const previewColor = selectedOption.dataset.preview || selectedColor;
+    const rgb = hexToRgb(previewColor);
+
+    if (rgb) {
+      statusBadgePreview.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+      statusBadgePreview.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
+      statusBadgePreview.style.color = previewColor;
+    }
+
+    // Update the status name based on form input
+    const nameInput = document.getElementById('name');
+    if (nameInput && nameInput.value.trim()) {
+      statusBadgePreview.querySelector('span:last-child').textContent = nameInput.value.trim();
+    }
+  }
+
+  // Listen to name input changes for live preview
+  const nameInput = document.getElementById('name');
+  if (nameInput) {
+    nameInput.addEventListener('input', updateStatusBadge);
   }
 
   iconSelect.addEventListener('change', updateIconPreview);
+  colorSelect.addEventListener('change', updateColorPreview);
 
-  // Set initial preview
+  // Set initial previews
   updateIconPreview();
+  updateColorPreview();
 });
 </script>
 

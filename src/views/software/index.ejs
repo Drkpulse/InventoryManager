@@ -736,6 +736,14 @@ function afterSoftwareTableAjaxLoad() {
 document.addEventListener('DOMContentLoaded', function() {
   setupSoftwareFilters();
 
+  // Export software functionality
+  const exportBtn = document.getElementById('exportSoftwareBtn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function() {
+      window.location.href = '/software/export';
+    });
+  }
+
   // Patch ajaxLoad to re-setup filters after AJAX
   window.ajaxLoad = function(url) {
     fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })

@@ -74,21 +74,90 @@ exports.login = async (req, res) => {
       return res.redirect('/auth/login');
     }
 
+    // Check if account is locked
+    if (user.account_locked && user.locked_until && new Date() < new Date(user.locked_until)) {
+      console.log(`🔒 Locked account attempted login: ${loginInput} - ${user.failed_login_attempts} failed attempts, locked until ${new Date(user.locked_until).toLocaleString()}`);
+      const remainingMinutes = Math.ceil((new Date(user.locked_until) - new Date()) / (1000 * 60));
+      const errorMessage = `Account is locked due to ${user.failed_login_attempts} failed login attempts. Please try again in ${remainingMinutes} minutes or contact an administrator.`;
+
+      if (req.isAjax) {
+        return res.status(423).json({
+          success: false,
+          message: errorMessage,
+          locked: true,
+          remainingMinutes,
+          failedAttempts: user.failed_login_attempts
+        });
+      }
+      req.flash('error', errorMessage);
+      return res.redirect('/auth/login');
+    }
+
+    // If account was locked but time has expired, unlock it automatically
+    if (user.account_locked && user.locked_until && new Date() >= new Date(user.locked_until)) {
+      console.log(`⏰ Auto-unlocking expired lock for user: ${loginInput} (${user.name}) - was locked for ${user.failed_login_attempts} failed attempts`);
+      await db.query(
+        'UPDATE users SET account_locked = FALSE, failed_login_attempts = 0, locked_until = NULL, locked_at = NULL WHERE id = $1',
+        [user.id]
+      );
+      user.account_locked = false;
+      user.failed_login_attempts = 0;
+    }
+
     // Compare password
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
       console.log('Password mismatch for user:', loginInput);
-      const errorMessage = 'Invalid email/CEP ID or password';
 
-      if (req.isAjax) {
-        return res.status(401).json({
-          success: false,
-          message: errorMessage
-        });
+      // Increment failed login attempts
+      const newFailedAttempts = (user.failed_login_attempts || 0) + 1;
+      const maxAttempts = 5;
+
+      if (newFailedAttempts >= maxAttempts) {
+        // Lock the account for 30 minutes
+        const lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+        await db.query(
+          'UPDATE users SET failed_login_attempts = $1, account_locked = TRUE, locked_at = CURRENT_TIMESTAMP, locked_until = $2 WHERE id = $3',
+          [newFailedAttempts, lockUntil, user.id]
+        );
+
+        console.log(`🔒 Account locked: ${loginInput} (${user.name}) - ${newFailedAttempts} failed attempts, locked until ${lockUntil.toLocaleString()}`);
+        const errorMessage = `Account locked due to ${maxAttempts} failed login attempts. Please try again in 30 minutes or contact an administrator.`;
+
+        if (req.isAjax) {
+          return res.status(423).json({
+            success: false,
+            message: errorMessage,
+            locked: true,
+            remainingMinutes: 30,
+            failedAttempts: newFailedAttempts
+          });
+        }
+        req.flash('error', errorMessage);
+        return res.redirect('/auth/login');
+      } else {
+        // Just increment failed attempts
+        await db.query(
+          'UPDATE users SET failed_login_attempts = $1 WHERE id = $2',
+          [newFailedAttempts, user.id]
+        );
+
+        const remainingAttempts = maxAttempts - newFailedAttempts;
+        console.log(`❌ Failed login attempt ${newFailedAttempts}/${maxAttempts}: ${loginInput} (${user.name}) - ${remainingAttempts} attempts remaining`);
+        const errorMessage = `Invalid email/CEP ID or password. ${remainingAttempts} attempts remaining before account lockout.`;
+
+        if (req.isAjax) {
+          return res.status(401).json({
+            success: false,
+            message: errorMessage,
+            remainingAttempts,
+            currentFailedAttempts: newFailedAttempts
+          });
+        }
+        req.flash('error', errorMessage);
+        return res.redirect('/auth/login');
       }
-      req.flash('error', errorMessage);
-      return res.redirect('/auth/login');
     }
 
     // Load user permissions and roles
@@ -103,22 +172,34 @@ exports.login = async (req, res) => {
         [user.id]
       );
 
-      // Set user session with enhanced data
+      // Set user session with enhanced data including settings
       req.session.user = {
         id: user.id,
         name: user.name,
         email: user.email,
         cep_id: user.cep_id,
         role: user.role, // Keep for backward compatibility
+        settings: user.settings || {
+          language: 'en',
+          theme: 'light',
+          timezone: 'UTC',
+          items_per_page: '20',
+          email_notifications: true,
+          browser_notifications: true,
+          maintenance_alerts: true,
+          assignment_notifications: true,
+          session_timeout: false,
+          two_factor_auth: false
+        },
         permissions: permissionsResult.rows.map(row => row.permission_name),
         roles: rolesResult.rows,
         roleNames: rolesResult.rows.map(role => role.display_name),
         permissionsLoadedAt: Date.now()
       };
 
-      // Update last login
+      // Update last login and reset failed attempts
       await db.query(
-        'UPDATE users SET last_login = NOW() WHERE id = $1',
+        'UPDATE users SET last_login = NOW(), failed_login_attempts = 0, account_locked = FALSE, locked_until = NULL WHERE id = $1',
         [user.id]
       );
 
@@ -141,11 +222,20 @@ exports.login = async (req, res) => {
       };
     }
 
+    // Log session data before saving
+    console.log('🔄 About to save session for user:', user.name);
+    console.log('Session data before save:', {
+      sessionId: req.sessionID,
+      hasUser: !!req.session.user,
+      userId: req.session.user?.id,
+      userName: req.session.user?.name
+    });
+
     // Save session before responding
     req.session.save((err) => {
       if (err) {
-        console.error('Session save error during login:', err);
-        console.error('Redis connected:', redisConnected);
+        console.error('❌ Session save error during login:', err);
+        console.error('Redis connected:', global.redisConnected || 'unknown');
         console.error('Session store type:', req.session.store?.constructor?.name);
 
         if (req.isAjax) {
@@ -160,8 +250,17 @@ exports.login = async (req, res) => {
 
       console.log('✅ Session saved successfully for user:', user.name);
       console.log('Session ID:', req.sessionID);
+      console.log('Session data after save:', {
+        userId: req.session.user?.id,
+        userName: req.session.user?.name,
+        userEmail: req.session.user?.email,
+        sessionExists: !!req.session,
+        hasUser: !!req.session.user
+      });
 
       if (req.isAjax) {
+        // Set appropriate headers for JSON response
+        res.setHeader('Content-Type', 'application/json');
         return res.json({
           success: true,
           message: `Welcome back, ${user.name}!`,

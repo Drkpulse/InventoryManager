@@ -139,6 +139,11 @@
                         Test Connection
                     </button>
 
+                    <button type="button" onclick="testDatabase()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
+                        <i class="fas fa-database mr-2"></i>
+                        Test Database
+                    </button>
+
                     <% if (currentLicense) { %>
                     <button type="button" onclick="removeLicense()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors">
                         <i class="fas fa-trash mr-2"></i>
@@ -180,6 +185,49 @@ function testConnection() {
         btn.innerHTML = originalText;
         btn.disabled = false;
         showAlert('Connection test failed: ' + error.message, 'error');
+    });
+}
+
+function testDatabase() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Testing...';
+    btn.disabled = true;
+
+    fetch('/admin/license/test-database', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+        if (data.success) {
+            let message = 'Database test successful!\n\n';
+            if (data.results.validation) {
+                message += `Validation: ${data.results.validation.validation_result}\n`;
+                message += `Licenses: ${data.results.validation.active_licenses} active, ${data.results.validation.expired_licenses} expired\n`;
+            }
+            if (data.results.statistics) {
+                message += `Statistics: ${data.results.statistics.total_licenses} total licenses\n`;
+                if (data.results.statistics.current_license_company) {
+                    message += `Company: ${data.results.statistics.current_license_company}\n`;
+                    message += `Days until expiry: ${data.results.statistics.days_until_expiry}\n`;
+                }
+            }
+            showAlert(message, 'success');
+        } else {
+            showAlert('Database test failed: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        showAlert('Database test failed: ' + error.message, 'error');
     });
 }
 

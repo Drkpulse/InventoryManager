@@ -1,0 +1,516 @@
+<%- include('../partials/header', { title: 'Database Backups' }) %>
+
+<div class="page-container">
+  <div class="page-header-simple">
+    <div class="header-title-section">
+      <div class="breadcrumb-nav">
+        <a href="/admin" class="breadcrumb-link">
+          <i class="fas fa-cogs"></i> Admin
+        </a>
+        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+        <span class="breadcrumb-current">Database Backups</span>
+      </div>
+      <h1><i class="fas fa-database"></i> Database Backups</h1>
+      <p class="text-muted">Manage automated database backups and restore points</p>
+    </div>
+    <div class="header-actions">
+      <div class="action-buttons">
+        <form method="POST" action="/admin/backups/create" style="display: inline;">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create Manual Backup
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backup Status Overview -->
+  <% if (typeof stats !== 'undefined' && stats) { %>
+    <div class="analytics-summary">
+      <div class="summary-card primary">
+        <div class="summary-icon">
+          <i class="fas fa-database"></i>
+        </div>
+        <div class="summary-content">
+          <h3>Total Backups</h3>
+          <div class="summary-number"><%= stats.total %></div>
+          <div class="summary-detail">Found in directory</div>
+        </div>
+      </div>
+
+      <div class="summary-card info">
+        <div class="summary-icon">
+          <i class="fas fa-database"></i>
+        </div>
+        <div class="summary-content">
+          <h3>Database Backups</h3>
+          <div class="summary-number"><%= stats.database %></div>
+          <div class="summary-detail">SQL dump files</div>
+        </div>
+      </div>
+
+      <div class="summary-card warning">
+        <div class="summary-icon">
+          <i class="fas fa-server"></i>
+        </div>
+        <div class="summary-content">
+          <h3>System Backups</h3>
+          <div class="summary-number"><%= stats.system %></div>
+          <div class="summary-detail">Full system archives</div>
+        </div>
+      </div>
+
+      <div class="summary-card success">
+        <div class="summary-icon">
+          <i class="fas fa-hdd"></i>
+        </div>
+        <div class="summary-content">
+          <h3>Total Size</h3>
+          <div class="summary-number" style="font-size: 1.2rem;">
+            <%= formatFileSize(stats.totalSize) %>
+          </div>
+          <div class="summary-detail">All backup files</div>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Backup Schedule Information -->
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-calendar-alt"></i> Backup Schedule</h3>
+    </div>
+    <div class="card-body">
+      <div class="analytics-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+        <div class="insight-card info">
+          <div class="insight-icon">
+            <i class="fas fa-sun"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Daily Database Backup</h4>
+            <p>Automatic backup of the complete database every day at 1:00 AM (server time). Includes all tables, data, and schema.</p>
+          </div>
+        </div>
+
+        <div class="insight-card primary">
+          <div class="insight-icon">
+            <i class="fas fa-calendar-week"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Weekly Full Backup</h4>
+            <p>Comprehensive backup every Sunday at 2:00 AM including database dump and system metadata.</p>
+          </div>
+        </div>
+
+        <div class="insight-card warning">
+          <div class="insight-icon">
+            <i class="fas fa-trash-alt"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Automatic Cleanup</h4>
+            <p>Old backups are automatically removed after <%= backupStatus.retentionDays %> days to manage disk space.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backup Files List -->
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-file-archive"></i> Backup Files</h3>
+      <div class="card-actions">
+        <button onclick="location.reload()" class="btn btn-sm btn-secondary">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <% if (typeof backups !== 'undefined' && backups && backups.length > 0) { %>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><i class="fas fa-file"></i> Filename</th>
+                <th><i class="fas fa-info-circle"></i> Type</th>
+                <th><i class="fas fa-hdd"></i> Size</th>
+                <th><i class="fas fa-calendar"></i> Created</th>
+                <th><i class="fas fa-clock"></i> Age</th>
+                <th><i class="fas fa-cogs"></i> Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% backups.forEach(backup => { %>
+                <tr>
+                  <td>
+                    <div class="entity-info">
+                      <div class="entity-name">
+                        <i class="fas <%= backup.type === 'database' ? 'fa-database text-info' : backup.type === 'full_system' ? 'fa-server text-warning' : 'fa-file text-secondary' %>"></i>
+                        <code style="font-size: 0.9em;"><%= backup.name %></code>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <% if (backup.type === 'database') { %>
+                      <span class="badge badge-info">
+                        <i class="fas fa-database"></i> Database
+                      </span>
+                    <% } else if (backup.type === 'full_system') { %>
+                      <span class="badge badge-warning">
+                        <i class="fas fa-server"></i> Full System
+                      </span>
+                    <% } else { %>
+                      <span class="badge badge-secondary">
+                        <i class="fas fa-question"></i> Unknown
+                      </span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <div class="detail-value">
+                      <%= backup.sizeFormatted %>
+                    </div>
+                    <div class="detail-label">
+                      <%= backup.size.toLocaleString() %> bytes
+                    </div>
+                  </td>
+                  <td>
+                    <div class="detail-value">
+                      <%= backup.backupDate.toLocaleString() %>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="detail-value">
+                      <%= getTimeAgo(backup.backupDate) %>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="action-buttons-inline">
+                      <button onclick="viewBackupInfo('<%= backup.name %>')"
+                              class="btn btn-sm btn-info" title="View Details"
+                              data-backup='<%= JSON.stringify(backup) %>'>
+                        <i class="fas fa-info"></i>
+                      </button>
+                      <button onclick="downloadBackup('<%= backup.name %>')"
+                              class="btn btn-sm btn-success" title="Download backup">
+                        <i class="fas fa-download"></i>
+                      </button>
+                      <button onclick="deleteBackup('<%= backup.name %>')"
+                              class="btn btn-sm btn-danger" title="Delete backup">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-archive"></i>
+          </div>
+          <h3>No Backup Files Found</h3>
+          <p>No backup files were found in the backups directory. You can create a manual backup or wait for the automated backup to run.</p>
+          <div class="empty-actions">
+            <form method="POST" action="/admin/backups/create">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create First Backup
+              </button>
+            </form>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Backup Instructions -->
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-info-circle"></i> Important Information</h3>
+    </div>
+    <div class="card-body">
+      <div class="insights-grid">
+        <div class="insight-card success">
+          <div class="insight-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Backup Location</h4>
+            <p><strong>Container Path:</strong> <code>/app/backups</code><br>
+               <strong>Volume Mount:</strong> Ensure this is mounted to persistent storage on your host system for backup persistence.</p>
+            <div class="insight-actions">
+              <strong>Docker Compose Example:</strong>
+              <pre style="background: #f8f9fa; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem;">volumes:
+  - ./backups:/app/backups</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight-card warning">
+          <div class="insight-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Recovery Instructions</h4>
+            <p>To restore from a backup:</p>
+            <div class="insight-actions">
+              <ol style="text-align: left; padding-left: 1.2rem;">
+                <li>Stop the application containers</li>
+                <li>Restore the database using: <code>psql -U postgres -d inventory_db &lt; backup_file.sql</code></li>
+                <li>Restart the application</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight-card info">
+          <div class="insight-icon">
+            <i class="fas fa-download"></i>
+          </div>
+          <div class="insight-content">
+            <h4>External Backups</h4>
+            <p>For additional security, consider copying backups to external storage (cloud storage, network drives, etc.).</p>
+            <div class="insight-actions">
+              <strong>Best Practices:</strong>
+              <ul style="text-align: left; padding-left: 1.2rem;">
+                <li>Keep multiple backup copies</li>
+                <li>Test backup restoration regularly</li>
+                <li>Monitor backup success/failure</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Backup Info Modal -->
+<div id="backupInfoModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4><i class="fas fa-info-circle"></i> Backup Information</h4>
+      <button type="button" class="close" onclick="closeBackupInfo()">
+        <span>&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="backupInfoContent">
+        <!-- Content populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Helper function to format file sizes
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Helper function to get time ago
+function getTimeAgo(date) {
+  const now = new Date();
+  const diffMs = now - new Date(date);
+  const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHrs / 24);
+
+  if (diffDays > 0) {
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  } else if (diffHrs > 0) {
+    return `${diffHrs} hour${diffHrs > 1 ? 's' : ''} ago`;
+  } else {
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  }
+}
+
+function viewBackupInfo(filename) {
+  // Get the backup data from the button's data attribute
+  const button = event.target.closest('button');
+  const backupData = JSON.parse(button.getAttribute('data-backup'));
+
+  const modal = document.getElementById('backupInfoModal');
+  const content = document.getElementById('backupInfoContent');
+
+  const typeIcon = backupData.type === 'database' ? 'fa-database' :
+                   backupData.type === 'full_system' ? 'fa-server' : 'fa-file';
+  const typeLabel = backupData.type === 'database' ? 'Database Backup' :
+                    backupData.type === 'full_system' ? 'Full System Backup' : 'Unknown Type';
+
+  content.innerHTML = `
+    <div class="backup-info-grid">
+      <div class="info-item">
+        <strong><i class="fas fa-file"></i> Filename:</strong>
+        <code>${backupData.name}</code>
+      </div>
+      <div class="info-item">
+        <strong><i class="fas ${typeIcon}"></i> Type:</strong>
+        ${typeLabel}
+      </div>
+      <div class="info-item">
+        <strong><i class="fas fa-hdd"></i> Size:</strong>
+        ${backupData.sizeFormatted} (${backupData.size.toLocaleString()} bytes)
+      </div>
+      <div class="info-item">
+        <strong><i class="fas fa-calendar-plus"></i> Created:</strong>
+        ${new Date(backupData.backupDate).toLocaleString()}
+      </div>
+      <div class="info-item">
+        <strong><i class="fas fa-calendar-edit"></i> Modified:</strong>
+        ${new Date(backupData.modified).toLocaleString()}
+      </div>
+      <div class="info-item">
+        <strong><i class="fas fa-clock"></i> Age:</strong>
+        ${getTimeAgo(backupData.backupDate)}
+      </div>
+      <div class="info-item">
+        <strong><i class="fas fa-folder"></i> Path:</strong>
+        <code>${backupData.path}</code>
+      </div>
+    </div>
+  `;
+
+  modal.style.display = 'block';
+}
+
+function closeBackupInfo() {
+  document.getElementById('backupInfoModal').style.display = 'none';
+}
+
+function downloadBackup(filename) {
+  // Create a form to download the backup
+  const form = document.createElement('form');
+  form.method = 'GET';
+  form.action = `/admin/backups/download/${encodeURIComponent(filename)}`;
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+}
+
+function deleteBackup(filename) {
+  if (confirm(`Are you sure you want to delete the backup "${filename}"?\n\nThis action cannot be undone.`)) {
+    fetch(`/admin/backups/delete/${encodeURIComponent(filename)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Error deleting backup: ' + data.message);
+      }
+    })
+    .catch(error => {
+      alert('Error deleting backup: ' + error.message);
+    });
+  }
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+  const modal = document.getElementById('backupInfoModal');
+  if (event.target === modal) {
+    modal.style.display = 'none';
+  }
+}
+</script>
+
+<style>
+.backup-info-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.info-item {
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+}
+
+.info-item strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #495057;
+}
+
+.info-item code {
+  background: #e9ecef;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 1rem;
+  background-color: #007bff;
+  color: white;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h4 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close:hover {
+  background-color: rgba(255,255,255,0.2);
+}
+</style>
+
+<%- include('../partials/footer') %>

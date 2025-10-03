@@ -13,7 +13,7 @@ const logItemHistory = async (itemId, actionType, actionDetails, userId) => {
       VALUES ($1, $2, $3, $4, NOW())
     `, [itemId, actionType, JSON.stringify(actionDetails), userId]);
 
-    console.log(`Item history logged: ${actionType} for item ${itemId}`);
+    // Item history logged successfully
   } catch (error) {
     console.error('Error logging item history:', error);
     throw error;
@@ -30,7 +30,7 @@ async function logEmployeeHistory(employeeId, actionType, actionDetails, perform
       VALUES ($1, $2, $3, $4)
     `, [employeeId, actionType, JSON.stringify(actionDetails), performedBy]);
 
-    console.log(`Employee history logged: ${actionType} for employee ${employeeId}`);
+    // Employee history logged successfully
   } catch (error) {
     console.error('Error logging employee history:', error);
     throw error;
@@ -235,7 +235,7 @@ async function logActivity(userId, action, entityType, entityId, details, ipAddr
       VALUES ($1, $2, $3, $4, $5, $6)
     `, [userId, action, entityType, entityId, JSON.stringify(details), ipAddress]);
 
-    console.log(`Activity logged: ${action} on ${entityType} ${entityId}`);
+    // Activity logged successfully
   } catch (error) {
     console.error('Error logging activity:', error);
     // Don't throw error for activity logging to prevent breaking main functionality
@@ -326,7 +326,7 @@ async function cleanOldHistory(daysToKeep = 365) {
       WHERE created_at < $1
     `, [cutoffDate]);
 
-    console.log(`Cleaned old history: ${itemHistoryResult.rowCount} item entries, ${employeeHistoryResult.rowCount} employee entries, ${activityResult.rowCount} activity entries`);
+    // Old history entries cleaned up successfully
 
     return {
       itemHistory: itemHistoryResult.rowCount,

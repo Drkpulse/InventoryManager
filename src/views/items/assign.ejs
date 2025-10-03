@@ -96,18 +96,44 @@
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label for="assigned_to" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assign To Employee <span class="text-red-500">*</span></label>
-              <select id="assigned_to" name="assigned_to" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
-                <option value=""><%= t('select_employee') %></option>
-                <% employees.forEach(employee => { %>
-                  <option value="<%= employee.id %>" data-department="<%= employee.dept_name || '' %>">
-                    <%= employee.name %> (<%= employee.cep %>)<% if (employee.dept_name) { %> - <%= employee.dept_name %><% } %>
-                  </option>
-                <% }) %>
-              </select>
+              <label for="employee_search" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assign To Employee <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="employee_search"
+                  name="employee_search"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  placeholder="Search employee by name or CEPID..."
+                  autocomplete="off"
+                  required>
+                <input type="hidden" id="assigned_to" name="assigned_to" required>
+
+                <!-- Search results dropdown -->
+                <div id="employee_search_results" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                  <!-- Results will be populated here -->
+                </div>
+
+                <!-- Selected employee display -->
+                <div id="selected_employee" class="hidden mt-2 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-md">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-blue-600 dark:text-blue-300"></i>
+                      </div>
+                      <div>
+                        <div class="font-semibold text-blue-800 dark:text-blue-200" id="selected_employee_name"></div>
+                        <div class="text-sm text-blue-600 dark:text-blue-400" id="selected_employee_details"></div>
+                      </div>
+                    </div>
+                    <button type="button" id="clear_selection" class="text-gray-400 hover:text-red-500 transition-colors">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
               <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
-                <i class="fas fa-info-circle"></i>
-                <%= t('select_employee_info') %>
+                <i class="fas fa-search"></i>
+                Type employee name or CEPID to search
               </small>
             </div>
             <div>
@@ -191,21 +217,131 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('assignForm');
-  const assignedToSelect = document.getElementById('assigned_to');
+  const employeeSearch = document.getElementById('employee_search');
+  const assignedToHidden = document.getElementById('assigned_to');
+  const searchResults = document.getElementById('employee_search_results');
+  const selectedEmployeeDiv = document.getElementById('selected_employee');
+  const selectedEmployeeName = document.getElementById('selected_employee_name');
+  const selectedEmployeeDetails = document.getElementById('selected_employee_details');
+  const clearSelectionBtn = document.getElementById('clear_selection');
   const dateAssignedInput = document.getElementById('date_assigned');
   const assignmentPreview = document.getElementById('assignmentPreview');
   const confirmModal = document.getElementById('confirmModal');
   const assignButton = document.getElementById('assignButton');
 
+  let searchTimeout;
+  let selectedEmployee = null;
+
+  // Employee search functionality
+  employeeSearch.addEventListener('input', function() {
+    const query = this.value.trim();
+
+    clearTimeout(searchTimeout);
+
+    if (query.length < 2) {
+      searchResults.classList.add('hidden');
+      return;
+    }
+
+    searchTimeout = setTimeout(() => {
+      searchEmployees(query);
+    }, 300);
+  });
+
+  function searchEmployees(query) {
+    fetch(`/employees/api/search?q=${encodeURIComponent(query)}`)
+      .then(response => response.json())
+      .then(data => {
+        displaySearchResults(data.employees || []);
+      })
+      .catch(error => {
+        console.error('Error searching employees:', error);
+        searchResults.innerHTML = '<div class="p-3 text-red-500">Error searching employees</div>';
+        searchResults.classList.remove('hidden');
+      });
+  }
+
+  function displaySearchResults(employees) {
+    if (employees.length === 0) {
+      searchResults.innerHTML = '<div class="p-3 text-gray-500 dark:text-gray-400">No employees found</div>';
+      searchResults.classList.remove('hidden');
+      return;
+    }
+
+    searchResults.innerHTML = employees.map(employee => `
+      <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0 employee-result"
+           data-id="${employee.id}"
+           data-name="${employee.name}"
+           data-cep="${employee.cep}"
+           data-department="${employee.department_name}">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+            <i class="fas fa-user text-blue-600 dark:text-blue-300 text-sm"></i>
+          </div>
+          <div>
+            <div class="font-semibold text-gray-800 dark:text-gray-100">${employee.name}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">${employee.cep} • ${employee.department_name}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Add click handlers to results
+    searchResults.querySelectorAll('.employee-result').forEach(result => {
+      result.addEventListener('click', function() {
+        selectEmployee({
+          id: this.dataset.id,
+          name: this.dataset.name,
+          cep: this.dataset.cep,
+          department_name: this.dataset.department
+        });
+      });
+    });
+
+    searchResults.classList.remove('hidden');
+  }
+
+  function selectEmployee(employee) {
+    selectedEmployee = employee;
+    assignedToHidden.value = employee.id;
+
+    selectedEmployeeName.textContent = employee.name;
+    selectedEmployeeDetails.textContent = `${employee.cep} • ${employee.department_name}`;
+
+    employeeSearch.style.display = 'none';
+    selectedEmployeeDiv.classList.remove('hidden');
+    searchResults.classList.add('hidden');
+
+    updatePreview();
+  }
+
+  // Clear selection
+  clearSelectionBtn.addEventListener('click', function() {
+    selectedEmployee = null;
+    assignedToHidden.value = '';
+    employeeSearch.value = '';
+    employeeSearch.style.display = 'block';
+    selectedEmployeeDiv.classList.add('hidden');
+    searchResults.classList.add('hidden');
+    updatePreview();
+    employeeSearch.focus();
+  });
+
+  // Hide search results when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!employeeSearch.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.classList.add('hidden');
+    }
+  });
+
   // Update preview when form values change
   function updatePreview() {
-    const selectedEmployee = assignedToSelect.options[assignedToSelect.selectedIndex];
     const selectedDate = dateAssignedInput.value;
 
-    if (assignedToSelect.value && selectedDate) {
+    if (assignedToHidden.value && selectedDate && selectedEmployee) {
       assignmentPreview.style.display = 'block';
-      document.getElementById('previewEmployee').textContent = selectedEmployee.text.split(' (')[0];
-      document.getElementById('previewDepartment').textContent = selectedEmployee.dataset.department || 'Not specified';
+      document.getElementById('previewEmployee').textContent = selectedEmployee.name;
+      document.getElementById('previewDepartment').textContent = selectedEmployee.department_name || 'Not specified';
       document.getElementById('previewDate').textContent = new Date(selectedDate).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -220,19 +356,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  assignedToSelect.addEventListener('change', updatePreview);
   dateAssignedInput.addEventListener('change', updatePreview);
 
   form.addEventListener('submit', function(event) {
     event.preventDefault();
-    const assignedTo = assignedToSelect.value;
+    const assignedTo = assignedToHidden.value;
     const dateAssigned = dateAssignedInput.value;
-    if (!assignedTo || !dateAssigned) {
+
+    if (!assignedTo || !dateAssigned || !selectedEmployee) {
       return false;
     }
-    const selectedEmployee = assignedToSelect.options[assignedToSelect.selectedIndex];
-    document.getElementById('confirmEmployee').textContent = selectedEmployee.text.split(' (')[0];
-    document.getElementById('confirmDepartment').textContent = selectedEmployee.dataset.department || 'Not specified';
+
+    document.getElementById('confirmEmployee').textContent = selectedEmployee.name;
+    document.getElementById('confirmDepartment').textContent = selectedEmployee.department_name || 'Not specified';
     document.getElementById('confirmDate').textContent = new Date(dateAssigned).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -259,14 +395,15 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   updatePreview();
-  assignedToSelect.focus();
+  employeeSearch.focus();
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       confirmModal.style.display = 'none';
+      searchResults.classList.add('hidden');
     }
     if (e.ctrlKey && e.key === 'Enter') {
-      if (assignedToSelect.value && dateAssignedInput.value) {
+      if (assignedToHidden.value && dateAssignedInput.value) {
         form.dispatchEvent(new Event('submit'));
       }
     }

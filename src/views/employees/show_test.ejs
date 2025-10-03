@@ -1,0 +1,32 @@
+<!-- Test minimal employee show page to isolate the issue -->
+<div class="container mx-auto px-4 py-8">
+  <h1>Employee Test Page</h1>
+  <p>Employee: <%= employee.name %></p>
+  <button id="testBtn">Test Button</button>
+</div>
+
+<!-- Inline data for JavaScript -->
+<script type="application/json" id="employee-data">
+{
+  "employeeId": <%= employee.id %>,
+  "employeeName": "<%= employee.name %>",
+  "employeeCep": "<%= employee.cep %>",
+  "softwarePrices": []
+}
+</script>
+
+<script>
+// Load data from JSON script tag
+window.employeePageData = JSON.parse(document.getElementById('employee-data').textContent);
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Employee data:', window.employeePageData);
+
+  const testBtn = document.getElementById('testBtn');
+  if (testBtn) {
+    testBtn.addEventListener('click', function() {
+      alert('Test button works! Employee: ' + window.employeePageData.employeeName);
+    });
+  }
+});
+</script>

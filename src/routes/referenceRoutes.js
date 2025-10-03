@@ -5,44 +5,63 @@ const { hasPermission } = require('../middleware/permissions');
 
 // Asset Types routes
 router.get('/asset-types', hasPermission('references.view'), referenceController.assetTypes);
-router.get('/asset-types/add', hasPermission('references.create'), referenceController.showAddAssetTypeForm);
-router.post('/asset-types', hasPermission('references.create'), referenceController.addAssetType);
-router.get('/asset-types/:id/edit', hasPermission('references.edit'), referenceController.showEditAssetTypeForm);
-router.post('/asset-types/:id', hasPermission('references.edit'), referenceController.editAssetType);
-router.post('/asset-types/:id/delete', hasPermission('references.delete'), referenceController.deleteAssetType);
+router.get('/asset-types/add', hasPermission('references.manage'), referenceController.showAddAssetTypeForm);
+router.post('/asset-types', hasPermission('references.manage'), referenceController.addAssetType);
+router.get('/asset-types/:id/edit', hasPermission('references.manage'), referenceController.showEditAssetTypeForm);
+router.post('/asset-types/:id', hasPermission('references.manage'), referenceController.editAssetType);
+router.post('/asset-types/:id/delete', hasPermission('references.manage'), referenceController.deleteAssetType);
 
 // Status routes
-router.get('/statuses', hasPermission('references.view'), referenceController.statuses);
-router.get('/statuses/add', hasPermission('references.create'), referenceController.showAddStatusForm);
-router.post('/statuses', hasPermission('references.create'), referenceController.addStatus);
-router.get('/statuses/:id/edit', hasPermission('references.edit'), referenceController.showEditStatusForm);
-router.post('/statuses/:id', hasPermission('references.edit'), referenceController.editStatus);
-router.post('/statuses/:id/delete', hasPermission('references.delete'), referenceController.deleteStatus);
+router.get('/status', hasPermission('references.view'), referenceController.statuses);
+router.get('/status/add', hasPermission('references.manage'), referenceController.showAddStatusForm);
+router.post('/status', hasPermission('references.manage'), referenceController.addStatus);
+router.get('/status/:id/edit', hasPermission('references.manage'), referenceController.showEditStatusForm);
+router.post('/status/:id', hasPermission('references.manage'), referenceController.editStatus);
+router.post('/status/:id/delete', hasPermission('references.manage'), referenceController.deleteStatus);
+
+// Backward compatibility: redirect old statuses routes to status
+router.get('/statuses', hasPermission('references.view'), (req, res) => {
+  res.redirect('/references/status');
+});
+router.get('/statuses/add', hasPermission('references.manage'), (req, res) => {
+  res.redirect('/references/status/add');
+});
+router.post('/statuses', hasPermission('references.manage'), (req, res) => {
+  res.redirect('/references/status');
+});
+router.get('/statuses/:id/edit', hasPermission('references.manage'), (req, res) => {
+  res.redirect(`/references/status/${req.params.id}/edit`);
+});
+router.post('/statuses/:id', hasPermission('references.manage'), (req, res) => {
+  res.redirect('/references/status');
+});
+router.post('/statuses/:id/delete', hasPermission('references.manage'), (req, res) => {
+  res.redirect('/references/status');
+});
 
 // Department routes
-router.get('/departments', hasPermission('departments.view'), referenceController.departments);
-router.get('/departments/new', hasPermission('departments.create'), referenceController.showAddDepartmentForm);
-router.post('/departments', hasPermission('departments.create'), referenceController.addDepartment);
-router.get('/departments/:id', hasPermission('departments.view'), referenceController.showDepartment);
-router.get('/departments/:id/edit', hasPermission('departments.edit'), referenceController.showEditDepartmentForm);
-router.post('/departments/:id', hasPermission('departments.edit'), referenceController.editDepartment);
-router.post('/departments/:id/delete', hasPermission('departments.delete'), referenceController.deleteDepartment);
+router.get('/departments', hasPermission('references.view'), referenceController.departments);
+router.get('/departments/add', hasPermission('references.manage'), referenceController.showAddDepartmentForm);
+router.post('/departments', hasPermission('references.manage'), referenceController.addDepartment);
+router.get('/departments/:id/edit', hasPermission('references.manage'), referenceController.showEditDepartmentForm);
+router.post('/departments/:id', hasPermission('references.manage'), referenceController.editDepartment);
+router.post('/departments/:id/delete', hasPermission('references.manage'), referenceController.deleteDepartment);
 
 // Location routes
 router.get('/locations', hasPermission('references.view'), referenceController.locations);
-router.get('/locations/add', hasPermission('references.create'), referenceController.showAddLocationForm);
-router.post('/locations', hasPermission('references.create'), referenceController.addLocation);
-router.get('/locations/:id/edit', hasPermission('references.edit'), referenceController.showEditLocationForm);
-router.post('/locations/:id', hasPermission('references.edit'), referenceController.editLocation);
-router.post('/locations/:id/delete', hasPermission('references.delete'), referenceController.deleteLocation);
+router.get('/locations/add', hasPermission('references.manage'), referenceController.showAddLocationForm);
+router.post('/locations', hasPermission('references.manage'), referenceController.addLocation);
+router.get('/locations/:id/edit', hasPermission('references.manage'), referenceController.showEditLocationForm);
+router.post('/locations/:id', hasPermission('references.manage'), referenceController.editLocation);
+router.post('/locations/:id/delete', hasPermission('references.manage'), referenceController.deleteLocation);
 
 // Brands routes
 router.get('/brands', hasPermission('references.view'), referenceController.brands);
-router.get('/brands/add', hasPermission('references.create'), referenceController.showAddBrandForm);
-router.post('/brands', hasPermission('references.create'), referenceController.addBrand);
-router.get('/brands/:id/edit', hasPermission('references.edit'), referenceController.showEditBrandForm);
-router.post('/brands/:id', hasPermission('references.edit'), referenceController.editBrand);
-router.post('/brands/:id/delete', hasPermission('references.delete'), referenceController.deleteBrand);
+router.get('/brands/add', hasPermission('references.manage'), referenceController.showAddBrandForm);
+router.post('/brands', hasPermission('references.manage'), referenceController.addBrand);
+router.get('/brands/:id/edit', hasPermission('references.manage'), referenceController.showEditBrandForm);
+router.post('/brands/:id', hasPermission('references.manage'), referenceController.editBrand);
+router.post('/brands/:id/delete', hasPermission('references.manage'), referenceController.deleteBrand);
 
 // Software routes (renamed from offices)
 router.get('/software', hasPermission('software.view'), referenceController.software);

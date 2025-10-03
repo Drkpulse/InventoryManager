@@ -63,7 +63,7 @@ exports.getAllPDAs = async (req, res) => {
 
     // Get the filtered PDAs with pagination
     const pdasQuery = `
-      SELECT p.*, 
+      SELECT p.*,
              c.name as client_name, c.client_id as client_code,
              s.name as status_name,
              (SELECT COUNT(*) FROM sim_cards WHERE pda_id = p.id) as sim_count
@@ -98,11 +98,12 @@ exports.getAllPDAs = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching PDAs:', error);
-    res.status(500).render('error', { 
+    res.status(500).render('layout', {
       title: 'Server Error',
-      message: 'Failed to fetch PDAs: ' + error.message,
+      body: 'error-content',
+      error: 'Failed to fetch PDAs',
       status: 500,
-      user: req.user 
+      user: req.user
     });
   }
 };
@@ -112,7 +113,7 @@ exports.getPDAById = async (req, res) => {
     const { id } = req.params;
 
     const pdaResult = await db.query(`
-      SELECT p.*, 
+      SELECT p.*,
              c.name as client_name, c.client_id as client_code,
              s.name as status_name,
              (SELECT COUNT(*) FROM sim_cards WHERE pda_id = p.id) as sim_count
@@ -123,9 +124,12 @@ exports.getPDAById = async (req, res) => {
     `, [id]);
 
     if (pdaResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'PDA not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -137,10 +141,15 @@ exports.getPDAById = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching PDA:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to fetch PDA details',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to fetch PDA details',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
@@ -159,22 +168,27 @@ exports.createPDAForm = async (req, res) => {
     });
   } catch (error) {
     console.error('Error rendering create form:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to load create form',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to load create form',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
 exports.createPDA = async (req, res) => {
   try {
     const { serial_number, model, client_id, cost, status_id } = req.body;
-    
+
     const validationErrors = validatePDAData({ serial_number, client_id, status_id, cost });
     if (validationErrors.length > 0) {
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
-      
+
       return res.status(400).render('layout', {
         title: 'Add New PDA',
         body: 'pdas/create',
@@ -195,7 +209,7 @@ exports.createPDA = async (req, res) => {
     if (existingPDA.rows.length > 0) {
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
-      
+
       return res.status(400).render('layout', {
         title: 'Add New PDA',
         body: 'pdas/create',
@@ -229,7 +243,7 @@ exports.createPDA = async (req, res) => {
   } catch (error) {
     console.error('Error creating PDA:', error);
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
-    
+
     res.status(500).render('layout', {
       title: 'Add New PDA',
       body: 'pdas/create',
@@ -248,9 +262,12 @@ exports.updatePDAForm = async (req, res) => {
     const pdaResult = await db.query('SELECT * FROM pdas WHERE id = $1', [id]);
 
     if (pdaResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'PDA not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -266,10 +283,15 @@ exports.updatePDAForm = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching PDA for edit:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to load edit form',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to load edit form',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
@@ -282,7 +304,7 @@ exports.updatePDA = async (req, res) => {
     if (validationErrors.length > 0) {
       const pdaResult = await db.query('SELECT * FROM pdas WHERE id = $1', [id]);
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
-      
+
       return res.status(400).render('layout', {
         title: `Edit PDA: ${pdaResult.rows[0].serial_number}`,
         body: 'pdas/edit',
@@ -296,9 +318,12 @@ exports.updatePDA = async (req, res) => {
     // Get current PDA data
     const currentResult = await db.query('SELECT * FROM pdas WHERE id = $1', [id]);
     if (currentResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'PDA not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -312,7 +337,7 @@ exports.updatePDA = async (req, res) => {
 
     if (existingPDA.rows.length > 0) {
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
-      
+
       return res.status(400).render('layout', {
         title: `Edit PDA: ${currentPDA.serial_number}`,
         body: 'pdas/edit',
@@ -325,7 +350,7 @@ exports.updatePDA = async (req, res) => {
 
     // Update PDA
     const result = await db.query(`
-      UPDATE pdas 
+      UPDATE pdas
       SET serial_number = $1, client_id = $2, has_sim_card = $3, updated_at = CURRENT_TIMESTAMP
       WHERE id = $4
       RETURNING *
@@ -347,7 +372,7 @@ exports.updatePDA = async (req, res) => {
     console.error('Error updating PDA:', error);
     const pdaResult = await db.query('SELECT * FROM pdas WHERE id = $1', [req.params.id]);
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
-    
+
     res.status(500).render('layout', {
       title: `Edit PDA: ${pdaResult.rows[0]?.serial_number || 'Unknown'}`,
       body: 'pdas/edit',
@@ -392,17 +417,20 @@ exports.getPDAHistory = async (req, res) => {
     const { id } = req.params;
 
     const pdaResult = await db.query(`
-      SELECT p.*, 
+      SELECT p.*,
              c.name as client_name, c.client_id as client_code
       FROM pdas p
       LEFT JOIN clients c ON p.client_id = c.id
       WHERE p.id = $1
     `, [id]);
-    
+
     if (pdaResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'PDA not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -430,10 +458,15 @@ exports.getPDAHistory = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching PDA history:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to fetch PDA history',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to fetch PDA history',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 

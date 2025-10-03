@@ -31,6 +31,10 @@ router.get('/assets-by-employee', hasPermission('reports.view'), reportControlle
 // Export routes
 router.get('/export-assets', hasPermission('reports.export'), reportController.exportAssetsCSV);
 router.get('/assets/export', hasPermission('reports.export'), reportController.exportAssetsCSV);
+router.get('/export-assets-by-employee', hasPermission('reports.export'), reportController.exportAssetsByEmployee);
+
+// Employee asset details
+router.get('/employee-assets/:id', hasPermission('reports.view'), reportController.employeeAssetDetails);
 
 router.get('/employee-full-assets/:id', hasPermission('reports.export'), reportController.employeeFullAssetsPDF);
 

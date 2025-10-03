@@ -2,53 +2,43 @@ const ejs = require('ejs');
 const path = require('path');
 
 /**
- * Middleware to handle AJAX requests and return JSON responses
- * for the content loader system
+ * Enhanced AJAX content middleware - returns only the main content with proper context
  */
 function handleAjaxResponse(req, res, next) {
   const originalRender = res.render;
 
   res.render = function(view, options = {}, callback) {
-    // Check if this is an AJAX request
     const isAjax = req.headers['x-requested-with'] === 'XMLHttpRequest';
 
-    if (isAjax) {
-      // For AJAX requests, render the content and return JSON
-      const viewPath = path.join(__dirname, '../views', view + '.ejs');
-      
-      // If it's the layout view, extract the body content
-      if (view === 'layout' && options.body) {
-        const bodyViewPath = path.join(__dirname, '../views', options.body + '.ejs');
-        
-        ejs.renderFile(bodyViewPath, options, (err, bodyHtml) => {
-          if (err) {
-            console.error('Error rendering body view:', err);
-            return res.status(500).json({ error: 'Failed to render content' });
-          }
+    if (isAjax && view === 'layout' && options.body) {
+      // For AJAX requests, render only the body content, not the full layout
+      const bodyViewPath = path.join(__dirname, '../views', options.body + '.ejs');
 
-          res.json({
-            title: options.title || 'Inventory Management',
-            content: bodyHtml,
-            success: true
-          });
-        });
-      } else {
-        // Regular view rendering for AJAX
-        ejs.renderFile(viewPath, options, (err, html) => {
-          if (err) {
-            console.error('Error rendering view:', err);
-            return res.status(500).json({ error: 'Failed to render content' });
-          }
+      // Ensure all necessary context is available for AJAX rendering
+      const renderContext = {
+        ...options,
+        // Include all res.locals which contains translation function and other context
+        ...res.locals,
+        // Override with any specific options passed
+        ...options,
+        // Ensure request and response are available
+        req: req,
+        res: res
+      };
 
-          res.json({
-            title: options.title || 'Inventory Management',
-            content: html,
-            success: true
-          });
+      ejs.renderFile(bodyViewPath, renderContext, (err, bodyHtml) => {
+        if (err) {
+          console.error('AJAX render error:', err);
+          return res.status(500).json({ error: 'Render failed', details: err.message });
+        }
+
+        res.json({
+          title: options.title,
+          content: bodyHtml
         });
-      }
+      });
     } else {
-      // For regular requests, use the original render method
+      // Normal page request - use original render
       originalRender.call(this, view, options, callback);
     }
   };

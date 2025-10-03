@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Main initialization function
 function initializePage() {
   setupUI();
-  setupNotifications();
   setupDropdowns();
   setupForms();
   setupDeleteConfirmations();
@@ -38,30 +37,7 @@ function setupUI() {
   });
 }
 
-// Setup notifications
-function setupNotifications() {
-  const notificationToggle = document.getElementById('notificationToggle');
-  const notificationMenu = document.getElementById('notificationMenu');
 
-  if (notificationToggle && notificationMenu) {
-    notificationToggle.addEventListener('click', function(e) {
-      e.stopPropagation();
-      notificationMenu.classList.toggle('show');
-
-      // Load notifications when opened
-      if (notificationMenu.classList.contains('show')) {
-        loadNotifications();
-      }
-    });
-
-    // Close on outside click
-    document.addEventListener('click', function(e) {
-      if (!notificationToggle.contains(e.target) && !notificationMenu.contains(e.target)) {
-        notificationMenu.classList.remove('show');
-      }
-    });
-  }
-}
 
 // Setup all dropdowns
 function setupDropdowns() {
@@ -124,9 +100,22 @@ function setupForms() {
     if (form.hasFormHandler) return;
     form.hasFormHandler = true;
 
+    // Add validation on input for real-time feedback
+    const requiredFields = form.querySelectorAll('[required]');
+    requiredFields.forEach(field => {
+      field.addEventListener('blur', function() {
+        validateField(this);
+      });
+
+      field.addEventListener('input', function() {
+        if (this.classList.contains('border-red-500')) {
+          validateField(this);
+        }
+      });
+    });
+
     // Add submit handler for validation
     form.addEventListener('submit', function(e) {
-      const requiredFields = form.querySelectorAll('[required]');
       let isValid = true;
 
       // Clear previous errors
@@ -136,14 +125,8 @@ function setupForms() {
       });
 
       requiredFields.forEach(field => {
-        if (!field.value.trim()) {
+        if (!validateField(field)) {
           isValid = false;
-          field.classList.add('border-red-500');
-
-          const errorMsg = document.createElement('div');
-          errorMsg.className = 'error-message text-red-500 text-sm mt-1';
-          errorMsg.textContent = 'This field is required';
-          field.parentNode.insertBefore(errorMsg, field.nextSibling);
         }
       });
 
@@ -154,16 +137,75 @@ function setupForms() {
           firstError.focus();
           firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      } else {
-        // Show loading state on submit button
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + (submitBtn.textContent || 'Processing...');
-        }
+        return;
+      }
+
+      // Show loading state on submit button (but don't interfere with navigation)
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn && !form.hasAttribute('data-no-transition')) {
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+
+        // Restore button after a timeout in case something goes wrong
+        setTimeout(() => {
+          if (submitBtn.disabled) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+          }
+        }, 10000);
       }
     });
   });
+}
+
+// Validate individual field
+function validateField(field) {
+  const value = field.value.trim();
+  let isValid = true;
+
+  // Remove existing error
+  const existingError = field.parentNode.querySelector('.error-message');
+  if (existingError) {
+    existingError.remove();
+  }
+  field.classList.remove('border-red-500');
+
+  // Check required
+  if (field.hasAttribute('required') && !value) {
+    isValid = false;
+    showFieldError(field, 'This field is required');
+  }
+
+  // Check email
+  else if (field.type === 'email' && value && !isValidEmail(value)) {
+    isValid = false;
+    showFieldError(field, 'Please enter a valid email address');
+  }
+
+  // Check minimum length
+  else if (field.hasAttribute('minlength') && value.length < field.getAttribute('minlength')) {
+    isValid = false;
+    showFieldError(field, `Must be at least ${field.getAttribute('minlength')} characters`);
+  }
+
+  return isValid;
+}
+
+// Show field error
+function showFieldError(field, message) {
+  field.classList.add('border-red-500');
+
+  const errorMsg = document.createElement('div');
+  errorMsg.className = 'error-message text-red-500 text-sm mt-1';
+  errorMsg.textContent = message;
+  field.parentNode.insertBefore(errorMsg, field.nextSibling);
+}
+
+// Validate email format
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 // Setup delete confirmations
@@ -254,45 +296,7 @@ function updateActiveMenuItems() {
   });
 }
 
-// Load notifications
-function loadNotifications() {
-  fetch('/notifications')
-    .then(response => response.json())
-    .then(data => {
-      const notificationList = document.getElementById('notificationList');
-      const notificationCount = document.getElementById('notificationCount');
 
-      if (data.success && data.notifications) {
-        // Update count
-        if (data.notifications.length > 0) {
-          notificationCount.textContent = data.notifications.length;
-          notificationCount.style.display = 'inline';
-        } else {
-          notificationCount.style.display = 'none';
-        }
-
-        // Update list
-        if (data.notifications.length === 0) {
-          notificationList.innerHTML = '<div class="px-5 py-4 text-gray-500 dark:text-gray-300 text-center">No new notifications</div>';
-        } else {
-          notificationList.innerHTML = data.notifications.map(notification => `
-            <div class="flex items-start gap-3 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-700">
-              <i class="fas fa-info-circle text-blue-500 dark:text-blue-300 mt-1"></i>
-              <div>
-                <div class="text-sm text-gray-900 dark:text-white font-medium">${notification.title}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-300">${notification.time}</div>
-              </div>
-            </div>
-          `).join('');
-        }
-      }
-    })
-    .catch(error => {
-      console.error('Error loading notifications:', error);
-      document.getElementById('notificationList').innerHTML =
-        '<div class="px-5 py-4 text-red-500 text-center">Error loading notifications</div>';
-    });
-}
 
 // Page-specific initialization
 function initPageSpecific() {
@@ -407,14 +411,28 @@ function checkEmployeeAssignments() {
   const employeeId = window.location.pathname.split('/')[2];
   const deleteEmployeeModal = document.getElementById('deleteEmployeeModal');
 
+  // Get CSRF token
+  const csrfToken = document.querySelector('meta[name="csrf-token"]');
+  const headers = {
+    'X-Requested-With': 'XMLHttpRequest',
+    'Content-Type': 'application/json'
+  };
+
+  // Add CSRF token to headers
+  if (csrfToken) {
+    headers['x-csrf-token'] = csrfToken.getAttribute('content');
+  }
+
   fetch(`/employees/${employeeId}/delete`, {
     method: 'POST',
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-      'Content-Type': 'application/json'
-    }
+    headers: headers
   })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
   .then(data => {
     const noAssignedItems = document.getElementById('noAssignedItems');
     const hasAssignedItems = document.getElementById('hasAssignedItems');
@@ -431,7 +449,18 @@ function checkEmployeeAssignments() {
   })
   .catch(error => {
     console.error('Error checking assignments:', error);
-    alert('Error checking employee assignments');
+
+    // Determine error message
+    let errorMessage = 'Error checking employee assignments';
+    if (error.message.includes('403')) {
+      errorMessage = 'Permission denied. Please refresh the page and try again.';
+    } else if (error.message.includes('500')) {
+      errorMessage = 'Server error occurred. Please try again later.';
+    } else if (error.message.includes('CSRF')) {
+      errorMessage = 'Security token expired. Please refresh the page and try again.';
+    }
+
+    alert(errorMessage + '\n\nError details: ' + error.message);
   });
 }
 
@@ -439,12 +468,21 @@ function checkEmployeeAssignments() {
 window.assignAsset = function(assetId, cepBrc) {
   const employeeId = window.location.pathname.split('/')[2];
 
+  // Get CSRF token
+  const csrfToken = document.querySelector('meta[name="csrf-token"]');
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
+  };
+
+  // Add CSRF token to headers
+  if (csrfToken) {
+    headers['x-csrf-token'] = csrfToken.getAttribute('content');
+  }
+
   fetch(`/items/${assetId}/${cepBrc}/assign`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest'
-    },
+    headers: headers,
     body: JSON.stringify({
       assigned_to: employeeId,
       date_assigned: new Date().toISOString().split('T')[0]

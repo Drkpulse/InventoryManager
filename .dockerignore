@@ -31,6 +31,7 @@ tests/
 __tests__/
 *.test.js
 *.spec.js
+test-*.js
 
 # Development files
 .git
@@ -47,8 +48,11 @@ Dockerfile*
 docker-compose*
 .dockerignore
 
-# Scripts and tools
-tools/
+# Scripts and tools (excluding some, but keeping necessary ones)
+tools/test-*
+tools/*.sh
+tools/install-chrome.sh
+tools/monitor.sh
 scripts/
 
 # Backups

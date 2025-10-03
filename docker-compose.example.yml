@@ -1,0 +1,124 @@
+# Example docker-compose file showing how to use container variables
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: inventory_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_secure_password_here
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - inv_network
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - inv_network
+
+  app:
+    build: .
+    environment:
+      # Container User Configuration (for Unraid compatibility)
+      PUID: 99                    # User ID (99 = nobody on Unraid)
+      PGID: 100                   # Group ID (100 = users on Unraid)
+      TZ: America/New_York        # Timezone
+
+      # Application Configuration
+      NODE_ENV: production
+      PORT: 3000
+      LOG_LEVEL: info
+
+      # Database Configuration
+      DB_HOST: postgres           # Use service name for internal networking
+      DB_PORT: 5432
+      DB_NAME: inventory_db
+      DB_USER: postgres
+      DB_PASSWORD: your_secure_password_here
+      INIT_DB: true              # Initialize database on first run
+
+      # Session Security
+      SESSION_SECRET: your_very_secure_session_secret_here_change_this
+
+      # Redis Configuration (optional - for session storage and caching)
+      REDIS_HOST: redis           # Use service name for internal networking
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
+
+      # File Upload Configuration
+      MAX_FILE_SIZE: 10MB
+
+      # Performance Configuration
+      ENABLE_CLUSTERING: false    # Set to true for multi-core usage
+      CLUSTER_WORKERS: 0          # 0 = auto-detect CPU cores
+    ports:
+      - "3000:3000"
+    volumes:
+      # Data persistence volumes
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+      - app_data:/app/data
+      - app_backups:/app/backups
+
+      # Configuration volume (optional)
+      - app_config:/config
+
+      # Optional: SSL certificates (if using HTTPS)
+      # - ./ssl:/app/ssl:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+    networks:
+      - inv_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_uploads:
+    driver: local
+  app_logs:
+    driver: local
+  app_data:
+    driver: local
+  app_backups:
+    driver: local
+  app_config:
+    driver: local
+
+networks:
+  inv_network:
+    driver: bridge

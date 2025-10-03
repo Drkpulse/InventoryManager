@@ -31,7 +31,7 @@ exports.showSettings = async (req, res) => {
     const showUpdated = req.query.updated === 'true';
 
     res.render('layout', {
-      title: translate('user_settings', user.settings.language || 'en'),
+      title: 'Account Settings',
       body: 'users/settings',
       user,
       supportedLanguages,
@@ -84,41 +84,7 @@ exports.updateDisplaySettings = async (req, res) => {
   }
 };
 
-/**
- * Update notification settings
- */
-exports.updateNotificationSettings = async (req, res) => {
-  try {
-    const userId = req.session.user.id;
-    const { email_notifications, browser_notifications, maintenance_alerts, assignment_notifications } = req.body;
 
-    await ensureSettingsColumnExists();
-
-    const userResult = await db.query('SELECT settings FROM users WHERE id = $1', [userId]);
-    if (userResult.rows.length === 0) {
-      req.flash('error', 'User not found');
-      return res.redirect('/users/settings');
-    }
-
-    let settings = userResult.rows[0].settings || {};
-    settings = {
-      ...settings,
-      email_notifications: email_notifications === 'on',
-      browser_notifications: browser_notifications === 'on',
-      maintenance_alerts: maintenance_alerts === 'on',
-      assignment_notifications: assignment_notifications === 'on'
-    };
-
-    await db.query('UPDATE users SET settings = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [JSON.stringify(settings), userId]);
-    req.session.user = { ...req.session.user, settings };
-    req.flash('success', 'Notification settings updated successfully');
-    res.redirect('/users/settings?updated=true');
-  } catch (error) {
-    console.error('Error updating notification settings:', error);
-    req.flash('error', 'Failed to update notification settings');
-    res.redirect('/users/settings');
-  }
-};
 
 /**
  * Update security settings (password change)
@@ -130,7 +96,7 @@ exports.updateSecuritySettings = async (req, res) => {
 
     if (!current_password || !new_password || !confirm_password) {
       return res.render('layout', {
-        title: 'User Settings',
+        title: 'Account Settings',
         body: 'users/settings',
         user: req.session.user,
         error: 'All password fields are required'
@@ -139,7 +105,7 @@ exports.updateSecuritySettings = async (req, res) => {
 
     if (new_password !== confirm_password) {
       return res.render('layout', {
-        title: 'User Settings',
+        title: 'Account Settings',
         body: 'users/settings',
         user: req.session.user,
         error: 'New passwords do not match'
@@ -157,7 +123,7 @@ exports.updateSecuritySettings = async (req, res) => {
 
     if (!isPasswordValid) {
       return res.render('layout', {
-        title: 'User Settings',
+        title: 'Account Settings',
         body: 'users/settings',
         user: req.session.user,
         error: 'Current password is incorrect'

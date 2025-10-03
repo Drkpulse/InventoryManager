@@ -545,6 +545,71 @@ function activityIcon(action) {
   color: #a5b4fc;
 }
 
+/* Enhanced Search Features */
+.search-stats {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dark .search-stats {
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+}
+
+.search-result-item.enhanced {
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.search-result-item.enhanced:hover {
+  border-left-color: #4f46e5;
+  background: #f8fafc;
+  transform: translateX(2px);
+}
+
+.dark .search-result-item.enhanced:hover {
+  background: #1e293b;
+}
+
+.result-extras {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.result-extras span {
+  font-size: 11px;
+}
+
+.search-show-more a {
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.search-show-more a:hover {
+  transform: translateX(4px);
+}
+
+/* Loading animation enhancement */
+.search-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.dark .search-loading {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 200% 100%;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .global-search-results {
@@ -700,10 +765,16 @@ function activityIcon(action) {
 
       isSearching = true;
 
-      fetch(`/api/search?query=${encodeURIComponent(query)}`)
+      // Use the enhanced search endpoint
+      fetch(`/dashboard/search?q=${encodeURIComponent(query)}&limit=15`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
         .then(response => response.json())
         .then(data => {
-          displaySearchResults(data.results || {});
+          displaySearchResults(data.results || {}, data.totalResults || 0, data.searchTime || 0);
         })
         .catch(error => {
           console.error('Search error:', error);
@@ -733,24 +804,35 @@ function activityIcon(action) {
       `;
     }
 
-    function displaySearchResults(results) {
+    function displaySearchResults(results, totalResults = 0, searchTime = 0) {
       let html = '';
-      let totalResults = 0;
+      let displayedResults = 0;
 
-      // Count total results
+      // Count displayed results
       Object.values(results).forEach(category => {
-        totalResults += category.length;
+        displayedResults += category.length;
       });
 
-      if (totalResults === 0) {
+      if (displayedResults === 0) {
         html = `
           <div class="search-no-results">
             <i class="fas fa-search"></i>
             <span><%= t('no_results_found') %></span>
+            <div class="mt-2 text-xs text-gray-500">Try different keywords or check spelling</div>
           </div>
         `;
       } else {
-        // Display results by category
+        // Add search stats header
+        html += `
+          <div class="search-stats">
+            <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+              <span><i class="fas fa-chart-bar mr-1"></i>${totalResults} results found</span>
+              <span><i class="fas fa-clock mr-1"></i>${searchTime}ms</span>
+            </div>
+          </div>
+        `;
+
+        // Display results by category with enhanced styling
         Object.entries(results).forEach(([category, items]) => {
           if (items.length > 0) {
             html += `<div class="search-category">
@@ -761,9 +843,20 @@ function activityIcon(action) {
               </div>
             `;
 
-            items.slice(0, 5).forEach(item => { // Limit to 5 results per category
+            items.slice(0, 4).forEach(item => { // Show 4 per category in dropdown
+              const statusBadge = item.status ? `
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium
+                           ${item.status === 'assigned' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                             item.status === 'unassigned' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                             'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}">
+                  ${item.status}
+                </span>
+              ` : '';
+
+              const priceInfo = item.price ? `<span class="text-xs text-green-600 dark:text-green-400 font-medium">$${parseFloat(item.price).toFixed(2)}</span>` : '';
+
               html += `
-                <div class="search-result-item" data-url="${item.url}" data-category="${category}" tabindex="0">
+                <div class="search-result-item enhanced" data-url="${item.url}" data-category="${category}" tabindex="0">
                   <div class="result-icon">
                     <i class="fas fa-${item.icon || getCategoryIcon(category)}"></i>
                   </div>
@@ -771,17 +864,24 @@ function activityIcon(action) {
                     <div class="result-title">${highlightSearchTerm(item.title, globalSearch.value)}</div>
                     <div class="result-subtitle">${item.subtitle}</div>
                     ${item.identifier ? `<div class="result-identifier">${item.identifier}</div>` : ''}
+                    <div class="result-extras">
+                      ${statusBadge}
+                      ${priceInfo}
+                      ${item.assignedTo ? `<span class="text-xs text-gray-500"><i class="fas fa-user mr-1"></i>${item.assignedTo}</span>` : ''}
+                    </div>
                   </div>
                   <div class="result-category-badge">${category}</div>
                 </div>
               `;
             });
 
-            if (items.length > 5) {
+            if (items.length > 4) {
               html += `
                 <div class="search-show-more">
-                  <a href="/search?q=${encodeURIComponent(globalSearch.value)}&category=${category.toLowerCase()}">
-                    Show ${items.length - 5} more ${category.toLowerCase()}...
+                  <a href="/dashboard/search?q=${encodeURIComponent(globalSearch.value)}&category=${category.toLowerCase()}"
+                     class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200">
+                    <i class="fas fa-plus-circle"></i>
+                    Show ${items.length - 4} more ${category.toLowerCase()}
                   </a>
                 </div>
               `;
@@ -791,13 +891,16 @@ function activityIcon(action) {
           }
         });
 
-        // Add "View All Results" link
-        if (totalResults > 10) {
+        // Enhanced "View All Results" link
+        if (totalResults > displayedResults) {
           html += `
             <div class="search-view-all">
-              <a href="/search?q=${encodeURIComponent(globalSearch.value)}">
-                <i class="fas fa-external-link-alt"></i>
-                View all ${totalResults} results
+              <a href="/dashboard/search?q=${encodeURIComponent(globalSearch.value)}"
+                 class="flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-indigo-500 to-purple-600
+                        text-white font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-200">
+                <i class="fas fa-search-plus"></i>
+                View All ${totalResults} Results
+                <i class="fas fa-arrow-right ml-1"></i>
               </a>
             </div>
           `;
@@ -807,10 +910,14 @@ function activityIcon(action) {
       searchResults.innerHTML = html;
       searchResults.classList.remove('hidden');
 
-      // Add click handlers to result items
+      // Add enhanced click handlers
       searchResults.querySelectorAll('.search-result-item').forEach(item => {
         item.addEventListener('click', function() {
-          window.location.href = this.dataset.url;
+          // Add a subtle animation before navigation
+          this.style.transform = 'scale(0.98)';
+          setTimeout(() => {
+            window.location.href = this.dataset.url;
+          }, 100);
         });
 
         item.addEventListener('mouseenter', function() {

@@ -66,7 +66,7 @@ exports.getAllSIMCards = async (req, res) => {
 
     // Get the filtered SIM cards with pagination
     const simCardsQuery = `
-      SELECT s.*, 
+      SELECT s.*,
              c.name as client_name, c.client_id as client_code,
              p.serial_number as pda_serial,
              st.name as status_name
@@ -103,9 +103,12 @@ exports.getAllSIMCards = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching SIM cards:', error);
-    res.status(500).render('error', { 
+    res.status(500).render('layout', {
+      title: 'Server Error',
+      body: 'error-content',
       error: 'Failed to fetch SIM cards',
-      user: req.user 
+      status: 500,
+      user: req.user
     });
   }
 };
@@ -115,7 +118,7 @@ exports.getSIMCardById = async (req, res) => {
     const { id } = req.params;
 
     const simCardResult = await db.query(`
-      SELECT s.*, 
+      SELECT s.*,
              c.name as client_name, c.client_id as client_code,
              p.serial_number as pda_serial, p.model as pda_model,
              st.name as status_name
@@ -127,9 +130,12 @@ exports.getSIMCardById = async (req, res) => {
     `, [id]);
 
     if (simCardResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'SIM card not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -141,10 +147,15 @@ exports.getSIMCardById = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching SIM card:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to fetch SIM card details',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to fetch SIM card details',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
@@ -153,9 +164,9 @@ exports.createSIMCardForm = async (req, res) => {
     // Get all clients, PDAs, and statuses for dropdowns
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
     const pdasResult = await db.query(`
-      SELECT p.id, p.serial_number, p.model, c.name as client_name 
-      FROM pdas p 
-      LEFT JOIN clients c ON p.client_id = c.id 
+      SELECT p.id, p.serial_number, p.model, c.name as client_name
+      FROM pdas p
+      LEFT JOIN clients c ON p.client_id = c.id
       ORDER BY p.serial_number
     `);
     const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
@@ -170,11 +181,11 @@ exports.createSIMCardForm = async (req, res) => {
     });
   } catch (error) {
     console.error('Error rendering create form:', error);
-    res.status(500).render('error', { 
+    res.status(500).render('error', {
       title: 'Server Error',
       message: 'Failed to load create form: ' + error.message,
       status: 500,
-      user: req.user 
+      user: req.user
     });
   }
 };
@@ -182,18 +193,18 @@ exports.createSIMCardForm = async (req, res) => {
 exports.createSIMCard = async (req, res) => {
   try {
     const { sim_number, carrier, client_id, pda_id, monthly_cost, status_id } = req.body;
-    
+
     const validationErrors = validateSIMCardData({ sim_number, carrier, client_id });
     if (validationErrors.length > 0) {
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
       const pdasResult = await db.query(`
-        SELECT p.id, p.serial_number, p.model, c.name as client_name 
-        FROM pdas p 
-        LEFT JOIN clients c ON p.client_id = c.id 
+        SELECT p.id, p.serial_number, p.model, c.name as client_name
+        FROM pdas p
+        LEFT JOIN clients c ON p.client_id = c.id
         ORDER BY p.serial_number
       `);
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
-      
+
       return res.status(400).render('layout', {
         title: 'Add New SIM Card',
         body: 'simcards/create',
@@ -215,13 +226,13 @@ exports.createSIMCard = async (req, res) => {
     if (existingSIM.rows.length > 0) {
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
       const pdasResult = await db.query(`
-        SELECT p.id, p.serial_number, p.model, c.name as client_name 
-        FROM pdas p 
-        LEFT JOIN clients c ON p.client_id = c.id 
+        SELECT p.id, p.serial_number, p.model, c.name as client_name
+        FROM pdas p
+        LEFT JOIN clients c ON p.client_id = c.id
         ORDER BY p.serial_number
       `);
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
-      
+
       return res.status(400).render('layout', {
         title: 'Add New SIM Card',
         body: 'simcards/create',
@@ -258,13 +269,13 @@ exports.createSIMCard = async (req, res) => {
     console.error('Error creating SIM card:', error);
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
     const pdasResult = await db.query(`
-      SELECT p.id, p.serial_number, p.model, c.name as client_name 
-      FROM pdas p 
-      LEFT JOIN clients c ON p.client_id = c.id 
+      SELECT p.id, p.serial_number, p.model, c.name as client_name
+      FROM pdas p
+      LEFT JOIN clients c ON p.client_id = c.id
       ORDER BY p.serial_number
     `);
     const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
-    
+
     res.status(500).render('layout', {
       title: 'Add New SIM Card',
       body: 'simcards/create',
@@ -298,7 +309,7 @@ exports.updateSIMCardForm = async (req, res) => {
     const { id } = req.params;
 
     const simCardResult = await db.query(`
-      SELECT s.*, 
+      SELECT s.*,
              c.name as client_name, c.client_id as client_code,
              p.serial_number as pda_serial, p.model as pda_model,
              st.name as status_name
@@ -310,18 +321,21 @@ exports.updateSIMCardForm = async (req, res) => {
     `, [id]);
 
     if (simCardResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'SIM card not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
     // Get all clients, PDAs, and statuses for dropdowns
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
     const pdasResult = await db.query(`
-      SELECT p.id, p.serial_number, p.model, c.name as client_name 
-      FROM pdas p 
-      LEFT JOIN clients c ON p.client_id = c.id 
+      SELECT p.id, p.serial_number, p.model, c.name as client_name
+      FROM pdas p
+      LEFT JOIN clients c ON p.client_id = c.id
       ORDER BY p.serial_number
     `);
     const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
@@ -337,10 +351,15 @@ exports.updateSIMCardForm = async (req, res) => {
     });
   } catch (error) {
     console.error('Error rendering edit form:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to load edit form',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to load edit form',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
@@ -348,19 +367,19 @@ exports.updateSIMCard = async (req, res) => {
   try {
     const { id } = req.params;
     const { sim_number, carrier, client_id, pda_id, monthly_cost, status_id } = req.body;
-    
+
     const validationErrors = validateSIMCardData({ sim_number, carrier, client_id });
     if (validationErrors.length > 0) {
       const simCardResult = await db.query('SELECT * FROM sim_cards WHERE id = $1', [id]);
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
       const pdasResult = await db.query(`
-        SELECT p.id, p.serial_number, p.model, c.name as client_name 
-        FROM pdas p 
-        LEFT JOIN clients c ON p.client_id = c.id 
+        SELECT p.id, p.serial_number, p.model, c.name as client_name
+        FROM pdas p
+        LEFT JOIN clients c ON p.client_id = c.id
         ORDER BY p.serial_number
       `);
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
-      
+
       return res.status(400).render('layout', {
         title: `Edit SIM Card: ${simCardResult.rows[0].sim_number}`,
         body: 'simcards/edit',
@@ -383,13 +402,13 @@ exports.updateSIMCard = async (req, res) => {
       const simCardResult = await db.query('SELECT * FROM sim_cards WHERE id = $1', [id]);
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
       const pdasResult = await db.query(`
-        SELECT p.id, p.serial_number, p.model, c.name as client_name 
-        FROM pdas p 
-        LEFT JOIN clients c ON p.client_id = c.id 
+        SELECT p.id, p.serial_number, p.model, c.name as client_name
+        FROM pdas p
+        LEFT JOIN clients c ON p.client_id = c.id
         ORDER BY p.serial_number
       `);
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
-      
+
       return res.status(400).render('layout', {
         title: `Edit SIM Card: ${simCardResult.rows[0].sim_number}`,
         body: 'simcards/edit',
@@ -407,7 +426,7 @@ exports.updateSIMCard = async (req, res) => {
     const original = originalResult.rows[0];
 
     const result = await db.query(`
-      UPDATE sim_cards 
+      UPDATE sim_cards
       SET sim_number = $1, carrier = $2, client_id = $3, pda_id = $4, monthly_cost = $5, status_id = $6, updated_at = CURRENT_TIMESTAMP
       WHERE id = $7
       RETURNING *
@@ -430,10 +449,15 @@ exports.updateSIMCard = async (req, res) => {
     res.redirect(`/simcards/${id}`);
   } catch (error) {
     console.error('Error updating SIM card:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to update SIM card',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to update SIM card',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
@@ -443,11 +467,14 @@ exports.deleteSIMCard = async (req, res) => {
 
     // Get SIM card data for history
     const simCardResult = await db.query('SELECT * FROM sim_cards WHERE id = $1', [id]);
-    
+
     if (simCardResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'SIM card not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -470,10 +497,15 @@ exports.deleteSIMCard = async (req, res) => {
     res.redirect('/simcards');
   } catch (error) {
     console.error('Error deleting SIM card:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to delete SIM card',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to delete SIM card',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
@@ -482,11 +514,14 @@ exports.getSIMCardHistory = async (req, res) => {
     const { id } = req.params;
 
     const simCardResult = await db.query('SELECT * FROM sim_cards WHERE id = $1', [id]);
-    
+
     if (simCardResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'SIM card not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -507,9 +542,14 @@ exports.getSIMCardHistory = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching SIM card history:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to fetch SIM card history',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to fetch SIM card history',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };

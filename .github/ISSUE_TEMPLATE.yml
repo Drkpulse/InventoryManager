@@ -1,0 +1,75 @@
+name: Issue Report
+description: Use this template to report a bug, request a feature, or propose a configuration change.
+title: "[ISSUE] <short description>"
+labels: ["triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🔖 Issue Report
+        Please fill out the sections below as clearly as possible.
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Type of Issue
+      options:
+        - Bug Report
+        - Feature Request
+        - Configuration/Deployment Issue
+        - Security Vulnerability
+    validations:
+      required: true
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: Short, clear description of the issue or request
+      placeholder: "e.g., App crashes on startup when loading config"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce / Request Details
+      description: For bugs, list steps to reproduce. For features/config, describe what’s needed.
+      placeholder: |
+        1. Do this
+        2. Do that
+        3. See the problem
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen instead?
+      placeholder: "The app should start without errors."
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happens?
+      placeholder: "The app crashes with error XYZ."
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Provide environment info (if relevant)
+      placeholder: |
+        - OS: Ubuntu 22.04
+        - Node.js: 18.x
+        - Docker: 24.x
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional Context
+      description: Add any screenshots, logs, or extra details here.

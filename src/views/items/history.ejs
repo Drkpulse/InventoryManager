@@ -9,6 +9,8 @@
         return { icon: 'fas fa-user-plus', color: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' };
       case 'unassigned':
         return { icon: 'fas fa-user-minus', color: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' };
+      case 'status_changed':
+        return { icon: 'fas fa-exchange-alt', color: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' };
       case 'maintenance':
         return { icon: 'fas fa-tools', color: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' };
       case 'retired':
@@ -287,6 +289,10 @@
                             } else if (entry.action_type === 'updated') {
                           %>
                             <span class="text-xs text-gray-600 dark:text-gray-400"><%= t('asset_details_updated') %></span>
+                          <%
+                            } else if (entry.action_type === 'status_changed') {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Status modified</span>
                           <%
                             }
                           %>

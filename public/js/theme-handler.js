@@ -28,9 +28,17 @@ function initializeTheme() {
     currentTheme = cookieTheme;
   }
 
-  // Apply theme to both body and html elements
-  function applyTheme(theme) {
+  // Apply theme to both body and html elements with smooth transitions
+  function applyTheme(theme, immediate = false) {
     body.setAttribute('data-theme', theme);
+
+    // Add transition class for smooth changes (but not on initial load)
+    if (!immediate) {
+      body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+      setTimeout(() => {
+        body.style.transition = '';
+      }, 300);
+    }
 
     // Apply Tailwind dark class
     if (theme === 'dark') {
@@ -47,7 +55,7 @@ function initializeTheme() {
   if (currentTheme === 'auto') {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const actualTheme = prefersDark ? 'dark' : 'light';
-    applyTheme(actualTheme);
+    applyTheme(actualTheme, true); // Immediate for initial load
 
     // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
@@ -56,7 +64,13 @@ function initializeTheme() {
       }
     });
   } else {
-    applyTheme(currentTheme);
+    // Check if theme is already applied (from the immediate script)
+    const expectedDark = currentTheme === 'dark';
+    const actuallyDark = html.classList.contains('dark');
+
+    if (expectedDark !== actuallyDark) {
+      applyTheme(currentTheme, true);
+    }
   }
 
   // Store the original preference for auto-switching

@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<!-- filepath: /4. Fill in the THREE REQUIRED fields below (they start empty):&#xD;
+   • 🗄️ DB_HOST: Enter your PostgreSQL container IP (e.g., 172.17.0.2)&#xD;
+   • 🔒 DB_PASSWORD: Enter your PostgreSQL container password&#xD;
+   • 🔐 SESSION_SECRET: Enter generated secret from openssl command&#xD;/drkpulse/Documents/Github/inv_manager/it-inv-template.xml -->
+<Container version="2">
+  <Name>IT-Asset-Manager</Name>
+  <Repository>d4rkpulse/it-asset-manager:test</Repository>
+  <Registry>https://hub.docker.com/r/d4rkpulse/it-asset-manager/</Registry>
+  <Network>bridge</Network>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/Drkpulse/inv_manager/issues</Support>
+  <Project>https://github.com/Drkpulse/inv_manager/</Project>
+  <Branch>main</Branch>
+  <Beta>false</Beta>
+  <Changes>
+    ### Version 2.1
+    - FIXED: Sessions now persist between container edits/restarts
+    - Added file-based session storage when Redis not available
+    - Enhanced data persistence configuration
+    - Improved container logging - logs now visible in Unraid log window
+    - Enhanced Docker container with proper environment variable support
+    - Improved security: sensitive variables must be provided at runtime
+    - Improved health checks and startup process
+    - Better error handling and logging
+    - Added multi-core clustering support
+    - Enhanced file upload management
+    - Improved Redis integration for session caching
+    - Fixed permission issues with mounted volumes
+    - Added comprehensive pre-flight checks
+    - Automatic SESSION_SECRET generation if not provided
+  </Changes>
+  <Overview>🏢 Comprehensive IT Asset Management System for tracking hardware, software, employees, and mobile devices with complete audit trails and cost analysis.&#xD;
+&#xD;
+📋 SETUP REQUIREMENTS (IMPORTANT - READ FIRST):&#xD;
+❗ CONTAINER WILL FAIL TO START IF THESE STEPS ARE SKIPPED ❗&#xD;
+&#xD;
+1. Install PostgreSQL container first (Community Applications → PostgreSQL)&#xD;
+2. Get PostgreSQL container IP: Docker tab → PostgreSQL → Show → Network settings&#xD;
+3. Generate SESSION_SECRET: Terminal → openssl rand -base64 64&#xD;
+4. Replace the THREE REQUIRED placeholder values below:&#xD;
+   • 🗄️ DB_HOST: Replace "REQUIRED_SET_THIS" with PostgreSQL IP&#xD;
+   • 🔒 DB_PASSWORD: Replace "REQUIRED_SET_THIS" with PostgreSQL password&#xD;
+   • � SESSION_SECRET: Replace "GENERATE_WITH_OPENSSL" with generated secret&#xD;
+5. Set INIT_DB=true for first run, then change to false after successful startup&#xD;
+6. Wait 2-3 minutes after starting for database initialization to complete&#xD;
+&#xD;
+⚠️ DO NOT LEAVE REQUIRED FIELDS EMPTY - CONTAINER WILL NOT START! ⚠️&#xD;
+&#xD;
+💾 DATA PERSISTENCE:&#xD;
+- User data and configs are stored in PostgreSQL (persistent)&#xD;
+- Sessions persist in /config/sessions (mounted volume)&#xD;
+- File uploads persist in /app/uploads (mounted volume)&#xD;
+- Application logs persist in /app/logs (mounted volume)&#xD;
+- When you edit the container, all data remains intact!&#xD;
+&#xD;
+✨ Features:&#xD;
+- Hardware asset tracking with QR codes and barcodes&#xD;
+- Software license management with compliance tracking&#xD;
+- Employee and department management&#xD;
+- Mobile device tracking (PDAs, SIM cards, tablets)&#xD;
+- Cost analysis and depreciation reporting&#xD;
+- Multi-language support (English/Spanish)&#xD;
+- Dark/Light theme with auto-detection&#xD;
+- PDF report generation with custom templates&#xD;
+- Asset history and audit trails&#xD;
+- Maintenance scheduling and alerts&#xD;
+&#xD;
+🔐 Default Admin Login:&#xD;
+Email: admin@example.com&#xD;
+Password: admin&#xD;
+⚠️ CHANGE PASSWORD IMMEDIATELY AFTER FIRST LOGIN!&#xD;
+&#xD;
+🗄️ PostgreSQL Setup:&#xD;
+- Database Name: inventory_db&#xD;
+- Username: postgres&#xD;
+- Set strong password&#xD;
+- Note container IP for DB_HOST below</Overview>
+  <Category>Productivity:Tools</Category>
+  <WebUI>http://[IP]:[PORT:3000]</WebUI>
+  <Icon>https://raw.githubusercontent.com/Drkpulse/inv_manager/main/public/images/icon-256.png</Icon>
+  <DateInstalled>1727136000</DateInstalled>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+
+  <!-- Port Configuration -->
+  <Config Name="WebUI Port" Target="3000" Default="3000" Mode="tcp" Description="Web interface port for IT Asset Manager" Type="Port" Display="always" Required="true" Mask="false">3000</Config>
+
+  <!-- Essential Volume Mappings -->
+  <Config Name="App Configuration" Target="/config" Default="/mnt/user/appdata/it-asset-manager/config" Mode="rw" Description="Application configuration and settings" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/it-asset-manager/config</Config>
+  <Config Name="File Uploads" Target="/app/uploads" Default="/mnt/user/appdata/it-asset-manager/uploads" Mode="rw" Description="User uploaded files (receipts, photos, documents)" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/it-asset-manager/uploads</Config>
+  <Config Name="Application Logs" Target="/app/logs" Default="/mnt/user/appdata/it-asset-manager/logs" Mode="rw" Description="Application logs and error files" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/it-asset-manager/logs</Config>
+  <Config Name="Application Data" Target="/app/data" Default="/mnt/user/appdata/it-asset-manager/data" Mode="rw" Description="Application data cache and temporary files" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/it-asset-manager/data</Config>
+  <Config Name="Database Backups" Target="/app/backups" Default="/mnt/user/appdata/it-asset-manager/backups" Mode="rw" Description="Automated database backup files" Type="Path" Display="advanced" Required="false" Mask="false">/mnt/user/appdata/it-asset-manager/backups</Config>
+
+  <!-- REQUIRED Database Configuration -->
+  <Config Name="🗄️ Database Host (REQUIRED)" Target="DB_HOST" Default="" Mode="" Description="PostgreSQL container IP address - MUST BE SET! Get from PostgreSQL container network settings. Example: 172.17.0.2" Type="Variable" Display="always" Required="true" Mask="false"></Config>
+  <Config Name="🔒 Database Password (REQUIRED)" Target="DB_PASSWORD" Default="" Mode="" Description="PostgreSQL password - MUST MATCH your PostgreSQL container password!" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+  <Config Name="🔐 Session Secret (REQUIRED)" Target="SESSION_SECRET" Default="" Mode="" Description="Secure session encryption key - Generate with: openssl rand -base64 64" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+
+  <!-- Database Configuration -->
+  <Config Name="Database Port" Target="DB_PORT" Default="5432" Mode="" Description="PostgreSQL port (usually 5432)" Type="Variable" Display="always" Required="false" Mask="false">5432</Config>
+  <Config Name="Database Name" Target="DB_NAME" Default="inventory_db" Mode="" Description="Database name to use" Type="Variable" Display="always" Required="false" Mask="false">inventory_db</Config>
+  <Config Name="Database User" Target="DB_USER" Default="postgres" Mode="" Description="Database username (usually postgres)" Type="Variable" Display="always" Required="false" Mask="false">postgres</Config>
+
+  <!-- Application Configuration -->
+  <Config Name="🚀 Initialize Database" Target="INIT_DB" Default="true" Mode="" Description="Create database schema on first run - Set to FALSE after successful startup!" Type="Variable" Display="always" Required="false" Mask="false">true</Config>
+  <Config Name="🌍 Timezone" Target="TZ" Default="America/New_York" Mode="" Description="Container timezone (affects logs and timestamps)" Type="Variable" Display="always" Required="false" Mask="false">America/New_York</Config>
+
+  <!-- Unraid User/Group Configuration -->
+  <Config Name="User ID (PUID)" Target="PUID" Default="99" Mode="" Description="User ID for file permissions (99=nobody on Unraid)" Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
+  <Config Name="Group ID (PGID)" Target="PGID" Default="100" Mode="" Description="Group ID for file permissions (100=users on Unraid)" Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
+
+  <!-- Performance and Security Configuration -->
+  <Config Name="Node Environment" Target="NODE_ENV" Default="production" Mode="" Description="Node.js runtime environment (production recommended)" Type="Variable" Display="advanced" Required="false" Mask="false">production</Config>
+  <Config Name="Log Level" Target="LOG_LEVEL" Default="info" Mode="" Description="Application logging level (error, warn, info, debug)" Type="Variable" Display="advanced" Required="false" Mask="false">info</Config>
+  <Config Name="Max File Upload Size" Target="MAX_FILE_SIZE" Default="10MB" Mode="" Description="Maximum file upload size for attachments and images" Type="Variable" Display="advanced" Required="false" Mask="false">10MB</Config>
+
+  <!-- Optional Redis Configuration (LEAVE EMPTY if not using Redis) -->
+  <Config Name="Redis Host" Target="REDIS_HOST" Default="" Mode="" Description="Redis hostname/IP ONLY (e.g., 192.168.1.100) - Leave EMPTY for file-based sessions" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="Redis Port" Target="REDIS_PORT" Default="6379" Mode="" Description="Redis port number (default: 6379) - Only used if Redis Host is set" Type="Variable" Display="advanced" Required="false" Mask="false">6379</Config>
+  <Config Name="Redis URL" Target="REDIS_URL" Default="" Mode="" Description="Complete Redis URL (e.g., redis://192.168.1.100:6379) - Alternative to host/port above" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+
+  <!-- Advanced Performance Settings -->
+  <Config Name="Enable Clustering" Target="ENABLE_CLUSTERING" Default="false" Mode="" Description="Enable multi-core processing (true/false) - Recommended for high-traffic installations" Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="Cluster Workers" Target="CLUSTER_WORKERS" Default="0" Mode="" Description="Number of worker processes (0=auto-detect CPU cores)" Type="Variable" Display="advanced" Required="false" Mask="false">0</Config>
+</Container>

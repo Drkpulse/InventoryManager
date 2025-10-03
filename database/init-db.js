@@ -132,6 +132,9 @@ async function runDatabaseSetup(pool) {
       LEFT JOIN departments d ON e.dept_id = d.id;
     `);
 
+    console.log('🔄 Running database migrations...');
+    await runMigrations(client);
+
     await client.query('COMMIT');
     console.log('✅ Database setup completed successfully!');
 
@@ -1483,6 +1486,92 @@ if (require.main === module) {
       console.error('💥 Database initialization failed:', error);
       process.exit(1);
     });
+}
+
+// Migration runner function
+async function runMigrations(client) {
+  try {
+    console.log('📋 Checking for database migrations...');
+
+    // Create migrations table if it doesn't exist
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS database_migrations (
+        id SERIAL PRIMARY KEY,
+        filename VARCHAR(255) UNIQUE NOT NULL,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        checksum VARCHAR(64)
+      );
+    `);
+
+    const migrationsDir = path.join(__dirname, 'migrations');
+
+    // Check if migrations directory exists
+    if (!fs.existsSync(migrationsDir)) {
+      console.log('📁 No migrations directory found, skipping...');
+      return;
+    }
+
+    // Read all migration files
+    const migrationFiles = fs.readdirSync(migrationsDir)
+      .filter(file => file.endsWith('.sql'))
+      .sort(); // Ensure alphabetical order
+
+    if (migrationFiles.length === 0) {
+      console.log('📝 No migration files found');
+      return;
+    }
+
+    console.log(`📝 Found ${migrationFiles.length} migration file(s)`);
+
+    for (const filename of migrationFiles) {
+      // Check if migration was already applied
+      const result = await client.query(
+        'SELECT COUNT(*) FROM database_migrations WHERE filename = $1',
+        [filename]
+      );
+
+      if (parseInt(result.rows[0].count) > 0) {
+        console.log(`⏭️  Migration already applied: ${filename}`);
+        continue;
+      }
+
+      console.log(`🔄 Applying migration: ${filename}`);
+
+      // Read and execute migration file
+      const migrationPath = path.join(migrationsDir, filename);
+      const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
+
+      // Calculate checksum for integrity
+      const crypto = require('crypto');
+      const checksum = crypto.createHash('sha256').update(migrationSQL).digest('hex');
+
+      try {
+        // Execute migration within a savepoint
+        await client.query('SAVEPOINT migration_point');
+        await client.query(migrationSQL);
+
+        // Record successful migration
+        await client.query(
+          'INSERT INTO database_migrations (filename, checksum) VALUES ($1, $2)',
+          [filename, checksum]
+        );
+
+        await client.query('RELEASE SAVEPOINT migration_point');
+        console.log(`✅ Successfully applied migration: ${filename}`);
+
+      } catch (migrationError) {
+        await client.query('ROLLBACK TO SAVEPOINT migration_point');
+        console.error(`❌ Failed to apply migration ${filename}:`, migrationError.message);
+        throw migrationError;
+      }
+    }
+
+    console.log('✅ All migrations completed successfully');
+
+  } catch (error) {
+    console.error('💥 Migration error:', error);
+    throw error;
+  }
 }
 
 module.exports = { initializeDatabase };

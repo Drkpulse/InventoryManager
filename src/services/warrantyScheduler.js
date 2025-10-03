@@ -19,22 +19,29 @@ class WarrantyScheduler {
     try {
       // Run every day at 8:00 AM
       this.cronJob = cron.schedule('0 8 * * *', async () => {
-        await this.runCheck('scheduled');
+        try {
+          await this.runCheck('scheduled');
+        } catch (error) {
+          console.error('❌ Scheduled warranty check failed:', error.message);
+        }
       }, {
         scheduled: false,
-        timezone: "Europe/Lisbon" // Adjust to your timezone
+        timezone: "Europe/Lisbon"
       });
 
       this.cronJob.start();
       this.isRunning = true;
 
-      console.log('✅ Warranty scheduler started successfully');
-      console.log('📅 Scheduled to run daily at 8:00 AM (Europe/Lisbon)');
+      console.log('✅ Warranty scheduler started - daily at 8:00 AM (Europe/Lisbon)');
 
-      // Run an initial check after 30 seconds
+      // Run an initial check after 10 seconds (reduced from 30)
       setTimeout(async () => {
-        await this.runCheck('startup');
-      }, 30000);
+        try {
+          await this.runCheck('startup');
+        } catch (error) {
+          console.error('❌ Startup warranty check failed:', error.message);
+        }
+      }, 10000);
 
     } catch (error) {
       console.error('❌ Failed to start warranty scheduler:', error);
@@ -43,29 +50,21 @@ class WarrantyScheduler {
   }
 
   async runCheck(trigger = 'manual') {
-    console.log(`🔍 Running ${trigger} warranty expiration check...`);
     this.lastCheck = new Date();
 
     try {
       const result = await WarrantyController.checkWarrantyExpiration();
       this.lastResult = result;
 
-      if (result) {
-        console.log(`✅ ${trigger} warranty check completed:`, {
-          expired: result.expired,
-          expiring: result.expiring,
-          notifications: result.notifications_created,
-          timestamp: this.lastCheck.toISOString()
-        });
-      } else {
-        console.log(`⚠️ ${trigger} warranty check completed with no results`);
+      if (result && (result.expired > 0 || result.expiring > 0)) {
+        console.log(`⚠️ ${trigger} warranty check: ${result.expiring} expiring, ${result.expired} expired items (${result.notifications_created} notifications created)`);
       }
 
       return result;
     } catch (error) {
       console.error(`❌ Error in ${trigger} warranty check:`, error);
       this.lastResult = { error: error.message };
-      throw error;
+      return { error: error.message, expired: 0, expiring: 0, notifications_created: 0 };
     }
   }
 
@@ -90,8 +89,12 @@ class WarrantyScheduler {
 
   // Manual trigger for testing/admin use
   async runNow() {
-    console.log('🔧 Manually triggering warranty check...');
-    return await this.runCheck('manual');
+    try {
+      return await this.runCheck('manual');
+    } catch (error) {
+      console.error('❌ Manual warranty check failed:', error.message);
+      return { error: error.message, expired: 0, expiring: 0, notifications_created: 0 };
+    }
   }
 
   // Check if scheduler should be running (health check)
@@ -108,28 +111,14 @@ class WarrantyScheduler {
 // Create singleton instance
 const warrantyScheduler = new WarrantyScheduler();
 
-// Graceful shutdown handling
-const gracefulShutdown = (signal) => {
-  console.log(`🛑 Received ${signal}, shutting down warranty scheduler...`);
-  warrantyScheduler.stop();
-
-  // Give some time for cleanup
-  setTimeout(() => {
-    process.exit(0);
-  }, 1000);
-};
-
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('❌ Uncaught exception in warranty scheduler:', error);
+// Graceful shutdown handling - only for direct process signals
+process.on('SIGINT', () => {
+  console.log('🛑 Shutting down warranty scheduler...');
   warrantyScheduler.stop();
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled rejection in warranty scheduler:', reason);
+process.on('SIGTERM', () => {
+  console.log('🛑 Shutting down warranty scheduler...');
   warrantyScheduler.stop();
 });
 

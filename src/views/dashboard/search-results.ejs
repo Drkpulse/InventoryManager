@@ -1,0 +1,444 @@
+<!-- Enhanced Search Results Page -->
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+  <div class="mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Search Header -->
+    <div class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex-1">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            <i class="fas fa-search mr-3"></i>Search Results
+          </h1>
+          <% if (searchQuery) { %>
+            <p class="mt-2 text-lg text-gray-600 dark:text-gray-300">
+              Results for "<span class="font-semibold text-indigo-600 dark:text-indigo-400"><%= searchQuery %></span>"
+            </p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Search Stats -->
+      <% if (searchResults && !searchResults.error) { %>
+        <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+          <span class="flex items-center">
+            <i class="fas fa-chart-bar mr-1"></i>
+            <strong><%= searchResults.totalResults %></strong> results found
+          </span>
+          <span class="flex items-center">
+            <i class="fas fa-clock mr-1"></i>
+            Search completed in <strong><%= searchResults.searchTime %>ms</strong>
+          </span>
+          <% if (searchResults.page && searchResults.totalPages > 1) { %>
+            <span class="flex items-center">
+              <i class="fas fa-file-alt mr-1"></i>
+              Page <strong><%= searchResults.page %></strong> of <strong><%= searchResults.totalPages %></strong>
+            </span>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Enhanced Search Bar -->
+    <div class="mb-8">
+      <form method="GET" action="/dashboard/search" class="relative">
+        <div class="flex flex-col sm:flex-row gap-4">
+          <!-- Main search input -->
+          <div class="flex-1 relative">
+            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <input type="text" name="q" value="<%= searchQuery %>"
+                   placeholder="Search items, employees, departments, locations..."
+                   class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl
+                          bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                          focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                          text-lg transition-all duration-200">
+          </div>
+
+          <!-- Category Filter -->
+          <select name="category"
+                  class="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl
+                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                         focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            <option value="all" <%= category === 'all' ? 'selected' : '' %>>All Categories</option>
+            <option value="items" <%= category === 'items' ? 'selected' : '' %>>Items</option>
+            <option value="employees" <%= category === 'employees' ? 'selected' : '' %>>Employees</option>
+            <option value="departments" <%= category === 'departments' ? 'selected' : '' %>>Departments</option>
+            <option value="locations" <%= category === 'locations' ? 'selected' : '' %>>Locations</option>
+          </select>
+
+          <!-- Search button -->
+          <button type="submit"
+                  class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold
+                         rounded-xl shadow-lg hover:shadow-xl transition-all duration-200
+                         flex items-center gap-2">
+            <i class="fas fa-search"></i>
+            <span class="hidden sm:inline">Search</span>
+          </button>
+        </div>
+
+        <!-- Advanced filters toggle -->
+        <div class="mt-4">
+          <button type="button" onclick="toggleAdvancedFilters()"
+                  class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200
+                         font-medium transition-colors duration-200 flex items-center gap-2">
+            <i class="fas fa-sliders-h"></i>
+            Advanced Filters
+            <i id="advancedToggleIcon" class="fas fa-chevron-down transform transition-transform duration-200"></i>
+          </button>
+
+          <div id="advancedFilters" class="hidden mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- Price Range for Items -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Price Range</label>
+                <div class="flex gap-2">
+                  <input type="number" name="minPrice" placeholder="Min"
+                         class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                  <input type="number" name="maxPrice" placeholder="Max"
+                         class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                </div>
+              </div>
+
+              <!-- Assignment Status -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                <select name="status"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                  <option value="">Any Status</option>
+                  <option value="assigned">Assigned</option>
+                  <option value="unassigned">Unassigned</option>
+                </select>
+              </div>
+
+              <!-- Date Range -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+                <div class="flex gap-2">
+                  <input type="date" name="startDate"
+                         class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                  <input type="date" name="endDate"
+                         class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                                bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                </div>
+              </div>
+
+              <!-- Sort Options -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
+                <select name="sort"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                               bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                  <option value="relevance">Relevance</option>
+                  <option value="name">Name (A-Z)</option>
+                  <option value="name_desc">Name (Z-A)</option>
+                  <option value="date">Date (Newest)</option>
+                  <option value="date_desc">Date (Oldest)</option>
+                  <option value="price">Price (Low-High)</option>
+                  <option value="price_desc">Price (High-Low)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Search Results -->
+    <% if (searchResults && searchResults.error) { %>
+      <!-- Error State -->
+      <div class="text-center py-12">
+        <i class="fas fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Search Error</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-4"><%= searchResults.error %></p>
+        <button onclick="window.location.reload()"
+                class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg">
+          Try Again
+        </button>
+      </div>
+    <% } else if (!searchQuery) { %>
+      <!-- No Search Query -->
+      <div class="text-center py-12">
+        <i class="fas fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Start Your Search</h2>
+        <p class="text-gray-600 dark:text-gray-400">Enter a search term above to find items, employees, departments, and locations.</p>
+      </div>
+    <% } else if (searchResults && searchResults.totalResults === 0) { %>
+      <!-- No Results -->
+      <div class="text-center py-12">
+        <i class="fas fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">No Results Found</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">
+          No results found for "<%= searchQuery %>". Try different keywords or check your spelling.
+        </p>
+        <div class="flex flex-wrap justify-center gap-2 text-sm">
+          <span class="text-gray-500">Suggestions:</span>
+          <button onclick="searchSuggestion('laptop')" class="text-indigo-600 hover:text-indigo-800 underline">laptop</button>
+          <button onclick="searchSuggestion('employee')" class="text-indigo-600 hover:text-indigo-800 underline">employee</button>
+          <button onclick="searchSuggestion('department')" class="text-indigo-600 hover:text-indigo-800 underline">department</button>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- Results Display -->
+      <div class="space-y-8">
+        <% Object.entries(searchResults.results).forEach(([category, items]) => { %>
+          <% if (items && items.length > 0) { %>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+              <!-- Category Header -->
+              <div class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                    <i class="fas fa-<%= getCategoryIcon(category) %>"></i>
+                    <%= category %>
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+                      <%= items.length %> result<%= items.length !== 1 ? 's' : '' %>
+                    </span>
+                  </h3>
+                </div>
+              </div>
+
+              <!-- Results List -->
+              <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                <% items.forEach((item, index) => { %>
+                  <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 group">
+                    <div class="flex items-start gap-4">
+                      <!-- Icon -->
+                      <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl
+                                    flex items-center justify-center text-white text-lg">
+                          <i class="fas fa-<%= item.icon %>"></i>
+                        </div>
+                      </div>
+
+                      <!-- Content -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between">
+                          <div class="flex-1">
+                            <!-- Title and Subtitle -->
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600
+                                       dark:group-hover:text-indigo-400 transition-colors duration-200">
+                              <a href="<%= item.url %>" class="hover:underline">
+                                <%= item.title %>
+                              </a>
+                            </h4>
+                            <p class="mt-1 text-gray-600 dark:text-gray-400">
+                              <%= item.subtitle %>
+                            </p>
+
+                            <!-- Identifier -->
+                            <% if (item.identifier) { %>
+                              <div class="mt-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                           bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                  <i class="fas fa-tag mr-1"></i>
+                                  <%= item.identifier %>
+                                </span>
+                              </div>
+                            <% } %>
+
+                            <!-- Additional Details -->
+                            <div class="mt-3 flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
+                              <% if (item.price) { %>
+                                <span class="flex items-center gap-1">
+                                  <i class="fas fa-dollar-sign"></i>
+                                  $<%= parseFloat(item.price).toFixed(2) %>
+                                </span>
+                              <% } %>
+                              <% if (item.assignedTo) { %>
+                                <span class="flex items-center gap-1">
+                                  <i class="fas fa-user"></i>
+                                  <%= item.assignedTo %>
+                                </span>
+                              <% } %>
+                              <% if (item.department) { %>
+                                <span class="flex items-center gap-1">
+                                  <i class="fas fa-building"></i>
+                                  <%= item.department %>
+                                </span>
+                              <% } %>
+                              <% if (item.location) { %>
+                                <span class="flex items-center gap-1">
+                                  <i class="fas fa-map-marker-alt"></i>
+                                  <%= item.location %>
+                                </span>
+                              <% } %>
+                              <% if (item.employeeCount) { %>
+                                <span class="flex items-center gap-1">
+                                  <i class="fas fa-users"></i>
+                                  <%= item.employeeCount %> employees
+                                </span>
+                              <% } %>
+                              <% if (item.itemCount) { %>
+                                <span class="flex items-center gap-1">
+                                  <i class="fas fa-boxes"></i>
+                                  <%= item.itemCount %> items
+                                </span>
+                              <% } %>
+                            </div>
+                          </div>
+
+                          <!-- Status Badge -->
+                          <% if (item.status) { %>
+                            <div class="ml-4">
+                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                         <%= item.status === 'assigned' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                             item.status === 'unassigned' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                             'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' %>">
+                                <%= item.status.charAt(0).toUpperCase() + item.status.slice(1) %>
+                              </span>
+                            </div>
+                          <% } %>
+                        </div>
+                      </div>
+
+                      <!-- Action Button -->
+                      <div class="flex-shrink-0">
+                        <a href="<%= item.url %>"
+                           class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700
+                                  text-white font-medium rounded-lg transition-colors duration-200
+                                  opacity-0 group-hover:opacity-100">
+                          <i class="fas fa-eye mr-2"></i>
+                          View
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          <% } %>
+        <% }) %>
+      </div>
+
+      <!-- Pagination -->
+      <% if (searchResults.totalPages > 1) { %>
+        <div class="mt-8 flex justify-center">
+          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <!-- Previous Page -->
+            <% if (currentPage > 1) { %>
+              <a href="/dashboard/search?q=<%= encodeURIComponent(searchQuery) %>&category=<%= category %>&page=<%= currentPage - 1 %>"
+                 class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600
+                        bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400
+                        hover:bg-gray-50 dark:hover:bg-gray-700">
+                <i class="fas fa-chevron-left"></i>
+              </a>
+            <% } %>
+
+            <!-- Page Numbers -->
+            <%
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(searchResults.totalPages, currentPage + 2);
+            %>
+
+            <% for (let i = startPage; i <= endPage; i++) { %>
+              <% if (i === currentPage) { %>
+                <span class="relative inline-flex items-center px-4 py-2 border border-indigo-500
+                           bg-indigo-50 dark:bg-indigo-900 text-sm font-medium text-indigo-600 dark:text-indigo-200">
+                  <%= i %>
+                </span>
+              <% } else { %>
+                <a href="/dashboard/search?q=<%= encodeURIComponent(searchQuery) %>&category=<%= category %>&page=<%= i %>"
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600
+                          bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300
+                          hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <%= i %>
+                </a>
+              <% } %>
+            <% } %>
+
+            <!-- Next Page -->
+            <% if (currentPage < searchResults.totalPages) { %>
+              <a href="/dashboard/search?q=<%= encodeURIComponent(searchQuery) %>&category=<%= category %>&page=<%= currentPage + 1 %>"
+                 class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600
+                        bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400
+                        hover:bg-gray-50 dark:hover:bg-gray-700">
+                <i class="fas fa-chevron-right"></i>
+              </a>
+            <% } %>
+          </nav>
+        </div>
+
+        <!-- Page Info -->
+        <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+          Showing page <%= currentPage %> of <%= searchResults.totalPages %>
+          (<%= searchResults.totalResults %> total results)
+        </div>
+      <% } %>
+    <% } %>
+  </div>
+</div>
+
+<script>
+function toggleAdvancedFilters() {
+  const filters = document.getElementById('advancedFilters');
+  const icon = document.getElementById('advancedToggleIcon');
+
+  filters.classList.toggle('hidden');
+  icon.classList.toggle('rotate-180');
+}
+
+function searchSuggestion(term) {
+  const searchInput = document.querySelector('input[name="q"]');
+  searchInput.value = term;
+  searchInput.form.submit();
+}
+
+function getCategoryIcon(category) {
+  const icons = {
+    'Items': 'laptop',
+    'Employees': 'user',
+    'Departments': 'building',
+    'Locations': 'map-marker-alt'
+  };
+  return icons[category] || 'folder';
+}
+
+// Auto-submit form when category changes
+document.querySelector('select[name="category"]').addEventListener('change', function() {
+  if (document.querySelector('input[name="q"]').value) {
+    this.form.submit();
+  }
+});
+
+// Enhanced search suggestions
+const searchInput = document.querySelector('input[name="q"]');
+let searchTimeout;
+
+searchInput.addEventListener('input', function() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    // Could add live suggestions here
+  }, 300);
+});
+</script>
+
+<style>
+/* Custom styles for search results */
+.search-highlight {
+  background-color: #fef08a;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.dark .search-highlight {
+  background-color: #451a03;
+  color: #fbbf24;
+}
+
+/* Loading animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+</style>

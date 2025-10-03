@@ -145,76 +145,53 @@ router.get(
   }
 );
 
+// Employee search API endpoint
+router.get('/api/search', hasPermission('employees.view'), async (req, res) => {
+  try {
+    const query = req.query.q || '';
+
+    if (query.length < 2) {
+      return res.json({ employees: [] });
+    }
+
+    // Search employees by name or CEP/CEPID
+    const searchQuery = `
+      SELECT e.id, e.name, e.cep, d.name as department_name
+      FROM employees e
+      LEFT JOIN departments d ON e.dept_id = d.id
+      WHERE e.left_date IS NULL
+        AND (
+          e.name ILIKE $1 OR
+          e.cep ILIKE $1
+        )
+      ORDER BY e.name
+      LIMIT 10
+    `;
+
+    const result = await db.query(searchQuery, [`%${query}%`]);
+
+    res.json({
+      employees: result.rows.map(emp => ({
+        id: emp.id,
+        name: emp.name,
+        cep: emp.cep,
+        department_name: emp.department_name || 'No Department'
+      }))
+    });
+  } catch (error) {
+    console.error('Error searching employees:', error);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
+
 router.get('/new', hasPermission('employees.create'), employeeController.createEmployeeForm);
 router.post('/', hasPermission('employees.create'), employeeController.createEmployee);
 router.get('/:id', hasPermission('employees.view'), employeeController.getEmployeeById);
 router.get('/:id/edit', hasPermission('employees.edit'), employeeController.updateEmployeeForm);
 router.post('/:id', hasPermission('employees.edit'), employeeController.updateEmployee);
+router.post('/:id/unassign-item/:itemId', hasPermission('employees.edit'), employeeController.unassignItemFromEmployee);
 router.post('/:id/delete', hasPermission('employees.delete'), employeeController.deleteEmployee);
 router.post('/:id/unassign-and-delete', hasPermission('employees.delete'), employeeController.unassignAndDeleteEmployee);
-router.get(
-  '/:id/history',
-  hasPermission('employees.view'),
-  async (req, res) => {
-    try {
-      const employeeId = req.params.id;
-
-      // Fetch employee details
-      const employeeResult = await db.query('SELECT * FROM employees WHERE id = $1', [employeeId]);
-      const employee = employeeResult.rows[0];
-
-      if (!employee) {
-        return res.status(404).render('layout', {
-          title: 'Error',
-          body: 'error',
-          message: 'Employee not found',
-          user: req.session.user
-        });
-      }
-
-      // Fetch employee history - adjust the query as per your database schema
-      const history = await getEmployeeHistory(employeeId); // Implement this function to fetch history
-
-      // Fetch users for filter dropdowns, etc.
-      const usersResult = await db.query('SELECT id, name FROM users ORDER BY name');
-      const users = usersResult.rows;
-
-      // Pagination logic
-      const page = parseInt(req.query.page) || 1;
-      const perPage = parseInt(req.query.perPage) || 10;
-
-      // Paginate history
-      const paginatedHistory = history.slice((page - 1) * perPage, page * perPage);
-
-      const profileChanges = history.filter(h => h.action_type === 'updated' && h.history_type === 'employee').length;
-      const itemActivities = history.filter(h => h.history_type === 'item').length;
-
-      res.render('employees/history', {
-        employee,
-        history,
-        paginatedHistory,
-        users,
-        startIndex: (page - 1) * perPage,
-        endIndex: Math.min(page * perPage, history.length),
-        totalItems: history.length,
-        currentPage: page,
-        totalPages: Math.ceil(history.length / perPage),
-        itemsPerPage: perPage,
-        profileChanges,
-        itemActivities,
-        req,
-        user: req.session.user
-      });
-    } catch (error) {
-      console.error('Error fetching employee history:', error);
-      res.status(500).render('layout', {
-        title: 'Error',
-        body: 'error',
-        message: 'Could not fetch employee history',
-        user: req.session.user
-      });
-    }
-  }
-);
+router.get('/:id/history', hasPermission('employees.view'), employeeController.getEmployeeHistory);
 
 module.exports = router;

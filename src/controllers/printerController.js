@@ -64,7 +64,7 @@ exports.getAllPrinters = async (req, res) => {
 
     // Get the filtered printers with pagination
     const printersQuery = `
-      SELECT p.*, 
+      SELECT p.*,
              c.name as client_name, c.client_id as client_code,
              e.name as employee_name,
              s.name as status_name
@@ -98,9 +98,12 @@ exports.getAllPrinters = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching printers:', error);
-    res.status(500).render('error', { 
+    res.status(500).render('layout', {
+      title: 'Server Error',
+      body: 'error-content',
       error: 'Failed to fetch printers',
-      user: req.user 
+      status: 500,
+      user: req.user
     });
   }
 };
@@ -110,7 +113,7 @@ exports.getPrinterById = async (req, res) => {
     const { id } = req.params;
 
     const printerResult = await db.query(`
-      SELECT p.*, 
+      SELECT p.*,
              c.name as client_name, c.client_id as client_code,
              e.name as employee_name,
              s.name as status_name
@@ -122,9 +125,12 @@ exports.getPrinterById = async (req, res) => {
     `, [id]);
 
     if (printerResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'Printer not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -136,9 +142,12 @@ exports.getPrinterById = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching printer:', error);
-    res.status(500).render('error', { 
+    res.status(500).render('layout', {
+      title: 'Server Error',
+      body: 'error-content',
       error: 'Failed to fetch printer details',
-      user: req.user 
+      status: 500,
+      user: req.user
     });
   }
 };
@@ -160,9 +169,12 @@ exports.createPrinterForm = async (req, res) => {
     });
   } catch (error) {
     console.error('Error rendering create form:', error);
-    res.status(500).render('error', { 
+    res.status(500).render('layout', {
+      title: 'Server Error',
+      body: 'error-content',
       error: 'Failed to load create form',
-      user: req.user 
+      status: 500,
+      user: req.user
     });
   }
 };
@@ -170,13 +182,13 @@ exports.createPrinterForm = async (req, res) => {
 exports.createPrinter = async (req, res) => {
   try {
     const { supplier, model, employee_id, client_id, cost, status_id } = req.body;
-    
+
     const validationErrors = validatePrinterData({ supplier, client_id, status_id, cost });
     if (validationErrors.length > 0) {
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
       const employeesResult = await db.query('SELECT id, name FROM employees ORDER BY name');
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
-      
+
       return res.status(400).render('layout', {
         title: 'Add New Printer',
         body: 'printers/create',
@@ -213,7 +225,7 @@ exports.createPrinter = async (req, res) => {
     console.error('Error creating printer:', error);
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
     const employeesResult = await db.query('SELECT id, name FROM employees ORDER BY name');
-    
+
     res.status(500).render('layout', {
       title: 'Add New Printer',
       body: 'printers/create',
@@ -233,9 +245,12 @@ exports.updatePrinterForm = async (req, res) => {
     const printerResult = await db.query('SELECT * FROM printers WHERE id = $1', [id]);
 
     if (printerResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'Printer not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -253,10 +268,15 @@ exports.updatePrinterForm = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching printer for edit:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to load edit form',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to load edit form',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
@@ -270,7 +290,7 @@ exports.updatePrinter = async (req, res) => {
       const printerResult = await db.query('SELECT * FROM printers WHERE id = $1', [id]);
       const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
       const employeesResult = await db.query('SELECT id, name FROM employees ORDER BY name');
-      
+
       return res.status(400).render('layout', {
         title: `Edit Printer #${id}`,
         body: 'printers/edit',
@@ -285,9 +305,12 @@ exports.updatePrinter = async (req, res) => {
     // Get current printer data
     const currentResult = await db.query('SELECT * FROM printers WHERE id = $1', [id]);
     if (currentResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'Printer not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -295,7 +318,7 @@ exports.updatePrinter = async (req, res) => {
 
     // Update printer
     const result = await db.query(`
-      UPDATE printers 
+      UPDATE printers
       SET supplier = $1, employee_id = $2, client_id = $3, updated_at = CURRENT_TIMESTAMP
       WHERE id = $4
       RETURNING *
@@ -318,7 +341,7 @@ exports.updatePrinter = async (req, res) => {
     const printerResult = await db.query('SELECT * FROM printers WHERE id = $1', [req.params.id]);
     const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
     const employeesResult = await db.query('SELECT id, name FROM employees ORDER BY name');
-    
+
     res.status(500).render('layout', {
       title: `Edit Printer #${req.params.id}`,
       body: 'printers/edit',
@@ -364,17 +387,20 @@ exports.getPrinterHistory = async (req, res) => {
     const { id } = req.params;
 
     const printerResult = await db.query(`
-      SELECT p.*, 
+      SELECT p.*,
              c.name as client_name, c.client_id as client_code
       FROM printers p
       LEFT JOIN clients c ON p.client_id = c.id
       WHERE p.id = $1
     `, [id]);
-    
+
     if (printerResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'Printer not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -402,10 +428,15 @@ exports.getPrinterHistory = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching printer history:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to fetch printer history',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to fetch printer history',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 

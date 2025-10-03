@@ -309,7 +309,7 @@
     <a href="/clients/<%= client.id %>/history" class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition">
       <i class="fas fa-history mr-2"></i> View History
     </a>
-    <button class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition" onclick="confirmDelete(<%= client.id %>, '<%= client.name %>')">
+    <button class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition" data-confirm-delete="Are you sure you want to delete client '<%= client.name %>' (ID: <%= client.id %>)? This action cannot be undone.">
       <i class="fas fa-trash mr-2"></i> Delete Client
     </button>
   </div>

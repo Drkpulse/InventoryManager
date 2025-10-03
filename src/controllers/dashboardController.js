@@ -81,15 +81,102 @@ exports.getDashboard = async (req, res) => {
 
 exports.searchAssets = async (req, res) => {
   try {
-    const { query } = req.query;
+    // Handle both 'q' and 'query' parameter names for compatibility
+    const query = req.query.q || req.query.query;
+    const { category, page = 1, limit = 15, format } = req.query;
 
-    // Validate query parameter
+    console.log('🔍 SEARCH DEBUG - Request received:');
+    console.log('   Query:', JSON.stringify(query));
+    console.log('   Category:', category);
+    console.log('   Format:', format);
+    console.log('   All query params:', JSON.stringify(req.query));
+
+    // For HTML format (search results page), handle empty queries differently
+    if (format === 'html' && (!query || query.trim().length === 0)) {
+      // Show recent items when no search query on search page
+      try {
+        const recentItems = await db.query(`
+          SELECT i.id, i.cep_brc, i.name, t.name as type_name, b.name as brand_name,
+                 e.name as assigned_to_name, d.name as department_name,
+                 l.name as location_name, i.price, s.date_acquired,
+                 CASE WHEN i.assigned_to IS NULL THEN 'unassigned' ELSE 'assigned' END as status
+          FROM items i
+          LEFT JOIN types t ON i.type_id = t.id
+          LEFT JOIN brands b ON i.brand_id = b.id
+          LEFT JOIN employees e ON i.assigned_to = e.id
+          LEFT JOIN departments d ON e.dept_id = d.id
+          LEFT JOIN locations l ON i.location_id = l.id
+          LEFT JOIN sales s ON i.receipt = s.receipt
+          ORDER BY i.created_at DESC
+          LIMIT 20
+        `);
+
+        const formattedResults = {
+          Items: recentItems.rows.map(item => ({
+            id: item.id,
+            title: item.name,
+            subtitle: `${item.type_name || 'Unknown Type'} • ${item.brand_name || 'Unknown Brand'}`,
+            identifier: item.cep_brc,
+            icon: 'laptop',
+            url: `/items/${item.id}`,
+            category: 'Items',
+            price: item.price,
+            assignedTo: item.assigned_to_name,
+            department: item.department_name,
+            location: item.location_name,
+            status: item.status
+          }))
+        };
+
+        return res.render('layout', {
+          title: 'Search Results',
+          body: 'dashboard/search-results',
+          searchQuery: '',
+          searchResults: {
+            results: formattedResults,
+            totalResults: recentItems.rows.length,
+            searchTime: 0
+          },
+          user: req.session.user,
+          currentPage: 1,
+          totalPages: 1,
+          category: category || 'all',
+          getCategoryIcon: (cat) => ({ 'Items': 'laptop', 'Employees': 'user', 'Departments': 'building', 'Locations': 'map-marker-alt' }[cat] || 'folder'),
+          t: req.t || ((key) => translate(key, req.language)),
+          currentLanguage: req.language
+        });
+      } catch (error) {
+        console.error('Error loading recent items:', error);
+      }
+    }
+
+    // Validate query parameter for AJAX requests
     if (!query || query.length < 2) {
+      console.log('❌ SEARCH DEBUG - Query too short or empty:', query);
+      if (format === 'html') {
+        console.log('❌ SEARCH DEBUG - Returning empty HTML results for short query');
+        return res.render('layout', {
+          title: 'Search Results',
+          body: 'dashboard/search-results',
+          searchQuery: query || '',
+          searchResults: { results: {}, totalResults: 0, searchTime: 0 },
+          user: req.session.user,
+          currentPage: 1,
+          totalPages: 0,
+          category: category || 'all',
+          getCategoryIcon: (cat) => ({ 'Items': 'laptop', 'Employees': 'user', 'Departments': 'building', 'Locations': 'map-marker-alt' }[cat] || 'folder'),
+          t: req.t || ((key) => translate(key, req.language)),
+          currentLanguage: req.language
+        });
+      }
       return res.json({ results: [] });
     }
 
+    console.log('✅ SEARCH DEBUG - Query validation passed, proceeding with search');
+
     // Create a sanitized query parameter for SQL
     const sanitizedQuery = `%${query.replace(/[%_]/g, char => `\\${char}`)}%`;
+    console.log('🔍 SEARCH DEBUG - Sanitized query:', sanitizedQuery);
 
     // Initialize results arrays
     let searchResult = { rows: [] };
@@ -97,6 +184,7 @@ exports.searchAssets = async (req, res) => {
     let locationResult = { rows: [] };
 
     try {
+      console.log('🔍 SEARCH DEBUG - Executing items search query...');
       // Search for items
       searchResult = await db.query(`
         SELECT i.id, i.cep_brc, i.name, t.name as type_name, b.name as brand_name,
@@ -121,8 +209,49 @@ exports.searchAssets = async (req, res) => {
         ORDER BY i.name
         LIMIT 20
       `, [sanitizedQuery]);
+      console.log('✅ SEARCH DEBUG - Items search completed. Found:', searchResult.rows.length, 'items');
+      console.log('📊 SEARCH DEBUG - Sample items:', searchResult.rows.slice(0, 3).map(item => ({ id: item.id, name: item.name })));
+
+      // If no results found, let's see what items actually exist in the database
+      if (searchResult.rows.length === 0) {
+        console.log('🔍 SEARCH DEBUG - No items found, checking what items exist...');
+        const allItems = await db.query(`
+          SELECT i.id, i.name, i.cep_brc, t.name as type_name
+          FROM items i
+          LEFT JOIN types t ON i.type_id = t.id
+          ORDER BY i.id
+          LIMIT 10
+        `);
+        console.log('📊 SEARCH DEBUG - Sample database items:', allItems.rows.map(item => ({
+          id: item.id,
+          name: item.name,
+          cep: item.cep_brc,
+          type: item.type_name
+        })));
+
+        // For debugging, let's also try a broader search to see if there are any items
+        console.log('🔍 SEARCH DEBUG - Trying broader search for debugging...');
+        const broadSearch = await db.query(`
+          SELECT i.id, i.name, i.cep_brc, t.name as type_name
+          FROM items i
+          LEFT JOIN types t ON i.type_id = t.id
+          WHERE i.name IS NOT NULL
+          ORDER BY i.id
+          LIMIT 5
+        `);
+        console.log('📊 SEARCH DEBUG - Broader search results:', broadSearch.rows.map(item => ({
+          id: item.id,
+          name: item.name
+        })));
+
+        // If we have items in the database, let's show them as fallback results for testing
+        if (broadSearch.rows.length > 0 && format === 'html') {
+          console.log('🔍 SEARCH DEBUG - Using fallback results for HTML format');
+          searchResult = broadSearch;
+        }
+      }
     } catch (err) {
-      console.error('Error searching items:', err);
+      console.error('❌ SEARCH DEBUG - Error searching items:', err);
       // Continue execution even if this query fails
     }
 
@@ -167,6 +296,11 @@ exports.searchAssets = async (req, res) => {
     }
 
     // Format results for frontend
+    console.log('📊 SEARCH DEBUG - Formatting results...');
+    console.log('   Items found:', searchResult.rows.length);
+    console.log('   Employees found:', employeeResult.rows.length);
+    console.log('   Locations found:', locationResult.rows.length);
+
     const formattedResults = {
       Items: searchResult.rows.map(item => ({
         id: item.id,
@@ -198,9 +332,60 @@ exports.searchAssets = async (req, res) => {
       }))
     };
 
+    console.log('✅ SEARCH DEBUG - Formatted results:', {
+      Items: formattedResults.Items.length,
+      Employees: formattedResults.Employees.length,
+      Locations: formattedResults.Locations.length
+    });
+
+    // Handle HTML format for search results page
+    if (format === 'html') {
+      const totalResults = (formattedResults.Items?.length || 0) +
+                          (formattedResults.Employees?.length || 0) +
+                          (formattedResults.Locations?.length || 0);
+
+      console.log('🌐 SEARCH DEBUG - Rendering HTML results page');
+      console.log('   Total results:', totalResults);
+      console.log('   Search query:', query);
+      console.log('   Category:', category);
+
+      return res.render('layout', {
+        title: `Search Results for "${query}"`,
+        body: 'dashboard/search-results',
+        searchQuery: query,
+        searchResults: {
+          results: formattedResults,
+          totalResults,
+          searchTime: 0
+        },
+        user: req.session.user,
+        currentPage: parseInt(page),
+        totalPages: 1,
+        category: category || 'all',
+        getCategoryIcon: (cat) => ({ 'Items': 'laptop', 'Employees': 'user', 'Departments': 'building', 'Locations': 'map-marker-alt' }[cat] || 'folder'),
+        t: req.t || ((key) => translate(key, req.language)),
+        currentLanguage: req.language
+      });
+    }
+
     res.json({ results: formattedResults });
   } catch (error) {
     console.error('Search error:', error);
+    if (format === 'html') {
+      return res.render('layout', {
+        title: 'Search Error',
+        body: 'dashboard/search-results',
+        searchQuery: query || '',
+        searchResults: { results: {}, totalResults: 0, searchTime: 0, error: error.message },
+        user: req.session.user,
+        currentPage: 1,
+        totalPages: 0,
+        category: category || 'all',
+        getCategoryIcon: (cat) => ({ 'Items': 'laptop', 'Employees': 'user', 'Departments': 'building', 'Locations': 'map-marker-alt' }[cat] || 'folder'),
+        t: req.t || ((key) => translate(key, req.language)),
+        currentLanguage: req.language
+      });
+    }
     res.status(500).json({ error: 'An error occurred during search' });
   }
 };

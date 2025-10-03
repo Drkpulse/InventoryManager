@@ -279,12 +279,10 @@ exports.employeeAssetDetails = async (req, res) => {
 
     // Get employee details
     const employeeResult = await db.query(`
-      SELECT e.*, d.name as department_name,
-             p.name as platform_name, o.name as office_name
+      SELECT e.*, d.name as department_name, l.name as location_name
       FROM employees e
       LEFT JOIN departments d ON e.dept_id = d.id
-      LEFT JOIN platforms p ON e.platform_id = p.id
-      LEFT JOIN offices o ON e.office_id = o.id
+      LEFT JOIN locations l ON e.location_id = l.id
       WHERE e.id = $1
     `, [id]);
 
@@ -370,26 +368,7 @@ exports.purchaseHistory = async (req, res) => {
   }
 };
 
-// Report on assets assigned to each employee (general)
-exports.assetsByEmployee = async (req, res) => {
-  try {
-    res.render('layout', {
-      title: 'Assets by Employee',
-      body: 'reports/assets-by-employee',
-      user: req.session.user,
-      isReportPage: true,
-      data: { /* Your report data would go here */ }
-    });
-  } catch (error) {
-    console.error('Error generating assets by employee report:', error);
-    res.status(500).render('layout', {
-      title: 'Error',
-      body: 'error',
-      message: 'Could not generate assets by employee report',
-      user: req.session.user
-    });
-  }
-};
+
 
 exports.assetsReport = async (req, res) => {
   try {
@@ -524,9 +503,11 @@ exports.employeeFullAssetsPDF = async (req, res) => {
       LEFT JOIN locations l ON e.location_id = l.id
       WHERE e.id = $1
     `, [employeeId]);
+
     if (employeeResult.rows.length === 0) {
       return res.status(404).send('Employee not found');
     }
+
     const employee = employeeResult.rows[0];
 
     // Fetch assigned items
@@ -538,6 +519,7 @@ exports.employeeFullAssetsPDF = async (req, res) => {
       WHERE i.assigned_to = $1
       ORDER BY i.name
     `, [employeeId]);
+
     const items = itemsResult.rows;
 
     // Calculate stats
@@ -547,27 +529,30 @@ exports.employeeFullAssetsPDF = async (req, res) => {
       asset_types: [...new Set(items.map(i => i.type_name).filter(Boolean))].join(', ')
     };
 
-    // Render HTML using EJS
+    // Check if this is a PDF print request
+    if (req.query.format === 'pdf') {
+      console.log('📄 Generating print-friendly PDF page for employee:', employee.name);
+
+      // Render the print-friendly PDF page (no layout wrapper for clean printing)
+      return res.render('reports/print-pdf', {
+        title: `Asset Report - ${employee.name}`,
+        employee,
+        items,
+        stats,
+        layout: false
+      });
+    }
+
+    // For regular HTML report, render the standard template
+    console.log('📊 Generating standard HTML report for employee:', employee.name);
+
     const html = await ejs.renderFile(
       path.join(__dirname, '../views/reports/employee-full-assets.ejs'),
       { employee, items, stats }
     );
 
-    if (req.query.format === 'pdf') {
-      const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'networkidle0' });
-      const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
-      await browser.close();
+    res.send(html);
 
-      res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="assets-report-${employee.cep}.pdf"`
-      });
-      return res.send(pdfBuffer);
-    } else {
-      res.send(html);
-    }
   } catch (error) {
     console.error('Error generating employee full assets report:', error);
     res.status(500).send('Server error');

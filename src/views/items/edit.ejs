@@ -195,14 +195,47 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label for="assigned_to" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('assigned_to') %></label>
-            <select id="assigned_to" name="assigned_to" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-              <option value=""><%= t('unassigned') %></option>
-              <% employees.forEach(employee => { %>
-                <option value="<%= employee.id %>" <%= item.assigned_to == employee.id ? 'selected' : '' %>>
-                  <%= employee.name %> (<%= employee.cep %>)
-                </option>
-              <% }) %>
-            </select>
+            <div class="relative">
+              <input
+                type="text"
+                id="employee_search_edit"
+                name="employee_search"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                placeholder="Search employee by name or CEPID (optional)..."
+                autocomplete="off">
+              <input type="hidden" id="assigned_to" name="assigned_to" value="<%= item.assigned_to || '' %>">
+
+              <!-- Search results dropdown -->
+              <div id="employee_search_results_edit" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                <!-- Results will be populated here -->
+              </div>
+
+              <!-- Selected employee display -->
+              <div id="selected_employee_edit" class="<%= item.assigned_to ? '' : 'hidden' %> mt-2 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-md">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center">
+                      <i class="fas fa-user text-blue-600 dark:text-blue-300"></i>
+                    </div>
+                    <div>
+                      <div class="font-semibold text-blue-800 dark:text-blue-200" id="selected_employee_name_edit">
+                        <%= item.assigned_to_name || '' %>
+                      </div>
+                      <div class="text-sm text-blue-600 dark:text-blue-400" id="selected_employee_details_edit">
+                        <% if (item.employee_cep && item.department_name) { %>
+                          <%= item.employee_cep %> • <%= item.department_name %>
+                        <% } else if (item.employee_cep) { %>
+                          <%= item.employee_cep %>
+                        <% } %>
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" id="clear_selection_edit" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           <div>
             <label for="date_assigned" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('date_assigned') %></label>
@@ -223,13 +256,26 @@
               <option value="<%= status.id %>"
                 <%= item.status_id == status.id ? 'selected' : '' %>
                 data-icon="<%= status.icon || 'fas fa-tag' %>"
-                data-color="<%= status.color || 'gray' %>">
+                data-color="<%= status.color || 'gray' %>"
+                data-name="<%= status.name %>">
                 <%= status.name %>
               </option>
             <% }) %>
           <% } %>
         </select>
         <small class="text-gray-500 dark:text-gray-400"><%= t('current_status_info') %></small>
+
+        <!-- Status Preview -->
+        <div class="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded border" id="statusPreviewContainer" style="display: none;">
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Preview:</span>
+            <div id="statusPreview" class="inline-flex items-center gap-2 px-3 py-1 rounded-lg border text-sm font-medium"
+                 style="background-color: rgba(107, 114, 128, 0.1); border-color: rgba(107, 114, 128, 0.3); color: #6B7280;">
+              <span id="statusIcon">🏷️</span>
+              <span id="statusName">Select Status</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Form Actions -->
@@ -543,6 +589,217 @@ document.addEventListener('DOMContentLoaded', function() {
   // Calculate warranty end date on page load if values exist
   if (warrantyStartDate.value && warrantyMonths.value) {
     calculateWarrantyEndDate();
+  }
+});
+
+// Employee search functionality for edit form
+document.addEventListener('DOMContentLoaded', function() {
+  const employeeSearch = document.getElementById('employee_search_edit');
+  const assignedToHidden = document.getElementById('assigned_to');
+  const searchResults = document.getElementById('employee_search_results_edit');
+  const selectedEmployeeDiv = document.getElementById('selected_employee_edit');
+  const selectedEmployeeName = document.getElementById('selected_employee_name_edit');
+  const selectedEmployeeDetails = document.getElementById('selected_employee_details_edit');
+  const clearSelectionBtn = document.getElementById('clear_selection_edit');
+  const dateAssignedInput = document.getElementById('date_assigned');
+
+  let searchTimeout;
+  // Check if employee is currently assigned based on hidden input value
+  const isEmployeeAssigned = assignedToHidden.value !== '';
+
+  // Show search input if no employee is currently assigned
+  if (!isEmployeeAssigned) {
+    employeeSearch.style.display = 'block';
+    selectedEmployeeDiv.classList.add('hidden');
+  } else {
+    employeeSearch.style.display = 'none';
+    selectedEmployeeDiv.classList.remove('hidden');
+  }
+
+  // Employee search functionality
+  employeeSearch.addEventListener('input', function() {
+    const query = this.value.trim();
+
+    clearTimeout(searchTimeout);
+
+    if (query.length < 2) {
+      searchResults.classList.add('hidden');
+      return;
+    }
+
+    searchTimeout = setTimeout(() => {
+      searchEmployees(query);
+    }, 300);
+  });
+
+  function searchEmployees(query) {
+    fetch(`/employees/api/search?q=${encodeURIComponent(query)}`)
+      .then(response => response.json())
+      .then(data => {
+        displaySearchResults(data.employees || []);
+      })
+      .catch(error => {
+        console.error('Error searching employees:', error);
+        searchResults.innerHTML = '<div class="p-3 text-red-500">Error searching employees</div>';
+        searchResults.classList.remove('hidden');
+      });
+  }
+
+  function displaySearchResults(employees) {
+    if (employees.length === 0) {
+      searchResults.innerHTML = '<div class="p-3 text-gray-500 dark:text-gray-400">No employees found</div>';
+      searchResults.classList.remove('hidden');
+      return;
+    }
+
+    searchResults.innerHTML = employees.map(employee => `
+      <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0 employee-result"
+           data-id="${employee.id}"
+           data-name="${employee.name}"
+           data-cep="${employee.cep}"
+           data-department="${employee.department_name}">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+            <i class="fas fa-user text-blue-600 dark:text-blue-300 text-sm"></i>
+          </div>
+          <div>
+            <div class="font-semibold text-gray-800 dark:text-gray-100">${employee.name}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">${employee.cep} • ${employee.department_name}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Add click handlers to results
+    searchResults.querySelectorAll('.employee-result').forEach(result => {
+      result.addEventListener('click', function() {
+        selectEmployee({
+          id: this.dataset.id,
+          name: this.dataset.name,
+          cep: this.dataset.cep,
+          department_name: this.dataset.department
+        });
+      });
+    });
+
+    searchResults.classList.remove('hidden');
+  }
+
+  function selectEmployee(employee) {
+    assignedToHidden.value = employee.id;
+
+    selectedEmployeeName.textContent = employee.name;
+    selectedEmployeeDetails.textContent = `${employee.cep} • ${employee.department_name}`;
+
+    employeeSearch.style.display = 'none';
+    selectedEmployeeDiv.classList.remove('hidden');
+    searchResults.classList.add('hidden');
+
+    // Auto-fill assignment date if not set
+    if (!dateAssignedInput.value) {
+      dateAssignedInput.value = new Date().toISOString().split('T')[0];
+    }
+  }
+
+  // Clear selection
+  clearSelectionBtn.addEventListener('click', function() {
+    assignedToHidden.value = '';
+    employeeSearch.value = '';
+    employeeSearch.style.display = 'block';
+    selectedEmployeeDiv.classList.add('hidden');
+    searchResults.classList.add('hidden');
+    employeeSearch.focus();
+  });
+
+  // Hide search results when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!employeeSearch.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.classList.add('hidden');
+    }
+  });
+
+  // ESC key handling
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      searchResults.classList.add('hidden');
+    }
+  });
+
+  // Status preview functionality
+  const statusSelect = document.getElementById('status_id');
+  const statusPreviewContainer = document.getElementById('statusPreviewContainer');
+  const statusPreview = document.getElementById('statusPreview');
+  const statusIcon = document.getElementById('statusIcon');
+  const statusName = document.getElementById('statusName');
+
+  function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+
+  function updateStatusPreview() {
+    const selectedOption = statusSelect.options[statusSelect.selectedIndex];
+
+    if (!selectedOption || !selectedOption.value) {
+      statusPreviewContainer.style.display = 'none';
+      return;
+    }
+
+    const icon = selectedOption.dataset.icon || 'fas fa-tag';
+    const color = selectedOption.dataset.color || '#6B7280';
+    const name = selectedOption.dataset.name || selectedOption.textContent;
+
+    // Show preview container
+    statusPreviewContainer.style.display = 'block';
+
+    // Update icon
+    if (icon.startsWith('fas fa-')) {
+      statusIcon.innerHTML = `<i class="${icon}"></i>`;
+    } else {
+      statusIcon.textContent = icon;
+    }
+
+    // Update name
+    statusName.textContent = name;
+
+    // Update colors
+    let previewColor = color;
+    if (color.startsWith('#')) {
+      const rgb = hexToRgb(previewColor);
+      if (rgb) {
+        statusPreview.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+        statusPreview.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
+        statusPreview.style.color = previewColor;
+      }
+    } else {
+      // Handle legacy named colors
+      const colorMap = {
+        'green': '#10B981',
+        'red': '#EF4444',
+        'blue': '#3B82F6',
+        'yellow': '#F59E0B',
+        'gray': '#6B7280',
+        'orange': '#F97316',
+        'purple': '#8B5CF6'
+      };
+      previewColor = colorMap[color] || '#6B7280';
+      const rgb = hexToRgb(previewColor);
+      if (rgb) {
+        statusPreview.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
+        statusPreview.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
+        statusPreview.style.color = previewColor;
+      }
+    }
+  }
+
+  if (statusSelect) {
+    statusSelect.addEventListener('change', updateStatusPreview);
+    // Initial preview
+    updateStatusPreview();
   }
 });
 </script>

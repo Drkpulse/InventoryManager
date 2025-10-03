@@ -1,9 +1,6 @@
 -- Database: inventory_db
 
 -- Drop tables in reverse order of dependencies
-DROP TABLE IF EXISTS notification_settings CASCADE;
-DROP TABLE IF EXISTS notifications CASCADE;
-DROP TABLE IF EXISTS notification_types CASCADE;
 DROP TABLE IF EXISTS item_history CASCADE;
 DROP TABLE IF EXISTS items CASCADE;
 DROP TABLE IF EXISTS employees CASCADE;
@@ -23,8 +20,12 @@ DROP TABLE IF EXISTS employee_software CASCADE;
 CREATE TABLE IF NOT EXISTS license_config (
   id SERIAL PRIMARY KEY,
   license_key VARCHAR(255) NOT NULL,
+  company VARCHAR(255),
   valid_until TIMESTAMP,
   issued_to VARCHAR(255),
+  features JSONB DEFAULT '{}',
+  status VARCHAR(50) DEFAULT 'active',
+  last_checked TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -36,7 +37,21 @@ CREATE TABLE users (
   email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
   role VARCHAR(50) DEFAULT 'user',
+  cep_id VARCHAR(50) UNIQUE NOT NULL,
+  settings JSONB DEFAULT '{
+    "theme": "light",
+    "language": "en",
+    "items_per_page": "20",
+    "maintenance_alerts": true,
+    "session_timeout": false,
+    "two_factor_auth": false
+  }'::jsonb,
+  active BOOLEAN DEFAULT TRUE,
   last_login TIMESTAMP,
+  failed_login_attempts INTEGER DEFAULT 0,
+  account_locked BOOLEAN DEFAULT FALSE,
+  locked_at TIMESTAMP,
+  locked_until TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -153,44 +168,6 @@ CREATE TABLE items (
   notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create notification types table
-CREATE TABLE notification_types (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL UNIQUE,
-  description TEXT,
-  icon VARCHAR(50) DEFAULT 'fas fa-bell',
-  color VARCHAR(20) DEFAULT '#4a6fa5',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create notifications table
-CREATE TABLE notifications (
-  id SERIAL PRIMARY KEY,
-  type_id INTEGER NOT NULL REFERENCES notification_types(id) ON DELETE CASCADE,
-  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-  title VARCHAR(255) NOT NULL,
-  message TEXT NOT NULL,
-  url VARCHAR(255),
-  data JSONB,
-  is_read BOOLEAN DEFAULT FALSE,
-  read_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create notification settings table
-CREATE TABLE notification_settings (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  type_id INTEGER NOT NULL REFERENCES notification_types(id) ON DELETE CASCADE,
-  enabled BOOLEAN DEFAULT TRUE,
-  email_enabled BOOLEAN DEFAULT FALSE,
-  browser_enabled BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(user_id, type_id)
 );
 
 -- Create item_history table
@@ -323,11 +300,6 @@ CREATE INDEX idx_employees_dept ON employees(dept_id);
 CREATE INDEX idx_employees_location ON employees(location_id);
 CREATE INDEX idx_employee_software_employee ON employee_software(employee_id);
 CREATE INDEX idx_employee_software_software ON employee_software(software_id);
-CREATE INDEX idx_notifications_user_id ON notifications(user_id);
-CREATE INDEX idx_notifications_type_id ON notifications(type_id);
-CREATE INDEX idx_notifications_is_read ON notifications(is_read);
-CREATE INDEX idx_notifications_created_at ON notifications(created_at);
-CREATE INDEX idx_notification_settings_user_type ON notification_settings(user_id, type_id);
 CREATE INDEX idx_item_history_item ON item_history(item_id);
 CREATE INDEX idx_item_history_action ON item_history(action_type);
 CREATE INDEX idx_activity_logs_user ON activity_logs(user_id);
@@ -335,6 +307,7 @@ CREATE INDEX idx_activity_logs_entity ON activity_logs(entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_employee_software_software_id ON employee_software(software_id);
 CREATE INDEX IF NOT EXISTS idx_employee_software_employee_id ON employee_software(employee_id);
 CREATE INDEX IF NOT EXISTS idx_printers_employee ON printers(employee_id);
+CREATE INDEX IF NOT EXISTS idx_users_lockout ON users(account_locked, locked_until);
 CREATE INDEX IF NOT EXISTS idx_printers_client ON printers(client_id);
 CREATE INDEX IF NOT EXISTS idx_printers_status ON printers(status_id);
 CREATE INDEX IF NOT EXISTS idx_pdas_client ON pdas(client_id);
@@ -346,16 +319,43 @@ CREATE INDEX IF NOT EXISTS idx_client_history_client ON client_history(client_id
 CREATE INDEX IF NOT EXISTS idx_printer_history_printer ON printer_history(printer_id);
 CREATE INDEX IF NOT EXISTS idx_pda_history_pda ON pda_history(pda_id);
 CREATE INDEX IF NOT EXISTS idx_sim_card_history_sim_card ON sim_card_history(sim_card_id);
+CREATE INDEX IF NOT EXISTS idx_users_settings ON users USING GIN (settings);
+CREATE INDEX IF NOT EXISTS idx_users_cep_id ON users(cep_id);
+CREATE INDEX IF NOT EXISTS idx_users_active ON users(active);
 
 -- Create an admin user (password: admin)
-INSERT INTO users (name, email, password, role, last_login)
-VALUES ('Admin User', 'admin@example.com', '$2a$10$rVTD1ySZN5OtNkQ5C62yA.gutjwPM0h.i5.WDG7XyDpnSOGUK3PgW', 'admin', CURRENT_TIMESTAMP);
+INSERT INTO users (name, email, password, role, cep_id, settings, active, last_login)
+VALUES ('Admin User', 'admin@example.com', '$2a$10$rVTD1ySZN5OtNkQ5C62yA.gutjwPM0h.i5.WDG7XyDpnSOGUK3PgW', 'admin', 'ADMIN001', '{
+  "language": "en",
+  "theme": "light",
+  "timezone": "UTC",
+  "items_per_page": "20",
+  "maintenance_alerts": true,
+  "session_timeout": false,
+  "two_factor_auth": false
+}'::jsonb, TRUE, CURRENT_TIMESTAMP);
 
--- Add more users needed by notifications
-INSERT INTO users (id, name, email, password, role, last_login)
+-- Add more users
+INSERT INTO users (id, name, email, password, role, cep_id, settings, active, last_login)
 VALUES
-  (2, 'Regular User', 'user@example.com', '$2a$10$rVTD1ySZN5OtNkQ5C62yA.gutjwPM0h.i5.WDG7XyDpnSOGUK3PgW', 'user', CURRENT_TIMESTAMP),
-  (3, 'Developer User', 'dev@example.com', '$2a$10$rVTD1ySZN5OtNkQ5C62yA.gutjwPM0h.i5.WDG7XyDpnSOGUK3PgW', 'user', CURRENT_TIMESTAMP);
+  (2, 'Regular User', 'user@example.com', '$2a$10$rVTD1ySZN5OtNkQ5C62yA.gutjwPM0h.i5.WDG7XyDpnSOGUK3PgW', 'user', 'USER001', '{
+    "language": "en",
+    "theme": "light",
+    "timezone": "UTC",
+    "items_per_page": "20",
+    "maintenance_alerts": true,
+    "session_timeout": false,
+    "two_factor_auth": false
+  }'::jsonb, TRUE, CURRENT_TIMESTAMP),
+  (3, 'Developer User', 'dev@example.com', '$2a$10$rVTD1ySZN5OtNkQ5C62yA.gutjwPM0h.i5.WDG7XyDpnSOGUK3PgW', 'user', 'DEV001', '{
+    "language": "en",
+    "theme": "dark",
+    "timezone": "UTC",
+    "items_per_page": "50",
+    "maintenance_alerts": true,
+    "session_timeout": false,
+    "two_factor_auth": false
+  }'::jsonb, TRUE, CURRENT_TIMESTAMP);
 
 -- Insert sample data for departments
 INSERT INTO departments (name) VALUES
@@ -640,11 +640,19 @@ RETURNS TABLE(
   settings JSONB,
   last_login TIMESTAMP,
   created_at TIMESTAMP,
-  updated_at TIMESTAMP
+  updated_at TIMESTAMP,
+  failed_login_attempts INTEGER,
+  account_locked BOOLEAN,
+  locked_at TIMESTAMP,
+  locked_until TIMESTAMP
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT u.id, u.name, u.email, u.password, u.role, u.cep_id, u.active, u.settings, u.last_login, u.created_at, u.updated_at
+  SELECT u.id, u.name, u.email, u.password, u.role, u.cep_id, u.active, u.settings, u.last_login, u.created_at, u.updated_at,
+         COALESCE(u.failed_login_attempts, 0) as failed_login_attempts,
+         COALESCE(u.account_locked, FALSE) as account_locked,
+         u.locked_at,
+         u.locked_until
   FROM users u
   WHERE (LOWER(u.email) = LOWER(login_input) OR LOWER(u.cep_id) = LOWER(login_input))
   LIMIT 1;

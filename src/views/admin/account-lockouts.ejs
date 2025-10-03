@@ -1,0 +1,439 @@
+<!-- Account Lockouts View -->
+<div class="account-lockouts-container">
+  <!-- Page Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        <i class="fas fa-lock text-yellow-600 mr-2"></i>Account Lockouts
+      </h1>
+      <p class="text-gray-600 dark:text-gray-300 mt-2">
+        Manage locked accounts and failed login attempts
+      </p>
+    </div>
+    <div class="flex space-x-3">
+      <a href="/admin/security" class="btn btn-outline">
+        <i class="fas fa-arrow-left mr-2"></i>Back to Center
+      </a>
+      <button onclick="refreshData()" class="btn btn-primary">
+        <i class="fas fa-sync-alt mr-2"></i>Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Currently Locked -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-red-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Currently Locked</p>
+          <p class="text-3xl font-bold text-red-600"><%= lockouts.length %></p>
+        </div>
+        <div class="p-3 bg-red-100 dark:bg-red-900 rounded-full">
+          <i class="fas fa-lock text-red-600 dark:text-red-300 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Failed Attempts -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Recent Failed Attempts</p>
+          <p class="text-3xl font-bold text-yellow-600"><%= recentAttempts.length %></p>
+          <p class="text-xs text-gray-500 mt-1">Last 24 hours</p>
+        </div>
+        <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
+          <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-300 text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auto-unlock Soon -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Auto-unlock Soon</p>
+          <%
+            const soonUnlock = lockouts.filter(l => new Date(l.locked_until) < new Date(Date.now() + 60 * 60 * 1000));
+          %>
+          <p class="text-3xl font-bold text-blue-600"><%= soonUnlock.length %></p>
+          <p class="text-xs text-gray-500 mt-1">Within 1 hour</p>
+        </div>
+        <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+          <i class="fas fa-clock text-blue-600 dark:text-blue-300 text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Currently Locked Accounts -->
+  <% if (lockouts.length > 0) { %>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md mb-8">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+          <i class="fas fa-lock text-red-500 mr-2"></i>Currently Locked Accounts
+        </h2>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Account
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                User Details
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Locked At
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Unlock Time
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Attempts
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% lockouts.forEach(lockout => { %>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div class="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                        <i class="fas fa-lock text-red-600 dark:text-red-300"></i>
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900 dark:text-white">
+                        <%= lockout.identifier %>
+                      </div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">
+                        ID: <%= lockout.id %>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <% if (lockout.user_name) { %>
+                    <div>
+                      <div class="font-medium"><%= lockout.user_name %></div>
+                      <div class="text-gray-500 dark:text-gray-400"><%= lockout.user_email %></div>
+                      <% if (lockout.cep_id) { %>
+                        <div class="text-xs text-gray-400 dark:text-gray-500">CEP: <%= lockout.cep_id %></div>
+                      <% } %>
+                    </div>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500">Unknown User</span>
+                  <% } %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <%= new Date(lockout.locked_at).toLocaleString() %>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    <%= Math.round((new Date() - new Date(lockout.locked_at)) / (1000 * 60)) %> minutes ago
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <%= new Date(lockout.locked_until).toLocaleString() %>
+                  <%
+                    const unlockTime = new Date(lockout.locked_until);
+                    const now = new Date();
+                    const minutesLeft = Math.round((unlockTime - now) / (1000 * 60));
+                  %>
+                  <div class="text-xs <%= minutesLeft > 0 ? 'text-red-500' : 'text-green-500' %>">
+                    <% if (minutesLeft > 0) { %>
+                      <%= minutesLeft %> minutes left
+                    <% } else { %>
+                      Should be unlocked
+                    <% } %>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                    <%= lockout.attempt_count %> attempts
+                  </span>
+                  <% if (lockout.reason) { %>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <%= lockout.reason %>
+                    </div>
+                  <% } %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                  <button onclick="unlockAccount('<%= lockout.identifier %>')"
+                          class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
+                    <i class="fas fa-unlock mr-1"></i>Unlock
+                  </button>
+                  <button onclick="clearAttempts('<%= lockout.identifier %>')"
+                          class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                    <i class="fas fa-eraser mr-1"></i>Clear
+                  </button>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-8">
+      <div class="text-center">
+        <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Accounts Currently Locked</h3>
+        <p class="text-gray-500 dark:text-gray-400">
+          All accounts are currently unlocked and accessible.
+        </p>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Recent Failed Attempts -->
+  <% if (recentAttempts.length > 0) { %>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+          <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>Recent Failed Attempts (24h)
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+          Accounts with 3 or more failed login attempts in the last 24 hours
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Identifier
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Failed Attempts
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                First Attempt
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Last Attempt
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% recentAttempts.forEach(attempt => { %>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                  <%= attempt.identifier %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <%
+                    const severityColor = attempt.attempt_count >= 10 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
+                                         attempt.attempt_count >= 5 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' :
+                                         'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+                  %>
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <%= severityColor %>">
+                    <%= attempt.attempt_count %> attempts
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <%= new Date(attempt.first_attempt).toLocaleString() %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <%= new Date(attempt.last_attempt).toLocaleString() %>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    <%= Math.round((new Date() - new Date(attempt.last_attempt)) / (1000 * 60)) %> minutes ago
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                  <button onclick="clearAttempts('<%= attempt.identifier %>')"
+                          class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                    <i class="fas fa-eraser mr-1"></i>Clear Attempts
+                  </button>
+                  <% if (attempt.attempt_count >= 5) { %>
+                    <button onclick="preemptiveLock('<%= attempt.identifier %>')"
+                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                      <i class="fas fa-lock mr-1"></i>Lock Account
+                    </button>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+      <div class="text-center">
+        <i class="fas fa-shield-alt text-green-500 text-4xl mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Recent Failed Attempts</h3>
+        <p class="text-gray-500 dark:text-gray-400">
+          No accounts have excessive failed login attempts in the last 24 hours.
+        </p>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<script>
+function unlockAccount(identifier) {
+  if (confirm(`Are you sure you want to unlock account: ${identifier}?`)) {
+    fetch('/admin/security/unlock-account', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({
+        identifier: identifier,
+        _csrf: '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>'
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showToast(data.message, 'success');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        showToast(data.error || 'Failed to unlock account', 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('An error occurred while unlocking the account', 'error');
+    });
+  }
+}
+
+function clearAttempts(identifier) {
+  if (confirm(`Clear all failed login attempts for: ${identifier}?`)) {
+    fetch('/admin/security/clear-attempts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({
+        identifier: identifier,
+        _csrf: '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>'
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showToast(data.message, 'success');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        showToast(data.error || 'Failed to clear attempts', 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('An error occurred while clearing attempts', 'error');
+    });
+  }
+}
+
+function preemptiveLock(identifier) {
+  if (confirm(`Preemptively lock account: ${identifier}? This will prevent further login attempts.`)) {
+    fetch('/admin/security/preemptive-lock', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({
+        identifier: identifier,
+        reason: 'Preemptive lock due to excessive failed attempts',
+        _csrf: '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>'
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showToast(data.message, 'success');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        showToast(data.error || 'Failed to lock account', 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('An error occurred while locking the account', 'error');
+    });
+  }
+}
+
+function refreshData() {
+  window.location.reload();
+}
+
+// Auto-refresh every 2 minutes
+setInterval(() => {
+  refreshData();
+}, 2 * 60 * 1000);
+</script>
+
+<style>
+.account-lockouts-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-outline {
+  border: 1px solid #d1d5db;
+  color: #374151;
+  background-color: transparent;
+}
+
+.btn-outline:hover {
+  background-color: #f9fafb;
+}
+
+.dark .btn-outline {
+  border-color: #4b5563;
+  color: #d1d5db;
+}
+
+.dark .btn-outline:hover {
+  background-color: #374151;
+}
+
+@media (max-width: 768px) {
+  .account-lockouts-container {
+    padding: 10px;
+  }
+
+  .overflow-x-auto {
+    font-size: 0.75rem;
+  }
+}
+</style>

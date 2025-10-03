@@ -2,11 +2,16 @@
   <!-- Page Header -->
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100"><%= t('assets_management') %></h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+        <i class="fas fa-boxes"></i> <%= t('assets_management') %>
+      </h1>
     </div>
     <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
       <a href="/items/new" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
         <i class="fas fa-plus mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('add_new_item') %>
+      </a>
+      <a href="/items/bulk-create" class="group px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg" style="background: linear-gradient(to right, rgb(249, 115, 22), rgb(234, 88, 12)); color: white;">
+        <i class="fas fa-layer-group mr-2 group-hover:scale-110 transition-transform duration-300"></i> Bulk Create Assets
       </a>
       <a href="/items/new-receipt" class="group px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
         <i class="fas fa-receipt mr-2 group-hover:rotate-12 transition-transform duration-300"></i> <%= t('add_new_receipt') %>
@@ -17,29 +22,29 @@
     </div>
   </div>
 
-  <!-- Filters Panel -->
-  <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+  <!-- Advanced Filters Panel -->
+  <div class="mb-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
     <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" id="filtersToggle">
-      <div class="flex items-center gap-2 text-gray-700 dark:text-gray-200">
+      <div class="flex items-center gap-2">
         <i class="fas fa-filter"></i>
-        <span class="font-semibold"><%= t('advanced_filters') %></span>
-        <span class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs" id="filterBadge">0</span>
+        <h3 class="font-semibold text-gray-700 dark:text-gray-200"><%= t('advanced_filters') %></h3>
+        <span class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold" id="filterBadge">0</span>
       </div>
       <div class="flex items-center gap-2">
         <span class="text-sm text-gray-500 dark:text-gray-400" id="appliedFiltersPreview"><%= t('no_filters_applied') %></span>
-        <i class="fas fa-chevron-down transition-transform duration-200"></i>
+        <i class="fas fa-chevron-down toggle-icon"></i>
       </div>
     </div>
-    <div class="px-6 pb-6 pt-2 hidden" id="filtersContent">
+    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 hidden" id="filtersContent">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
         <div>
-          <label for="typeFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_type') %></label>
+          <label for="typeFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('asset_type') %></label>
           <select id="typeFilter" name="type"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value=""><%= t('all_types') %></option>
             <% if (typeof types !== 'undefined') { %>
               <% types.forEach(type => { %>
-                <option value="<%= type.id %>" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.type == type.id) ? 'selected' : '' %>>
+                <option value="<%= type.id %>" <%= (typeof req !== 'undefined' && req.query && req.query.type == type.id) ? 'selected' : '' %>>
                   <%= type.name %>
                 </option>
               <% }) %>
@@ -47,13 +52,13 @@
           </select>
         </div>
         <div>
-          <label for="brandFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('brand') %></label>
+          <label for="brandFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('brand') %></label>
           <select id="brandFilter" name="brand"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value=""><%= t('all_brands') %></option>
             <% if (typeof brands !== 'undefined') { %>
               <% brands.forEach(brand => { %>
-                <option value="<%= brand.id %>" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.brand == brand.id) ? 'selected' : '' %>>
+                <option value="<%= brand.id %>" <%= (typeof req !== 'undefined' && req.query && req.query.brand == brand.id) ? 'selected' : '' %>>
                   <%= brand.name %>
                 </option>
               <% }) %>
@@ -61,53 +66,47 @@
           </select>
         </div>
         <div>
-          <label for="statusFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('assignment_status') %></label>
-          <select id="statusFilter" name="assigned"
+          <label for="statusFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('status') %></label>
+          <select id="statusFilter" name="status"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-            <option value="" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.assigned === '') ? 'selected' : '' %>><%= t('all_assets') %></option>
-            <option value="assigned" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.assigned === 'assigned') ? 'selected' : '' %>><%= t('assigned_assets') %></option>
-            <option value="unassigned" <%= (typeof currentFilters === 'undefined' || !currentFilters || currentFilters.assigned === 'unassigned') ? 'selected' : '' %>><%= t('unassigned_assets') %></option>
+            <option value=""><%= t('all_statuses') %></option>
+            <% if (statuses && statuses.length > 0) { %>
+              <% statuses.forEach(status => { %>
+                <option value="<%= status.id %>" <%= req.query.status == status.id ? 'selected' : '' %>>
+                  <%= status.name %>
+                </option>
+              <% }); %>
+            <% } %>
           </select>
         </div>
         <div>
-          <label for="conditionFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('condition') %></label>
-          <select id="conditionFilter" name="condition"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-            <option value=""><%= t('all_conditions') %></option>
-            <option value="active"><%= t('active') %></option>
-            <option value="maintenance"><%= t('maintenance') %></option>
-            <option value="retired"><%= t('retired') %></option>
-            <option value="damaged"><%= t('damaged') %></option>
-          </select>
-        </div>
-        <div>
-          <label for="priceRange" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('price_range') %></label>
+          <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('price_range') %></label>
           <div class="flex gap-2">
-            <input type="number" id="minPrice" name="minPrice" placeholder="Min €" min="0" step="0.01"
+            <input type="number" id="minPrice" name="minPrice" placeholder="Min €" min="0" step="0.01" value="<%= typeof req !== 'undefined' && req.query && req.query.minPrice ? req.query.minPrice : '' %>"
               class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <span class="self-center text-gray-500 dark:text-gray-400">to</span>
-            <input type="number" id="maxPrice" name="maxPrice" placeholder="Max €" min="0" step="0.01"
+            <input type="number" id="maxPrice" name="maxPrice" placeholder="Max €" min="0" step="0.01" value="<%= typeof req !== 'undefined' && req.query && req.query.maxPrice ? req.query.maxPrice : '' %>"
               class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
           </div>
         </div>
         <div>
-          <label for="dateRange" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('date_acquired') %></label>
+          <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('date_acquired') %></label>
           <div class="flex gap-2">
-            <input type="date" id="startDate" name="startDate"
+            <input type="date" id="startDate" name="startDate" value="<%= typeof req !== 'undefined' && req.query && req.query.startDate ? req.query.startDate : '' %>"
               class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <span class="self-center text-gray-500 dark:text-gray-400">to</span>
-            <input type="date" id="endDate" name="endDate"
+            <input type="date" id="endDate" name="endDate" value="<%= typeof req !== 'undefined' && req.query && req.query.endDate ? req.query.endDate : '' %>"
               class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
           </div>
         </div>
         <div>
-          <label for="departmentFilter" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('department') %></label>
+          <label for="departmentFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('department') %></label>
           <select id="departmentFilter" name="department"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
             <option value=""><%= t('all_departments') %></option>
             <% if (typeof departments !== 'undefined') { %>
               <% departments.forEach(dept => { %>
-                <option value="<%= dept.id %>" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.department == dept.id) ? 'selected' : '' %>>
+                <option value="<%= dept.id %>" <%= (typeof req !== 'undefined' && req.query && req.query.department == dept.id) ? 'selected' : '' %>>
                   <%= dept.name %>
                 </option>
               <% }) %>
@@ -115,277 +114,148 @@
           </select>
         </div>
       </div>
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div id="appliedFilters" class="flex flex-wrap gap-2"></div>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap gap-2 text-xs" id="appliedFilters"></div>
         <div class="flex gap-2">
-          <button type="button" id="applyFilters" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
-            <i class="fas fa-search"></i> <%= t('apply_filters') %>
+          <button type="button" id="applyFilters" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+            <i class="fas fa-search group-hover:scale-110 transition-transform duration-300"></i> <%= t('apply_filters') %>
           </button>
-          <button type="button" id="resetFilters" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
-            <i class="fas fa-times"></i> <%= t('reset_filters') %>
+          <button type="button" id="resetFilters" class="group px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+            <i class="fas fa-times group-hover:-rotate-12 transition-transform duration-300"></i> <%= t('reset_all') %>
           </button>
         </div>
       </div>
     </div>
   </div>
+
+  <script>
+    // Simple filter toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const filtersToggle = document.getElementById('filtersToggle');
+      const filtersContent = document.getElementById('filtersContent');
+      const toggleIcon = filtersToggle.querySelector('.toggle-icon');
+
+      filtersToggle.addEventListener('click', function() {
+        filtersContent.classList.toggle('hidden');
+        toggleIcon.classList.toggle('fa-chevron-down');
+        toggleIcon.classList.toggle('fa-chevron-up');
+      });
+
+      // Show filters if any are applied
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasFilters = urlParams.get('type') || urlParams.get('brand') || urlParams.get('status') ||
+                        urlParams.get('department') || urlParams.get('q') || urlParams.get('minPrice') ||
+                        urlParams.get('maxPrice') || urlParams.get('startDate') || urlParams.get('endDate');
+      if (hasFilters) {
+        filtersContent.classList.remove('hidden');
+        toggleIcon.classList.remove('fa-chevron-down');
+        toggleIcon.classList.add('fa-chevron-up');
+      }
+    });
+  </script>
 
   <!-- Search Bar -->
-  <div class="mb-6">
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+        <i class="fas fa-search text-blue-600 dark:text-blue-300"></i>
+      </div>
+      <div>
+        <label class="block font-semibold text-gray-700 dark:text-gray-200">Search Assets</label>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Find assets by ID, name, or assigned employee</p>
+      </div>
+    </div>
     <div class="relative">
-      <input type="text" id="itemSearch" placeholder="<%= t('search_placeholder') %>" autocomplete="off"
-        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
-      <div class="absolute w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-md z-10 hidden" id="searchResults"></div>
+      <input type="text" id="itemSearch" placeholder="Search by Asset ID, Name, or Assigned Employee..." autocomplete="off"
+        class="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-blue-500 dark:text-blue-400"></i>
     </div>
   </div>
 
-  <% if (items && items.length > 0) { %>
-    <div id="itemsTableBlock">
-      <div id="itemsTableContainer" class="overflow-x-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
-              <th class="px-4 py-3"><%= t('asset_id') %></th>
-              <th class="px-4 py-3"><%= t('name') %></th>
-              <th class="px-4 py-3"><%= t('type') %></th>
-              <th class="px-4 py-3"><%= t('brand') %></th>
-              <th class="px-4 py-3"><%= t('assigned_to') %></th>
-              <th class="px-4 py-3"><%= t('status') %></th>
-              <th class="px-4 py-3"><%= t('actions') %></th>
-            </tr>
-          </thead>
-          <tbody>
-            <%
-            const sortedItems = items.sort((a, b) => {
-              if (!a.assigned_to && b.assigned_to) return -1;
-              if (a.assigned_to && !b.assigned_to) return 1;
-              return a.name.localeCompare(b.name);
-            });
-            %>
-            <% sortedItems.forEach(item => { %>
-              <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
-                <td class="px-4 py-3 font-mono text-gray-800 dark:text-gray-100"><%= item.cep_brc %></td>
-                <td class="px-4 py-3">
-                  <div>
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="font-semibold text-blue-700 dark:text-blue-300 hover:underline"><%= item.name %></a>
-                    <% if (item.model) { %>
-                      <div class="text-xs text-gray-500 dark:text-gray-400"><%= item.model %></div>
-                    <% } %>
-                  </div>
-                </td>
-                <td class="px-4 py-3">
-                  <% if (item.type_name) { %>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
-                      <i class="fas fa-tag"></i> <%= item.type_name %>
-                    </span>
-                  <% } else { %>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
-                      <i class="fas fa-minus"></i> <%= t('not_assigned') %>
-                    </span>
-                  <% } %>
-                </td>
-                <td class="px-4 py-3">
-                  <% if (item.brand_name) { %>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 text-xs font-semibold">
-                      <i class="fas fa-building"></i> <%= item.brand_name %>
-                    </span>
-                  <% } else { %>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
-                      <i class="fas fa-minus"></i> <%= t('not_specified') %>
-                    </span>
-                  <% } %>
-                </td>
-                <td class="px-4 py-3">
-                  <% if (item.assigned_to_name) { %>
-                    <div>
-                      <a href="/employees/<%= item.assigned_to %>" class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-100 hover:underline">
-                        <i class="fas fa-user"></i> <%= item.assigned_to_name %>
-                      </a>
-                      <% if (item.department_name) { %>
-                        <div class="text-xs text-gray-500 dark:text-gray-400"><%= item.department_name %></div>
-                      <% } %>
-                    </div>
-                  <% } else { %>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
-                      <i class="fas fa-user-slash"></i> <%= t('unassigned') %>
-                    </span>
-                  <% } %>
-                </td>
-                <td class="px-4 py-3">
-                  <%
-                    let statusClass = 'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400';
-                    let statusIcon = 'fas fa-question-circle';
-                    let statusText = 'Unknown';
-
-                    if (typeof statuses !== 'undefined' && item.status_id) {
-                      // Find the status in the database statuses
-                      const currentStatus = statuses.find(s => s.id == item.status_id);
-
-                      if (currentStatus) {
-                        // Use the icon and color from the database
-                        statusIcon = currentStatus.icon || 'fas fa-tag';
-                        statusText = currentStatus.name;
-
-                        // Use color-based styling from database
-                        switch(currentStatus.color) {
-                          case 'green':
-                            statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700';
-                            break;
-                          case 'yellow':
-                            statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700';
-                            break;
-                          case 'red':
-                            statusClass = 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700';
-                            break;
-                          case 'blue':
-                            statusClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700';
-                            break;
-                          case 'gray':
-                            statusClass = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600';
-                            break;
-                          default:
-                            statusClass = 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700';
-                        }
-                      }
-                    }
-                  %>
-                  <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium <%= statusClass %>">
-                    <i class="<%= statusIcon %>"></i>
-                    <%= t(statusText) %>
-                  </span>
-                  <% if (item.date_acquired) { %>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      <%= t('acquired') %> <%= new Date(item.date_acquired).toLocaleDateString() %>
-                    </div>
-                  <% } %>
-                </td>
-                <td class="px-4 py-3">
-                  <div class="flex gap-1">
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition" title="<%= t('view_details') %>">
-                      <i class="fas fa-eye"></i>
-                    </a>
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="<%= t('edit') %>">
-                      <i class="fas fa-edit"></i>
-                    </a>
-                    <% if (item.assigned_to) { %>
-                      <form style="display: inline;" method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/unassign" class="inline-form">
-                        <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition" title="<%= t('unassign') %>">
-                          <i class="fas fa-user-minus"></i>
-                        </button>
-                      </form>
-                    <% } else { %>
-                      <a href="/items/<%= item.id %>/<%= item.cep_brc %>/assign" class="inline-flex items-center justify-center w-8 h-8 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition" title="<%= t('assign') %>">
-                        <i class="fas fa-user-plus"></i>
-                      </a>
-                    <% } %>
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 transition" title="<%= t('view_history') %>">
-                      <i class="fas fa-history"></i>
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Results Summary & Pagination -->
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 mt-4 rounded-b-lg">
-        <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
-          <i class="fas fa-boxes"></i>
-          <%= t('showing') %> <strong id="itemCount"><%= items.length %></strong> <%= t('of') %> <%= typeof totalItems !== 'undefined' ? totalItems : items.length %> <%= t('assets') %>
-          <span class="ml-4"><i class="fas fa-user text-green-600"></i> <%= items.filter(item => item.assigned_to).length %> <%= t('assigned') %></span>
-          <% if (items.filter(item => !item.assigned_to).length > 0) { %>
-            <span class="ml-2"><i class="fas fa-clock text-yellow-500"></i> <%= items.filter(item => !item.assigned_to).length %> <%= t('unassigned') %></span>
-          <% } %>
-        </div>
-        <div class="flex items-center gap-4">
-          <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
-            <div class="flex items-center gap-2">
-              <% if (currentPage > 1) { %>
-                <a href="?page=<%= currentPage - 1 %><%
-                  const urlParams = new URLSearchParams(req.query);
-                  urlParams.delete('page');
-                  for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>"
-                  class="pagination-link px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">« Previous</a>
-              <% } %>
-              <span class="text-xs text-gray-500 dark:text-gray-400"><%= t('page') %> <%= currentPage %> <%= t('of') %> <%= totalPages %></span>
-              <% if (currentPage < totalPages) { %>
-                <a href="?page=<%= currentPage + 1 %><%
-                  const urlParams = new URLSearchParams(req.query);
-                  urlParams.delete('page');
-                  for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>"
-                  class="pagination-link px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">Next »</a>
-              <% } %>
-            </div>
-          <% } %>
-          <div>
-            <select id="itemsPerPage" class="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-              <option value="10" <%= typeof perPage !== 'undefined' && perPage == 10 ? 'selected' : '' %>>10</option>
-              <option value="25" <%= typeof perPage !== 'undefined' && perPage == 25 ? 'selected' : '' %>>25</option>
-              <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
-              <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
-            </select>
-            <span class="text-xs text-gray-500 dark:text-gray-400 ml-1"><%= t('items_per_page') %></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  <% } else { %>
-    <div class="flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-      <div class="mb-4 text-4xl text-gray-400 dark:text-gray-600">
-        <i class="fas fa-boxes"></i>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2"><%= t('no_assets_found') %></h3>
-      <p class="text-gray-500 dark:text-gray-400 mb-4"><%= t('no_assets_match') %></p>
-      <div class="flex gap-2">
-        <button id="clearFiltersBtn" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2" style="display: none;">
-          <i class="fas fa-times"></i> <%= t('clear_all_filters') %>
-        </button>
-        <a href="/items/new" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
-          <i class="fas fa-plus"></i> <%= t('add_first_asset') %>
-        </a>
-      </div>
-    </div>
-  <% } %>
+  <!-- Table Container that will be updated via AJAX -->
+  <div id="tableContainer">
+    <%- include('_table') %>
+  </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  function ajaxLoad(url) {
-    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-      .then(res => res.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newBlock = doc.getElementById('itemsTableBlock');
-        if (newBlock) {
-          document.getElementById('itemsTableBlock').innerHTML = newBlock.innerHTML;
-          attachHandlers(); // re-attach handlers after DOM update
-        }
-      });
-  }
+  // Search functionality - client-side filtering
+  let searchTimeout;
+  const searchInput = document.getElementById('itemSearch');
 
-  function attachHandlers() {
-    // Per-page dropdown
-    const perPageSelect = document.getElementById('itemsPerPage');
-    if (perPageSelect) {
-      perPageSelect.addEventListener('change', function() {
-        const url = new URL(window.location.href);
-        url.searchParams.set('perPage', this.value);
-        url.searchParams.set('page', 1);
-        ajaxLoad(url);
-      });
-    }
-    // Pagination links
-    document.querySelectorAll('#itemsTableBlock .pagination-link').forEach(link => {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        ajaxLoad(this.href);
-      });
+  if (searchInput) {
+    searchInput.addEventListener('input', function(e) {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.trim().toLowerCase();
+
+      searchTimeout = setTimeout(() => {
+        const tableBody = document.querySelector('#itemsTableContainer tbody');
+        if (tableBody) {
+          const rows = tableBody.querySelectorAll('tr');
+
+          rows.forEach(row => {
+            if (query === '' || row.textContent.toLowerCase().includes(query)) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+        }
+      }, 300);
     });
   }
 
-  attachHandlers();
+  // Filter toggle functionality
+  const filtersToggle = document.getElementById('filtersToggle');
+  const filtersContent = document.getElementById('filtersContent');
+  const toggleIcon = filtersToggle?.querySelector('.toggle-icon');
+
+  if (filtersToggle && filtersContent) {
+    filtersToggle.addEventListener('click', function() {
+      const isVisible = !filtersContent.classList.contains('hidden');
+
+      if (isVisible) {
+        filtersContent.classList.add('hidden');
+        toggleIcon?.classList.remove('fa-chevron-up');
+        toggleIcon?.classList.add('fa-chevron-down');
+      } else {
+        filtersContent.classList.remove('hidden');
+        toggleIcon?.classList.remove('fa-chevron-down');
+        toggleIcon?.classList.add('fa-chevron-up');
+      }
+    });
+  }
+
+  // Apply filters button - redirect with query parameters
+  const applyFiltersBtn = document.getElementById('applyFilters');
+  if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener('click', function() {
+      const params = new URLSearchParams();
+
+      // Get all filter values
+      const typeFilter = document.getElementById('typeFilter');
+      const brandFilter = document.getElementById('brandFilter');
+      const statusFilter = document.getElementById('statusFilter');
+      const departmentFilter = document.getElementById('departmentFilter');
+
+      if (typeFilter && typeFilter.value) params.append('type', typeFilter.value);
+      if (brandFilter && brandFilter.value) params.append('brand', brandFilter.value);
+      if (statusFilter && statusFilter.value) params.append('status', statusFilter.value);
+      if (departmentFilter && departmentFilter.value) params.append('department', departmentFilter.value);
+
+      // Redirect to items page with filters
+      const url = params.toString() ? `/items?${params.toString()}` : '/items';
+      window.location.href = url;
+    });
+  }
+
+  // Reset filters button
+  const resetFiltersBtn = document.getElementById('resetFilters');
+  if (resetFiltersBtn) {
+    resetFiltersBtn.addEventListener('click', function() {
+      window.location.href = '/items';
+    });
+  }
 });
 </script>

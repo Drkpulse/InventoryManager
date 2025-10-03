@@ -94,9 +94,9 @@ Password: admin&#xD;
   <Config Name="Database Backups" Target="/app/backups" Default="/mnt/user/appdata/it-asset-manager/backups" Mode="rw" Description="Automated database backup files" Type="Path" Display="advanced" Required="false" Mask="false">/mnt/user/appdata/it-asset-manager/backups</Config>
 
   <!-- REQUIRED Database Configuration -->
-  <Config Name="🗄️ Database Host (REQUIRED)" Target="DB_HOST" Default="" Mode="" Description="PostgreSQL container IP address - MUST BE SET! Get from PostgreSQL container network settings. Example: 172.17.0.2" Type="Variable" Display="always" Required="true" Mask="false"></Config>
-  <Config Name="🔒 Database Password (REQUIRED)" Target="DB_PASSWORD" Default="" Mode="" Description="PostgreSQL password - MUST MATCH your PostgreSQL container password!" Type="Variable" Display="always" Required="true" Mask="true"></Config>
-  <Config Name="🔐 Session Secret (REQUIRED)" Target="SESSION_SECRET" Default="" Mode="" Description="Secure session encryption key - Generate with: openssl rand -base64 64" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+  <Config Name="Database Host (REQUIRED)" Target="DB_HOST" Default="" Mode="" Description="PostgreSQL container IP address - MUST BE SET! Get from PostgreSQL container network settings. Example: 172.17.0.2" Type="Variable" Display="always" Required="true" Mask="false"></Config>
+  <Config Name="Database Password (REQUIRED)" Target="DB_PASSWORD" Default="" Mode="" Description="PostgreSQL password - MUST MATCH your PostgreSQL container password!" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+  <Config Name="Session Secret (REQUIRED)" Target="SESSION_SECRET" Default="" Mode="" Description="Secure session encryption key - Generate with: openssl rand -base64 64" Type="Variable" Display="always" Required="true" Mask="true"></Config>
 
   <!-- Database Configuration -->
   <Config Name="Database Port" Target="DB_PORT" Default="5432" Mode="" Description="PostgreSQL port (usually 5432)" Type="Variable" Display="always" Required="false" Mask="false">5432</Config>

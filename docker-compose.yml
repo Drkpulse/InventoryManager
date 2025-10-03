@@ -12,7 +12,7 @@ services:
       - DB_NAME=${DB_NAME:-inventory_db}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - SESSION_SECRET=${SESSION_SECRET:-change-me-in-production}
+      - SESSION_SECRET=${SESSION_SECRET}
       - REDIS_URL=redis://redis:6379
       - TZ=UTC
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser

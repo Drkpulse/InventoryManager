@@ -19,7 +19,7 @@ class UserAnalyticsTracker {
     this.clickHeatmap = [];
     this.isTracking = false;
     this.trackingInterval = null;
-    
+
     // Check cookie consent before starting tracking
     this.init();
   }
@@ -50,7 +50,7 @@ class UserAnalyticsTracker {
       .split(';')
       .find(row => row.trim().startsWith('analytics_consent='))
       ?.split('=')[1];
-    
+
     return analyticsConsent === 'true' || localStorage.getItem('allowPerformanceCookies') === 'true';
   }
 
@@ -60,16 +60,16 @@ class UserAnalyticsTracker {
 
   startTracking() {
     if (this.isTracking) return;
-    
+
     this.isTracking = true;
     console.log('📊 Starting enhanced user analytics tracking');
 
     // Track page load performance
     this.trackPagePerformance();
-    
+
     // Track user interactions
     this.attachEventListeners();
-    
+
     // Track page view
     this.trackEvent('page_view', {
       url: window.location.href,
@@ -92,7 +92,7 @@ class UserAnalyticsTracker {
 
       const navigation = performance.getEntriesByType('navigation')[0];
       const paintEntries = performance.getEntriesByType('paint');
-      
+
       let performanceData = {
         load_time_ms: Math.round(navigation?.loadEventEnd - navigation?.loadEventStart) || 0,
         dom_ready_time_ms: Math.round(navigation?.domContentLoadedEventEnd - navigation?.domContentLoadedEventStart) || 0,
@@ -190,7 +190,7 @@ class UserAnalyticsTracker {
   trackClick(event) {
     const element = event.target;
     const rect = element.getBoundingClientRect();
-    
+
     const clickData = {
       element_id: element.id,
       element_class: element.className,
@@ -234,10 +234,10 @@ class UserAnalyticsTracker {
     const scrollPercent = Math.round(
       (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100
     );
-    
+
     if (scrollPercent > this.currentPage.scrollDepth) {
       this.currentPage.scrollDepth = scrollPercent;
-      
+
       this.trackEvent('scroll', {
         scroll_depth: scrollPercent,
         scroll_y: window.scrollY,
@@ -270,7 +270,7 @@ class UserAnalyticsTracker {
 
   trackPageActivity() {
     const timeOnPage = Math.round((Date.now() - this.currentPage.startTime) / 1000);
-    
+
     this.trackEvent('page_activity', {
       time_spent_seconds: timeOnPage,
       scroll_depth: this.currentPage.scrollDepth,
@@ -440,7 +440,7 @@ window.userAnalytics = new UserAnalyticsTracker();
 const originalAcceptAllCookies = window.acceptAllCookies;
 window.acceptAllCookies = function() {
   if (originalAcceptAllCookies) originalAcceptAllCookies();
-  
+
   if (window.userAnalytics) {
     window.userAnalytics.trackCookieConsent('accepted_all', {
       performance: true,
@@ -448,7 +448,7 @@ window.acceptAllCookies = function() {
       analytics: true,
       marketing: true
     });
-    
+
     // Start tracking if not already started
     if (!window.userAnalytics.isTracking) {
       window.userAnalytics.startTracking();
@@ -459,7 +459,7 @@ window.acceptAllCookies = function() {
 const originalRejectCookies = window.rejectCookies;
 window.rejectCookies = function() {
   if (originalRejectCookies) originalRejectCookies();
-  
+
   if (window.userAnalytics) {
     window.userAnalytics.trackCookieConsent('rejected_all', {
       performance: false,
@@ -473,18 +473,18 @@ window.rejectCookies = function() {
 const originalUpdateCookiePreferences = window.updateCookiePreferences;
 window.updateCookiePreferences = function() {
   if (originalUpdateCookiePreferences) originalUpdateCookiePreferences();
-  
+
   if (window.userAnalytics) {
     const performance = document.getElementById('performanceCookies')?.checked || false;
     const preference = document.getElementById('preferenceCookies')?.checked || false;
-    
+
     window.userAnalytics.trackCookieConsent('customized', {
       performance: performance,
       preference: preference,
       analytics: performance,
       marketing: false
     });
-    
+
     // Start tracking if performance cookies are enabled
     if (performance && !window.userAnalytics.isTracking) {
       window.userAnalytics.startTracking();

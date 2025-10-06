@@ -12,7 +12,7 @@ const checkAnalyticsConsent = (req, res, next) => {
   // Check if user has consented to analytics cookies
   const analyticsConsent = req.cookies?.analytics_consent;
   const cookieConsent = req.cookies?.cookie_consent;
-  
+
   // Allow tracking if user has consented or if it's an admin user
   if (analyticsConsent === 'true' || cookieConsent === 'accepted' || req.session?.user?.is_admin) {
     next();

@@ -163,8 +163,8 @@ exports.trackSessionEnd = async (req, res) => {
 
     // Update session summary with final data
     await db.query(`
-      UPDATE user_session_summary 
-      SET 
+      UPDATE user_session_summary
+      SET
         end_time = $1,
         total_duration_seconds = $2,
         pages_visited = GREATEST(pages_visited, $3),
@@ -175,7 +175,7 @@ exports.trackSessionEnd = async (req, res) => {
         last_activity = $1
       WHERE session_id = $7
     `, [
-      new Date(), total_duration_seconds, pages_visited, 
+      new Date(), total_duration_seconds, pages_visited,
       total_clicks, final_scroll_depth, exit_page, session_id
     ]);
 
@@ -199,7 +199,7 @@ exports.trackSessionEnd = async (req, res) => {
 exports.getAnalytics = async (req, res) => {
   try {
     const { period = 'today', detailed = false } = req.query;
-    
+
     let dateFilter = "DATE(timestamp) = CURRENT_DATE";
     if (period === 'week') dateFilter = "timestamp >= CURRENT_DATE - INTERVAL '7 days'";
     if (period === 'month') dateFilter = "timestamp >= CURRENT_DATE - INTERVAL '30 days'";
@@ -221,57 +221,57 @@ exports.getAnalytics = async (req, res) => {
       // Active sessions (last 30 minutes)
       db.query(`
         SELECT COUNT(DISTINCT session_id) as count
-        FROM user_session_summary 
+        FROM user_session_summary
         WHERE last_activity > NOW() - INTERVAL '30 minutes'
       `),
-      
+
       // Page views
       db.query(`
         SELECT COUNT(*) as count
-        FROM user_analytics_events 
+        FROM user_analytics_events
         WHERE event_type = 'page_view' AND ${dateFilter}
       `),
-      
+
       // Unique visitors
       db.query(`
         SELECT COUNT(DISTINCT COALESCE(user_id::text, session_id)) as count
-        FROM user_analytics_events 
+        FROM user_analytics_events
         WHERE ${dateFilter}
       `),
-      
+
       // Average session duration
       db.query(`
         SELECT AVG(total_duration_seconds) as avg_duration
-        FROM user_session_summary 
+        FROM user_session_summary
         WHERE ${dateFilter.replace('timestamp', 'start_time')} AND end_time IS NOT NULL
       `),
-      
+
       // Bounce rate
       db.query(`
-        SELECT 
+        SELECT
           COUNT(CASE WHEN bounce_rate THEN 1 END)::FLOAT / NULLIF(COUNT(*), 0) * 100 as bounce_rate
-        FROM user_session_summary 
+        FROM user_session_summary
         WHERE ${dateFilter.replace('timestamp', 'start_time')}
       `),
-      
+
       // Top pages
       db.query(`
-        SELECT 
+        SELECT
           page_url,
           page_title,
           COUNT(*) as views,
           COUNT(DISTINCT session_id) as unique_visitors,
           AVG(time_spent_seconds) as avg_time_spent
-        FROM user_analytics_events 
+        FROM user_analytics_events
         WHERE event_type = 'page_view' AND ${dateFilter}
         GROUP BY page_url, page_title
         ORDER BY views DESC
         LIMIT 10
       `),
-      
+
       // Device statistics
       db.query(`
-        SELECT 
+        SELECT
           device_type,
           COUNT(DISTINCT session_id) as sessions,
           COUNT(*) as page_views
@@ -281,62 +281,62 @@ exports.getAnalytics = async (req, res) => {
         GROUP BY device_type
         ORDER BY sessions DESC
       `),
-      
+
       // Browser statistics
       db.query(`
-        SELECT 
+        SELECT
           browser,
           COUNT(DISTINCT session_id) as sessions
-        FROM user_session_summary 
+        FROM user_session_summary
         WHERE ${dateFilter.replace('timestamp', 'start_time')}
         GROUP BY browser
         ORDER BY sessions DESC
         LIMIT 5
       `),
-      
+
       // Performance statistics
       db.query(`
-        SELECT 
+        SELECT
           AVG(load_time_ms) as avg_load_time,
           AVG(first_contentful_paint_ms) as avg_fcp,
           AVG(largest_contentful_paint_ms) as avg_lcp,
           AVG(memory_used_mb) as avg_memory_usage,
           COUNT(*) as total_measurements
-        FROM page_performance_metrics 
+        FROM page_performance_metrics
         WHERE ${dateFilter}
       `),
-      
+
       // Click heatmap data (if detailed)
       detailed ? db.query(`
-        SELECT 
+        SELECT
           click_x, click_y, page_url,
           COUNT(*) as click_count
-        FROM user_analytics_events 
-        WHERE event_type = 'click' AND ${dateFilter} 
+        FROM user_analytics_events
+        WHERE event_type = 'click' AND ${dateFilter}
           AND click_x IS NOT NULL AND click_y IS NOT NULL
         GROUP BY click_x, click_y, page_url
         HAVING COUNT(*) > 1
         ORDER BY click_count DESC
         LIMIT 1000
       `) : Promise.resolve({ rows: [] }),
-      
+
       // Conversion rate
       db.query(`
-        SELECT 
-          COUNT(CASE WHEN event_type = 'conversion' THEN 1 END)::FLOAT / 
+        SELECT
+          COUNT(CASE WHEN event_type = 'conversion' THEN 1 END)::FLOAT /
           NULLIF(COUNT(DISTINCT session_id), 0) * 100 as conversion_rate
-        FROM user_analytics_events 
+        FROM user_analytics_events
         WHERE ${dateFilter}
       `)
     ]);
 
     // Cookie consent statistics
     const cookieConsentResult = await db.query(`
-      SELECT 
+      SELECT
         consent_type,
         COUNT(*) as count,
         AVG(time_to_consent_seconds) as avg_decision_time
-      FROM cookie_consent_analytics 
+      FROM cookie_consent_analytics
       WHERE ${dateFilter}
       GROUP BY consent_type
       ORDER BY count DESC
@@ -344,13 +344,13 @@ exports.getAnalytics = async (req, res) => {
 
     // Most clicked elements
     const clickAnalyticsResult = await db.query(`
-      SELECT 
+      SELECT
         element_id,
         element_class,
         element_text,
         COUNT(*) as click_count,
         COUNT(DISTINCT session_id) as unique_clickers
-      FROM user_analytics_events 
+      FROM user_analytics_events
       WHERE event_type = 'click' AND ${dateFilter}
         AND (element_id IS NOT NULL OR element_class IS NOT NULL)
       GROUP BY element_id, element_class, element_text
@@ -412,20 +412,20 @@ async function updateSessionSummary(sessionId, userId, updates) {
       // Create new session summary
       await db.query(`
         INSERT INTO user_session_summary (
-          session_id, user_id, start_time, pages_visited, total_clicks, 
+          session_id, user_id, start_time, pages_visited, total_clicks,
           total_scroll_depth, last_activity, device_type, is_mobile
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'desktop', false)
         ON CONFLICT (session_id) DO NOTHING
       `, [
-        sessionId, userId, new Date(), 
+        sessionId, userId, new Date(),
         updates.pages_visited || 0, updates.total_clicks || 0,
         updates.scroll_depth || 0, updates.last_activity || new Date()
       ]);
     } else {
       // Update existing session
       await db.query(`
-        UPDATE user_session_summary 
-        SET 
+        UPDATE user_session_summary
+        SET
           pages_visited = pages_visited + $1,
           total_clicks = total_clicks + $2,
           total_scroll_depth = GREATEST(total_scroll_depth, $3),

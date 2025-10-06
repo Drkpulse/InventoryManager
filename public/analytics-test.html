@@ -54,7 +54,7 @@
       <button id="testClick" class="button">Test Click Tracking</button>
       <button id="testForm" class="button">Test Form Event</button>
       <button id="testCustom" class="button">Test Custom Event</button>
-      
+
       <div class="status" id="status">
         Click the buttons above to test analytics tracking...
       </div>
@@ -65,7 +65,7 @@
       <button id="acceptCookies" class="button">Accept All Cookies</button>
       <button id="rejectCookies" class="button">Reject Cookies</button>
       <button id="showCookieManager" class="button">Show Cookie Manager</button>
-      
+
       <div class="status" id="cookieStatus">
         Current consent: <span id="consentValue">Unknown</span>
       </div>
@@ -74,7 +74,7 @@
     <div class="analytics-test">
       <h3>⚡ Performance Metrics</h3>
       <button id="checkPerformance" class="button">Check Performance Metrics</button>
-      
+
       <div class="status" id="performanceStatus">
         Click to check current performance metrics...
       </div>
@@ -83,7 +83,7 @@
     <div class="analytics-test">
       <h3>📈 Session Analytics</h3>
       <button id="getSessionInfo" class="button">Get Session Summary</button>
-      
+
       <div class="status" id="sessionStatus">
         Click to see current session analytics...
       </div>
@@ -159,7 +159,7 @@
           const timing = performance.timing;
           const loadTime = timing.loadEventEnd - timing.navigationStart;
           const domReady = timing.domContentLoadedEventEnd - timing.navigationStart;
-          
+
           document.getElementById('performanceStatus').innerHTML = `
             <strong>Performance Metrics:</strong><br>
             Page Load Time: ${loadTime}ms<br>
@@ -202,7 +202,7 @@
     function updateConsentStatus() {
       const consent = localStorage.getItem('cookieConsent');
       const analyticsConsent = getCookie('analytics_consent');
-      document.getElementById('consentValue').textContent = 
+      document.getElementById('consentValue').textContent =
         consent ? `Granted (Analytics: ${analyticsConsent || 'unknown'})` : 'Not granted';
     }
 
@@ -222,7 +222,7 @@
         rejectCookies: !!window.rejectCookies,
         showCookieManager: !!window.showCookieManager
       });
-      
+
       if (window.userAnalytics) {
         console.log('- Analytics tracker status:', window.userAnalytics.isTracking);
         console.log('- Current session:', window.userAnalytics.getSessionSummary());

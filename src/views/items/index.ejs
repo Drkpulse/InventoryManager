@@ -22,6 +22,25 @@
     </div>
   </div>
 
+  <!-- Search Bar -->
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+        <i class="fas fa-search text-blue-600 dark:text-blue-300"></i>
+      </div>
+      <div>
+        <label class="block font-semibold text-gray-700 dark:text-gray-200">Search Assets</label>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Find assets by ID, name, or assigned employee</p>
+      </div>
+    </div>
+    <div class="relative">
+      <input type="text" id="itemSearch" placeholder="Search by Asset ID, Name, or Assigned Employee..." autocomplete="off"
+        class="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        value="<%= currentFilters && currentFilters.q || '' %>">
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-blue-500 dark:text-blue-400"></i>
+    </div>
+  </div>
+
   <!-- Advanced Filters Panel -->
   <div class="mb-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
     <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" id="filtersToggle">
@@ -128,133 +147,266 @@
     </div>
   </div>
 
-  <script>
-    // Simple filter toggle functionality
-    document.addEventListener('DOMContentLoaded', function() {
-      const filtersToggle = document.getElementById('filtersToggle');
-      const filtersContent = document.getElementById('filtersContent');
-      const toggleIcon = filtersToggle.querySelector('.toggle-icon');
-
-      filtersToggle.addEventListener('click', function() {
-        filtersContent.classList.toggle('hidden');
-        toggleIcon.classList.toggle('fa-chevron-down');
-        toggleIcon.classList.toggle('fa-chevron-up');
-      });
-
-      // Show filters if any are applied
-      const urlParams = new URLSearchParams(window.location.search);
-      const hasFilters = urlParams.get('type') || urlParams.get('brand') || urlParams.get('status') ||
-                        urlParams.get('department') || urlParams.get('q') || urlParams.get('minPrice') ||
-                        urlParams.get('maxPrice') || urlParams.get('startDate') || urlParams.get('endDate');
-      if (hasFilters) {
-        filtersContent.classList.remove('hidden');
-        toggleIcon.classList.remove('fa-chevron-down');
-        toggleIcon.classList.add('fa-chevron-up');
-      }
-    });
-  </script>
-
-  <!-- Search Bar -->
-  <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
-    <div class="flex items-center gap-3 mb-2">
-      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-        <i class="fas fa-search text-blue-600 dark:text-blue-300"></i>
-      </div>
-      <div>
-        <label class="block font-semibold text-gray-700 dark:text-gray-200">Search Assets</label>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Find assets by ID, name, or assigned employee</p>
-      </div>
-    </div>
-    <div class="relative">
-      <input type="text" id="itemSearch" placeholder="Search by Asset ID, Name, or Assigned Employee..." autocomplete="off"
-        class="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-blue-500 dark:text-blue-400"></i>
-    </div>
-  </div>
-
-  <!-- Table Container that will be updated via AJAX -->
-  <div id="tableContainer">
+  <!-- Items Table -->
+  <div>
     <%- include('_table') %>
   </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Search functionality - client-side filtering
-  let searchTimeout;
+  // Simple search - redirects to search URL (same as employees)
   const searchInput = document.getElementById('itemSearch');
 
   if (searchInput) {
+    let searchTimeout;
+
     searchInput.addEventListener('input', function(e) {
       clearTimeout(searchTimeout);
-      const query = e.target.value.trim().toLowerCase();
+      const searchTerm = e.target.value.trim();
 
       searchTimeout = setTimeout(() => {
-        const tableBody = document.querySelector('#itemsTableContainer tbody');
-        if (tableBody) {
-          const rows = tableBody.querySelectorAll('tr');
+        const currentUrl = new URL(window.location.href);
 
-          rows.forEach(row => {
-            if (query === '' || row.textContent.toLowerCase().includes(query)) {
-              row.style.display = '';
-            } else {
-              row.style.display = 'none';
-            }
-          });
+        if (searchTerm === '') {
+          // Clear search - remove search parameter
+          currentUrl.searchParams.delete('q');
+          currentUrl.searchParams.set('page', '1');
+        } else {
+          // Set search parameter
+          currentUrl.searchParams.set('q', searchTerm);
+          currentUrl.searchParams.set('page', '1');
         }
-      }, 300);
+
+        window.location.href = currentUrl.toString();
+      }, 500); // 500ms debounce for page navigation
     });
   }
 
   // Filter toggle functionality
-  const filtersToggle = document.getElementById('filtersToggle');
-  const filtersContent = document.getElementById('filtersContent');
-  const toggleIcon = filtersToggle?.querySelector('.toggle-icon');
+  const filterToggle = document.getElementById('filtersToggle');
+  const filterContent = document.getElementById('filtersContent');
 
-  if (filtersToggle && filtersContent) {
-    filtersToggle.addEventListener('click', function() {
-      const isVisible = !filtersContent.classList.contains('hidden');
+  if (filterToggle && filterContent) {
+    // Ensure filters are closed by default
+    filterContent.classList.add('hidden');
+    const toggleIcon = filterToggle.querySelector('i.fa-chevron-up, i.fa-chevron-down');
+    if (toggleIcon) {
+      toggleIcon.classList.remove('fa-chevron-up');
+      toggleIcon.classList.add('fa-chevron-down');
+    }
 
-      if (isVisible) {
-        filtersContent.classList.add('hidden');
-        toggleIcon?.classList.remove('fa-chevron-up');
-        toggleIcon?.classList.add('fa-chevron-down');
-      } else {
-        filtersContent.classList.remove('hidden');
-        toggleIcon?.classList.remove('fa-chevron-down');
-        toggleIcon?.classList.add('fa-chevron-up');
+    // Only open filters if there are active filters (exclude search and pagination parameters)
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasActiveFilters = urlParams.get('type') || urlParams.get('brand') || urlParams.get('status') ||
+                            urlParams.get('department') || urlParams.get('minPrice') || urlParams.get('maxPrice') ||
+                            urlParams.get('startDate') || urlParams.get('endDate');
+    if (hasActiveFilters) {
+      filterContent.classList.remove('hidden');
+      if (toggleIcon) {
+        toggleIcon.classList.remove('fa-chevron-down');
+        toggleIcon.classList.add('fa-chevron-up');
+      }
+    }
+
+    filterToggle.addEventListener('click', function() {
+      filterContent.classList.toggle('hidden');
+      const icon = filterToggle.querySelector('i.fa-chevron-down, i.fa-chevron-up');
+      if (icon) {
+        icon.classList.toggle('fa-chevron-down');
+        icon.classList.toggle('fa-chevron-up');
       }
     });
   }
 
-  // Apply filters button - redirect with query parameters
+  // Apply filters button
   const applyFiltersBtn = document.getElementById('applyFilters');
+
   if (applyFiltersBtn) {
     applyFiltersBtn.addEventListener('click', function() {
-      const params = new URLSearchParams();
+      const currentUrl = new URL(window.location.href);
 
-      // Get all filter values
+      // Get filter values
       const typeFilter = document.getElementById('typeFilter');
       const brandFilter = document.getElementById('brandFilter');
       const statusFilter = document.getElementById('statusFilter');
       const departmentFilter = document.getElementById('departmentFilter');
+      const minPrice = document.getElementById('minPrice');
+      const maxPrice = document.getElementById('maxPrice');
+      const startDate = document.getElementById('startDate');
+      const endDate = document.getElementById('endDate');
 
-      if (typeFilter && typeFilter.value) params.append('type', typeFilter.value);
-      if (brandFilter && brandFilter.value) params.append('brand', brandFilter.value);
-      if (statusFilter && statusFilter.value) params.append('status', statusFilter.value);
-      if (departmentFilter && departmentFilter.value) params.append('department', departmentFilter.value);
+      // Set URL parameters for filters
+      if (typeFilter && typeFilter.value) {
+        currentUrl.searchParams.set('type', typeFilter.value);
+      } else {
+        currentUrl.searchParams.delete('type');
+      }
 
-      // Redirect to items page with filters
-      const url = params.toString() ? `/items?${params.toString()}` : '/items';
-      window.location.href = url;
+      if (brandFilter && brandFilter.value) {
+        currentUrl.searchParams.set('brand', brandFilter.value);
+      } else {
+        currentUrl.searchParams.delete('brand');
+      }
+
+      if (statusFilter && statusFilter.value) {
+        currentUrl.searchParams.set('status', statusFilter.value);
+      } else {
+        currentUrl.searchParams.delete('status');
+      }
+
+      if (departmentFilter && departmentFilter.value) {
+        currentUrl.searchParams.set('department', departmentFilter.value);
+      } else {
+        currentUrl.searchParams.delete('department');
+      }
+
+      if (minPrice && minPrice.value) {
+        currentUrl.searchParams.set('minPrice', minPrice.value);
+      } else {
+        currentUrl.searchParams.delete('minPrice');
+      }
+
+      if (maxPrice && maxPrice.value) {
+        currentUrl.searchParams.set('maxPrice', maxPrice.value);
+      } else {
+        currentUrl.searchParams.delete('maxPrice');
+      }
+
+      if (startDate && startDate.value) {
+        currentUrl.searchParams.set('startDate', startDate.value);
+      } else {
+        currentUrl.searchParams.delete('startDate');
+      }
+
+      if (endDate && endDate.value) {
+        currentUrl.searchParams.set('endDate', endDate.value);
+      } else {
+        currentUrl.searchParams.delete('endDate');
+      }
+
+      // Reset to page 1 when applying filters
+      currentUrl.searchParams.set('page', '1');
+
+      window.location.href = currentUrl.toString();
     });
   }
 
   // Reset filters button
   const resetFiltersBtn = document.getElementById('resetFilters');
+
   if (resetFiltersBtn) {
     resetFiltersBtn.addEventListener('click', function() {
-      window.location.href = '/items';
+      const currentUrl = new URL(window.location.href);
+
+      // Remove all filter parameters
+      currentUrl.searchParams.delete('type');
+      currentUrl.searchParams.delete('brand');
+      currentUrl.searchParams.delete('status');
+      currentUrl.searchParams.delete('department');
+      currentUrl.searchParams.delete('minPrice');
+      currentUrl.searchParams.delete('maxPrice');
+      currentUrl.searchParams.delete('startDate');
+      currentUrl.searchParams.delete('endDate');
+      currentUrl.searchParams.delete('q');
+      currentUrl.searchParams.set('page', '1');
+
+      window.location.href = currentUrl.toString();
+    });
+  }
+
+  // Update filter badge and preview on page load
+  function updateFilterBadgeAndPreview() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterBadge = document.getElementById('filterBadge');
+    const appliedFiltersPreview = document.getElementById('appliedFiltersPreview');
+
+    // Count active filters (excluding page and search)
+    let activeFilters = [];
+
+    if (urlParams.get('type')) {
+      const typeSelect = document.getElementById('typeFilter');
+      const selectedOption = typeSelect ? typeSelect.querySelector(`option[value="${urlParams.get('type')}"]`) : null;
+      if (selectedOption) {
+        activeFilters.push(`Type: ${selectedOption.textContent}`);
+      }
+    }
+
+    if (urlParams.get('brand')) {
+      const brandSelect = document.getElementById('brandFilter');
+      const selectedOption = brandSelect ? brandSelect.querySelector(`option[value="${urlParams.get('brand')}"]`) : null;
+      if (selectedOption) {
+        activeFilters.push(`Brand: ${selectedOption.textContent}`);
+      }
+    }
+
+    if (urlParams.get('status')) {
+      const statusSelect = document.getElementById('statusFilter');
+      const selectedOption = statusSelect ? statusSelect.querySelector(`option[value="${urlParams.get('status')}"]`) : null;
+      if (selectedOption) {
+        activeFilters.push(`Status: ${selectedOption.textContent}`);
+      }
+    }
+
+    if (urlParams.get('department')) {
+      const deptSelect = document.getElementById('departmentFilter');
+      const selectedOption = deptSelect ? deptSelect.querySelector(`option[value="${urlParams.get('department')}"]`) : null;
+      if (selectedOption) {
+        activeFilters.push(`Department: ${selectedOption.textContent}`);
+      }
+    }
+
+    if (urlParams.get('minPrice')) {
+      activeFilters.push(`Min Price: €${urlParams.get('minPrice')}`);
+    }
+
+    if (urlParams.get('maxPrice')) {
+      activeFilters.push(`Max Price: €${urlParams.get('maxPrice')}`);
+    }
+
+    if (urlParams.get('startDate')) {
+      activeFilters.push(`From: ${urlParams.get('startDate')}`);
+    }
+
+    if (urlParams.get('endDate')) {
+      activeFilters.push(`To: ${urlParams.get('endDate')}`);
+    }
+
+    // Update badge
+    if (filterBadge) {
+      if (activeFilters.length > 0) {
+        filterBadge.textContent = activeFilters.length;
+        filterBadge.style.display = '';
+      } else {
+        filterBadge.style.display = 'none';
+      }
+    }
+
+    // Update preview
+    if (appliedFiltersPreview) {
+      if (activeFilters.length > 0) {
+        appliedFiltersPreview.innerHTML = activeFilters.map(filter =>
+          `<span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">
+            <i class="fas fa-filter"></i> ${filter}
+          </span>`
+        ).join(' ');
+      } else {
+        appliedFiltersPreview.textContent = 'No filters applied';
+      }
+    }
+  }
+
+  // Initialize filter badge and preview on page load
+  updateFilterBadgeAndPreview();
+
+  // Simple per-page functionality (same as employees)
+  const perPageSelect = document.getElementById('itemsPerPage');
+  if (perPageSelect) {
+    perPageSelect.addEventListener('change', function(e) {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('perPage', e.target.value);
+      currentUrl.searchParams.set('page', '1'); // Reset to first page
+      window.location.href = currentUrl.toString();
     });
   }
 });

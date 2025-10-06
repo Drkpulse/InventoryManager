@@ -409,9 +409,11 @@ const startApplication = async () => {
 	  etag: true,
 	  lastModified: true,
 	  setHeaders: (res, filePath) => {
-		// Set proper MIME types for CSS files
+		// Set proper MIME types for CSS and JS files
 		if (filePath.endsWith('.css')) {
 		  res.setHeader('Content-Type', 'text/css; charset=utf-8');
+		} else if (filePath.endsWith('.js')) {
+		  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
 		}
 		// Add cache control for static assets
 		if (filePath.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {

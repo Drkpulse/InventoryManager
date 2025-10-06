@@ -143,6 +143,21 @@ async function runMigration006() {
   return success;
 }
 
+async function runMigration010() {
+  const migrationName = '010_add_user_analytics';
+  if (await isMigrationExecuted(migrationName)) {
+    console.log(`⏭️  Skipping ${migrationName} (already executed)`);
+    return true;
+  }
+
+  const sqlPath = path.join(__dirname, 'migrations', '010_add_user_analytics.sql');
+  const success = await executeSQLFile(sqlPath, migrationName);
+  if (success) {
+    await markMigrationExecuted(migrationName, 'Added comprehensive user analytics and performance tracking tables');
+  }
+  return success;
+}
+
 // Verify critical tables and columns exist
 async function verifyDatabaseStructure() {
   console.log('\n🔍 Verifying database structure...');
@@ -177,6 +192,26 @@ async function verifyDatabaseStructure() {
       name: 'bypass license exists',
       query: `SELECT license_key FROM license_config
               WHERE license_key = 'iambeirao' LIMIT 1`
+    },
+    {
+      name: 'user_analytics_events table',
+      query: `SELECT table_name FROM information_schema.tables
+              WHERE table_name = 'user_analytics_events'`
+    },
+    {
+      name: 'page_performance_metrics table',
+      query: `SELECT table_name FROM information_schema.tables
+              WHERE table_name = 'page_performance_metrics'`
+    },
+    {
+      name: 'user_session_summary table',
+      query: `SELECT table_name FROM information_schema.tables
+              WHERE table_name = 'user_session_summary'`
+    },
+    {
+      name: 'cookie_consent_analytics table',
+      query: `SELECT table_name FROM information_schema.tables
+              WHERE table_name = 'cookie_consent_analytics'`
     }
   ];
 
@@ -218,7 +253,8 @@ async function runAllMigrations() {
       { name: '001', runner: runMigration001 },
       { name: '002', runner: runMigration002 },
       { name: '003', runner: runMigration003 },
-      { name: '006', runner: runMigration006 }
+      { name: '006', runner: runMigration006 },
+      { name: '010', runner: runMigration010 }
     ];
 
     let successCount = 0;

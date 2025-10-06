@@ -92,51 +92,186 @@
       </div>
     </div>
 
-    <!-- User Analytics -->
+    <!-- Comprehensive User Analytics -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
-      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-        <i class="fas fa-users text-green-500"></i>
-        User Analytics & Cookie Usage
-      </h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="userAnalytics">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <i class="fas fa-chart-bar text-blue-500"></i>
+          Real-time User Analytics
+        </h3>
+        <div class="flex gap-2">
+          <select id="analyticsPeriod" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            <option value="today">Today</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+          </select>
+          <button onclick="refreshAnalytics()" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">
+            <i class="fas fa-sync-alt text-xs"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Real-time Metrics -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6" id="realtimeMetrics">
         <!-- Active Sessions -->
         <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
           <div class="flex items-center gap-3 mb-2">
-            <i class="fas fa-user-check text-green-600"></i>
-            <div class="font-medium text-green-900 dark:text-green-300">Active Sessions</div>
+            <i class="fas fa-users text-green-600"></i>
+            <div class="font-medium text-green-900 dark:text-green-300 text-sm">Active Users</div>
           </div>
-          <div class="text-2xl font-bold text-green-700 dark:text-green-400" id="activeSessions">Loading...</div>
-          <div class="text-sm text-green-600 dark:text-green-500">Currently online</div>
+          <div class="text-2xl font-bold text-green-700 dark:text-green-400" id="activeUsers">0</div>
+          <div class="text-xs text-green-600 dark:text-green-500">Last 30 minutes</div>
+        </div>
+
+        <!-- Page Views -->
+        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-eye text-blue-600"></i>
+            <div class="font-medium text-blue-900 dark:text-blue-300 text-sm">Page Views</div>
+          </div>
+          <div class="text-2xl font-bold text-blue-700 dark:text-blue-400" id="pageViews">0</div>
+          <div class="text-xs text-blue-600 dark:text-blue-500">Today</div>
+        </div>
+
+        <!-- Unique Visitors -->
+        <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-user-friends text-purple-600"></i>
+            <div class="font-medium text-purple-900 dark:text-purple-300 text-sm">Unique Visitors</div>
+          </div>
+          <div class="text-2xl font-bold text-purple-700 dark:text-purple-400" id="uniqueVisitors">0</div>
+          <div class="text-xs text-purple-600 dark:text-purple-500">Today</div>
+        </div>
+
+        <!-- Avg Load Time -->
+        <div class="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-tachometer-alt text-orange-600"></i>
+            <div class="font-medium text-orange-900 dark:text-orange-300 text-sm">Avg Load Time</div>
+          </div>
+          <div class="text-2xl font-bold text-orange-700 dark:text-orange-400" id="avgLoadTime">0ms</div>
+          <div class="text-xs text-orange-600 dark:text-orange-500">Page loads</div>
+        </div>
+
+        <!-- Bounce Rate -->
+        <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-door-open text-red-600"></i>
+            <div class="font-medium text-red-900 dark:text-red-300 text-sm">Bounce Rate</div>
+          </div>
+          <div class="text-2xl font-bold text-red-700 dark:text-red-400" id="bounceRate">0%</div>
+          <div class="text-xs text-red-600 dark:text-red-500">Single page visits</div>
+        </div>
+      </div>
+
+      <!-- Engagement & Performance Metrics -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="engagementMetrics">
+        <!-- Session Duration -->
+        <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-clock text-indigo-600"></i>
+            <div class="font-medium text-indigo-900 dark:text-indigo-300 text-sm">Avg Session</div>
+          </div>
+          <div class="text-xl font-bold text-indigo-700 dark:text-indigo-400" id="avgSessionDuration">0m</div>
+          <div class="text-xs text-indigo-600 dark:text-indigo-500">Duration</div>
         </div>
 
         <!-- Cookie Consent Rate -->
-        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
           <div class="flex items-center gap-3 mb-2">
-            <i class="fas fa-cookie-bite text-blue-600"></i>
-            <div class="font-medium text-blue-900 dark:text-blue-300">Cookie Consent</div>
+            <i class="fas fa-cookie-bite text-yellow-600"></i>
+            <div class="font-medium text-yellow-900 dark:text-yellow-300 text-sm">Cookie Consent</div>
           </div>
-          <div class="text-2xl font-bold text-blue-700 dark:text-blue-400" id="cookieConsent">Loading...</div>
-          <div class="text-sm text-blue-600 dark:text-blue-500">Acceptance rate</div>
+          <div class="text-xl font-bold text-yellow-700 dark:text-yellow-400" id="cookieConsentRate">0%</div>
+          <div class="text-xs text-yellow-600 dark:text-yellow-500">Acceptance rate</div>
         </div>
 
-        <!-- Average Session Duration -->
-        <div class="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+        <!-- Conversion Rate -->
+        <div class="p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
           <div class="flex items-center gap-3 mb-2">
-            <i class="fas fa-clock text-orange-600"></i>
-            <div class="font-medium text-orange-900 dark:text-orange-300">Avg. Session</div>
+            <i class="fas fa-chart-line text-teal-600"></i>
+            <div class="font-medium text-teal-900 dark:text-teal-300 text-sm">Conversion Rate</div>
           </div>
-          <div class="text-2xl font-bold text-orange-700 dark:text-orange-400" id="avgSession">Loading...</div>
-          <div class="text-sm text-orange-600 dark:text-orange-500">Duration</div>
+          <div class="text-xl font-bold text-teal-700 dark:text-teal-400" id="conversionRate">0%</div>
+          <div class="text-xs text-teal-600 dark:text-teal-500">Form submissions</div>
         </div>
 
-        <!-- Performance Score -->
-        <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+        <!-- Memory Usage -->
+        <div class="p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg">
           <div class="flex items-center gap-3 mb-2">
-            <i class="fas fa-gauge-high text-purple-600"></i>
-            <div class="font-medium text-purple-900 dark:text-purple-300">Performance</div>
+            <i class="fas fa-memory text-pink-600"></i>
+            <div class="font-medium text-pink-900 dark:text-pink-300 text-sm">Avg Memory</div>
           </div>
-          <div class="text-2xl font-bold text-purple-700 dark:text-purple-400" id="perfScore">Loading...</div>
-          <div class="text-sm text-purple-600 dark:text-purple-500">Overall score</div>
+          <div class="text-xl font-bold text-pink-700 dark:text-pink-400" id="avgMemoryUsage">0 MB</div>
+          <div class="text-xs text-pink-600 dark:text-pink-500">Client-side</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Device & Browser Analytics -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <i class="fas fa-mobile-alt text-blue-500"></i>
+          Device Breakdown
+        </h4>
+        <div id="deviceStats" class="space-y-3">
+          <div class="text-gray-500 dark:text-gray-400 text-center py-4">Loading device statistics...</div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <i class="fas fa-globe text-green-500"></i>
+          Browser Statistics
+        </h4>
+        <div id="browserStats" class="space-y-3">
+          <div class="text-gray-500 dark:text-gray-400 text-center py-4">Loading browser statistics...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Content & Click Analytics -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <i class="fas fa-file-alt text-purple-500"></i>
+          Top Pages
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="w-full" id="topPagesTable">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <th class="text-left py-2 text-xs font-medium text-gray-500 dark:text-gray-400">Page</th>
+                <th class="text-right py-2 text-xs font-medium text-gray-500 dark:text-gray-400">Views</th>
+                <th class="text-right py-2 text-xs font-medium text-gray-500 dark:text-gray-400">Avg Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="3" class="text-center py-4 text-gray-500 dark:text-gray-400">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <i class="fas fa-mouse-pointer text-orange-500"></i>
+          Most Clicked Elements
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="w-full" id="clickAnalyticsTable">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <th class="text-left py-2 text-xs font-medium text-gray-500 dark:text-gray-400">Element</th>
+                <th class="text-right py-2 text-xs font-medium text-gray-500 dark:text-gray-400">Clicks</th>
+                <th class="text-right py-2 text-xs font-medium text-gray-500 dark:text-gray-400">Users</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="3" class="text-center py-4 text-gray-500 dark:text-gray-400">Loading...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -303,36 +438,267 @@
 </div>
 
 <script>
-// Performance monitoring
+// Enhanced Performance monitoring and analytics
 document.addEventListener('DOMContentLoaded', function() {
-  loadUserAnalytics();
+  loadComprehensiveAnalytics();
 
-  // Auto-refresh user analytics every 30 seconds
-  setInterval(loadUserAnalytics, 30000);
+  // Auto-refresh analytics every 30 seconds
+  setInterval(loadComprehensiveAnalytics, 30000);
+
+  // Period selector change handler
+  document.getElementById('analyticsPeriod').addEventListener('change', function() {
+    loadComprehensiveAnalytics();
+  });
 });
 
-async function loadUserAnalytics() {
+async function loadComprehensiveAnalytics() {
   try {
-    const response = await fetch('/admin/analytics/users');
+    const period = document.getElementById('analyticsPeriod').value;
+    const response = await fetch(`/api/analytics/data?period=${period}&detailed=false`);
     const data = await response.json();
 
     if (data.success) {
-      const analytics = data.analytics;
-      document.getElementById('activeSessions').textContent = analytics.activeSessions;
-      document.getElementById('cookieConsent').textContent = analytics.cookieConsentRate;
-      document.getElementById('avgSession').textContent = analytics.avgSessionDuration;
-      document.getElementById('perfScore').textContent = analytics.performanceScore;
+      updateRealtimeMetrics(data.analytics.realtime);
+      updateEngagementMetrics(data.analytics.engagement);
+      updatePerformanceMetrics(data.analytics.performance);
+      updateDeviceStats(data.analytics.audience.devices);
+      updateBrowserStats(data.analytics.audience.browsers);
+      updateTopPages(data.analytics.content.topPages);
+      updateClickAnalytics(data.analytics.content.clickAnalytics);
     } else {
-      throw new Error(data.error || 'Failed to load analytics');
+      throw new Error(data.error || 'Failed to load comprehensive analytics');
     }
   } catch (error) {
-    console.error('Error loading user analytics:', error);
-    // Fallback to local cookie consent status
-    const cookieConsentRate = localStorage.getItem('cookieConsent') ? '100%' : '0%';
-    document.getElementById('activeSessions').textContent = '0';
-    document.getElementById('cookieConsent').textContent = cookieConsentRate;
-    document.getElementById('avgSession').textContent = '0m 0s';
-    document.getElementById('perfScore').textContent = '0/100';
+    console.error('Error loading comprehensive analytics:', error);
+    showFallbackData();
+  }
+}
+
+function updateRealtimeMetrics(realtime) {
+  document.getElementById('activeUsers').textContent = realtime.activeSessions || 0;
+  document.getElementById('pageViews').textContent = (realtime.pageViews || 0).toLocaleString();
+  document.getElementById('uniqueVisitors').textContent = (realtime.uniqueVisitors || 0).toLocaleString();
+}
+
+function updateEngagementMetrics(engagement) {
+  const duration = engagement.avgSessionDuration || 0;
+  const minutes = Math.floor(duration / 60);
+  const seconds = duration % 60;
+  document.getElementById('avgSessionDuration').textContent = `${minutes}m ${seconds}s`;
+  
+  document.getElementById('bounceRate').textContent = `${engagement.bounceRate || 0}%`;
+  document.getElementById('conversionRate').textContent = `${engagement.conversionRate || 0}%`;
+}
+
+function updatePerformanceMetrics(performance) {
+  document.getElementById('avgLoadTime').textContent = `${performance.avgLoadTime || 0}ms`;
+  document.getElementById('avgMemoryUsage').textContent = `${performance.avgMemoryUsage || 0} MB`;
+  
+  // Calculate overall cookie consent rate from fallback or API data
+  fetchCookieConsentRate();
+}
+
+async function fetchCookieConsentRate() {
+  try {
+    // Legacy endpoint for cookie consent
+    const response = await fetch('/admin/analytics/users');
+    const data = await response.json();
+    
+    if (data.success && data.analytics) {
+      document.getElementById('cookieConsentRate').textContent = data.analytics.cookieConsentRate || '0%';
+    } else {
+      // Fallback to local storage check
+      const hasConsent = localStorage.getItem('cookieConsent') === 'true';
+      document.getElementById('cookieConsentRate').textContent = hasConsent ? '100%' : '0%';
+    }
+  } catch (error) {
+    console.warn('Could not fetch cookie consent rate:', error);
+    document.getElementById('cookieConsentRate').textContent = '0%';
+  }
+}
+
+function updateDeviceStats(devices) {
+  const container = document.getElementById('deviceStats');
+  if (!devices || devices.length === 0) {
+    container.innerHTML = '<div class="text-gray-500 dark:text-gray-400 text-center py-2">No device data available</div>';
+    return;
+  }
+
+  const total = devices.reduce((sum, device) => sum + (device.sessions || 0), 0);
+  container.innerHTML = devices.map(device => {
+    const percentage = total > 0 ? Math.round((device.sessions / total) * 100) : 0;
+    const deviceIcon = getDeviceIcon(device.device_type);
+    
+    return `
+      <div class="flex items-center justify-between py-2">
+        <div class="flex items-center gap-2">
+          <i class="${deviceIcon} text-gray-600 dark:text-gray-400"></i>
+          <span class="text-sm font-medium text-gray-900 dark:text-white capitalize">${device.device_type || 'Unknown'}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="text-sm text-gray-600 dark:text-gray-400">${device.sessions || 0}</div>
+          <div class="text-xs text-gray-500 dark:text-gray-500">(${percentage}%)</div>
+        </div>
+      </div>
+      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+        <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${percentage}%"></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateBrowserStats(browsers) {
+  const container = document.getElementById('browserStats');
+  if (!browsers || browsers.length === 0) {
+    container.innerHTML = '<div class="text-gray-500 dark:text-gray-400 text-center py-2">No browser data available</div>';
+    return;
+  }
+
+  const total = browsers.reduce((sum, browser) => sum + (browser.sessions || 0), 0);
+  container.innerHTML = browsers.map(browser => {
+    const percentage = total > 0 ? Math.round((browser.sessions / total) * 100) : 0;
+    const browserIcon = getBrowserIcon(browser.browser);
+    
+    return `
+      <div class="flex items-center justify-between py-2">
+        <div class="flex items-center gap-2">
+          <i class="${browserIcon} text-gray-600 dark:text-gray-400"></i>
+          <span class="text-sm font-medium text-gray-900 dark:text-white">${browser.browser || 'Unknown'}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="text-sm text-gray-600 dark:text-gray-400">${browser.sessions || 0}</div>
+          <div class="text-xs text-gray-500 dark:text-gray-500">(${percentage}%)</div>
+        </div>
+      </div>
+      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+        <div class="bg-green-500 h-1.5 rounded-full" style="width: ${percentage}%"></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateTopPages(pages) {
+  const tbody = document.querySelector('#topPagesTable tbody');
+  if (!pages || pages.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500 dark:text-gray-400">No page data available</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = pages.slice(0, 10).map(page => {
+    const avgTime = Math.round(page.avg_time_spent || 0);
+    const minutes = Math.floor(avgTime / 60);
+    const seconds = avgTime % 60;
+    
+    return `
+      <tr class="border-b border-gray-100 dark:border-gray-800">
+        <td class="py-2 text-sm">
+          <div class="font-medium text-gray-900 dark:text-white truncate max-w-xs" title="${page.page_title || page.page_url}">
+            ${page.page_title || page.page_url.split('/').pop() || 'Home'}
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 truncate" title="${page.page_url}">${page.page_url}</div>
+        </td>
+        <td class="py-2 text-right text-sm text-gray-700 dark:text-gray-300">${(page.views || 0).toLocaleString()}</td>
+        <td class="py-2 text-right text-sm text-gray-700 dark:text-gray-300">${minutes}:${seconds.toString().padStart(2, '0')}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function updateClickAnalytics(clickData) {
+  const tbody = document.querySelector('#clickAnalyticsTable tbody');
+  if (!clickData || clickData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500 dark:text-gray-400">No click data available</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = clickData.slice(0, 10).map(click => {
+    const elementName = click.element_text || click.element_id || click.element_class || 'Unknown Element';
+    const truncatedName = elementName.length > 30 ? elementName.substring(0, 30) + '...' : elementName;
+    
+    return `
+      <tr class="border-b border-gray-100 dark:border-gray-800">
+        <td class="py-2 text-sm">
+          <div class="font-medium text-gray-900 dark:text-white" title="${elementName}">
+            ${truncatedName}
+          </div>
+          ${click.element_id ? `<div class="text-xs text-gray-500 dark:text-gray-400">#${click.element_id}</div>` : ''}
+        </td>
+        <td class="py-2 text-right text-sm text-gray-700 dark:text-gray-300">${(click.click_count || 0).toLocaleString()}</td>
+        <td class="py-2 text-right text-sm text-gray-700 dark:text-gray-300">${click.unique_clickers || 0}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function getDeviceIcon(deviceType) {
+  switch (deviceType?.toLowerCase()) {
+    case 'mobile': return 'fas fa-mobile-alt';
+    case 'tablet': return 'fas fa-tablet-alt';
+    case 'desktop': return 'fas fa-desktop';
+    default: return 'fas fa-question-circle';
+  }
+}
+
+function getBrowserIcon(browser) {
+  switch (browser?.toLowerCase()) {
+    case 'chrome': return 'fab fa-chrome';
+    case 'firefox': return 'fab fa-firefox';
+    case 'safari': return 'fab fa-safari';
+    case 'edge': return 'fab fa-edge';
+    case 'opera': return 'fab fa-opera';
+    default: return 'fas fa-globe';
+  }
+}
+
+function showFallbackData() {
+  // Show fallback/loading states for all metrics
+  const fallbackElements = {
+    'activeUsers': '0',
+    'pageViews': '0',
+    'uniqueVisitors': '0',
+    'avgLoadTime': '0ms',
+    'avgSessionDuration': '0m 0s',
+    'bounceRate': '0%',
+    'conversionRate': '0%',
+    'avgMemoryUsage': '0 MB'
+  };
+
+  Object.entries(fallbackElements).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  });
+
+  // Show loading states for tables
+  document.getElementById('deviceStats').innerHTML = '<div class="text-gray-500 dark:text-gray-400 text-center py-4">Unable to load device statistics</div>';
+  document.getElementById('browserStats').innerHTML = '<div class="text-gray-500 dark:text-gray-400 text-center py-4">Unable to load browser statistics</div>';
+  
+  // Fallback cookie consent check
+  fetchCookieConsentRate();
+}
+
+function refreshAnalytics() {
+  loadComprehensiveAnalytics();
+}
+
+// Cookie Manager integration (enhanced)
+function showCookieManager() {
+  // First check if analytics tracker exists and is working
+  if (window.userAnalytics) {
+    const summary = window.userAnalytics.getSessionSummary();
+    console.log('📊 Current session analytics:', summary);
+  }
+
+  // Show the original cookie manager
+  if (window.CookieManager && typeof window.CookieManager.showCookieManager === 'function') {
+    window.CookieManager.showCookieManager();
+  } else if (typeof window.showCookieManager === 'function') {
+    window.showCookieManager();
+  } else {
+    const manager = document.getElementById('cookieManagerModal');
+    if (manager) {
+      manager.classList.remove('hidden');
+      manager.style.display = 'flex';
+    }
   }
 }
 

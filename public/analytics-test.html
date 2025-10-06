@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Testing Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    .button:hover {
+      background: #0056b3;
+    }
+    .status {
+      background: #e9ecef;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+    .analytics-test {
+      border: 1px solid #ddd;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Analytics Testing Page</h1>
+    <p>This page tests the enhanced user analytics tracking system.</p>
+
+    <div class="analytics-test">
+      <h3>📊 Test Analytics Events</h3>
+      <button id="testClick" class="button">Test Click Tracking</button>
+      <button id="testForm" class="button">Test Form Event</button>
+      <button id="testCustom" class="button">Test Custom Event</button>
+      
+      <div class="status" id="status">
+        Click the buttons above to test analytics tracking...
+      </div>
+    </div>
+
+    <div class="analytics-test">
+      <h3>🍪 Cookie Consent Testing</h3>
+      <button id="acceptCookies" class="button">Accept All Cookies</button>
+      <button id="rejectCookies" class="button">Reject Cookies</button>
+      <button id="showCookieManager" class="button">Show Cookie Manager</button>
+      
+      <div class="status" id="cookieStatus">
+        Current consent: <span id="consentValue">Unknown</span>
+      </div>
+    </div>
+
+    <div class="analytics-test">
+      <h3>⚡ Performance Metrics</h3>
+      <button id="checkPerformance" class="button">Check Performance Metrics</button>
+      
+      <div class="status" id="performanceStatus">
+        Click to check current performance metrics...
+      </div>
+    </div>
+
+    <div class="analytics-test">
+      <h3>📈 Session Analytics</h3>
+      <button id="getSessionInfo" class="button">Get Session Summary</button>
+      
+      <div class="status" id="sessionStatus">
+        Click to see current session analytics...
+      </div>
+    </div>
+
+    <form id="testForm" style="margin: 20px 0;">
+      <h3>📝 Test Form (for conversion tracking)</h3>
+      <input type="text" placeholder="Test field" required>
+      <button type="submit" class="button">Submit Test Form</button>
+    </form>
+  </div>
+
+  <!-- Load analytics tracker -->
+  <script src="/js/user-analytics-tracker.js"></script>
+
+  <script>
+    // Test functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      updateConsentStatus();
+
+      // Click tracking test
+      document.getElementById('testClick').addEventListener('click', function() {
+        if (window.userAnalytics) {
+          window.userAnalytics.track('test_click', {
+            test_type: 'manual_click_test',
+            element_id: 'testClick'
+          });
+          updateStatus('Click event tracked!');
+        } else {
+          updateStatus('Analytics not loaded yet...');
+        }
+      });
+
+      // Custom event test
+      document.getElementById('testCustom').addEventListener('click', function() {
+        if (window.userAnalytics) {
+          window.userAnalytics.track('custom_test_event', {
+            custom_data: 'test_value',
+            timestamp: new Date().toISOString()
+          });
+          updateStatus('Custom event tracked!');
+        } else {
+          updateStatus('Analytics not loaded yet...');
+        }
+      });
+
+      // Cookie consent buttons
+      document.getElementById('acceptCookies').addEventListener('click', function() {
+        if (window.acceptAllCookies) {
+          window.acceptAllCookies();
+          updateConsentStatus();
+          updateStatus('Cookies accepted!');
+        }
+      });
+
+      document.getElementById('rejectCookies').addEventListener('click', function() {
+        if (window.rejectCookies) {
+          window.rejectCookies();
+          updateConsentStatus();
+          updateStatus('Cookies rejected!');
+        }
+      });
+
+      document.getElementById('showCookieManager').addEventListener('click', function() {
+        if (window.showCookieManager) {
+          window.showCookieManager();
+        }
+      });
+
+      // Performance check
+      document.getElementById('checkPerformance').addEventListener('click', function() {
+        if (window.performance) {
+          const timing = performance.timing;
+          const loadTime = timing.loadEventEnd - timing.navigationStart;
+          const domReady = timing.domContentLoadedEventEnd - timing.navigationStart;
+          
+          document.getElementById('performanceStatus').innerHTML = `
+            <strong>Performance Metrics:</strong><br>
+            Page Load Time: ${loadTime}ms<br>
+            DOM Ready Time: ${domReady}ms<br>
+            Memory Usage: ${performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB' : 'N/A'}
+          `;
+        }
+      });
+
+      // Session info
+      document.getElementById('getSessionInfo').addEventListener('click', function() {
+        if (window.userAnalytics) {
+          const summary = window.userAnalytics.getSessionSummary();
+          document.getElementById('sessionStatus').innerHTML = `
+            <strong>Session Summary:</strong><br>
+            Session ID: ${summary.sessionId}<br>
+            Duration: ${summary.duration} seconds<br>
+            Page Clicks: ${summary.currentPage.clicks}<br>
+            Scroll Depth: ${summary.currentPage.scrollDepth}%<br>
+            Device Type: ${summary.deviceType}<br>
+            Browser: ${summary.browser.name} ${summary.browser.version}
+          `;
+        }
+      });
+
+      // Test form submission
+      document.querySelector('form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        updateStatus('Form submission tracked as conversion event!');
+      });
+    });
+
+    function updateStatus(message) {
+      document.getElementById('status').textContent = message;
+      setTimeout(() => {
+        document.getElementById('status').textContent = 'Ready for more tests...';
+      }, 3000);
+    }
+
+    function updateConsentStatus() {
+      const consent = localStorage.getItem('cookieConsent');
+      const analyticsConsent = getCookie('analytics_consent');
+      document.getElementById('consentValue').textContent = 
+        consent ? `Granted (Analytics: ${analyticsConsent || 'unknown'})` : 'Not granted';
+    }
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
+
+    // Log analytics loading status
+    setTimeout(() => {
+      console.log('🧪 Analytics Test Page Status:');
+      console.log('- userAnalytics loaded:', !!window.userAnalytics);
+      console.log('- Cookie consent functions:', {
+        acceptAllCookies: !!window.acceptAllCookies,
+        rejectCookies: !!window.rejectCookies,
+        showCookieManager: !!window.showCookieManager
+      });
+      
+      if (window.userAnalytics) {
+        console.log('- Analytics tracker status:', window.userAnalytics.isTracking);
+        console.log('- Current session:', window.userAnalytics.getSessionSummary());
+      }
+    }, 2000);
+  </script>
+</body>
+</html>

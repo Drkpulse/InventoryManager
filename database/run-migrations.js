@@ -71,76 +71,78 @@ async function executeSQLFile(filePath, migrationName) {
   }
 }
 
-// Run individual migrations
-async function runMigration001() {
-  const migrationName = '001_add_user_lockout_fields';
-  if (await isMigrationExecuted(migrationName)) {
-    console.log(`⏭️  Skipping ${migrationName} (already executed)`);
+// Get all migration files from the migrations directory
+function getAllMigrationFiles() {
+  const migrationsDir = path.join(__dirname, 'migrations');
+  try {
+    const files = fs.readdirSync(migrationsDir)
+      .filter(file => file.endsWith('.sql'))
+      .map(file => {
+        const migrationName = file.replace('.sql', '');
+        return {
+          name: migrationName,
+          fileName: file,
+          filePath: path.join(migrationsDir, file),
+          // Extract number from filename for sorting (e.g., "001" from "001_add_user_lockout.sql")
+          order: parseInt(file.split('_')[0]) || 999
+        };
+      })
+      .sort((a, b) => a.order - b.order); // Sort by migration number
+
+    console.log(`📁 Found ${files.length} migration files`);
+    return files;
+  } catch (error) {
+    console.error('❌ Error reading migrations directory:', error);
+    return [];
+  }
+}
+
+// Run a single migration file
+async function runSingleMigration(migration) {
+  const { name, filePath } = migration;
+  
+  if (await isMigrationExecuted(name)) {
+    console.log(`⏭️  Skipping ${name} (already executed)`);
     return true;
   }
 
   try {
-    console.log(`🔧 Running ${migrationName}...`);
-
-    // Add lockout fields to users table
-    await db.query(`
-      ALTER TABLE users
-      ADD COLUMN IF NOT EXISTS login_attempts INTEGER DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP NULL,
-      ADD COLUMN IF NOT EXISTS last_failed_login TIMESTAMP NULL
-    `);
-
-    await markMigrationExecuted(migrationName, 'Added user account lockout fields');
-    return true;
+    console.log(`🔧 Running ${name}...`);
+    
+    // Handle special case for 001 migration (hardcoded SQL)
+    if (name === '001_add_user_lockout_fields') {
+      await db.query(`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS login_attempts INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP NULL,
+        ADD COLUMN IF NOT EXISTS last_failed_login TIMESTAMP NULL
+      `);
+      await markMigrationExecuted(name, 'Added user account lockout fields');
+      return true;
+    }
+    
+    // For all other migrations, read and execute the SQL file
+    const success = await executeSQLFile(filePath, name);
+    if (success) {
+      // Try to extract description from SQL comments
+      let description = `Executed migration ${name}`;
+      try {
+        const sqlContent = fs.readFileSync(filePath, 'utf8');
+        const purposeMatch = sqlContent.match(/-- Purpose: (.+)/);
+        if (purposeMatch) {
+          description = purposeMatch[1];
+        }
+      } catch (error) {
+        // Ignore errors reading file for description
+      }
+      
+      await markMigrationExecuted(name, description);
+    }
+    return success;
   } catch (error) {
-    console.error(`❌ Failed ${migrationName}:`, error);
+    console.error(`❌ Failed ${name}:`, error.message);
     return false;
   }
-}
-
-async function runMigration002() {
-  const migrationName = '002_validate_license_database';
-  if (await isMigrationExecuted(migrationName)) {
-    console.log(`⏭️  Skipping ${migrationName} (already executed)`);
-    return true;
-  }
-
-  const sqlPath = path.join(__dirname, 'migrations', '002_validate_license_database.sql');
-  const success = await executeSQLFile(sqlPath, migrationName);
-  if (success) {
-    await markMigrationExecuted(migrationName, 'Validated license_config table structure and added integrity functions');
-  }
-  return success;
-}
-
-async function runMigration003() {
-  const migrationName = '003_add_department_description';
-  if (await isMigrationExecuted(migrationName)) {
-    console.log(`⏭️  Skipping ${migrationName} (already executed)`);
-    return true;
-  }
-
-  const sqlPath = path.join(__dirname, 'migrations', '003_add_department_description.sql');
-  const success = await executeSQLFile(sqlPath, migrationName);
-  if (success) {
-    await markMigrationExecuted(migrationName, 'Added description field to departments table');
-  }
-  return success;
-}
-
-async function runMigration006() {
-  const migrationName = '006_ensure_license_config';
-  if (await isMigrationExecuted(migrationName)) {
-    console.log(`⏭️  Skipping ${migrationName} (already executed)`);
-    return true;
-  }
-
-  const sqlPath = path.join(__dirname, 'migrations', '006_ensure_license_config.sql');
-  const success = await executeSQLFile(sqlPath, migrationName);
-  if (success) {
-    await markMigrationExecuted(migrationName, 'Ensured license_config table exists with all required columns and bypass license');
-  }
-  return success;
 }
 
 async function runMigration010() {
@@ -172,6 +174,11 @@ async function verifyDatabaseStructure() {
       name: 'license_config table exists',
       query: `SELECT table_name FROM information_schema.tables
               WHERE table_name = 'license_config'`
+    },
+    {
+      name: 'license_config.company column',
+      query: `SELECT column_name FROM information_schema.columns
+              WHERE table_name = 'license_config' AND column_name = 'company'`
     },
     {
       name: 'license_config.status column',
@@ -215,12 +222,18 @@ async function verifyDatabaseStructure() {
     }
   ];
 
+  // Additional check for license_config table column issues
+  const licenseConfigCheck = {
+    name: 'license_config column structure',
+    description: 'Checking for column conflicts in license_config table'
+  };
+
   let allGood = true;
   for (const check of checks) {
     try {
       const result = await db.query(check.query);
       if (result.rows.length > 0) {
-        console.log(`✅ ${check.name} exists`);
+        console.log(`✅ ${check.name}`);
       } else {
         console.log(`❌ ${check.name} missing`);
         allGood = false;
@@ -229,6 +242,34 @@ async function verifyDatabaseStructure() {
       console.log(`❌ Error checking ${check.name}:`, error.message);
       allGood = false;
     }
+  }
+
+  // Special check for duplicate columns in license_config
+  try {
+    const columnCheck = await db.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'license_config' 
+      AND column_name IN ('company', 'company_name')
+      ORDER BY column_name
+    `);
+    
+    const columns = columnCheck.rows.map(row => row.column_name);
+    if (columns.includes('company_name') && columns.includes('company')) {
+      console.log(`⚠️  ${licenseConfigCheck.name}: Both 'company' and 'company_name' columns exist - needs fixing`);
+      allGood = false;
+    } else if (columns.includes('company')) {
+      console.log(`✅ ${licenseConfigCheck.name}: Correct 'company' column exists`);
+    } else if (columns.includes('company_name')) {
+      console.log(`⚠️  ${licenseConfigCheck.name}: Only 'company_name' column exists, 'company' needed`);
+      allGood = false;
+    } else {
+      console.log(`❌ ${licenseConfigCheck.name}: No company column found`);
+      allGood = false;
+    }
+  } catch (error) {
+    console.log(`❌ Error checking ${licenseConfigCheck.name}:`, error.message);
+    allGood = false;
   }
 
   return allGood;
@@ -248,35 +289,53 @@ async function runAllMigrations() {
     // Create migrations table
     await createMigrationsTable();
 
-    // Run migrations in order
-    const migrations = [
-      { name: '001', runner: runMigration001 },
-      { name: '002', runner: runMigration002 },
-      { name: '003', runner: runMigration003 },
-      { name: '006', runner: runMigration006 },
-      { name: '010', runner: runMigration010 }
-    ];
+    // Get all migration files
+    const migrations = getAllMigrationFiles();
+    
+    if (migrations.length === 0) {
+      console.log('⚠️  No migration files found in migrations directory');
+      return;
+    }
+
+    console.log(`\n📋 Found migrations to process:`);
+    migrations.forEach(m => {
+      console.log(`   ${m.order.toString().padStart(3, '0')}: ${m.name}`);
+    });
 
     let successCount = 0;
+    let skippedCount = 0;
+    
     for (const migration of migrations) {
       console.log(`\n📋 Processing Migration ${migration.name}...`);
-      const success = await migration.runner();
+      
+      // Check if already executed
+      if (await isMigrationExecuted(migration.name)) {
+        console.log(`⏭️  Skipping ${migration.name} (already executed)`);
+        skippedCount++;
+        continue;
+      }
+      
+      const success = await runSingleMigration(migration);
       if (success) {
         successCount++;
+        console.log(`✅ ${migration.name} completed successfully`);
       } else {
         console.error(`❌ Migration ${migration.name} failed - stopping`);
         break;
       }
     }
 
-    console.log(`\n📊 Migration Results: ${successCount}/${migrations.length} completed`);
+    console.log(`\n📊 Migration Results:`);
+    console.log(`   New migrations executed: ${successCount}`);
+    console.log(`   Already executed: ${skippedCount}`);
+    console.log(`   Total migrations: ${migrations.length}`);
 
     // Verify structure
     const structureValid = await verifyDatabaseStructure();
 
     console.log('\n🎉 Migration Summary:');
     console.log('====================');
-    console.log(`Migrations completed: ${successCount}/${migrations.length}`);
+    console.log(`Migrations processed: ${successCount + skippedCount}/${migrations.length}`);
     console.log(`Database structure: ${structureValid ? '✅ Valid' : '❌ Issues found'}`);
 
     if (structureValid) {

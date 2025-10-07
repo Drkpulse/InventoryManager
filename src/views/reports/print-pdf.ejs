@@ -71,7 +71,7 @@
         }
 
         .header h1 {
-            font-size: 28px;
+            font-size: 22px;
             color: #1e40af;
             margin-bottom: 5px;
         }
@@ -127,13 +127,6 @@
             font-size: 16px;
             color: #111827;
             margin-top: 3px;
-        }
-
-        .stats-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
         }
 
         .stat-card {
@@ -304,7 +297,7 @@
                     <span><%= employee.name %></span>
                 </div>
                 <div class="employee-item">
-                    <label>CEP ID</label>
+                    <label>CEXPT ID</label>
                     <span><%= employee.cep %></span>
                 </div>
                 <div class="employee-item">
@@ -332,51 +325,38 @@
                 <h4>Total Assets</h4>
                 <div class="value"><%= stats.total_items %></div>
             </div>
-            <div class="stat-card">
-                <h4>Total Value</h4>
-                <div class="value">€<%= stats.total_value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></div>
-            </div>
-            <div class="stat-card">
-                <h4>Asset Categories</h4>
-                <div class="value"><%= stats.asset_types ? stats.asset_types.split(',').length : 0 %></div>
-            </div>
+
         </div>
 
         <!-- Assets List -->
         <div class="assets-section">
-            <h3>📦 Assigned Assets</h3>
+            <h3>📦 Assigned Assets - Total Assets: <%= stats.total_items %></h3>
 
             <% if (items && items.length > 0) { %>
                 <table class="assets-table">
                     <thead>
                         <tr>
+                            <th>CEXPT ID</th>
                             <th>Asset Name</th>
                             <th>Type</th>
-                            <th>Brand</th>
                             <th>Serial Number</th>
-                            <th>Condition</th>
-                            <th>Value (€)</th>
+                            <th>Date Assigned</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% items.forEach((item, index) => { %>
                             <tr>
+                                <td><%= item.cep_brc || 'N/A' %></td>
                                 <td><strong><%= item.name || 'Unnamed Asset' %></strong></td>
                                 <td><%= item.type_name || 'Unknown' %></td>
-                                <td><%= item.brand_name || 'Unknown' %></td>
-                                <td><%= item.serial_number || 'N/A' %></td>
-                                <td><%= item.condition || 'Good' %></td>
-                                <td><%= (parseFloat(item.price) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></td>
+                                <td><%= item.serial_cod || 'N/A' %></td>
+                                <td><%= item.date_assigned ? new Date(item.date_assigned).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'}) : 'N/A' %></td>
                             </tr>
                         <% }); %>
                     </tbody>
                 </table>
 
-                <% if (stats.asset_types) { %>
-                    <div style="margin-top: 20px; padding: 15px; background: #f1f5f9; border-radius: 6px;">
-                        <strong>Asset Categories:</strong> <%= stats.asset_types %>
-                    </div>
-                <% } %>
+
 
             <% } else { %>
                 <div class="no-assets">
@@ -389,7 +369,7 @@
         <!-- Footer -->
         <div class="footer">
             <div>IT Asset Manager | Report generated on <%= new Date().toLocaleString() %></div>
-            <div>Employee: <%= employee.name %> (<%= employee.cep %>) | Total Assets: <%= stats.total_items %> | Total Value: €<%= stats.total_value.toFixed(2) %></div>
+            <div>Employee: <%= employee.name %> (<%= employee.cep %>) | Total Assets: <%= stats.total_items %></div>
         </div>
     </div>
 

@@ -529,29 +529,16 @@ exports.employeeFullAssetsPDF = async (req, res) => {
       asset_types: [...new Set(items.map(i => i.type_name).filter(Boolean))].join(', ')
     };
 
-    // Check if this is a PDF print request
-    if (req.query.format === 'pdf') {
-      console.log('📄 Generating print-friendly PDF page for employee:', employee.name);
+    console.log('📄 Generating asset report for employee:', employee.name);
 
-      // Render the print-friendly PDF page (no layout wrapper for clean printing)
-      return res.render('reports/print-pdf', {
-        title: `Asset Report - ${employee.name}`,
-        employee,
-        items,
-        stats,
-        layout: false
-      });
-    }
-
-    // For regular HTML report, render the standard template
-    console.log('📊 Generating standard HTML report for employee:', employee.name);
-
-    const html = await ejs.renderFile(
-      path.join(__dirname, '../views/reports/employee-full-assets.ejs'),
-      { employee, items, stats }
-    );
-
-    res.send(html);
+    // Always render the unified template (no layout wrapper for clean printing)
+    return res.render('reports/employee-full-assets', {
+      title: `Asset Report - ${employee.name}`,
+      employee,
+      items,
+      stats,
+      layout: false
+    });
 
   } catch (error) {
     console.error('Error generating employee full assets report:', error);

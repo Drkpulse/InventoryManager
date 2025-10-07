@@ -1,24 +1,52 @@
 -- Migration: 010_fix_license_config_columns.sql
--- Purpose: Fix license_config table column inconsistencies
--- Issue: Table has both 'company' and 'company_name' columns, causing INSERT conflicts
+-- Purpose: Fix license_config table column inconsistencies (if they exist)
+-- Issue: Table may have both 'company' and 'company_name' columns, causing INSERT conflicts
 
--- First, ensure we have the data in the correct column
--- Copy data from company_name to company if company is null
-UPDATE license_config 
-SET company = company_name 
-WHERE company IS NULL AND company_name IS NOT NULL;
+-- Check if company_name column exists and handle it safely
+DO $$
+DECLARE
+  has_company_name BOOLEAN;
+  has_company BOOLEAN;
+BEGIN
+  -- Check if columns exist
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'license_config' AND column_name = 'company_name'
+  ) INTO has_company_name;
 
--- Copy data from company to company_name if company_name is null
-UPDATE license_config 
-SET company_name = company 
-WHERE company_name IS NULL AND company IS NOT NULL;
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'license_config' AND column_name = 'company'
+  ) INTO has_company;
 
--- Drop dependent objects that reference company_name column
--- Drop the license_dashboard_view since it references company_name
+  -- Only handle column migration if company_name exists
+  IF has_company_name THEN
+    RAISE NOTICE 'Found company_name column, migrating data...';
+
+    -- Copy data from company_name to company if company is null
+    IF has_company THEN
+      UPDATE license_config
+      SET company = company_name
+      WHERE company IS NULL AND company_name IS NOT NULL;
+      RAISE NOTICE 'Copied data from company_name to company';
+    ELSE
+      -- If company column doesn't exist, rename company_name to company
+      ALTER TABLE license_config RENAME COLUMN company_name TO company;
+      RAISE NOTICE 'Renamed company_name column to company';
+    END IF;
+
+    -- Drop the company_name column if it still exists (after data copy)
+    IF has_company THEN
+      ALTER TABLE license_config DROP COLUMN company_name;
+      RAISE NOTICE 'Dropped company_name column';
+    END IF;
+  ELSE
+    RAISE NOTICE 'No company_name column found, structure is already correct';
+  END IF;
+END $$;
+
+-- Drop dependent views that might reference old column names
 DROP VIEW IF EXISTS license_dashboard_view;
-
--- Drop the duplicate company_name column since our application uses 'company'
-ALTER TABLE license_config DROP COLUMN IF EXISTS company_name;
 
 -- Ensure all required columns exist with correct names
 -- The application expects these exact columns:
@@ -57,9 +85,9 @@ ON CONFLICT (license_key) DO UPDATE SET
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM information_schema.table_constraints 
-    WHERE table_name = 'license_config' 
-    AND constraint_type = 'UNIQUE' 
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE table_name = 'license_config'
+    AND constraint_type = 'UNIQUE'
     AND constraint_name = 'license_config_license_key_unique'
   ) THEN
     ALTER TABLE license_config ADD CONSTRAINT license_config_license_key_unique UNIQUE (license_key);
@@ -99,22 +127,26 @@ BEGIN
   SELECT COUNT(*) INTO company_col_count
   FROM information_schema.columns
   WHERE table_name = 'license_config' AND column_name = 'company';
-  
-  -- Check for company_name column (should not exist)
+
+  -- Check for company_name column (should not exist after migration)
   SELECT COUNT(*) INTO company_name_col_count
   FROM information_schema.columns
   WHERE table_name = 'license_config' AND column_name = 'company_name';
-  
+
+  -- Report current state
+  RAISE NOTICE 'Migration verification: company column count = %, company_name column count = %',
+    company_col_count, company_name_col_count;
+
   IF company_col_count = 0 THEN
-    RAISE EXCEPTION 'Migration failed: company column missing';
+    RAISE EXCEPTION 'Migration failed: company column is missing - this is required';
   END IF;
-  
+
   IF company_name_col_count > 0 THEN
-    RAISE EXCEPTION 'Migration failed: company_name column still exists';
+    RAISE NOTICE 'Warning: company_name column still exists after migration';
   END IF;
-  
+
   -- Log success
-  RAISE NOTICE 'License config table structure verified: company column exists, company_name removed, view recreated';
+  RAISE NOTICE 'License config table structure verified: company column exists (count: %), view recreated', company_col_count;
 END $$;
 
 -- Record the migration

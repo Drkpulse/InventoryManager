@@ -1,561 +1,398 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Asset Assignment Report - <%= employee.name %></title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <style>
+        /* Print-optimized styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: #1f2937;
-      line-height: 1.5;
-      background: #ffffff;
-    }
+        @media print {
+            @page {
+                margin: 15mm;
+                size: A4;
+            }
 
-    .report-container {
-      max-width: 210mm;
-      margin: 0 auto;
-      background: white;
-      min-height: 297mm;
-    }
+            body {
+                font-size: 12pt;
+                line-height: 1.4;
+            }
 
-    /* Header Section */
-    .header {
-      background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-      color: white;
-      padding: 2rem 2.5rem;
-      position: relative;
-      overflow: hidden;
-    }
+            .no-print {
+                display: none !important;
+            }
 
-    .header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 200px;
-      height: 100%;
-      background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 100%);
-    }
+            .page-break {
+                page-break-before: always;
+            }
 
-    .header-content {
-      position: relative;
-      z-index: 1;
-    }
+            table {
+                page-break-inside: avoid;
+            }
 
-    .company-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
+            tr {
+                page-break-inside: avoid;
+            }
+        }
 
-    .logo-icon {
-      width: 48px;
-      height: 48px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-    }
+        @media screen {
+            body {
+                font-size: 14px;
+                line-height: 1.5;
+                background: #f5f5f5;
+                padding: 20px;
+            }
 
-    .company-name {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.025em;
-    }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background: white;
+                padding: 40px;
+                box-shadow: 0 0 20px rgba(0,0,0,0.1);
+                border-radius: 8px;
+            }
+        }
 
-    .report-title {
-      font-size: 2.25rem;
-      font-weight: 800;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.05em;
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
 
-    .report-subtitle {
-      font-size: 1.125rem;
-      color: rgba(255,255,255,0.8);
-      margin-bottom: 1.5rem;
-    }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
 
-    .report-meta {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      font-size: 0.875rem;
-    }
+        .header h1 {
+            font-size: 22px;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
 
-    .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: rgba(255,255,255,0.9);
-    }
+        .header h2 {
+            font-size: 20px;
+            color: #475569;
+            font-weight: normal;
+        }
 
-    /* Content Section */
-    .content {
-      padding: 2.5rem;
-    }
+        .header .subtitle {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 10px;
+        }
 
-    .section {
-      margin-bottom: 2.5rem;
-    }
+        .employee-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
 
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 2px solid #e5e7eb;
-    }
+        .employee-section h3 {
+            color: #1e40af;
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 5px;
+        }
 
-    .section-icon {
-      width: 32px;
-      height: 32px;
-      background: #f3f4f6;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #6b7280;
-    }
+        .employee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
 
-    .section-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #1f2937;
-      letter-spacing: -0.025em;
-    }
+        .employee-item {
+            display: flex;
+            flex-direction: column;
+        }
 
-    /* Employee Info */
-    .employee-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
+        .employee-item label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-    .info-card {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 1.5rem;
-    }
+        .employee-item span {
+            font-size: 16px;
+            color: #111827;
+            margin-top: 3px;
+        }
 
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 0.75rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid #e5e7eb;
-    }
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-    .info-row:last-child {
-      margin-bottom: 0;
-      padding-bottom: 0;
-      border-bottom: none;
-    }
+        .stat-card {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
 
-    .info-label {
-      font-weight: 600;
-      color: #6b7280;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+        .stat-card h4 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            font-weight: normal;
+        }
 
-    .info-value {
-      font-weight: 500;
-      color: #1f2937;
-      text-align: right;
-      max-width: 60%;
-    }
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
 
-    /* Summary Stats */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2.5rem;
-    }
+        .assets-section h3 {
+            color: #1e40af;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
 
-    .stat-card {
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      color: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
+        .assets-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
 
-    .stat-number {
-      font-size: 2rem;
-      font-weight: 800;
-      display: block;
-      margin-bottom: 0.25rem;
-    }
+        .assets-table th {
+            background: #1e40af;
+            color: white;
+            font-weight: 600;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 14px;
+        }
 
-    .stat-label {
-      font-size: 0.875rem;
-      opacity: 0.9;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+        .assets-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
 
-    /* Assets Table */
-    .assets-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    }
+        .assets-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
 
-    .assets-table thead {
-      background: #f9fafb;
-    }
+        .assets-table tbody tr:hover {
+            background: #e2e8f0;
+        }
 
-    .assets-table th {
-      padding: 1rem 0.75rem;
-      text-align: left;
-      font-weight: 600;
-      color: #374151;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-bottom: 2px solid #e5e7eb;
-    }
+        .no-assets {
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+            padding: 40px 20px;
+            background: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+        }
 
-    .assets-table td {
-      padding: 1rem 0.75rem;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 0.875rem;
-    }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
 
-    .assets-table tbody tr:hover {
-      background: #f9fafb;
-    }
+        /* Print controls */
+        .print-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border: 1px solid #e2e8f0;
+        }
 
-    .assets-table tbody tr:last-child td {
-      border-bottom: none;
-    }
+        .print-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 5px;
+            transition: all 0.2s;
+        }
 
-    .asset-id {
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      background: #f3f4f6;
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #1f2937;
-    }
+        .print-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
 
-    .asset-name {
-      font-weight: 600;
-      color: #1f2937;
-    }
+        .print-btn.secondary {
+            background: #6b7280;
+        }
 
-    .asset-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+        .print-btn.secondary:hover {
+            background: #4b5563;
+        }
 
-    .status-assigned {
-      background: #dcfce7;
-      color: #166534;
-    }
+        .print-instructions {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
 
-    .status-available {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
-    .no-assets {
-      text-align: center;
-      padding: 3rem;
-      color: #6b7280;
-    }
-
-    .no-assets-icon {
-      font-size: 4rem;
-      color: #d1d5db;
-      margin-bottom: 1rem;
-    }
-
-    /* Footer */
-    .footer {
-      margin-top: auto;
-      padding: 1.5rem 2.5rem;
-      background: #f9fafb;
-      border-top: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.875rem;
-      color: #6b7280;
-    }
-
-    .footer-left {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .footer-right {
-      font-weight: 500;
-    }
-
-    /* Print Styles */
-    @media print {
-      .report-container {
-        max-width: none;
-        margin: 0;
-        box-shadow: none;
-      }
-
-      body {
-        background: white;
-      }
-
-      .assets-table {
-        box-shadow: none;
-      }
-
-      .stat-card {
-        box-shadow: none;
-      }
-    }
-
-    @page {
-      size: A4;
-      margin: 0;
-    }
-  </style>
+        .print-instructions strong {
+            color: #78350f;
+        }
+    </style>
 </head>
 <body>
-  <div class="report-container">
-    <!-- Header -->
-    <header class="header">
-      <div class="header-content">
-        <div class="company-logo">
-          <div class="logo-icon">📋</div>
-          <div class="company-name">Asset Management System</div>
+    <!-- Print Controls (hidden when printing) -->
+    <div class="print-controls no-print">
+        <button class="print-btn" onclick="window.print()">
+            🖨️ Print / Save as PDF
+        </button>
+        <button class="print-btn secondary" onclick="window.history.back()">
+            ← Back
+        </button>
+    </div>
+
+    <div class="container">
+        <!-- Print Instructions (hidden when printing) -->
+        <div class="print-instructions no-print">
+            <strong>📋 How to save as PDF:</strong> Press Ctrl+P (or Cmd+P on Mac), then select "Save as PDF" as your printer destination.
         </div>
 
-        <h1 class="report-title">Asset Assignment Report</h1>
-        <p class="report-subtitle">Comprehensive asset overview for <%= employee.name %></p>
-
-        <div class="report-meta">
-          <div class="meta-item">
-            <span>📅</span>
-            <span>Generated: <%= new Date().toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            }) %></span>
-          </div>
-          <div class="meta-item">
-            <span>👤</span>
-            <span>Employee ID: <%= employee.cep %></span>
-          </div>
-          <div class="meta-item">
-            <span>🏢</span>
-            <span>Department: <%= employee.department_name || 'N/A' %></span>
-          </div>
-          <div class="meta-item">
-            <span>📄</span>
-            <span>Report ID: RPT-<%= new Date().getFullYear() %>-<%= String(new Date().getMonth() + 1).padStart(2, '0') %><%= String(new Date().getDate()).padStart(2, '0') %>-<%= employee.cep %></span>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Content -->
-    <main class="content">
-      <!-- Employee Information Section -->
-      <section class="section">
-        <div class="section-header">
-          <div class="section-icon">👤</div>
-          <h2 class="section-title">Employee Information</h2>
+        <!-- Header -->
+        <div class="header">
+            <h1>IT Asset Report</h1>
+            <h2><%= employee.name %> (<%= employee.cep %>)</h2>
+            <div class="subtitle">Generated on <%= new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }) %></div>
         </div>
 
-        <div class="employee-grid">
-          <div class="info-card">
-            <div class="info-row">
-              <span class="info-label">Full Name</span>
-              <span class="info-value"><%= employee.name %></span>
+        <!-- Employee Information -->
+        <div class="employee-section">
+            <h3>👤 Employee Information</h3>
+            <div class="employee-grid">
+                <div class="employee-item">
+                    <label>Full Name</label>
+                    <span><%= employee.name %></span>
+                </div>
+                <div class="employee-item">
+                    <label>CEXPT ID</label>
+                    <span><%= employee.cep %></span>
+                </div>
+                <div class="employee-item">
+                    <label>Email Address</label>
+                    <span><%= employee.email || 'Not specified' %></span>
+                </div>
+                <div class="employee-item">
+                    <label>Department</label>
+                    <span><%= employee.department_name || 'Not assigned' %></span>
+                </div>
+                <div class="employee-item">
+                    <label>Location</label>
+                    <span><%= employee.location_name || 'Not specified' %></span>
+                </div>
+                <div class="employee-item">
+                    <label>Employee Since</label>
+                    <span><%= employee.created_at ? new Date(employee.created_at).toLocaleDateString() : 'Unknown' %></span>
+                </div>
             </div>
-            <div class="info-row">
-              <span class="info-label">Employee ID</span>
-              <span class="info-value"><%= employee.cep %></span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Email Address</span>
-              <span class="info-value"><%= employee.email || 'N/A' %></span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Job Title</span>
-              <span class="info-value"><%= employee.job_title || 'N/A' %></span>
-            </div>
-          </div>
-
-          <div class="info-card">
-            <div class="info-row">
-              <span class="info-label">Department</span>
-              <span class="info-value"><%= employee.department_name || 'N/A' %></span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Location</span>
-              <span class="info-value"><%= employee.location_name || 'N/A' %></span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Start Date</span>
-              <span class="info-value"><%= employee.joined_date ? new Date(employee.joined_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' %></span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Status</span>
-              <span class="info-value">
-                <% if (employee.left_date) { %>
-                  Former Employee
-                <% } else { %>
-                  Active
-                <% } %>
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Summary Statistics -->
-      <section class="section">
-        <div class="section-header">
-          <div class="section-icon">📊</div>
-          <h2 class="section-title">Assignment Summary</h2>
         </div>
 
-        <div class="stats-grid">
-          <div class="stat-card">
-            <span class="stat-number"><%= stats.total_items || 0 %></span>
-            <span class="stat-label">Total Assets</span>
-          </div>
+        <!-- Assets List -->
+        <div class="assets-section">
+            <h3>📦 Assigned Assets - Total Assets: <%= stats.total_items %></h3>
 
-          <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-            <span class="stat-number"><%= stats.asset_types || 0 %></span>
-            <span class="stat-label">Asset Types</span>
-          </div>
+            <% if (items && items.length > 0) { %>
+                <table class="assets-table">
+                    <thead>
+                        <tr>
+                            <th>CEXPT ID</th>
+                            <th>Asset Name</th>
+                            <th>Type</th>
+                            <th>Serial Number</th>
+                            <th>Date Assigned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% items.forEach((item, index) => { %>
+                            <tr>
+                                <td><%= item.cep_brc || 'N/A' %></td>
+                                <td><strong><%= item.name || 'Unnamed Asset' %></strong></td>
+                                <td><%= item.type_name || 'Unknown' %></td>
+                                <td><%= item.serial_cod || 'N/A' %></td>
+                                <td><%= item.date_assigned ? new Date(item.date_assigned).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'}) : 'N/A' %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
 
-          <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-            <span class="stat-number">
-              <%= items && items.filter(i => i.date_assigned && new Date(i.date_assigned) > new Date(Date.now() - 30*24*60*60*1000)).length || 0 %>
-            </span>
-            <span class="stat-label">Recent Assignments</span>
-          </div>
 
-          <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-            <span class="stat-number">
-              <%= items && items.filter(i => i.warranty_end_date && new Date(i.warranty_end_date) > new Date()).length || 0 %>
-            </span>
-            <span class="stat-label">Under Warranty</span>
-          </div>
+
+            <% } else { %>
+                <div class="no-assets">
+                    <h4>No Assets Assigned</h4>
+                    <p>This employee currently has no assets assigned to them.</p>
+                </div>
+            <% } %>
         </div>
-      </section>
 
-      <!-- Assigned Assets Section -->
-      <section class="section">
-        <div class="section-header">
-          <div class="section-icon">💻</div>
-          <h2 class="section-title">Assigned Assets</h2>
+        <!-- Footer -->
+        <div class="footer">
+            <div>IT Asset Manager | Report generated on <%= new Date().toLocaleString() %></div>
+            <div>Employee: <%= employee.name %> (<%= employee.cep %>) | Total Assets: <%= stats.total_items %></div>
         </div>
+    </div>
 
-        <% if (items && items.length > 0) { %>
-          <table class="assets-table">
-            <thead>
-              <tr>
-                <th>CEXID</th>
-                <th>Asset Name</th>
-                <th>Type</th>
-                <th>Brand & Model</th>
-                <th>Serial Number</th>
-                <th>Date Assigned</th>
-                <th>Location</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% items.forEach(item => { %>
-                <tr>
-                  <td>
-                    <span class="asset-id"><%= item.cep_brc %></span>
-                  </td>
-                  <td>
-                    <span class="asset-name"><%= item.name %></span>
-                  </td>
-                  <td><%= item.type_name || 'N/A' %></td>
-                  <td>
-                    <%= item.brand_name || 'N/A' %>
-                    <% if (item.model) { %>
-                      <br><small style="color: #6b7280;"><%= item.model %></small>
-                    <% } %>
-                  </td>
-                  <td>
-                    <% if (item.serial_cod) { %>
-                      <span style="font-family: monospace; font-size: 0.8rem; background: #f3f4f6; padding: 2px 4px; border-radius: 4px;"><%= item.serial_cod %></span>
-                    <% } else { %>
-                      N/A
-                    <% } %>
-                  </td>
-                  <td>
-                    <%= item.date_assigned ? new Date(item.date_assigned).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    }) : 'N/A' %>
-                  </td>
-                  <td>
-                    <%= item.location_name || employee.location_name || 'N/A' %>
-                  </td>
-                  <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    <%= item.notes || item.assignment_notes || '' %>
-                  </td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-        <% } else { %>
-          <div class="no-assets">
-            <div class="no-assets-icon">📦</div>
-            <h3 style="margin-bottom: 0.5rem; color: #374151;">No Assets Assigned</h3>
-            <p>This employee currently has no assets assigned to them.</p>
-          </div>
-        <% } %>
-      </section>
-    </main>
+    <script>
+        // Auto-focus print dialog shortcut
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
 
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-left">
-        <span>🏢</span>
-        <span>Generated by Asset Management System</span>
-      </div>
-      <div class="footer-right">
-        Confidential Document - Page 1 of 1
-      </div>
-    </footer>
-  </div>
+        // Show print dialog on load if requested
+        if (window.location.search.includes('autoprint=true')) {
+            window.addEventListener('load', function() {
+                setTimeout(() => window.print(), 500);
+            });
+        }
+
+        // Add print timestamp
+        window.addEventListener('beforeprint', function() {
+            console.log('PDF print initiated for employee:', '<%= employee.name %>');
+        });
+    </script>
 </body>
 </html>
+
+

@@ -1,527 +1,603 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <div class="header-title-section">
-      <div class="breadcrumb-nav">
-        <a href="/items" class="breadcrumb-link">
-          <i class="fas fa-boxes"></i> Assets
-        </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="breadcrumb-link">
-          <%= item.cep_brc %>
-        </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-current">History</span>
+<%
+  function getActionStyle(actionType) {
+    switch(actionType) {
+      case 'created':
+        return { icon: 'fas fa-plus-circle', color: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' };
+      case 'updated':
+        return { icon: 'fas fa-edit', color: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' };
+      case 'assigned':
+        return { icon: 'fas fa-user-plus', color: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' };
+      case 'unassigned':
+        return { icon: 'fas fa-user-minus', color: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' };
+      case 'status_changed':
+        return { icon: 'fas fa-exchange-alt', color: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' };
+      case 'maintenance':
+        return { icon: 'fas fa-tools', color: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' };
+      case 'retired':
+        return { icon: 'fas fa-archive', color: 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300' };
+      default:
+        return { icon: 'fas fa-history', color: 'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400' };
+    }
+  }
+
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diffInMs = now - date;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    const diffInMonths = Math.floor(diffInDays / 30);
+    const diffInYears = Math.floor(diffInDays / 365);
+
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
+    if (diffInMonths < 12) return `${diffInMonths}mo ago`;
+    return `${diffInYears}y ago`;
+  }
+%>
+
+<div class="container mx-auto px-4 py-8">
+  <!-- Modern Header with Glassmorphism -->
+  <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 mb-8 animate-[fadeInUp_0.6s_ease-out]">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="space-y-3">
+        <!-- Breadcrumb with hover effects -->
+        <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+          <a href="/items" class="group flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
+            <i class="fas fa-boxes group-hover:scale-110 transition-transform duration-300"></i>
+            <span><%= t('assets') %></span>
+          </a>
+          <i class="fas fa-chevron-right mx-2 text-xs"></i>
+          <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="group flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
+            <span class="group-hover:underline"><%= item.cep_brc %></span>
+          </a>
+          <i class="fas fa-chevron-right mx-2 text-xs"></i>
+          <span class="text-gray-700 dark:text-gray-200 font-medium"><%= t('history') %></span>
+        </nav>
+
+        <!-- Title with gradient text -->
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <%= t('asset_history') %>
+        </h1>
+
+        <!-- Asset badges with modern styling -->
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-semibold shadow-lg">
+            <%= item.cep_brc %>
+          </span>
+          <span class="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full text-sm font-semibold shadow-lg">
+            <%= item.name %>
+          </span>
+        </div>
       </div>
-      <h1>Asset History</h1>
-      <div class="asset-meta">
-        <span class="asset-id-display"><%= item.cep_brc %></span>
-        <span class="asset-name-display"><%= item.name %></span>
-      </div>
-    </div>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Asset
+
+      <!-- Action buttons with modern hover effects -->
+      <div class="flex flex-wrap gap-3">
+        <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> <%= t('back_to_asset') %>
         </a>
-        <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="btn btn-warning">
-          <i class="fas fa-edit"></i> Edit Asset
+        <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="group px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform duration-300"></i> <%= t('edit_asset') %>
         </a>
-        <button onclick="exportHistory()" class="btn btn-info">
-          <i class="fas fa-download"></i> Export History
+        <button onclick="exportHistory()" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-download mr-2 group-hover:translate-y-1 transition-transform duration-300"></i> <%= t('export_history') %>
         </button>
-        <button onclick="printHistory()" class="btn btn-success">
-          <i class="fas fa-print"></i> Print History
+        <button onclick="printHistory()" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-print mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('print_history') %>
         </button>
       </div>
     </div>
   </div>
 
-  <div class="content-section">
-    <div class="history-container">
-      <!-- History Filters -->
-      <div class="history-filters">
-        <div class="filter-group">
-          <label for="actionFilter">Filter by Action</label>
-          <select id="actionFilter" class="form-select">
-            <option value="">All Actions</option>
-            <option value="created">Created</option>
-            <option value="updated">Updated</option>
-            <option value="assigned">Assigned</option>
-            <option value="unassigned">Unassigned</option>
-            <option value="maintenance">Maintenance</option>
-            <option value="retired">Retired</option>
-          </select>
-        </div>
+  <!-- Modern Filter Panel -->
+  <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 mb-8 animate-[fadeInUp_0.6s_ease-out_0.1s] opacity-0 [animation-fill-mode:forwards]">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+      <div class="group">
+        <label for="actionFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <%= t('action_type') %>
+        </label>
+        <select id="actionFilter" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500">
+          <option value=""><%= t('all_actions') %></option>
+          <option value="created"><%= t('created') %></option>
+          <option value="updated"><%= t('updated') %></option>
+          <option value="assigned"><%= t('assigned') %></option>
+          <option value="unassigned"><%= t('unassigned') %></option>
+          <option value="maintenance"><%= t('maintenance') %></option>
+          <option value="retired"><%= t('retired') %></option>
+        </select>
+      </div>
 
-        <div class="filter-group">
-          <label for="dateFilter">Filter by Date</label>
-          <div class="date-range">
-            <input type="date" id="dateFrom" class="form-input" placeholder="From">
-            <span>to</span>
-            <input type="date" id="dateTo" class="form-input" placeholder="To">
-          </div>
-        </div>
-
-        <div class="filter-group">
-          <label for="userFilter">Filter by User</label>
-          <select id="userFilter" class="form-select">
-            <option value="">All Users</option>
-            <% if (typeof users !== 'undefined') { %>
-              <% users.forEach(user => { %>
-                <option value="<%= user.id %>"><%= user.name %></option>
-              <% }) %>
-            <% } %>
-          </select>
-        </div>
-
-        <div class="filter-actions">
-          <button id="applyHistoryFilters" class="btn btn-primary">
-            <i class="fas fa-search"></i> Apply Filters
-          </button>
-          <button id="resetHistoryFilters" class="btn btn-secondary">
-            <i class="fas fa-times"></i> Reset
-          </button>
+      <div class="group">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <%= t('date_range') %>
+        </label>
+        <div class="flex gap-2">
+          <input type="date" id="dateFrom" class="flex-1 px-3 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300" placeholder="<%= t('from') %>">
+          <input type="date" id="dateTo" class="flex-1 px-3 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300" placeholder="<%= t('to') %>">
         </div>
       </div>
 
-      <!-- History Stats -->
-      <div class="history-stats">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-history"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-number"><%= history ? history.length : 0 %></span>
-            <span class="stat-label">Total Events</span>
-          </div>
-        </div>
+      <div class="group">
+        <label for="userFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <%= t('performed_by') %>
+        </label>
+        <select id="userFilter" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500">
+          <option value=""><%= t('all_users') %></option>
+          <% if (typeof users !== 'undefined') { %>
+            <% users.forEach(user => { %>
+              <option value="<%= user.id %>"><%= user.name %></option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
 
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-calendar"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-number">
-              <% if (history && history.length > 0) { %>
-                <%= Math.ceil((new Date() - new Date(history[history.length - 1].created_at)) / (1000 * 60 * 60 * 24)) %>
-              <% } else { %>
-                0
-              <% } %>
-            </span>
-            <span class="stat-label">Days in System</span>
-          </div>
-        </div>
+      <div class="flex gap-2">
+        <button id="applyHistoryFilters" class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg group">
+          <i class="fas fa-search mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('apply') %>
+        </button>
+        <button id="resetHistoryFilters" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg group">
+          <i class="fas fa-times mr-2 group-hover:rotate-90 transition-transform duration-300"></i> <%= t('reset') %>
+        </button>
+      </div>
+    </div>
+  </div>
 
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-user-friends"></i>
-          </div>
-          <div class="stat-content">
-            <span class="stat-number">
-              <%
-                const uniqueUsers = history ? [...new Set(history.map(h => h.user_name).filter(Boolean))].length : 0;
-              %>
-              <%= uniqueUsers %>
-            </span>
-            <span class="stat-label">Contributors</span>
-          </div>
-        </div>
+  <!-- Modern Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <%
+      const stats = [
+        {
+          icon: 'fas fa-history',
+          label: 'Total Events',
+          value: history ? history.length : 0,
+          color: 'from-blue-500 to-blue-600',
+          delay: '0s'
+        },
+        {
+          icon: 'fas fa-calendar-alt',
+          label: 'Days in System',
+          value: history && history.length > 0 ? Math.ceil((new Date() - new Date(history[history.length - 1].created_at)) / (1000 * 60 * 60 * 24)) : 0,
+          color: 'from-green-500 to-green-600',
+          delay: '0.1s'
+        },
+        {
+          icon: 'fas fa-user-friends',
+          label: 'Contributors',
+          value: history ? [...new Set(history.map(h => h.user_name).filter(Boolean))].length : 0,
+          color: 'from-purple-500 to-purple-600',
+          delay: '0.2s'
+        },
+        {
+          icon: 'fas fa-exchange-alt',
+          label: 'Assignment Changes',
+          value: history ? history.filter(h => h.action_type === 'assigned' || h.action_type === 'unassigned').length : 0,
+          color: 'from-yellow-500 to-orange-500',
+          delay: '0.3s'
+        }
+      ];
+    %>
 
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-exchange-alt"></i>
+    <% stats.forEach((stat) => { %>
+      <div class="group bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 hover:scale-105 transition-all duration-500 hover:shadow-2xl">
+        <div class="flex items-center space-x-4">
+          <div class="p-3 bg-gradient-to-r <%= stat.color %> rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+            <i class="<%= stat.icon %> text-2xl text-white"></i>
           </div>
-          <div class="stat-content">
-            <span class="stat-number">
-              <%
-                const assignmentChanges = history ? history.filter(h => h.action_type === 'assigned' || h.action_type === 'unassigned').length : 0;
-              %>
-              <%= assignmentChanges %>
-            </span>
-            <span class="stat-label">Assignment Changes</span>
+          <div>
+            <div class="text-3xl font-bold bg-gradient-to-r <%= stat.color %> bg-clip-text text-transparent">
+              <%= stat.value %>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">
+              <%= stat.label %>
+            </div>
           </div>
         </div>
       </div>
+    <% }) %>
+  </div>
 
-      <!-- History Timeline -->
-      <div class="history-timeline-container">
-        <% if (history && history.length > 0) { %>
-          <div class="history-timeline">
+  <!-- Modern Timeline -->
+  <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
+    <% if (typeof paginatedHistory !== 'undefined' && paginatedHistory && paginatedHistory.length > 0) { %>
+      <div class="p-6">
+        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-timeline text-blue-500 text-lg"></i>
+          <%= t('event_timeline') %>
+          <span class="text-xs font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+            <%= paginatedHistory.length %> <%= t('events') %>
+          </span>
+        </h2>
+
+        <div class="relative">
+          <!-- Compact timeline line -->
+          <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400 to-purple-400 opacity-60"></div>
+
+          <% paginatedHistory.forEach((entry, index) => { %>
             <%
-              // Pagination setup - use provided variables or defaults
-              const currentPage = typeof page !== 'undefined' ? parseInt(page) : 1;
-              const itemsPerPage = typeof perPage !== 'undefined' ? parseInt(perPage) : 10;
-              const totalItems = history.length;
-              const totalPages = Math.ceil(totalItems / itemsPerPage);
-              const startIndex = (currentPage - 1) * itemsPerPage;
-              const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-              const paginatedHistory = history.slice(startIndex, endIndex);
-
-              // Helper function to get action styling
-              function getActionStyle(actionType) {
-                switch(actionType) {
-                  case 'created':
-                    return { icon: 'fas fa-plus-circle', color: 'success', bgColor: '#d4edda' };
-                  case 'updated':
-                    return { icon: 'fas fa-edit', color: 'info', bgColor: '#d1ecf1' };
-                  case 'assigned':
-                    return { icon: 'fas fa-user-plus', color: 'primary', bgColor: '#cce7ff' };
-                  case 'unassigned':
-                    return { icon: 'fas fa-user-minus', color: 'warning', bgColor: '#fff3cd' };
-                  case 'maintenance':
-                    return { icon: 'fas fa-tools', color: 'warning', bgColor: '#fff3cd' };
-                  case 'retired':
-                    return { icon: 'fas fa-archive', color: 'danger', bgColor: '#f8d7da' };
-                  case 'deleted':
-                    return { icon: 'fas fa-trash', color: 'danger', bgColor: '#f8d7da' };
-                  default:
-                    return { icon: 'fas fa-history', color: 'secondary', bgColor: '#f8f9fa' };
-                }
-              }
-
-              // Helper function to get time ago
-              function getTimeAgo(date) {
-                const now = new Date();
-                const diffInMs = now - date;
-                const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-                const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-                const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-                const diffInWeeks = Math.floor(diffInDays / 7);
-                const diffInMonths = Math.floor(diffInDays / 30);
-                const diffInYears = Math.floor(diffInDays / 365);
-
-                if (diffInMinutes < 1) return 'Just now';
-                if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-                if (diffInHours < 24) return `${diffInHours}h ago`;
-                if (diffInDays < 7) return `${diffInDays}d ago`;
-                if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
-                if (diffInMonths < 12) return `${diffInMonths}mo ago`;
-                return `${diffInYears}y ago`;
-              }
+              const actionStyle = getActionStyle(entry.action_type);
+              const entryDate = new Date(entry.created_at);
+              const timeAgo = getTimeAgo(entryDate);
+              const animationDelay = index * 0.05;
             %>
 
-            <% paginatedHistory.forEach((entry, index) => { %>
-              <%
-                const actionStyle = getActionStyle(entry.action_type);
-                const entryDate = new Date(entry.created_at);
-                const timeAgo = getTimeAgo(entryDate);
-              %>
-              <div class="history-entry" data-action="<%= entry.action_type %>">
-                <div class="history-marker">
-                  <div class="history-icon <%= actionStyle.color %>" style="background-color: <%= actionStyle.bgColor %>;">
-                    <i class="<%= actionStyle.icon %>"></i>
-                  </div>
-                  <% if (index < paginatedHistory.length - 1) { %>
-                    <div class="history-line"></div>
-                  <% } %>
-                </div>
+            <div class="relative mb-3 animate-[slideInLeft_0.4s_ease-out_<%= animationDelay %>s] group">
+              <!-- Compact timeline marker -->
+              <div class="absolute left-2.5 w-3 h-3 bg-white dark:bg-gray-800 rounded-full border-2 <%= actionStyle.color.replace('bg-', 'border-').replace('-100', '-400').replace('-900', '-500') %> shadow-sm group-hover:scale-125 transition-all duration-200 z-10">
+              </div>
 
-                <div class="history-content">
-                  <div class="history-card">
-                    <div class="history-header">
-                      <div class="history-title">
-                        <span class="action-badge <%= actionStyle.color %>">
-                          <i class="<%= actionStyle.icon %>"></i>
-                          <%= formatActionType ? formatActionType(entry.action_type) : entry.action_type %>
+              <!-- Compact content card -->
+              <div class="ml-8 bg-white/80 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200/60 dark:border-gray-700 overflow-hidden hover:shadow-md transition-all duration-200 group-hover:translate-x-1">
+                <!-- Single line header with all info -->
+                <div class="px-4 py-3">
+                  <div class="flex items-center justify-between gap-3">
+                    <!-- Action info -->
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                      <span class="inline-flex items-center gap-1 px-2 py-1 <%= actionStyle.color %> rounded-md text-xs font-medium">
+                        <i class="<%= actionStyle.icon %> text-xs"></i>
+                        <%= entry.action_type.charAt(0).toUpperCase() + entry.action_type.slice(1) %>
+                      </span>
+
+                      <!-- Show only the most relevant changed information -->
+                      <% if (entry.action_details && Object.keys(entry.action_details).length > 0) { %>
+                        <span class="text-xs text-gray-600 dark:text-gray-400 truncate">
+                          <%
+                            // Filter to show only the most important changes
+                            const importantKeys = ['assigned_to', 'status', 'location', 'condition', 'name', 'warranty_months', 'warranty_end_date', 'warranty_start_date', 'date_assigned', 'receipt'];
+                            const relevantChanges = Object.entries(entry.action_details).filter(([key, value]) =>
+                              importantKeys.includes(key) && value !== null && value !== undefined && key !== 'timestamp'
+                            );
+
+                            if (relevantChanges.length > 0) {
+                              const [key, value] = relevantChanges[0];
+                              const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                              // If value is an object with 'from' and 'to', show both
+                              if (value && typeof value === 'object' && ('from' in value || 'to' in value)) {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400 truncate">
+                              <span class="font-semibold text-gray-800 dark:text-gray-200"><%= displayKey %></span>:
+                              <span class="inline-flex items-center gap-1">
+                                <span class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[11px]">
+                                  <%= value.from !== undefined && value.from !== null ? value.from : '-' %>
+                                </span>
+                                <i class="fas fa-arrow-right text-gray-400 text-[10px]"></i>
+                                <span class="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-[11px] font-semibold">
+                                  <%= value.to !== undefined && value.to !== null ? value.to : '-' %>
+                                </span>
+                              </span>
+                            </span>
+                          <%
+                              } else {
+                                let displayValue = value;
+                                if (typeof value === 'object') {
+                                  displayValue = value.name || value.toString();
+                                }
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400 truncate">
+                              <span class="font-semibold text-gray-800 dark:text-gray-200"><%= displayKey %></span>:
+                              <span class="font-medium text-gray-800 dark:text-gray-200"><%= displayValue %></span>
+                            </span>
+                          <%
+                              }
+                            } else if (entry.action_type === 'created') {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400"><%= t('asset_created_in_system') %></span>
+                          <%
+                            } else if (entry.action_type === 'updated') {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400"><%= t('asset_details_updated') %></span>
+                          <%
+                            } else if (entry.action_type === 'status_changed') {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Status modified</span>
+                          <%
+                            }
+                          %>
                         </span>
-                        <span class="history-time">
-                          <i class="fas fa-clock"></i>
-                          <%= entryDate.toLocaleString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          }) %>
-                        </span>
-                      </div>
-                      <div class="history-meta">
-                        <span class="time-ago" title="<%= entryDate.toLocaleString() %>">
-                          <%= timeAgo %>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="history-body">
-                      <% if (entry.action_type === 'created') { %>
-                        <div class="action-description">
-                          <i class="fas fa-sparkles"></i>
-                          <strong>Asset was created and added to inventory</strong>
-                        </div>
-
-                      <% } else if (entry.action_type === 'updated') { %>
-                        <div class="action-description">
-                          <i class="fas fa-pencil-alt"></i>
-                          <strong>Asset details were updated</strong>
-                        </div>
-                        <% if (entry.action_details && Object.keys(entry.action_details).length > 0) { %>
-                          <div class="changes-container">
-                            <% for(const [field, change] of Object.entries(entry.action_details || {})) { %>
-                              <div class="change-item">
-                                <div class="change-field">
-                                  <i class="fas fa-arrow-right"></i>
-                                  <strong><%= formatFieldName ? formatFieldName(field) : field %></strong>
-                                </div>
-                                <div class="change-values">
-                                  <span class="old-value">
-                                    <i class="fas fa-minus-circle"></i>
-                                    "<%= formatFieldValue ? formatFieldValue(change.from) : (change.from || 'Empty') %>"
-                                  </span>
-                                  <i class="fas fa-long-arrow-alt-right change-arrow"></i>
-                                  <span class="new-value">
-                                    <i class="fas fa-plus-circle"></i>
-                                    "<%= formatFieldValue ? formatFieldValue(change.to) : (change.to || 'Empty') %>"
-                                  </span>
-                                </div>
-                              </div>
-                            <% } %>
-                          </div>
-                        <% } %>
-
-                      <% } else if (entry.action_type === 'assigned') { %>
-                        <div class="action-description">
-                          <i class="fas fa-user-check"></i>
-                          <strong>Asset was assigned to an employee</strong>
-                        </div>
-                        <div class="assignment-details">
-                          <div class="employee-card">
-                            <div class="employee-avatar">
-                              <i class="fas fa-user"></i>
-                            </div>
-                            <div class="employee-info">
-                              <div class="employee-name">
-                                <% if (entry.action_details && entry.action_details.employee_id) { %>
-                                  <a href="/employees/<%= entry.action_details.employee_id %>">
-                                    <%= entry.action_details.employee_name %>
-                                  </a>
-                                <% } else { %>
-                                  <%= entry.action_details.employee_name || 'Unknown Employee' %>
-                                <% } %>
-                              </div>
-                              <% if (entry.action_details && entry.action_details.employee_cep) { %>
-                                <div class="employee-id">ID: <%= entry.action_details.employee_cep %></div>
-                              <% } %>
-                              <% if (entry.action_details && entry.action_details.department) { %>
-                                <div class="employee-dept">
-                                  <i class="fas fa-building"></i>
-                                  <%= entry.action_details.department %>
-                                </div>
-                              <% } %>
-                            </div>
-                          </div>
-                        </div>
-
-                      <% } else if (entry.action_type === 'unassigned') { %>
-                        <div class="action-description">
-                          <i class="fas fa-user-times"></i>
-                          <strong>Asset was unassigned from employee</strong>
-                        </div>
-                        <div class="assignment-details">
-                          <div class="employee-card unassigned">
-                            <div class="employee-avatar">
-                              <i class="fas fa-user-slash"></i>
-                            </div>
-                            <div class="employee-info">
-                              <div class="employee-name">
-                                <% if (entry.action_details && entry.action_details.employee_id) { %>
-                                  <a href="/employees/<%= entry.action_details.employee_id %>">
-                                    <%= entry.action_details.employee_name %>
-                                  </a>
-                                <% } else { %>
-                                  <%= entry.action_details.employee_name || 'Unknown Employee' %>
-                                <% } %>
-                              </div>
-                              <% if (entry.action_details && entry.action_details.reason) { %>
-                                <div class="unassignment-reason">
-                                  <i class="fas fa-info-circle"></i>
-                                  Reason: <%= entry.action_details.reason %>
-                                </div>
-                              <% } %>
-                            </div>
-                          </div>
-                        </div>
-
-                      <% } else if (entry.action_type === 'maintenance') { %>
-                        <div class="action-description">
-                          <i class="fas fa-wrench"></i>
-                          <strong>Asset marked for maintenance</strong>
-                        </div>
-                        <% if (entry.action_details && entry.action_details.reason) { %>
-                          <div class="maintenance-info">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span><%= entry.action_details.reason %></span>
-                          </div>
-                        <% } %>
-
-                      <% } else if (entry.action_type === 'retired') { %>
-                        <div class="action-description">
-                          <i class="fas fa-box-archive"></i>
-                          <strong>Asset was retired</strong>
-                        </div>
-                        <% if (entry.action_details && entry.action_details.reason) { %>
-                          <div class="retirement-info">
-                            <i class="fas fa-info-circle"></i>
-                            <span><%= entry.action_details.reason %></span>
-                          </div>
-                        <% } %>
-
-                      <% } else { %>
-                        <div class="action-description">
-                          <i class="fas fa-question-circle"></i>
-                          <strong>Unknown action performed</strong>
-                        </div>
-                        <% if (entry.action_details) { %>
-                          <div class="raw-details">
-                            <pre><%= JSON.stringify(entry.action_details, null, 2) %></pre>
-                          </div>
-                        <% } %>
                       <% } %>
                     </div>
 
-                    <div class="history-footer">
-                      <div class="performer-info">
-                        <div class="performer-avatar">
-                          <i class="fas fa-user-circle"></i>
-                        </div>
-                        <div class="performer-details">
-                          <span class="performer-label">Performed by</span>
-                          <% if (entry.performed_by && entry.user_name) { %>
-                            <a href="/users/<%= entry.performed_by %>" class="performer-name">
-                              <%= entry.user_name %>
-                            </a>
-                          <% } else { %>
-                            <span class="performer-name">
-                              <%= entry.user_name || 'System' %>
-                            </span>
-                          <% } %>
-                        </div>
-                      </div>
+                    <!-- Time and user info -->
+                    <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                      <% if (entry.performed_by_name) { %>
+                        <span class="font-medium text-gray-700 dark:text-gray-300"><%= entry.performed_by_name %></span>
+                        <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
+                      <% } %>
+                      <span class="flex items-center gap-1">
+                        <i class="fas fa-clock text-xs"></i>
+                        <%= timeAgo %>
+                      </span>
                     </div>
                   </div>
-                </div>
-              </div>
-            <% }) %>
-          </div>
 
-          <!-- Pagination -->
-          <div class="history-pagination">
-            <div class="pagination-info">
-              <span class="results-count">
-                <i class="fas fa-history"></i>
-                Showing <%= startIndex + 1 %> to <%= endIndex %> of <%= totalItems %> events
-              </span>
-            </div>
-
-            <div class="pagination-controls">
-              <% if (totalPages > 1) { %>
-                <div class="pagination">
-                  <% if (currentPage > 1) { %>
-                    <a href="?page=<%= currentPage - 1 %>&perPage=<%= itemsPerPage %>" class="btn btn-sm">
-                      <i class="fas fa-chevron-left"></i> Previous
-                    </a>
-                  <% } %>
-
-                  <span class="page-info">Page <%= currentPage %> of <%= totalPages %></span>
-
-                  <% if (currentPage < totalPages) { %>
-                    <a href="?page=<%= currentPage + 1 %>&perPage=<%= itemsPerPage %>" class="btn btn-sm">
-                      Next <i class="fas fa-chevron-right"></i>
-                    </a>
+                  <!-- Expandable details for complex changes (only if needed) -->
+                  <% if (entry.action_details && Object.keys(entry.action_details).length > 2) { %>
+                    <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 hidden group-hover:block">
+                      <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                        <% Object.entries(entry.action_details).forEach(([key, value]) => { %>
+                          <% if (key !== 'timestamp' && value !== null && value !== undefined) { %>
+                            <div class="flex gap-2">
+                              <span class="font-medium capitalize text-gray-700 dark:text-gray-300 min-w-0"><%= key.replace(/_/g, ' ') %>:</span>
+                              <span class="truncate">
+                                <% if (typeof value === 'object') { %>
+                                  <%= value.name || JSON.stringify(value) %>
+                                <% } else { %>
+                                  <%= value %>
+                                <% } %>
+                              </span>
+                            </div>
+                          <% } %>
+                        <% }) %>
+                      </div>
+                    </div>
                   <% } %>
                 </div>
-              <% } %>
-
-              <div class="items-per-page-compact">
-                <select id="historyPerPage">
-                  <option value="5" <%= itemsPerPage == 5 ? 'selected' : '' %>>5</option>
-                  <option value="10" <%= itemsPerPage == 10 ? 'selected' : '' %>>10</option>
-                  <option value="20" <%= itemsPerPage == 20 ? 'selected' : '' %>>20</option>
-                  <option value="50" <%= itemsPerPage == 50 ? 'selected' : '' %>>50</option>
-                </select>
-                <span>per page</span>
               </div>
             </div>
-          </div>
-
-        <% } else { %>
-          <div class="empty-history">
-            <div class="empty-icon">
-              <i class="fas fa-history"></i>
-            </div>
-            <h3>No History Found</h3>
-            <p>This asset doesn't have any recorded history yet.</p>
-            <div class="empty-actions">
-              <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="btn btn-primary">
-                <i class="fas fa-edit"></i> Edit Asset
-              </a>
-            </div>
-          </div>
-        <% } %>
+          <% }) %>
+        </div>
       </div>
-    </div>
+
+      <!-- Compact Pagination -->
+      <div class="border-t border-gray-200/50 dark:border-gray-600/50 bg-gray-50/50 dark:bg-gray-800/50 px-6 py-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div class="text-xs text-gray-600 dark:text-gray-400">
+            <span><%= typeof startIndex !== 'undefined' ? startIndex + 1 : 1 %>-<%= typeof endIndex !== 'undefined' ? endIndex : totalItems %> of <%= totalItems %></span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <% const currentPageValue = typeof currentPage !== 'undefined' ? currentPage : 1; %>
+            <% const totalPagesValue = typeof totalPages !== 'undefined' ? totalPages : 1; %>
+            <% const itemsPerPageValue = typeof itemsPerPage !== 'undefined' ? itemsPerPage : 20; %>
+
+            <% if (totalPagesValue > 1) { %>
+              <div class="flex items-center gap-1">
+                <% if (currentPageValue > 1) { %>
+                  <a href="?page=<%= currentPageValue - 1 %>&perPage=<%= itemsPerPageValue %>" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded transition-colors">
+                    <i class="fas fa-chevron-left text-xs"></i>
+                  </a>
+                <% } %>
+
+                <span class="px-3 py-1 bg-blue-500 text-white rounded text-xs font-medium">
+                  <%= currentPageValue %>
+                </span>
+
+                <% if (currentPageValue < totalPagesValue) { %>
+                  <a href="?page=<%= currentPageValue + 1 %>&perPage=<%= itemsPerPageValue %>" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded transition-colors">
+                    <i class="fas fa-chevron-right text-xs"></i>
+                  </a>
+                <% } %>
+              </div>
+            <% } %>
+
+            <select id="historyPerPage" class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100">
+              <option value="10" <%= itemsPerPageValue == 10 ? 'selected' : '' %>>10</option>
+              <option value="20" <%= itemsPerPageValue == 20 ? 'selected' : '' %>>20</option>
+              <option value="50" <%= itemsPerPageValue == 50 ? 'selected' : '' %>>50</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- Compact empty state -->
+      <div class="flex flex-col items-center justify-center py-12 px-6">
+        <div class="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mb-4">
+          <i class="fas fa-history text-xl text-white"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2"><%= t('no_history_found') %></h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center">
+          <%= t('no_events_recorded') %>
+        </p>
+      </div>
+    <% } %>
   </div>
-</div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Pagination per page change
-  const historyPerPageSelect = document.getElementById('historyPerPage');
-  if (historyPerPageSelect) {
-    historyPerPageSelect.addEventListener('change', function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      urlParams.set('perPage', this.value);
-      urlParams.delete('page'); // Reset to first page
-      window.location.search = urlParams.toString();
-    });
+  <!-- Enhanced CSS with modern animations -->
+  <style>
+  /* Custom animations for modern feel */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  // Filter functionality
-  const applyFiltersBtn = document.getElementById('applyHistoryFilters');
-  const resetFiltersBtn = document.getElementById('resetHistoryFilters');
-
-  if (applyFiltersBtn) {
-    applyFiltersBtn.addEventListener('click', function() {
-      const actionFilter = document.getElementById('actionFilter').value;
-      const dateFrom = document.getElementById('dateFrom').value;
-      const dateTo = document.getElementById('dateTo').value;
-      const userFilter = document.getElementById('userFilter').value;
-
-      const params = new URLSearchParams();
-      if (actionFilter) params.append('action', actionFilter);
-      if (dateFrom) params.append('dateFrom', dateFrom);
-      if (dateTo) params.append('dateTo', dateTo);
-      if (userFilter) params.append('user', userFilter);
-
-      window.location.search = params.toString();
-    });
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 
-  if (resetFiltersBtn) {
-    resetFiltersBtn.addEventListener('click', function() {
-      window.location.href = window.location.pathname;
-    });
+  /* Glassmorphism effects */
+  .backdrop-blur-lg {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
-});
 
-// Export functionality
-function exportHistory() {
-  const params = new URLSearchParams(window.location.search);
-  params.append('export', 'csv');
-  params.append('export_timestamp', new Date().toISOString());
+  /* Custom scrollbar for better UX */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
 
-  // Create hidden iframe for download
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  iframe.src = `${window.location.pathname}/export?${params.toString()}`;
-  document.body.appendChild(iframe);
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
 
-  setTimeout(() => {
-    document.body.removeChild(iframe);
-  }, 2000);
-}
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+    border-radius: 4px;
+  }
 
-// Print functionality
-function printHistory() {
-  window.print();
-}
-</script>
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #2563eb, #7c3aed);
+  }
+
+  /* Responsive design improvements */
+  @media (max-width: 768px) {
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    .ml-20 {
+      margin-left: 3rem;
+    }
+
+    .absolute.left-8 {
+      left: 1rem;
+    }
+
+    .absolute.left-4 {
+      left: 0.5rem;
+    }
+  }
+  </style>
+
+  <!-- Enhanced JavaScript with smooth interactions -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add loading states to buttons
+    function addLoadingState(button, text = 'Loading...') {
+      const originalText = button.innerHTML;
+      button.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${text}`;
+      button.disabled = true;
+
+      return () => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+      };
+    }
+
+    // Enhanced pagination handling
+    const historyPerPageSelect = document.getElementById('historyPerPage');
+    if (historyPerPageSelect) {
+      historyPerPageSelect.addEventListener('change', function() {
+        const removeLoading = addLoadingState(this, 'Updating...');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('perPage', this.value);
+        urlParams.delete('page');
+
+        setTimeout(() => {
+          window.location.search = urlParams.toString();
+        }, 300);
+      });
+    }
+
+    // Enhanced filter functionality with loading states
+    const applyFiltersBtn = document.getElementById('applyHistoryFilters');
+    const resetFiltersBtn = document.getElementById('resetHistoryFilters');
+
+    if (applyFiltersBtn) {
+      applyFiltersBtn.addEventListener('click', function() {
+        const removeLoading = addLoadingState(this, 'Applying Filters...');
+
+        setTimeout(() => {
+          const actionFilter = document.getElementById('actionFilter').value;
+          const dateFrom = document.getElementById('dateFrom').value;
+          const dateTo = document.getElementById('dateTo').value;
+          const userFilter = document.getElementById('userFilter').value;
+
+          const params = new URLSearchParams();
+          if (actionFilter) params.append('action', actionFilter);
+          if (dateFrom) params.append('dateFrom', dateFrom);
+          if (dateTo) params.append('dateTo', dateTo);
+          if (userFilter) params.append('user', userFilter);
+
+          window.location.search = params.toString();
+        }, 300);
+      });
+    }
+
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener('click', function() {
+        const removeLoading = addLoadingState(this, 'Resetting...');
+
+        setTimeout(() => {
+          window.location.href = window.location.pathname;
+        }, 300);
+      });
+    }
+
+    // Add intersection observer for scroll animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationPlayState = 'running';
+        }
+      });
+    }, observerOptions);
+
+    // Observe all animated elements
+    document.querySelectorAll('[class*="animate-"]').forEach(el => {
+      observer.observe(el);
+    });
+  });
+
+  // Enhanced export functionality with progress indication
+  function exportHistory() {
+    const exportBtn = event.target.closest('button');
+    const originalText = exportBtn.innerHTML;
+
+    exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Exporting...';
+    exportBtn.disabled = true;
+
+    const params = new URLSearchParams(window.location.search);
+    params.append('export', 'csv');
+    params.append('export_timestamp', new Date().toISOString());
+
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = `${window.location.pathname}/export?${params.toString()}`;
+    document.body.appendChild(iframe);
+
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+      exportBtn.innerHTML = originalText;
+      exportBtn.disabled = false;
+
+      // Show success notification
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-[fadeInUp_0.3s_ease-out]';
+      notification.innerHTML = '<i class="fas fa-check mr-2"></i>Export completed successfully!';
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }, 2000);
+  }
+
+  // Enhanced print functionality
+  function printHistory() {
+    const printBtn = event.target.closest('button');
+    const originalText = printBtn.innerHTML;
+
+    printBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Preparing...';
+    printBtn.disabled = true;
+
+    setTimeout(() => {
+      window.print();
+      printBtn.innerHTML = originalText;
+      printBtn.disabled = false;
+    }, 500);
+  }
+  </script>

@@ -1,0 +1,275 @@
+<%- include('../partials/header', { title: 'Reports Dashboard' }) %>
+
+<div class="page-container">
+  <div class="page-header-simple">
+    <div class="header-title-section">
+      <h1><i class="fas fa-chart-bar"></i> Reports Dashboard</h1>
+      <p class="text-muted">Generate comprehensive reports on assets, employees, and inventory</p>
+    </div>
+  </div>
+
+  <!-- Quick Stats Overview -->
+  <div class="analytics-summary">
+    <div class="summary-card primary">
+      <div class="summary-icon">
+        <i class="fas fa-boxes"></i>
+      </div>
+      <div class="summary-content">
+        <h3>Asset Reports</h3>
+        <div class="summary-number">4</div>
+        <div class="summary-detail">Available reports</div>
+      </div>
+    </div>
+
+    <div class="summary-card info">
+      <div class="summary-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="summary-content">
+        <h3>Employee Reports</h3>
+        <div class="summary-number">2</div>
+        <div class="summary-detail">Available reports</div>
+      </div>
+    </div>
+
+    <div class="summary-card success">
+      <div class="summary-icon">
+        <i class="fas fa-file-export"></i>
+      </div>
+      <div class="summary-content">
+        <h3>Export Options</h3>
+        <div class="summary-number">CSV & PDF</div>
+        <div class="summary-detail">Multiple formats</div>
+      </div>
+    </div>
+
+    <div class="summary-card warning">
+      <div class="summary-icon">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="summary-content">
+        <h3>Real-time Data</h3>
+        <div class="summary-number">Live</div>
+        <div class="summary-detail">Updated instantly</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Asset Reports Section -->
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-boxes"></i> Asset Reports</h3>
+    </div>
+    <div class="card-body">
+      <div class="analytics-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+
+        <!-- Assets Overview Report -->
+        <div class="insight-card primary">
+          <div class="insight-icon">
+            <i class="fas fa-chart-pie"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Assets Analytics Report</h4>
+            <p>Comprehensive overview of all assets with analytics, breakdowns by type, value, and condition.</p>
+            <div class="insight-actions">
+              <a href="/reports/assets" class="btn btn-primary btn-sm">
+                <i class="fas fa-chart-bar"></i> View Report
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assets by Department -->
+        <div class="insight-card info">
+          <div class="insight-icon">
+            <i class="fas fa-building"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Assets by Department</h4>
+            <p>View how assets are distributed across different departments with total values and counts.</p>
+            <div class="insight-actions">
+              <a href="/reports/assets-by-department" class="btn btn-info btn-sm">
+                <i class="fas fa-building"></i> View Report
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unassigned Assets -->
+        <div class="insight-card warning">
+          <div class="insight-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Unassigned Assets</h4>
+            <p>List of assets that are not currently assigned to any employee and may need attention.</p>
+            <div class="insight-actions">
+              <a href="/reports/unassigned-assets" class="btn btn-warning btn-sm">
+                <i class="fas fa-list"></i> View Report
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchase History -->
+        <div class="insight-card success">
+          <div class="insight-icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Purchase History</h4>
+            <p>Track asset purchases over time, including suppliers, costs, and acquisition dates.</p>
+            <div class="insight-actions">
+              <a href="/reports/purchase-history" class="btn btn-success btn-sm">
+                <i class="fas fa-history"></i> View Report
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee Reports Section -->
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-users"></i> Employee Reports</h3>
+    </div>
+    <div class="card-body">
+      <div class="analytics-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+
+        <!-- Assets by Employee -->
+        <div class="insight-card primary">
+          <div class="insight-icon">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Assets by Employee</h4>
+            <p>View which assets are assigned to each employee, including total values and asset types.</p>
+            <div class="insight-actions">
+              <a href="/reports/assets-by-employee" class="btn btn-primary btn-sm">
+                <i class="fas fa-users"></i> View Report
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Employee Asset Details -->
+        <div class="insight-card info">
+          <div class="insight-icon">
+            <i class="fas fa-clipboard-list"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Individual Employee Details</h4>
+            <p>Access from the Assets by Employee report to view detailed asset assignments for specific employees.</p>
+            <div class="insight-actions">
+              <span class="text-muted">
+                <i class="fas fa-info-circle"></i> Available via employee report
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Options Section -->
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-file-export"></i> Export Options</h3>
+    </div>
+    <div class="card-body">
+      <div class="analytics-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+
+        <!-- CSV Exports -->
+        <div class="insight-card success">
+          <div class="insight-icon">
+            <i class="fas fa-file-csv"></i>
+          </div>
+          <div class="insight-content">
+            <h4>CSV Data Export</h4>
+            <p>Export asset data and employee assignments in CSV format for use in spreadsheet applications.</p>
+            <div class="insight-actions">
+              <a href="/reports/export-assets" class="btn btn-success btn-sm">
+                <i class="fas fa-download"></i> Export All Assets
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- PDF Reports -->
+        <div class="insight-card danger">
+          <div class="insight-icon">
+            <i class="fas fa-file-pdf"></i>
+          </div>
+          <div class="insight-content">
+            <h4>PDF Reports</h4>
+            <p>Generate formatted PDF reports for individual employees or comprehensive asset summaries.</p>
+            <div class="insight-actions">
+              <span class="text-muted">
+                <i class="fas fa-info-circle"></i> Available in employee details
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Features -->
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-features"></i> Report Features</h3>
+    </div>
+    <div class="card-body">
+      <div class="insights-grid">
+
+        <div class="insight-card info">
+          <div class="insight-icon">
+            <i class="fas fa-sync-alt"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Real-time Data</h4>
+            <p>All reports pull data directly from the database, ensuring you always have the most current information.</p>
+          </div>
+        </div>
+
+        <div class="insight-card warning">
+          <div class="insight-icon">
+            <i class="fas fa-filter"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Advanced Filtering</h4>
+            <p>Use built-in filters to focus on specific departments, asset types, or date ranges.</p>
+          </div>
+        </div>
+
+        <div class="insight-card success">
+          <div class="insight-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Visual Analytics</h4>
+            <p>Charts and graphs provide quick insights into asset distribution, utilization, and trends.</p>
+          </div>
+        </div>
+
+        <div class="insight-card primary">
+          <div class="insight-icon">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Mobile Responsive</h4>
+            <p>Access and view reports on any device - desktop, tablet, or smartphone.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

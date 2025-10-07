@@ -1,16 +1,17 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <div class="header-title-section">
-      <div class="breadcrumb-nav">
-        <a href="/dashboard" class="breadcrumb-link">
+<div class="container mx-auto px-4 py-6">
+  <!-- Breadcrumbs & Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div>
+      <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+        <a href="/dashboard" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
           <i class="fas fa-cog"></i> Dashboard
         </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-current">Software</span>
-      </div>
-      <h1>Software Management</h1>
-      <div class="software-meta">
-        <span class="software-count">
+        <i class="fas fa-chevron-right mx-2"></i>
+        <span class="text-gray-700 dark:text-gray-200">Software</span>
+      </nav>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Software Management</h1>
+      <div class="flex flex-wrap items-center gap-6 mt-2 text-gray-700 dark:text-gray-300 text-sm">
+        <span class="flex items-center gap-2">
           <i class="fas fa-laptop-code"></i>
           <%= software ? software.length : 0 %> software packages
         </span>
@@ -18,87 +19,110 @@
           const totalLicenses = software ? software.reduce((sum, sw) => sum + (parseInt(sw.max_licenses) || 1), 0) : 0;
           const usedLicenses = software ? software.reduce((sum, sw) => sum + (parseInt(sw.employee_count) || 0), 0) : 0;
         %>
-        <span class="usage-summary">
+        <span class="flex items-center gap-2">
           <i class="fas fa-users"></i>
-          <%= usedLicenses %> / <%= totalLicenses %> licenses used
+          <span class="font-semibold"><%= usedLicenses %></span>
+          <span class="mx-1 text-gray-400 dark:text-gray-500">/</span>
+          <span class="font-semibold"><%= totalLicenses %></span>
+          licenses used
         </span>
       </div>
     </div>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <button id="exportSoftwareBtn" class="btn btn-success">
-          <i class="fas fa-download"></i> Export List
-        </button>
-        <a href="/software/add" class="btn btn-primary">
-          <i class="fas fa-plus"></i> Add New Software
-        </a>
-      </div>
+    <div class="flex gap-2">
+      <button id="exportSoftwareBtn" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-download mr-2"></i> Export List
+      </button>
+      <a href="/software/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-plus mr-2"></i> Add New Software
+      </a>
     </div>
   </div>
 
-  <!-- Quick Filters -->
-  <div class="quick-filters">
-    <div class="filter-tabs">
-      <button class="filter-tab active" data-filter="all">
-        <i class="fas fa-list"></i> All Software
-      </button>
-      <button class="filter-tab" data-filter="available">
-        <i class="fas fa-check-circle"></i> Available
-      </button>
-      <button class="filter-tab" data-filter="full">
-        <i class="fas fa-exclamation-triangle"></i> At Limit
-      </button>
-      <button class="filter-tab" data-filter="unused">
-        <i class="fas fa-user-slash"></i> Unused
-      </button>
+<!-- Advanced Filters Panel -->
+<div class="mb-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+  <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" id="swFiltersToggle">
+    <div class="flex items-center gap-2">
+      <i class="fas fa-filter"></i>
+      <h3 class="font-semibold text-gray-700 dark:text-gray-200">Advanced Filters</h3>
+      <span class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold" id="swFilterBadge">0</span>
     </div>
-
-    <div class="search-filters">
-      <div class="search-input">
-        <i class="fas fa-search"></i>
-        <input type="text" id="licenseSearch" placeholder="Search software..." autocomplete="off">
-      </div>
-      <select id="vendorFilter" class="vendor-filter">
-        <option value="">All Vendors</option>
-        <% if (software) { %>
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-gray-500 dark:text-gray-400" id="swAppliedFiltersPreview">No filters applied</span>
+      <i class="fas fa-chevron-down sw-toggle-icon"></i>
+    </div>
+  </div>
+  <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 hidden" id="swFiltersContent">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+      <div>
+        <label for="swVendorFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Vendor</label>
+        <select id="swVendorFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <option value="">All Vendors</option>
           <%
-            const uniqueVendors = [...new Set(software.map(sw => sw.vendor).filter(Boolean))].sort();
-            uniqueVendors.forEach(vendor => {
+            const vendors = Array.from(new Set((software || []).map(sw => sw.vendor).filter(Boolean)));
+            vendors.sort();
+            vendors.forEach(vendor => {
           %>
             <option value="<%= vendor %>"><%= vendor %></option>
-          <% }); %>
-        <% } %>
-      </select>
+          <% }) %>
+        </select>
+      </div>
+      <div>
+        <label for="swLicenseTypeFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">License Type</label>
+        <select id="swLicenseTypeFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <option value="">All Types</option>
+          <%
+            const licenseTypes = Array.from(new Set((software || []).map(sw => sw.license_type).filter(Boolean)));
+            licenseTypes.sort();
+            licenseTypes.forEach(type => {
+          %>
+            <option value="<%= type %>"><%= type %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div>
+        <label for="swStatusFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Status</label>
+        <select id="swStatusFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          <option value="">All Statuses</option>
+          <option value="available">Available</option>
+          <option value="near-limit">Near Limit</option>
+          <option value="at-limit">At Limit</option>
+          <option value="unused">Unused</option>
+        </select>
+      </div>
+      <div>
+        <label for="swSearch" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Search</label>
+        <input type="text" id="swSearch" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Name, vendor, version...">
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-wrap gap-2 text-xs" id="swAppliedFilters"></div>
+      <div class="flex gap-2">
+        <button type="button" id="swApplyFilters" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-search group-hover:scale-110 transition-transform duration-300"></i> Apply Filters
+        </button>
+        <button type="button" id="swResetFilters" class="group px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-times group-hover:-rotate-12 transition-transform duration-300"></i> Reset All
+        </button>
+      </div>
     </div>
   </div>
+</div>
 
-  <div class="content-section">
+  <!-- Content Section -->
+  <div>
     <% if (software && software.length > 0) { %>
-      <!-- Software Licenses Table -->
-      <div class="licenses-container">
-        <div class="licenses-table-wrapper">
-          <table class="licenses-table">
+      <div id="softwareTableBlock">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-x-auto">
+          <table class="min-w-full text-sm">
             <thead>
-              <tr>
-                <th class="license-name-col">
-                  <i class="fas fa-laptop-code"></i> Software & Version
-                </th>
-                <th class="vendor-col">
-                  <i class="fas fa-building"></i> Vendor
-                </th>
-                <th class="license-type-col">
-                  <i class="fas fa-certificate"></i> License Type
-                </th>
-                <th class="usage-col">
-                  <i class="fas fa-users"></i> Usage
-                </th>
-                <th class="cost-col">
-                  <i class="fas fa-euro-sign"></i> Cost
-                </th>
-                <th class="status-col">
-                  <i class="fas fa-info-circle"></i> Status
-                </th>
-                <th class="actions-col">Actions</th>
+              <tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-laptop-code"></i> Software & Version</th>
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-building"></i> Vendor</th>
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-certificate"></i> License Type</th>
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-users"></i> Usage</th>
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-euro-sign"></i> Cost</th>
+                <th class="px-4 py-3 text-left font-semibold"><i class="fas fa-info-circle"></i> Status</th>
+                <th class="px-4 py-3 text-left font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -127,70 +151,69 @@
                     statusText = 'Unused';
                   }
                 %>
-
-                <tr class="license-row"
+                <tr class="license-row border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition"
                     data-license-type="<%= sw.license_type || '' %>"
                     data-vendor="<%= sw.vendor || '' %>"
                     data-status="<%= statusClass %>"
                     data-search="<%= (sw.name + ' ' + (sw.vendor || '') + ' ' + (sw.version || '')).toLowerCase() %>">
-
                   <!-- Software Name & Version -->
-                  <td class="license-name-cell">
-                    <div class="software-info">
-                      <div class="software-name">
+                  <td class="px-4 py-3">
+                    <div>
+                      <div class="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-100">
                         <i class="fas fa-laptop-code"></i>
-                        <strong><%= sw.name %></strong>
+                        <%= sw.name %>
+                        <% if (sw.version) { %>
+                          <span class="ml-2 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">v<%= sw.version %></span>
+                        <% } %>
                       </div>
-                      <% if (sw.version) { %>
-                        <div class="software-version">v<%= sw.version %></div>
-                      <% } %>
                       <% if (sw.description) { %>
-                        <div class="software-description" title="<%= sw.description %>">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate" title="<%= sw.description %>">
                           <%= sw.description.length > 50 ? sw.description.substring(0, 50) + '...' : sw.description %>
                         </div>
                       <% } %>
                     </div>
                   </td>
-
                   <!-- Vendor -->
-                  <td class="vendor-cell">
+                  <td class="px-4 py-3">
                     <% if (sw.vendor) { %>
-                      <span class="vendor-badge">
+                      <span class="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded px-2 py-0.5 text-xs text-gray-700 dark:text-gray-200">
                         <i class="fas fa-building"></i> <%= sw.vendor %>
                       </span>
                     <% } else { %>
-                      <span class="text-muted">-</span>
+                      <span class="text-gray-400 dark:text-gray-500">-</span>
                     <% } %>
                   </td>
-
                   <!-- License Type -->
-                  <td class="license-type-cell">
+                  <td class="px-4 py-3">
                     <% if (sw.license_type) { %>
-                      <span class="license-badge <%= sw.license_type %>">
+                      <span class="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded px-2 py-0.5 text-xs text-blue-800 dark:text-blue-200">
                         <i class="fas fa-certificate"></i> <%= sw.license_type %>
                       </span>
                     <% } else { %>
-                      <span class="text-muted">-</span>
+                      <span class="text-gray-400 dark:text-gray-500">-</span>
                     <% } %>
                   </td>
-
                   <!-- Usage with Progress Bar -->
-                  <td class="usage-cell">
-                    <div class="usage-info">
-                      <div class="usage-numbers">
-                        <span class="used-count"><%= usedCount %></span>
-                        <span class="separator">/</span>
-                        <span class="max-count-display" title="Max licenses (edit in software details)">
-                          <%= maxLicenses %>
-                        </span>
+                  <td class="px-4 py-3">
+                    <div>
+                      <div class="flex items-center gap-1 font-semibold">
+                        <span class="text-blue-700 dark:text-blue-300"><%= usedCount %></span>
+                        <span class="mx-1 text-gray-400 dark:text-gray-500">/</span>
+                        <span class="text-gray-700 dark:text-gray-200"><%= maxLicenses %></span>
                       </div>
-                      <div class="usage-bar">
-                        <div class="usage-fill <%= statusClass %>"
-                             style="width: <%= Math.min(usagePercentage, 100) %>%"
-                             title="<%= usagePercentage %>% used">
+                      <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded mt-1">
+                        <div
+                          class="<%=
+                            statusClass === 'available' ? 'bg-green-500' :
+                            statusClass === 'near-limit' ? 'bg-yellow-400' :
+                            statusClass === 'at-limit' ? 'bg-red-500' :
+                            'bg-gray-400'
+                          %> h-2 rounded transition-all"
+                          style="width: <%= Math.min(usagePercentage, 100) %>%"
+                          title="<%= usagePercentage %>% used">
                         </div>
                       </div>
-                      <div class="available-count <%= statusClass %>">
+                      <div class="text-xs mt-1 <%= statusClass === 'at-limit' || statusClass === 'near-limit' ? 'text-red-600 dark:text-red-400 font-semibold' : statusClass === 'unused' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-600 dark:text-gray-300' %>">
                         <% if (availableCount > 0) { %>
                           <%= availableCount %> available
                         <% } else if (availableCount === 0) { %>
@@ -201,115 +224,120 @@
                       </div>
                     </div>
                   </td>
-
                   <!-- Cost -->
-                  <td class="cost-cell">
+                  <td class="px-4 py-3">
                     <% if (sw.cost_per_license) { %>
-                      <div class="cost-info">
-                        <div class="cost-per-license">€<%= parseFloat(sw.cost_per_license).toFixed(2) %></div>
-                        <div class="total-cost">
-                          Total: €<%= (parseFloat(sw.cost_per_license) * maxLicenses).toFixed(2) %>
-                        </div>
+                      <div>
+                        <div class="font-semibold text-green-700 dark:text-green-400">€<%= parseFloat(sw.cost_per_license).toFixed(2) %></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Total: €<%= (parseFloat(sw.cost_per_license) * maxLicenses).toFixed(2) %></div>
                       </div>
                     <% } else { %>
-                      <span class="text-muted">-</span>
+                      <span class="text-gray-400 dark:text-gray-500">-</span>
                     <% } %>
                   </td>
-
                   <!-- Status -->
-                  <td class="status-cell">
-                    <span class="status-indicator <%= statusClass %>">
-                      <i class="<%= statusIcon %>"></i> <%= statusText %>
-                    </span>
-                    <% if (availableCount < 0) { %>
-                      <div class="over-limit-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Over limit by <%= Math.abs(availableCount) %>
-                      </div>
-                    <% } %>
-                  </td>
-
-                  <!-- Actions -->
-                  <td class="actions-cell">
-                    <div class="action-buttons">
-                      <a href="/software/<%= sw.id %>/edit"
-                         class="btn-action btn-edit"
-                         title="Edit Software">
-                        <i class="fas fa-edit"></i>
-                      </a>
-
-                      <% if (parseInt(sw.employee_count || 0) > 0) { %>
-                        <button class="btn-action btn-users"
-                                title="View Assignments (<%= sw.employee_count %> users)"
-                                onclick="showAssignments('<%= sw.id %>', '<%= sw.name %>')">
-                          <i class="fas fa-users"></i>
-                        </button>
-                      <% } else { %>
-                        <button class="btn-action btn-assign"
-                                title="Assign License"
-                                onclick="assignLicense('<%= sw.id %>', '<%= sw.name %>', <%= availableCount %>)">
-                          <i class="fas fa-user-plus"></i>
-                        </button>
-                      <% } %>
-
-                      <div class="dropdown">
-                        <button class="btn-action btn-more dropdown-toggle" title="More Options">
-                          <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div class="dropdown-menu">
-                          <a href="/software/<%= sw.id %>/duplicate" class="dropdown-item">
-                            <i class="fas fa-copy"></i> Duplicate Software
-                          </a>
-                          <a href="/software/<%= sw.id %>/history" class="dropdown-item">
-                            <i class="fas fa-history"></i> View History
-                          </a>
-                          <div class="dropdown-divider"></div>
-                          <% if (parseInt(sw.employee_count || 0) === 0) { %>
-                            <button onclick="confirmDelete('<%= sw.name %>', '<%= sw.id %>')"
-                                    class="dropdown-item delete-item">
-                              <i class="fas fa-trash"></i> Delete Software
-                            </button>
-                          <% } else { %>
-                            <span class="dropdown-item disabled"
-                                  title="Cannot delete: software is assigned to <%= sw.employee_count %> employees">
-                              <i class="fas fa-trash"></i> Delete Software
-                            </span>
-                          <% } %>
-                        </div>
-                      </div>
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold
+                      <%= statusClass === 'available' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' :
+                          statusClass === 'near-limit' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' :
+                          statusClass === 'at-limit' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' :
+                          'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400' %>">
+                    <i class="<%= statusIcon %>"></i> <%= statusText %>
+                  </span>
+                  <% if (availableCount < 0) { %>
+                    <div class="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 mt-1">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      Over limit by <%= Math.abs(availableCount) %>
                     </div>
-                  </td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Results Summary -->
-        <div class="results-summary">
-          <div class="results-count">
+                  <% } %>
+                </td>
+                <!-- Actions -->
+                <td class="px-4 py-3">
+                  <div class="flex gap-1">
+                    <!-- Edit Button -->
+                    <a href="/software/<%= sw.id %>/edit"
+                      class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition"
+                      title="Edit Software">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <!-- Show Assigned Button (opens modal) -->
+                    <button type="button"
+                      class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+                      title="Show Assigned (<%= sw.employee_count %> users)"
+                      onclick="showAssignmentsModal('<%= sw.id %>', '<%= sw.name %>')">
+                      <i class="fas fa-users"></i>
+                    </button>
+                    <!-- Delete Button -->
+                    <% if (parseInt(sw.employee_count || 0) === 0) { %>
+                      <button type="button" onclick="confirmDelete('<%= sw.name %>', '<%= sw.id %>')"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition"
+                        title="Delete Software">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    <% } else { %>
+                      <button type="button"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                        title="Cannot delete software with assignments" disabled>
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <!-- Results Summary & Pagination -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
             <i class="fas fa-laptop-code"></i>
-            Showing <strong id="visibleCount"><%= software.length %></strong> of <%= software.length %> software packages
+            Showing <strong id="visibleCount"><%= software.length %></strong> of <%= typeof totalSoftware !== 'undefined' ? totalSoftware : software.length %> software packages
           </div>
-          <div class="view-options">
-            <span class="view-label">License limits can be changed in the edit page</span>
+          <div class="flex items-center gap-4">
+            <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
+              <div class="flex items-center gap-2">
+                <% if (currentPage > 1) { %>
+                  <a href="?page=<%= currentPage - 1 %><%
+                    const urlParams = new URLSearchParams(req.query);
+                    urlParams.delete('page');
+                    for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>"
+                    class="pagination-link px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">« Previous</a>
+                <% } %>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Page <%= currentPage %> of <%= totalPages %></span>
+                <% if (currentPage < totalPages) { %>
+                  <a href="?page=<%= currentPage + 1 %><%
+                    const urlParams = new URLSearchParams(req.query);
+                    urlParams.delete('page');
+                    for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>"
+                    class="pagination-link px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition">Next »</a>
+                <% } %>
+              </div>
+            <% } %>
+            <div>
+              <select id="softwarePerPage" class="px-2 py-1 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                <option value="10" <%= typeof perPage !== 'undefined' && perPage == 10 ? 'selected' : '' %>>10</option>
+                <option value="25" <%= typeof perPage !== 'undefined' && perPage == 25 ? 'selected' : '' %>>25</option>
+                <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
+                <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
+              </select>
+              <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">per page</span>
+            </div>
           </div>
         </div>
       </div>
-
     <% } else { %>
-      <div class="empty-state">
-        <div class="empty-icon">
+      <div class="flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div class="mb-4 text-4xl text-gray-400 dark:text-gray-600">
           <i class="fas fa-laptop-code"></i>
         </div>
-        <h3>No Software Found</h3>
-        <p>Start by adding your first software package to track licenses and assignments.</p>
-        <div class="empty-actions">
-          <a href="/software/add" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Add First Software
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Software Found</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-4">Start by adding your first software package to track licenses and assignments.</p>
+        <div class="flex gap-2">
+          <a href="/software/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+            <i class="fas fa-plus mr-2"></i> Add First Software
           </a>
-          <a href="" class="btn btn-secondary">
-            <i class="fas fa-cog"></i> Manage References
+          <a href="#" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+            <i class="fas fa-cog mr-2"></i> Manage References
           </a>
         </div>
       </div>
@@ -317,1808 +345,447 @@
   </div>
 </div>
 
-<!-- Quick Assignment Modal -->
-<div class="modal-overlay" id="assignModal" style="display: none;">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-icon success">
-        <i class="fas fa-user-plus"></i>
-      </div>
-      <h4 class="modal-title">Assign Software License</h4>
-    </div>
-    <div class="modal-body">
-      <p>Assign <strong id="assignSoftwareName"></strong> to an employee:</p>
-      <div class="assign-form">
-        <div class="form-group">
-          <label for="assignEmployeeSelect">Select Employee</label>
-          <select id="assignEmployeeSelect" class="form-select" required>
-            <option value="">Loading employees...</option>
-          </select>
-          <small class="field-help">
-            <i class="fas fa-info-circle"></i>
-            Choose an employee to assign this software license to
-          </small>
-        </div>
-        <div class="form-group">
-          <label for="assignmentNotes">Notes (Optional)</label>
-          <textarea id="assignmentNotes" class="form-input" rows="3"
-                    placeholder="Any additional notes about this assignment..."></textarea>
-          <small class="field-help">
-            <i class="fas fa-sticky-note"></i>
-            Optional notes about the assignment purpose or conditions
-          </small>
-        </div>
-        <div class="assignment-preview" id="assignmentPreview" style="display: none;">
-          <div class="preview-header">
-            <i class="fas fa-eye"></i>
-            <strong>Assignment Preview</strong>
-          </div>
-          <div class="preview-content">
-            <div class="preview-item">
-              <strong>Software:</strong> <span id="previewSoftware">-</span>
-            </div>
-            <div class="preview-item">
-              <strong>Employee:</strong> <span id="previewEmployee">-</span>
-            </div>
-            <div class="preview-item">
-              <strong>Department:</strong> <span id="previewDepartment">-</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button id="confirmAssignBtn" class="btn btn-primary" disabled>
-        <i class="fas fa-check"></i> Assign License
-      </button>
-      <button id="cancelAssignBtn" class="btn btn-secondary">
-        <i class="fas fa-times"></i> Cancel
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Assignments View Modal -->
-<div class="modal-overlay" id="assignmentsModal" style="display: none;">
-  <div class="modal-content large-modal">
-    <div class="modal-header">
-      <div class="modal-icon info">
-        <i class="fas fa-users"></i>
-      </div>
-      <h4 class="modal-title">Software Assignments</h4>
-    </div>
-    <div class="modal-body">
-      <div class="assignments-header">
-        <div class="software-info">
-          <h5 id="assignmentsSoftwareName">Software Name</h5>
-          <div class="assignments-stats">
-            <span class="stat-item">
-              <i class="fas fa-users"></i>
-              <span id="assignmentsCount">0</span> assignments
-            </span>
-            <span class="stat-item">
-              <i class="fas fa-check-circle"></i>
-              <span id="availableLicenses">0</span> available
-            </span>
-          </div>
-        </div>
-        <div class="assignments-actions">
-          <button class="btn btn-primary btn-sm" onclick="assignFromModal()">
-            <i class="fas fa-plus"></i> Add Assignment
-          </button>
-        </div>
-      </div>
-
-      <div class="assignments-list" id="assignmentsList">
-        <div class="loading-state">
-          <i class="fas fa-spinner fa-spin"></i>
-          <p>Loading assignments...</p>
-        </div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button id="closeAssignmentsBtn" class="btn btn-secondary">
-        <i class="fas fa-times"></i> Close
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal-overlay" id="deleteModal" style="display: none;">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div class="modal-icon error">
-        <i class="fas fa-exclamation-triangle"></i>
-      </div>
-      <h4 class="modal-title">Confirm Software Deletion</h4>
-    </div>
-    <div class="modal-body">
-      <p>Are you sure you want to delete <strong id="deleteSoftwareName"></strong>?</p>
-      <p>This action cannot be undone and will remove all related data.</p>
-    </div>
-    <div class="modal-actions">
-      <button id="confirmDeleteBtn" class="btn btn-danger">
-        <i class="fas fa-trash"></i> Delete Software
-      </button>
-      <button id="cancelDeleteBtn" class="btn btn-secondary">
-        <i class="fas fa-times"></i> Cancel
-      </button>
-    </div>
+<!-- Modal for showing assignments (place at the end of the file, outside the table) -->
+<div id="assignmentsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+    <button type="button" id="closeAssignmentsModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 text-xl">&times;</button>
+    <h3 class="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-100">
+      <i class="fas fa-users"></i> Assigned Employees for <span id="modalSoftwareName"></span>
+    </h3>
+    <div id="assignmentsModalContent" class="overflow-x-auto"></div>
   </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  initializeFilters();
-  initializeSearch();
-  initializeDropdowns();
-  initializeExport();
-  initializeModals();
-});
-
-function initializeFilters() {
-  const filterTabs = document.querySelectorAll('.filter-tab');
-  const vendorFilter = document.getElementById('vendorFilter');
-
-  filterTabs.forEach(tab => {
-    tab.addEventListener('click', function() {
-      // Update active tab
-      filterTabs.forEach(t => t.classList.remove('active'));
-      this.classList.add('active');
-
-      // Apply filter
-      const filter = this.dataset.filter;
-      filterSoftware(filter, vendorFilter.value);
-    });
-  });
-
-  vendorFilter.addEventListener('change', function() {
-    const activeTab = document.querySelector('.filter-tab.active');
-    const statusFilter = activeTab ? activeTab.dataset.filter : 'all';
-    filterSoftware(statusFilter, this.value);
-  });
-}
-
-function initializeSearch() {
-  const searchInput = document.getElementById('licenseSearch');
-
-  searchInput.addEventListener('input', function() {
-    const searchTerm = this.value.toLowerCase();
-    const rows = document.querySelectorAll('.license-row');
-    let visibleCount = 0;
-
-    rows.forEach(row => {
-      const searchData = row.dataset.search;
-      if (searchData.includes(searchTerm)) {
-        row.style.display = '';
-        visibleCount++;
-      } else {
-        row.style.display = 'none';
-      }
-    });
-
-    document.getElementById('visibleCount').textContent = visibleCount;
-  });
-}
-
-// Replace the filterSoftware function with:
-function filterSoftware(statusFilter, vendorFilter) {
-  const rows = document.querySelectorAll('.license-row');
-  let visibleCount = 0;
-
-  rows.forEach(row => {
-    let show = true;
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      const rowStatus = row.dataset.status;
-
-      if (statusFilter === 'available') {
-        // Show both available and unused, but not at-limit or near-limit
-        show = (rowStatus === 'available' || rowStatus === 'unused');
-      } else if (statusFilter === 'full') {
-        // Show at-limit and near-limit
-        show = (rowStatus === 'at-limit' || rowStatus === 'near-limit');
-      } else {
-        // Exact match for other filters
-        show = (rowStatus === statusFilter);
-      }
-    }
-
-    // Vendor filter
-    if (show && vendorFilter && row.dataset.vendor !== vendorFilter) {
-      show = false;
-    }
-
-    if (show) {
-      row.style.display = '';
-      visibleCount++;
-    } else {
-      row.style.display = 'none';
-    }
-  });
-
-  document.getElementById('visibleCount').textContent = visibleCount;
-}
-
-function initializeDropdowns() {
-  document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
-    toggle.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Close all other dropdowns
-      document.querySelectorAll('.dropdown-menu').forEach(menu => {
-        if (menu !== this.nextElementSibling) {
-          menu.classList.remove('show');
-        }
-      });
-
-      // Toggle current dropdown
-      const menu = this.nextElementSibling;
-      menu.classList.toggle('show');
-    });
-  });
-
-  // Close dropdowns when clicking outside
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-      menu.classList.remove('show');
-    });
-  });
-}
-
-function initializeExport() {
-  const exportBtn = document.getElementById('exportSoftwareBtn');
-  if (exportBtn) {
-    exportBtn.addEventListener('click', () => {
-      // Create export URL with current filters
-      const params = new URLSearchParams();
-      params.append('export_type', 'current_view');
-      params.append('export_timestamp', new Date().toISOString());
-
-      // Add filter parameters
-      const licenseType = document.getElementById('licenseTypeFilter')?.value;
-      const vendor = document.getElementById('vendorFilter').value;
-
-      if (licenseType) params.append('licenseType', licenseType);
-      if (vendor) params.append('vendor', vendor);
-
-      // Create hidden iframe for download
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = `/software/export?${params.toString()}`;
-      document.body.appendChild(iframe);
-
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 2000);
-    });
-  }
-}
-
-function initializeModals() {
-  // Assignment modal
-  document.getElementById('cancelAssignBtn')?.addEventListener('click', () => {
-    document.getElementById('assignModal').style.display = 'none';
-  });
-
-  // Assignments view modal
-  document.getElementById('closeAssignmentsBtn')?.addEventListener('click', () => {
-    document.getElementById('assignmentsModal').style.display = 'none';
-  });
-
-  // Delete modal
-  document.getElementById('cancelDeleteBtn')?.addEventListener('click', () => {
-    document.getElementById('deleteModal').style.display = 'none';
-  });
-
-  // Close modals when clicking overlay
-  document.querySelectorAll('.modal-overlay').forEach(modal => {
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-      }
-    });
-  });
-}
-
-// Assignment functionality
-function assignLicense(softwareId, softwareName, availableCount) {
-  if (availableCount <= 0) {
-    showAssignmentError(
-      'No Licenses Available',
-      `No licenses available for assignment. Please increase the license limit for ${softwareName} first.`,
-      'warning'
-    );
-    return;
-  }
-
-  const modal = document.getElementById('assignModal');
-  const softwareNameSpan = document.getElementById('assignSoftwareName');
-  const employeeSelect = document.getElementById('assignEmployeeSelect');
-  const confirmBtn = document.getElementById('confirmAssignBtn');
-  const notesTextarea = document.getElementById('assignmentNotes');
-
-  // Set software name
-  softwareNameSpan.textContent = softwareName;
-  document.getElementById('previewSoftware').textContent = softwareName;
-
-  // Reset form
-  employeeSelect.innerHTML = '<option value="">Loading employees...</option>';
-  notesTextarea.value = '';
-  confirmBtn.disabled = true;
-  document.getElementById('assignmentPreview').style.display = 'none';
-
-  // Clear any previous error alerts
-  const existingAlerts = modal.querySelectorAll('.alert');
-  existingAlerts.forEach(alert => alert.remove());
-
-  // Load available employees
-  fetch('/api/employees/available')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(employees => {
-      employeeSelect.innerHTML = '<option value="">Select Employee</option>';
-      employees.forEach(emp => {
-        const option = document.createElement('option');
-        option.value = emp.id;
-        option.textContent = `${emp.name} (${emp.cep})`;
-        option.dataset.department = emp.department_name || 'Not assigned';
-        employeeSelect.appendChild(option);
-      });
-
-      if (employees.length === 0) {
-        employeeSelect.innerHTML = '<option value="">No employees available</option>';
-      }
-    })
-    .catch(error => {
-      console.error('Error loading employees:', error);
-      employeeSelect.innerHTML = '<option value="">Error loading employees</option>';
-      showInModalError(modal, 'Error Loading Employees', 'Could not load employee list. Please try again.');
-    });
-
-  // Employee selection handler
-  employeeSelect.onchange = function() {
-    const selectedOption = this.options[this.selectedIndex];
-    if (this.value) {
-      document.getElementById('previewEmployee').textContent = selectedOption.text.split(' (')[0];
-      document.getElementById('previewDepartment').textContent = selectedOption.dataset.department;
-      document.getElementById('assignmentPreview').style.display = 'block';
-      confirmBtn.disabled = false;
-    } else {
-      document.getElementById('assignmentPreview').style.display = 'none';
-      confirmBtn.disabled = true;
-    }
-  };
-
-  // Confirm assignment handler
-  confirmBtn.onclick = function() {
-    const employeeId = employeeSelect.value;
-    const notes = notesTextarea.value.trim();
-
-    if (!employeeId) {
-      showInModalError(modal, 'Selection Required', 'Please select an employee to assign the software to.');
-      return;
-    }
-
-    // Show loading state
-    confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
-
-    // Clear any existing alerts
-    const existingAlerts = modal.querySelectorAll('.alert');
-    existingAlerts.forEach(alert => alert.remove());
-
-    // Make assignment request
-    fetch(`/software/${softwareId}/assign`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        employee_id: employeeId,
-        notes: notes
-      })
-    })
-    .then(response => {
-      return response.json().then(data => {
-        // Include status in the data for error handling
-        data.status = response.status;
-        return data;
-      });
-    })
+function showAssignmentsModal(softwareId, softwareName) {
+  // Show modal
+  document.getElementById('assignmentsModal').style.display = 'flex';
+  document.getElementById('modalSoftwareName').textContent = softwareName;
+  // Show loading spinner or text
+  document.getElementById('assignmentsModalContent').innerHTML = '<div class="text-center py-8 text-gray-500"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+  // Fetch assignments via AJAX
+  fetch(`/software/${softwareId}/assignments`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(res => res.json())
     .then(data => {
-      if (data.success) {
-        // Show success message
-        showAssignmentSuccess(data.message || `${softwareName} successfully assigned!`);
-        modal.style.display = 'none';
-        // Refresh page to show updated assignments
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      } else {
-        throw new Error(data.error || 'Assignment failed');
-      }
-    })
-    .catch(error => {
-      console.error('Error assigning license:', error);
-
-      // Reset button state
-      confirmBtn.disabled = false;
-      confirmBtn.innerHTML = '<i class="fas fa-check"></i> Assign License';
-
-      // Show appropriate error message based on error type
-      if (error.message.includes('already assigned')) {
-        showInModalError(
-          modal,
-          'Already Assigned',
-          error.message,
-          'info'
-        );
-      } else if (error.message.includes('No licenses available')) {
-        showInModalError(
-          modal,
-          'No Licenses Available',
-          error.message,
-          'warning'
-        );
-      } else {
-        showInModalError(
-          modal,
-          'Assignment Failed',
-          `Error assigning license: ${error.message}`,
-          'error'
-        );
-      }
-    });
-  };
-
-  modal.style.display = 'flex';
-  employeeSelect.focus();
-}
-
-// Show assignments modal
-function showAssignments(softwareId, softwareName) {
-  const modal = document.getElementById('assignmentsModal');
-  const softwareNameElement = document.getElementById('assignmentsSoftwareName');
-  const assignmentsList = document.getElementById('assignmentsList');
-
-  // Set software name
-  softwareNameElement.textContent = softwareName;
-
-  // Show loading state
-  assignmentsList.innerHTML = `
-    <div class="loading-state">
-      <i class="fas fa-spinner fa-spin"></i>
-      <p>Loading assignments...</p>
-    </div>
-  `;
-
-  // Store current software ID for adding new assignments
-  window.currentSoftwareId = softwareId;
-  window.currentSoftwareName = softwareName;
-
-  // Load assignments
-  fetch(`/software/${softwareId}/assignments`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      const assignments = data.assignments || [];
-      const software = data.software || {};
-
-      // Update stats
-      document.getElementById('assignmentsCount').textContent = assignments.length;
-      const availableCount = (software.max_licenses || 1) - assignments.length;
-      document.getElementById('availableLicenses').textContent = Math.max(0, availableCount);
-
-      if (assignments.length === 0) {
-        assignmentsList.innerHTML = `
-          <div class="empty-assignments">
-            <div class="empty-icon">
-              <i class="fas fa-user-slash"></i>
-            </div>
-            <h4>No Assignments</h4>
-            <p>This software is not currently assigned to any employees.</p>
-            <button class="btn btn-primary" onclick="assignFromModal()">
-              <i class="fas fa-plus"></i> Add First Assignment
-            </button>
+      if (data && data.assignments && data.assignments.length > 0) {
+        let html = `
+          <div class="overflow-x-auto ${data.assignments.length > 10 ? 'max-h-96 overflow-y-auto' : ''}">
+            <table class="min-w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded">
+              <thead>
+                <tr>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Name</th>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Employee ID</th>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Department</th>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Assigned Date</th>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 uppercase">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.assignments.map(a => `
+                  <tr class="border-t border-gray-100 dark:border-gray-800">
+                    <td class="px-4 py-2">
+                      <a href="/employees/${a.employee_id}" class="text-blue-600 dark:text-blue-300 hover:underline font-semibold" target="_blank" rel="noopener">
+                        ${a.employee_name}
+                      </a>
+                    </td>
+                    <td class="px-4 py-2">${a.employee_cep}</td>
+                    <td class="px-4 py-2">${a.department_name || '-'}</td>
+                    <td class="px-4 py-2">${a.assigned_date ? new Date(a.assigned_date).toISOString().slice(0,10) : '-'}</td>
+                    <td class="px-4 py-2">${a.notes || ''}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
           </div>
         `;
+        document.getElementById('assignmentsModalContent').innerHTML = html;
       } else {
-        // Build assignments list with better styling
-        let assignmentsHtml = assignments.map(assignment => `
-          <div class="assignment-item">
-            <div class="assignment-info">
-              <div class="employee-info">
-                <div class="employee-avatar">
-                  ${assignment.employee_name.charAt(0).toUpperCase()}
-                </div>
-                <div class="employee-details">
-                  <div class="employee-name">
-                    <a href="/employees/${assignment.employee_id}" target="_blank">${assignment.employee_name}</a>
-                  </div>
-                  <div class="employee-meta">
-                    <span class="employee-id">
-                      <i class="fas fa-id-badge"></i>
-                      ${assignment.employee_cep}
-                    </span>
-                    ${assignment.department_name ? `
-                      <span class="employee-dept">
-                        <i class="fas fa-building"></i>
-                        ${assignment.department_name}
-                      </span>
-                    ` : ''}
-                  </div>
-                </div>
-              </div>
-              <div class="assignment-meta">
-                <div class="assignment-date">
-                  <i class="fas fa-calendar-check"></i>
-                  Assigned ${new Date(assignment.assigned_date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </div>
-                ${assignment.notes ? `
-                  <div class="assignment-notes">
-                    <i class="fas fa-sticky-note"></i>
-                    ${assignment.notes}
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-            <div class="assignment-actions">
-              <button class="btn-action btn-unassign"
-                      onclick="unassignLicense('${assignment.employee_id}', '${assignment.employee_name}', '${softwareId}')"
-                      title="Unassign License">
-                <i class="fas fa-user-minus"></i>
-              </button>
-            </div>
-          </div>
-        `).join('');
-
-        assignmentsList.innerHTML = assignmentsHtml;
+        document.getElementById('assignmentsModalContent').innerHTML = '<div class="text-center py-8 text-gray-500">No employees assigned.</div>';
       }
     })
-    .catch(error => {
-      console.error('Error loading assignments:', error);
-      assignmentsList.innerHTML = `
-        <div class="error-state">
-          <div class="error-icon">
-            <i class="fas fa-exclamation-triangle"></i>
-          </div>
-          <h4>Error Loading Assignments</h4>
-          <p>Could not load assignment information: ${error.message}</p>
-          <button class="btn btn-secondary" onclick="showAssignments('${softwareId}', '${softwareName}')">
-            <i class="fas fa-refresh"></i> Try Again
-          </button>
-        </div>
-      `;
+    .catch(() => {
+      document.getElementById('assignmentsModalContent').innerHTML = '<div class="text-center py-8 text-red-500">Failed to load assignments.</div>';
     });
-
-  modal.style.display = 'flex';
 }
 
-// Assign from modal (within assignments view)
-function assignFromModal() {
-  document.getElementById('assignmentsModal').style.display = 'none';
-  // Get available count first
-  const availableLicenses = parseInt(document.getElementById('availableLicenses').textContent);
-  assignLicense(window.currentSoftwareId, window.currentSoftwareName, availableLicenses);
-}
-
-// Unassign license
-function unassignLicense(employeeId, employeeName, softwareId) {
-  if (confirm(`Are you sure you want to unassign this software from ${employeeName}?`)) {
-    fetch(`/software/${softwareId}/unassign`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        employee_id: employeeId
-      })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.success) {
-        // Refresh assignments view
-        showAssignments(softwareId, window.currentSoftwareName);
-        // Also refresh the main table row
-        window.location.reload();
-      } else {
-        throw new Error(data.error || 'Unassignment failed');
-      }
-    })
-    .catch(error => {
-      console.error('Error unassigning license:', error);
-      alert('Error unassigning license: ' + error.message);
+document.addEventListener('DOMContentLoaded', function() {
+  // Modal close logic
+  const assignmentsModal = document.getElementById('assignmentsModal');
+  const closeAssignmentsModal = document.getElementById('closeAssignmentsModal');
+  if (closeAssignmentsModal && assignmentsModal) {
+    closeAssignmentsModal.addEventListener('click', function() {
+      assignmentsModal.style.display = 'none';
     });
   }
-}
-
-// Function to show error inside modal
-function showInModalError(modal, title, message, type = 'error') {
-  // Remove any existing alerts
-  const existingAlerts = modal.querySelectorAll('.alert');
-  existingAlerts.forEach(alert => alert.remove());
-
-  const alertClass = type === 'error' ? 'alert-danger' :
-                    type === 'warning' ? 'alert-warning' :
-                    type === 'info' ? 'alert-info' : 'alert-danger';
-
-  const iconClass = type === 'error' ? 'fas fa-exclamation-triangle' :
-                    type === 'warning' ? 'fas fa-exclamation-circle' :
-                    type === 'info' ? 'fas fa-info-circle' : 'fas fa-exclamation-triangle';
-
-  const errorAlert = document.createElement('div');
-  errorAlert.className = `alert ${alertClass}`;
-  errorAlert.style.margin = '1rem 0 0 0';
-  errorAlert.innerHTML = `
-    <i class="${iconClass}"></i>
-    <div>
-      <strong>${title}</strong>
-      <p style="margin: 0.5rem 0 0 0;">${message}</p>
-    </div>
-  `;
-
-  // Insert after modal body
-  const modalBody = modal.querySelector('.modal-body');
-  modalBody.appendChild(errorAlert);
-
-  // Auto-remove after 8 seconds for info/warning messages
-  if (type === 'info' || type === 'warning') {
-    setTimeout(() => {
-      if (errorAlert.parentNode) {
-        errorAlert.remove();
+  if (assignmentsModal) {
+    assignmentsModal.addEventListener('click', function(e) {
+      if (e.target === assignmentsModal) {
+        assignmentsModal.style.display = 'none';
       }
-    }, 8000);
+    });
   }
-}
-
-// Function to show standalone error modal
-function showAssignmentError(title, message, type = 'error') {
-  const alertClass = type === 'error' ? 'alert-danger' :
-                    type === 'warning' ? 'alert-warning' :
-                    type === 'info' ? 'alert-info' : 'alert-danger';
-
-  const iconClass = type === 'error' ? 'fas fa-exclamation-triangle' :
-                    type === 'warning' ? 'fas fa-exclamation-circle' :
-                    type === 'info' ? 'fas fa-info-circle' : 'fas fa-exclamation-triangle';
-
-  const errorAlert = document.createElement('div');
-  errorAlert.className = `alert ${alertClass} floating-alert`;
-  errorAlert.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
-    max-width: 400px;
-    min-width: 300px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    animation: slideInFromRight 0.3s ease-out;
-  `;
-  errorAlert.innerHTML = `
-    <i class="${iconClass}"></i>
-    <div style="flex: 1;">
-      <strong>${title}</strong>
-      <p style="margin: 0.5rem 0 0 0;">${message}</p>
-    </div>
-    <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; margin-left: 1rem;" title="Close">
-      <i class="fas fa-times"></i>
-    </button>
-  `;
-
-  document.body.appendChild(errorAlert);
-
-  // Auto-remove after 8 seconds
-  setTimeout(() => {
-    if (errorAlert.parentNode) {
-      errorAlert.style.animation = 'slideOutToRight 0.3s ease-in';
-      setTimeout(() => {
-        if (errorAlert.parentNode) {
-          errorAlert.remove();
+  function ajaxLoad(url) {
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newBlock = doc.getElementById('softwareTableBlock');
+        if (newBlock) {
+          document.getElementById('softwareTableBlock').innerHTML = newBlock.innerHTML;
+          attachHandlers();
         }
-      }, 300);
+      });
+  }
+
+  function attachHandlers() {
+    // Per-page dropdown
+    const perPageSelect = document.getElementById('softwarePerPage');
+    if (perPageSelect) {
+      perPageSelect.addEventListener('change', function() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('perPage', this.value);
+        url.searchParams.set('page', 1);
+        ajaxLoad(url);
+      });
     }
-  }, 8000);
-}
+    // Pagination links
+    document.querySelectorAll('#softwareTableBlock .pagination-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        ajaxLoad(this.href);
+      });
+    });
+  }
 
-// Function to show success message
-function showAssignmentSuccess(message) {
-  const successAlert = document.createElement('div');
-  successAlert.className = 'alert alert-success floating-alert';
-  successAlert.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
-    max-width: 400px;
-    min-width: 300px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    animation: slideInFromRight 0.3s ease-out;
-  `;
-  successAlert.innerHTML = `
-    <i class="fas fa-check-circle"></i>
-    <div style="flex: 1;">
-      <strong>Assignment Successful</strong>
-      <p style="margin: 0.5rem 0 0 0;">${message}</p>
-    </div>
-    <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; margin-left: 1rem; color: #155724;" title="Close">
-      <i class="fas fa-times"></i>
-    </button>
-  `;
+  attachHandlers();
+});
 
-  document.body.appendChild(successAlert);
+// --- FILTERS & SEARCH LOGIC ---
+document.addEventListener('DOMContentLoaded', function() {
+  // Modal close logic
+  const assignmentsModal = document.getElementById('assignmentsModal');
+  const closeAssignmentsModal = document.getElementById('closeAssignmentsModal');
+  if (closeAssignmentsModal && assignmentsModal) {
+    closeAssignmentsModal.addEventListener('click', function() {
+      assignmentsModal.style.display = 'none';
+    });
+  }
+  if (assignmentsModal) {
+    assignmentsModal.addEventListener('click', function(e) {
+      if (e.target === assignmentsModal) {
+        assignmentsModal.style.display = 'none';
+      }
+    });
+  }
 
-  // Auto-remove after 5 seconds
-  setTimeout(() => {
-    if (successAlert.parentNode) {
-      successAlert.style.animation = 'slideOutToRight 0.3s ease-in';
-      setTimeout(() => {
-        if (successAlert.parentNode) {
-          successAlert.remove();
+  // --- FILTERS & SEARCH ---
+  const filterTabs = document.querySelectorAll('.filter-tab');
+  const vendorFilter = document.getElementById('vendorFilter');
+  const searchInput = document.getElementById('licenseSearch');
+  const tableRows = document.querySelectorAll('.license-row');
+  const visibleCount = document.getElementById('visibleCount');
+
+  function filterTable() {
+    const activeTab = document.querySelector('.filter-tab.active');
+    const status = activeTab ? activeTab.getAttribute('data-filter') : 'all';
+    const vendor = vendorFilter ? vendorFilter.value : '';
+    const search = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+    let count = 0;
+    tableRows.forEach(row => {
+      const rowStatus = row.getAttribute('data-status');
+      const rowVendor = row.getAttribute('data-vendor');
+      const rowSearch = row.getAttribute('data-search');
+
+      let show = true;
+
+      // Status filter
+      if (status !== 'all' && rowStatus !== status) show = false;
+
+      // Vendor filter
+      if (vendor && rowVendor !== vendor) show = false;
+
+      // Search filter
+      if (search && !rowSearch.includes(search)) show = false;
+
+      row.style.display = show ? '' : 'none';
+      if (show) count++;
+    });
+
+    if (visibleCount) visibleCount.textContent = count;
+  }
+
+  // Tab click
+  filterTabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      filterTabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      filterTable();
+    });
+  });
+
+  // Vendor filter
+  if (vendorFilter) {
+    vendorFilter.addEventListener('change', filterTable);
+  }
+
+  // Search input
+  if (searchInput) {
+    searchInput.addEventListener('input', filterTable);
+  }
+
+  // Initial filter
+  filterTable();
+
+  // --- AJAX pagination and per-page handlers (existing) ---
+  function ajaxLoad(url) {
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newBlock = doc.getElementById('softwareTableBlock');
+        if (newBlock) {
+          document.getElementById('softwareTableBlock').innerHTML = newBlock.innerHTML;
+          attachHandlers();
         }
-      }, 300);
+      });
+  }
+
+  function attachHandlers() {
+    // Per-page dropdown
+    const perPageSelect = document.getElementById('softwarePerPage');
+    if (perPageSelect) {
+      perPageSelect.addEventListener('change', function() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('perPage', this.value);
+        url.searchParams.set('page', 1);
+        ajaxLoad(url);
+      });
     }
-  }, 5000);
-}
+    // Pagination links
+    document.querySelectorAll('#softwareTableBlock .pagination-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        ajaxLoad(this.href);
+      });
+    });
+  }
 
-function confirmDelete(softwareName, softwareId) {
-  document.getElementById('deleteSoftwareName').textContent = softwareName;
-  document.getElementById('deleteModal').style.display = 'flex';
+  attachHandlers();
+});
 
-  document.getElementById('confirmDeleteBtn').onclick = function() {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/software/${softwareId}/delete`;
-    document.body.appendChild(form);
-    form.submit();
+// --- Advanced Software Filters ---
+function setupSoftwareFilters() {
+  const swFiltersToggle = document.getElementById('swFiltersToggle');
+  const swFiltersContent = document.getElementById('swFiltersContent');
+  const swFilterBadge = document.getElementById('swFilterBadge');
+  const swAppliedFiltersPreview = document.getElementById('swAppliedFiltersPreview');
+  const swAppliedFilters = document.getElementById('swAppliedFilters');
+  const swApplyFiltersBtn = document.getElementById('swApplyFilters');
+  const swResetFiltersBtn = document.getElementById('swResetFilters');
+  const swVendorFilter = document.getElementById('swVendorFilter');
+  const swLicenseTypeFilter = document.getElementById('swLicenseTypeFilter');
+  const swStatusFilter = document.getElementById('swStatusFilter');
+  const swSearch = document.getElementById('swSearch');
+  const visibleCount = document.getElementById('visibleCount');
+
+  // Store last applied filters globally
+  window.lastAppliedSoftwareFilters = window.lastAppliedSoftwareFilters || {
+    vendor: '',
+    licenseType: '',
+    status: '',
+    search: ''
   };
+
+  function getSwFilterValues() {
+    return {
+      vendor: swVendorFilter ? swVendorFilter.value : '',
+      licenseType: swLicenseTypeFilter ? swLicenseTypeFilter.value : '',
+      status: swStatusFilter ? swStatusFilter.value : '',
+      search: swSearch ? swSearch.value.trim().toLowerCase() : ''
+    };
+  }
+
+  function countSwActiveFilters(filters) {
+    let count = 0;
+    for (const key in filters) {
+      if (filters[key]) count++;
+    }
+    return count;
+  }
+
+  function updateSwFiltersUI() {
+    const filters = getSwFilterValues();
+    const count = countSwActiveFilters(filters);
+    if (swFilterBadge) swFilterBadge.textContent = count;
+    // Preview
+    let preview = [];
+    if (filters.vendor) preview.push('Vendor');
+    if (filters.licenseType) preview.push('License Type');
+    if (filters.status) preview.push('Status');
+    if (filters.search) preview.push('Search');
+    if (swAppliedFiltersPreview) swAppliedFiltersPreview.textContent = preview.length ? preview.join(', ') : 'No filters applied';
+    // Pills
+    if (swAppliedFilters) {
+      swAppliedFilters.innerHTML = '';
+      if (filters.vendor) swAppliedFilters.innerHTML += `<span class="bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded">${swVendorFilter.selectedOptions[0].text}</span>`;
+      if (filters.licenseType) swAppliedFilters.innerHTML += `<span class="bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-0.5 rounded">${swLicenseTypeFilter.selectedOptions[0].text}</span>`;
+      if (filters.status) swAppliedFilters.innerHTML += `<span class="bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 px-2 py-0.5 rounded">${swStatusFilter.selectedOptions[0].text}</span>`;
+      if (filters.search) swAppliedFilters.innerHTML += `<span class="bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-0.5 rounded">${filters.search}</span>`;
+    }
+  }
+
+  function filterSwTable(filters) {
+    const swRows = document.querySelectorAll('.license-row');
+    let count = 0;
+    swRows.forEach(row => {
+      const rowVendor = row.getAttribute('data-vendor') || '';
+      const rowLicenseType = row.getAttribute('data-license-type') || '';
+      const rowStatus = row.getAttribute('data-status') || '';
+      const rowSearch = row.getAttribute('data-search') || '';
+      let show = true;
+      if (filters.vendor && rowVendor !== filters.vendor) show = false;
+      if (filters.licenseType && rowLicenseType !== filters.licenseType) show = false;
+      if (filters.status && rowStatus !== filters.status) show = false;
+      if (filters.search && !rowSearch.includes(filters.search)) show = false;
+      row.style.display = show ? '' : 'none';
+      if (show) count++;
+    });
+    if (visibleCount) visibleCount.textContent = count;
+  }
+
+  // Toggle advanced filters panel
+  if (swFiltersToggle && swFiltersContent) {
+    swFiltersToggle.onclick = function() {
+      swFiltersContent.classList.toggle('hidden');
+      this.querySelector('.sw-toggle-icon').classList.toggle('rotate-180');
+    };
+  }
+
+  // Only apply filters when button is clicked
+  if (swApplyFiltersBtn) {
+    swApplyFiltersBtn.onclick = function() {
+      window.lastAppliedSoftwareFilters = getSwFilterValues();
+      updateSwFiltersUI();
+      filterSwTable(window.lastAppliedSoftwareFilters);
+      updatePaginationLinksWithFilters();
+    };
+  }
+
+  // Reset filters and apply
+  if (swResetFiltersBtn) {
+    swResetFiltersBtn.onclick = function() {
+      if (swVendorFilter) swVendorFilter.value = '';
+      if (swLicenseTypeFilter) swLicenseTypeFilter.value = '';
+      if (swStatusFilter) swStatusFilter.value = '';
+      if (swSearch) swSearch.value = '';
+      window.lastAppliedSoftwareFilters = getSwFilterValues();
+      updateSwFiltersUI();
+      filterSwTable(window.lastAppliedSoftwareFilters);
+      updatePaginationLinksWithFilters();
+    };
+  }
+
+  // On load, show all (no filters applied)
+  updateSwFiltersUI();
+  filterSwTable(window.lastAppliedSoftwareFilters);
+  updatePaginationLinksWithFilters();
 }
 
-// Function to show error inside modal
-function showInModalError(modal, title, message, type = 'error') {
-  // Remove any existing alerts
-  const existingAlerts = modal.querySelectorAll('.alert');
-  existingAlerts.forEach(alert => alert.remove());
-
-  const alertClass = type === 'error' ? 'alert-danger' :
-                    type === 'warning' ? 'alert-warning' :
-                    type === 'info' ? 'alert-info' : 'alert-danger';
-
-  const iconClass = type === 'error' ? 'fas fa-exclamation-triangle' :
-                    type === 'warning' ? 'fas fa-exclamation-circle' :
-                    type === 'info' ? 'fas fa-info-circle' : 'fas fa-exclamation-triangle';
-
-  const errorAlert = document.createElement('div');
-  errorAlert.className = `alert ${alertClass}`;
-  errorAlert.style.margin = '1rem 0 0 0';
-  errorAlert.innerHTML = `
-    <i class="${iconClass}"></i>
-    <div>
-      <strong>${title}</strong>
-      <p style="margin: 0.5rem 0 0 0;">${message}</p>
-    </div>
-  `;
-
-  // Insert after modal body
-  const modalBody = modal.querySelector('.modal-body');
-  modalBody.appendChild(errorAlert);
-
-  // Auto-remove after 8 seconds for info/warning messages
-  if (type === 'info' || type === 'warning') {
-    setTimeout(() => {
-      if (errorAlert.parentNode) {
-        errorAlert.remove();
-      }
-    }, 8000);
+// Update pagination links and per-page dropdown to include filter params as URL hash
+function updatePaginationLinksWithFilters() {
+  // Get current filters
+  const filters = window.lastAppliedSoftwareFilters || {};
+  // Build hash string
+  const hash = encodeURIComponent(JSON.stringify(filters));
+  // Update pagination links
+  document.querySelectorAll('#softwareTableBlock .pagination-link').forEach(link => {
+    let url = new URL(link.href, window.location.origin);
+    url.hash = 'filters=' + hash;
+    link.href = url.toString();
+  });
+  // Update per-page dropdown
+  const perPageSelect = document.getElementById('softwarePerPage');
+  if (perPageSelect) {
+    perPageSelect.dataset.filters = hash;
   }
 }
 
-// Function to show standalone error modal
-function showAssignmentError(title, message, type = 'error') {
-  const alertClass = type === 'error' ? 'alert-danger' :
-                    type === 'warning' ? 'alert-warning' :
-                    type === 'info' ? 'alert-info' : 'alert-danger';
-
-  const iconClass = type === 'error' ? 'fas fa-exclamation-triangle' :
-                    type === 'warning' ? 'fas fa-exclamation-circle' :
-                    type === 'info' ? 'fas fa-info-circle' : 'fas fa-exclamation-triangle';
-
-  const errorAlert = document.createElement('div');
-  errorAlert.className = `alert ${alertClass} floating-alert`;
-  errorAlert.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
-    max-width: 400px;
-    min-width: 300px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    animation: slideInFromRight 0.3s ease-out;
-  `;
-  errorAlert.innerHTML = `
-    <i class="${iconClass}"></i>
-    <div style="flex: 1;">
-      <strong>${title}</strong>
-      <p style="margin: 0.5rem 0 0 0;">${message}</p>
-    </div>
-    <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; margin-left: 1rem;" title="Close">
-      <i class="fas fa-times"></i>
-    </button>
-  `;
-
-  document.body.appendChild(errorAlert);
-
-  // Auto-remove after 8 seconds
-  setTimeout(() => {
-    if (errorAlert.parentNode) {
-      errorAlert.style.animation = 'slideOutToRight 0.3s ease-in';
-      setTimeout(() => {
-        if (errorAlert.parentNode) {
-          errorAlert.remove();
-        }
-      }, 300);
-    }
-  }, 8000);
+// On AJAX load, re-apply filters and update pagination links
+function afterSoftwareTableAjaxLoad() {
+  setupSoftwareFilters();
+  // If filters are present in hash, re-apply them
+  if (window.location.hash.startsWith('#filters=')) {
+    try {
+      const filters = JSON.parse(decodeURIComponent(window.location.hash.replace('#filters=', '')));
+      // Set filter fields
+      if (filters.vendor !== undefined) document.getElementById('swVendorFilter').value = filters.vendor;
+      if (filters.licenseType !== undefined) document.getElementById('swLicenseTypeFilter').value = filters.licenseType;
+      if (filters.status !== undefined) document.getElementById('swStatusFilter').value = filters.status;
+      if (filters.search !== undefined) document.getElementById('swSearch').value = filters.search;
+      window.lastAppliedSoftwareFilters = filters;
+      // Apply filters
+      const swApplyFiltersBtn = document.getElementById('swApplyFilters');
+      if (swApplyFiltersBtn) swApplyFiltersBtn.click();
+    } catch (e) {}
+  }
 }
 
-// Function to show success message
-function showAssignmentSuccess(message) {
-  const successAlert = document.createElement('div');
-  successAlert.className = 'alert alert-success floating-alert';
-  successAlert.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
-    max-width: 400px;
-    min-width: 300px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    animation: slideInFromRight 0.3s ease-out;
-  `;
-  successAlert.innerHTML = `
-    <i class="fas fa-check-circle"></i>
-    <div style="flex: 1;">
-      <strong>Assignment Successful</strong>
-      <p style="margin: 0.5rem 0 0 0;">${message}</p>
-    </div>
-    <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; margin-left: 1rem; color: #155724;" title="Close">
-      <i class="fas fa-times"></i>
-    </button>
-  `;
+document.addEventListener('DOMContentLoaded', function() {
+  setupSoftwareFilters();
 
-  document.body.appendChild(successAlert);
+  // Export software functionality
+  const exportBtn = document.getElementById('exportSoftwareBtn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function() {
+      window.location.href = '/software/export';
+    });
+  }
 
-  // Auto-remove after 5 seconds
-  setTimeout(() => {
-    if (successAlert.parentNode) {
-      successAlert.style.animation = 'slideOutToRight 0.3s ease-in';
-      setTimeout(() => {
-        if (successAlert.parentNode) {
-          successAlert.remove();
+  // Patch ajaxLoad to re-setup filters after AJAX
+  window.ajaxLoad = function(url) {
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newBlock = doc.getElementById('softwareTableBlock');
+        if (newBlock) {
+          document.getElementById('softwareTableBlock').innerHTML = newBlock.innerHTML;
+          attachHandlers();
+          afterSoftwareTableAjaxLoad();
         }
-      }, 300);
+      });
+  };
+
+  // Patch attachHandlers to update pagination links and per-page dropdown
+  window.attachHandlers = function() {
+    // Per-page dropdown
+    const perPageSelect = document.getElementById('softwarePerPage');
+    if (perPageSelect) {
+      perPageSelect.addEventListener('change', function() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('perPage', this.value);
+        url.searchParams.set('page', 1);
+        // Add filters hash
+        if (this.dataset.filters) url.hash = 'filters=' + this.dataset.filters;
+        ajaxLoad(url);
+      });
     }
-  }, 5000);
-}
+    // Pagination links
+    document.querySelectorAll('#softwareTableBlock .pagination-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        ajaxLoad(this.href);
+      });
+    });
+    updatePaginationLinksWithFilters();
+  };
+});
 </script>
 
 <style>
-/* Software Management Page Specific Styles */
-.software-meta {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.software-count,
-.usage-summary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.usage-summary i {
-  color: var(--primary);
-}
-
-/* Quick Filters */
-.quick-filters {
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 2rem;
-}
-
-.filter-tabs {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.filter-tab {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.filter-tab:hover {
-  background: #e9ecef;
-}
-
-.filter-tab.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
-
-.search-filters {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.search-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-input i {
-  position: absolute;
-  left: 0.75rem;
-  color: #6c757d;
-  z-index: 1;
-}
-
-.search-input input {
-  padding-left: 2.5rem;
-  min-width: 250px;
-}
-
-.vendor-filter {
-  min-width: 150px;
-}
-
-/* Licenses Table */
-.licenses-container {
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-  overflow: hidden;
-}
-
-.licenses-table-wrapper {
-  overflow-x: auto;
-}
-
-.licenses-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.licenses-table th {
-  background: #f8f9fa;
-  padding: 1rem 0.75rem;
-  font-weight: 600;
-  color: #495057;
-  border-bottom: 2px solid #e9ecef;
-  white-space: nowrap;
-}
-
-.licenses-table th i {
-  margin-right: 0.5rem;
-  color: var(--primary);
-}
-
-.licenses-table td {
-  padding: 1rem 0.75rem;
-  border-bottom: 1px solid #f8f9fa;
-  vertical-align: top;
-}
-
-.license-row:hover {
-  background: #f8f9fa;
-}
-
-/* Table Column Widths */
-.license-name-col { width: 25%; }
-.vendor-col { width: 12%; }
-.license-type-col { width: 12%; }
-.usage-col { width: 20%; }
-.cost-col { width: 12%; }
-.status-col { width: 12%; }
-.actions-col { width: 7%; }
-
-/* Software Info Cell */
-.software-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.software-name {
-  font-weight: 600;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.software-version {
-  font-size: 0.8rem;
-  color: #666;
-  background: #f8f9fa;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  width: fit-content;
-}
-
-.software-description {
-  font-size: 0.8rem;
-  color: #666;
-  font-style: italic;
-  max-width: 200px;
-}
-
-/* Badge Styles */
-.vendor-badge,
-.license-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.vendor-badge {
-  background: #f8f9fa;
-  color: #495057;
-  border: 1px solid #e9ecef;
-}
-
-.license-badge.commercial {
-  background: #d1ecf1;
-  color: #0c5460;
-}
-
-.license-badge.subscription {
-  background: #d4edda;
-  color: #155724;
-}
-
-.license-badge.freeware {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.license-badge.open-source {
-  background: #e2e3e5;
-  color: #383d41;
-}
-
-.license-badge.trial {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-/* Usage Info */
-.usage-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.usage-numbers {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-weight: 600;
-}
-
-.used-count {
-  color: var(--primary);
-  font-size: 1.1rem;
-}
-
-.separator {
-  color: #ccc;
-}
-
-.max-count-display {
-  color: #666;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: help;
-}
-
-.usage-bar {
-  width: 100%;
-  height: 8px;
-  background: #e9ecef;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.usage-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: all 0.3s;
-}
-
-.usage-fill.available {
-  background: linear-gradient(90deg, #28a745, #20c997);
-}
-
-.usage-fill.near-limit {
-  background: linear-gradient(90deg, #ffc107, #fd7e14);
-}
-
-.usage-fill.at-limit {
-  background: linear-gradient(90deg, #dc3545, #e63946);
-}
-
-.usage-fill.unused {
-  background: linear-gradient(90deg, #6c757d, #495057);
-}
-
-.available-count {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-.available-count.at-limit,
-.available-count.near-limit {
-  color: #dc3545;
-  font-weight: 600;
-}
-
-.available-count.unused {
-  color: #6c757d;
-}
-
-/* Cost Info */
-.cost-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.cost-per-license {
-  font-weight: 600;
-  color: var(--success);
-}
-
-.total-cost {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-/* Status Indicators */
-.status-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.status-indicator.available {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-indicator.near-limit {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.status-indicator.at-limit {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.status-indicator.unused {
-  background: #f8f9fa;
-  color: #6c757d;
-}
-
-.over-limit-warning {
-  font-size: 0.8rem;
-  color: #dc3545;
-  margin-top: 0.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-weight: 600;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: 0.25rem;
-  align-items: center;
-}
-
-.btn-action {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #e9ecef;
-  background: white;
-  color: #6c757d;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-decoration: none;
-}
-
-.btn-action:hover {
-  color: white;
-  text-decoration: none;
-}
-
-.btn-edit:hover {
-  background: var(--warning);
-  border-color: var(--warning);
-}
-
-.btn-users:hover {
-  background: var(--info);
-  border-color: var(--info);
-}
-
-.btn-assign:hover {
-  background: var(--success);
-  border-color: var(--success);
-}
-
-.btn-more:hover {
-  background: #6c757d;
-  border-color: #6c757d;
-}
-
-/* Results Summary */
-.results-summary {
-  padding: 1rem 1.5rem;
-  background: #f8f9fa;
-  border-top: 1px solid #e9ecef;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.results-count {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.view-options {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.view-label {
-  font-size: 0.85rem;
-  color: #666;
-  font-style: italic;
-}
-
-/* Assignment Modal Styles */
-.assign-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.assignment-preview {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  padding: 1rem;
-  margin-top: 1rem;
-}
-
-.preview-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  font-weight: 600;
-  color: var(--primary);
-}
-
-.preview-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.preview-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Assignments Modal Styles */
-.large-modal {
-  max-width: 800px;
-  width: 90%;
-}
-
-.assignments-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e9ecef;
-  margin-bottom: 1.5rem;
-}
-
-.assignments-stats {
-  display: flex;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.assignment-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  transition: all 0.2s;
-  background: white;
-}
-
-.assignment-item:hover {
-  background: #f8f9fa;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
-}
-
-.assignment-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.employee-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.employee-avatar {
-  width: 40px;
-  height: 40px;
-  background: var(--primary);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.employee-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.employee-name a {
-  font-weight: 600;
-  color: var(--primary);
-  text-decoration: none;
-  font-size: 1rem;
-}
-
-.employee-name a:hover {
-  text-decoration: underline;
-}
-
-.employee-meta {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.85rem;
-  color: #666;
-}
-
-.employee-id,
-.employee-dept {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.assignment-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.assignment-date {
-  font-size: 0.8rem;
-  color: #666;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.assignment-notes {
-  font-size: 0.8rem;
-  color: #666;
-  font-style: italic;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.assignment-actions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.btn-unassign:hover {
-  background: var(--danger);
-  border-color: var(--danger);
-  color: white;
-}
-
-/* Empty and Error States */
-.empty-assignments,
-.error-state {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-.empty-assignments .empty-icon,
-.error-state .error-icon {
-  width: 64px;
-  height: 64px;
-  background: #f8f9fa;
-  color: #6c757d;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  margin: 0 auto 1rem;
-}
-
-.error-state .error-icon {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.loading-state {
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-}
-
-.loading-state i {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: var(--primary);
-}
-
-/* Dropdown Menu Styles */
-.dropdown-item.disabled {
-  color: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.dropdown-item.delete-item {
-  color: var(--danger);
-}
-
-.dropdown-item.delete-item:hover {
-  background: #f8d7da;
-  color: var(--danger);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .quick-filters {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .filter-tabs {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .search-filters {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .search-input input {
-    min-width: 100%;
-  }
-
-  .vendor-filter {
-    width: 100%;
-  }
-
-  .licenses-table {
-    font-size: 0.8rem;
-  }
-
-  .licenses-table th,
-  .licenses-table td {
-    padding: 0.5rem 0.25rem;
-  }
-
-  .software-description {
-    display: none;
-  }
-
-  .usage-info {
-    gap: 0.25rem;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
-  .btn-action {
-    width: 28px;
-    height: 28px;
-  }
-
-  .large-modal {
-    width: 95%;
-    max-width: none;
-  }
-
-  .assignments-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .assignment-item {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .employee-info {
-    gap: 0.75rem;
-  }
-
-  .employee-meta {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .software-meta {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .filter-tabs {
-    grid-template-columns: repeat(2, 1fr);
-    display: grid;
-    gap: 0.5rem;
-    width: 100%;
-  }
-
-  .software-version {
-    display: none;
-  }
-
-  .employee-info {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.5rem;
-  }
-}
-
-/* Print Styles */
-@media print {
-  .quick-filters,
-  .header-actions,
-  .action-buttons {
-    display: none !important;
-  }
-
-  .licenses-table {
-    font-size: 0.8rem;
-  }
-
-  .licenses-container {
-    border: 1px solid #333 !important;
-  }
-}
-
-/* Floating Alert Animations */
-@keyframes slideInFromRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideOutToRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-/* Floating Alert Styles */
-.floating-alert {
-  display: flex !important;
-  align-items: flex-start;
-  padding: 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
-.floating-alert i:first-child {
-  margin-right: 0.75rem;
-  margin-top: 0.1rem;
-  font-size: 1.1rem;
-}
-
-.floating-alert strong {
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-.floating-alert p {
-  line-height: 1.4;
-  font-size: 0.85rem;
-}
-
-.floating-alert button {
-  color: inherit;
-  opacity: 0.7;
-}
-
-.floating-alert button:hover {
-  opacity: 1;
-}
-
-/* Enhanced Modal Alert Styles */
-.modal-body .alert {
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-
-.modal-body .alert strong {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.modal-body .alert p {
-  margin: 0;
-  line-height: 1.4;
-}
-
-/* Responsive Design for Floating Alerts */
-@media (max-width: 480px) {
-  .floating-alert {
-    top: 10px !important;
-    right: 10px !important;
-    left: 10px !important;
-    max-width: none !important;
-    min-width: auto !important;
-  }
-}
-
-/* Floating Alert Animations */
-@keyframes slideInFromRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideOutToRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-/* Floating Alert Styles */
-.floating-alert {
-  display: flex !important;
-  align-items: flex-start;
-  padding: 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
-.floating-alert i:first-child {
-  margin-right: 0.75rem;
-  margin-top: 0.1rem;
-  font-size: 1.1rem;
-}
+.max-h-96 { max-height: 24rem; }
 </style>

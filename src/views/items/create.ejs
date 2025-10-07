@@ -1,257 +1,328 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <h1>Add New Asset</h1>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/items" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Assets
-        </a>
-        <a href="/items/new-receipt" class="btn btn-info">
-          <i class="fas fa-receipt"></i> Add with Receipt
-        </a>
-      </div>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+        <i class="fas fa-plus"></i> <%= t('add_new_asset') %>
+      </h1>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+      <a href="/items" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-arrow-left mr-2"></i> <%= t('back_to_assets') %>
+      </a>
+      <a href="/items/new-receipt" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-receipt mr-2"></i> <%= t('add_with_receipt') %>
+      </a>
     </div>
   </div>
 
-  <div class="content-section">
-    <div class="form-container">
-      <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
-        <div class="alert alert-danger">
-          <i class="fas fa-exclamation-triangle"></i>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong><%= t('please_fix_errors') %>:</strong>
+          <ul class="list-disc ml-6">
+            <% errors.forEach(error => { %>
+              <li><%= error %></li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/items" id="createItemForm" class="space-y-10" data-no-ajax="true">
+      <!-- Asset Identification Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-tag"></i> <%= t('asset_identification') %>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="col-span-1 md:col-span-2">
+            <label for="cep_brc" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_id') %> (CEP/BRC) <span class="text-red-500">*</span></label>
+            <div>
+              <input type="text" id="cep_brc" name="cep_brc"
+                value="<%= typeof formData !== 'undefined' ? formData.cep_brc : 'CEXPT' %>"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                required placeholder="Enter unique asset identifier">
+              <div class="text-xs mt-1" id="cepValidation"></div>
+              <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                <i class="fas fa-info-circle"></i>
+                <%= t('unique_identifier_info') %>
+              </small>
+            </div>
+          </div>
+          <div class="col-span-1 md:col-span-2">
+            <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_name') %> <span class="text-red-500">*</span></label>
+            <input type="text" id="name" name="name"
+              value="<%= typeof formData !== 'undefined' ? formData.name : '' %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              required placeholder="Enter descriptive name for this asset">
+          </div>
+          <div class="col-span-1 md:col-span-2">
+            <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('description') %></label>
+            <textarea id="description" name="description" rows="3"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-vertical"
+              placeholder="Enter detailed description of the asset (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-info-circle"></i>
+              <%= t('provide_additional_details') %>
+            </small>
+          </div>
           <div>
-            <strong>Please fix the following errors:</strong>
-            <ul>
-              <% errors.forEach(error => { %>
-                <li><%= error %></li>
+            <label for="type_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('asset_type') %> <span class="text-red-500">*</span></label>
+            <select id="type_id" name="type_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
+              <option value=""><%= t('select_asset_type') %></option>
+              <% types.forEach(type => { %>
+                <option value="<%= type.id %>" <%= typeof formData !== 'undefined' && formData.type_id == type.id ? 'selected' : '' %>>
+                  <%= type.name %>
+                </option>
               <% }) %>
-            </ul>
+            </select>
           </div>
-        </div>
-      <% } %>
+          <!-- Replace the status field section around line 82-94 with this: -->
+          <div>
+            <label for="status_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status</label>
+            <!-- Hidden input to force "New" status -->
+            <input type="hidden" id="status_id" name="status_id" value="1">
 
-      <form method="POST" action="/items" id="createItemForm" class="modern-form" data-no-ajax="true">
-        <!-- Asset Identification Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-tag section-icon"></i>
-            <h3>Asset Identification</h3>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="cep_brc" class="required">Asset ID (CEP/BRC)</label>
-              <div class="input-with-validation">
-                <input type="text" id="cep_brc" name="cep_brc"
-                  value="<%= typeof formData !== 'undefined' ? formData.cep_brc : '' %>"
-                  class="form-input" required placeholder="Enter unique asset identifier">
-                <div class="validation-feedback" id="cepValidation"></div>
-                <small class="field-help">
-                  <i class="fas fa-info-circle"></i>
-                  Unique identifier for this asset (e.g., CEP001, BRC-2024-001)
-                </small>
+            <!-- Display the forced status with enhanced styling -->
+            <div class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <!-- Enhanced status badge -->
+                  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium"
+                       style="background-color: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #3B82F6;">
+                    <span class="text-base">⭐</span>
+                    <span><%= t('new') %></span>
+                  </div>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                    <%= t('default_for_new_assets') %>
+                  </span>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                  Auto-assigned
+                </div>
               </div>
             </div>
-
-            <div class="form-group full-width">
-              <label for="name" class="required">Asset Name</label>
-              <input type="text" id="name" name="name"
-                value="<%= typeof formData !== 'undefined' ? formData.name : '' %>"
-                class="form-input" required placeholder="Enter descriptive name for this asset">
-            </div>
-
-            <div class="form-group full-width">
-              <label for="description">Description</label>
-              <textarea id="description" name="description" class="form-textarea" rows="3"
-                placeholder="Enter detailed description of the asset (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
-              <small class="field-help">
-                <i class="fas fa-info-circle"></i>
-                Provide additional details about the asset, its purpose, or any special characteristics
-              </small>
-            </div>
-
-            <div class="form-group">
-              <label for="type_id" class="required">Asset Type</label>
-              <select id="type_id" name="type_id" class="form-select" required>
-                <option value="">Select Asset Type</option>
-                <% types.forEach(type => { %>
-                  <option value="<%= type.id %>" <%= typeof formData !== 'undefined' && formData.type_id == type.id ? 'selected' : '' %>>
-                    <%= type.name %>
-                  </option>
-                <% }) %>
-              </select>
-            </div>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-info-circle"></i>
+              <%= t('new_assets_info') %>
+            </small>
           </div>
         </div>
-
-        <!-- Product Details Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-cog section-icon"></i>
-            <h3>Product Details</h3>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="brand_id">Brand</label>
-              <select id="brand_id" name="brand_id" class="form-select">
-                <option value="">Select Brand</option>
-                <% brands.forEach(brand => { %>
-                  <option value="<%= brand.id %>" <%= typeof formData !== 'undefined' && formData.brand_id == brand.id ? 'selected' : '' %>>
-                    <%= brand.name %>
-                  </option>
-                <% }) %>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="model">Model</label>
-              <input type="text" id="model" name="model"
-                value="<%= typeof formData !== 'undefined' ? formData.model : '' %>"
-                class="form-input" placeholder="Product model number">
-            </div>
-
-            <div class="form-group">
-              <label for="serial_cod">Serial Number</label>
-              <input type="text" id="serial_cod" name="serial_cod"
-                value="<%= typeof formData !== 'undefined' ? formData.serial_cod : '' %>"
-                class="form-input" placeholder="Unique serial number">
-            </div>
-
-            <div class="form-group">
-              <label for="price">Purchase Price (€)</label>
-              <div class="input-group">
-                <span class="input-group-text">€</span>
-                <input type="number" id="price" name="price" min="0" step="0.01"
-                  value="<%= typeof formData !== 'undefined' ? formData.price : '' %>"
-                  class="form-input" placeholder="0.00">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Purchase Information Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-receipt section-icon"></i>
-            <h3>Purchase Information</h3>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <label for="receipt">Purchase Receipt</label>
-              <select id="receipt" name="receipt" class="form-select">
-                <option value="">Select Receipt (Optional)</option>
-                <% sales.forEach(sale => { %>
-                  <option value="<%= sale.receipt %>" <%= typeof formData !== 'undefined' && formData.receipt === sale.receipt ? 'selected' : '' %>>
-                    <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
-                  </option>
-                <% }) %>
-              </select>
-              <small class="field-help">
-                <i class="fas fa-info-circle"></i>
-                Link this asset to an existing purchase receipt, or leave blank to add later
-              </small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Assignment Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <i class="fas fa-user section-icon"></i>
-            <h3>Asset Assignment</h3>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="assigned_to">Assign To Employee</label>
-              <select id="assigned_to" name="assigned_to" class="form-select">
-                <option value="">Leave Unassigned</option>
-                <% employees.forEach(employee => { %>
-                  <option value="<%= employee.id %>" <%= typeof formData !== 'undefined' && formData.assigned_to == employee.id ? 'selected' : '' %>>
-                    <%= employee.name %> (<%= employee.cep %>)
-                  </option>
-                <% }) %>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="date_assigned">Assignment Date</label>
-              <input type="date" id="date_assigned" name="date_assigned" class="form-input"
-                value="<%= typeof formData !== 'undefined' && formData.date_assigned ? formData.date_assigned : '' %>">
-              <small class="field-help">
-                <i class="fas fa-info-circle"></i>
-                Date when asset is assigned to employee (auto-fills when employee is selected)
-              </small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary btn-lg">
-            <i class="fas fa-plus"></i> Create Asset
-          </button>
-          <a href="/items" class="btn btn-secondary btn-lg">
-            <i class="fas fa-times"></i> Cancel
-          </a>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Asset ID Availability Check Modal -->
-<div class="modal-overlay" id="duplicateIdModal">
-  <div class="modal-content error-modal">
-    <div class="modal-header">
-      <i class="fas fa-exclamation-circle modal-icon error"></i>
-      <h4>Asset ID Already Exists</h4>
-    </div>
-    <div class="modal-body">
-      <p>This Asset ID is already in use by another asset:</p>
-      <div class="duplicate-asset-info" id="duplicateAssetInfo">
-        <!-- Dynamic content -->
       </div>
-      <p>Please choose a different Asset ID or review the existing asset.</p>
-    </div>
-    <div class="modal-actions">
-      <button id="viewExistingAsset" class="btn btn-info">
-        <i class="fas fa-eye"></i> View Existing Asset
-      </button>
-      <button id="closeDuplicateModal" class="btn btn-secondary">
-        <i class="fas fa-times"></i> Close
-      </button>
+
+      <!-- Product Details Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-cog"></i> <%= t('product_details') %>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="brand_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('brand') %></label>
+            <select id="brand_id" name="brand_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value=""><%= t('select_brand') %></option>
+              <% brands.forEach(brand => { %>
+                <option value="<%= brand.id %>" <%= typeof formData !== 'undefined' && formData.brand_id == brand.id ? 'selected' : '' %>>
+                  <%= brand.name %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          <div>
+            <label for="model" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('model') %></label>
+            <input type="text" id="model" name="model"
+              value="<%= typeof formData !== 'undefined' ? formData.model : '' %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="<%= t('product_model_placeholder') %>">
+          </div>
+          <div>
+            <label for="serial_cod" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('serial_number') %><span class="text-red-500">*</span></label>
+            <input type="text" id="serial_cod" name="serial_cod"
+              value="<%= typeof formData !== 'undefined' ? formData.serial_cod : '' %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              required placeholder="<%= t('unique_serial_number') %>">
+          </div>
+          <div>
+            <label for="price" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('purchase_price') %> (€)</label>
+            <div class="flex">
+              <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400">€</span>
+              <input type="number" id="price" name="price" min="0" step="0.01"
+                value="<%= typeof formData !== 'undefined' ? formData.price : '' %>"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-r-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                placeholder="0.00">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Information Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-receipt"></i> <%= t('purchase_information') %>
+        </h3>
+        <div>
+          <label for="receipt" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('purchase_receipt') %></label>
+          <select id="receipt" name="receipt" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <option value=""><%= t('select_receipt') %> (<%= t('optional') %>)</option>
+            <% sales.forEach(sale => { %>
+              <option value="<%= sale.receipt %>" <%= typeof formData !== 'undefined' && formData.receipt === sale.receipt ? 'selected' : '' %>>
+                <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
+              </option>
+            <% }) %>
+          </select>
+          <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+            <i class="fas fa-info-circle"></i>
+            <%= t('link_existing_receipt') %>
+          </small>
+        </div>
+      </div>
+
+      <!-- Warranty Information Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-shield-alt"></i> <%= t('warranty_information') %>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label for="warranty_start_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('warranty_start_date') %></label>
+            <input type="date" id="warranty_start_date" name="warranty_start_date"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              value="<%= typeof formData !== 'undefined' && formData.warranty_start_date ? formData.warranty_start_date : (typeof item !== 'undefined' && item.warranty_start_date ? new Date(item.warranty_start_date).toISOString().split('T')[0] : '') %>">
+          </div>
+          <div>
+            <label for="warranty_months" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('warranty_period') %> (<%= t('months') %>)</label>
+            <select id="warranty_months" name="warranty_months" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value=""><%= t('no_warranty') %></option>
+              <option value="6" <%= (typeof formData !== 'undefined' && formData.warranty_months == 6) || (typeof item !== 'undefined' && item.warranty_months == 6) ? 'selected' : '' %>>6 <%= t('months') %></option>
+              <option value="12"
+                <%= (typeof formData !== 'undefined' && formData.warranty_months == 12)
+                    || (typeof item !== 'undefined' && item.warranty_months == 12)
+                    || (typeof formData === 'undefined' && typeof item === 'undefined') ? 'selected' : '' %>
+              >12 <%= t('months') %></option>
+              <option value="24" <%= (typeof formData !== 'undefined' && formData.warranty_months == 24) || (typeof item !== 'undefined' && item.warranty_months == 24) ? 'selected' : '' %>>24 <%= t('months') %></option>
+              <option value="36" <%= (typeof formData !== 'undefined' && formData.warranty_months == 36) || (typeof item !== 'undefined' && item.warranty_months == 36) ? 'selected' : '' %>>36 <%= t('months') %></option>
+              <option value="48" <%= (typeof formData !== 'undefined' && formData.warranty_months == 48) || (typeof item !== 'undefined' && item.warranty_months == 48) ? 'selected' : '' %>>48 <%= t('months') %></option>
+              <option value="60" <%= (typeof formData !== 'undefined' && formData.warranty_months == 60) || (typeof item !== 'undefined' && item.warranty_months == 60) ? 'selected' : '' %>>60 <%= t('months') %></option>
+            </select>
+          </div>
+          <div>
+            <label for="warranty_end_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty End Date</label>
+            <input type="date" id="warranty_end_date" name="warranty_end_date" readonly
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+              value="<%= typeof formData !== 'undefined' && formData.warranty_end_date ? formData.warranty_end_date : (typeof item !== 'undefined' && item.warranty_end_date ? new Date(item.warranty_end_date).toISOString().split('T')[0] : '') %>">
+          </div>
+        </div>
+        <div class="mt-4" id="warrantyStatus" style="display: none;">
+          <div class="flex items-center gap-2 px-4 py-3 rounded-lg" id="warrantyStatusContent">
+            <!-- Dynamic warranty status will be shown here -->
+          </div>
+        </div>
+        <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-2">
+          <i class="fas fa-info-circle"></i>
+          <%= t('warranty_end_date_info') %>
+        </small>
+      </div>
+
+      <!-- Assignment Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-user"></i> <%= t('asset_assignment') %>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                <i class="fas fa-users text-green-600 dark:text-green-300"></i>
+              </div>
+              <div>
+                <label for="assigned_to" class="block font-semibold text-gray-700 dark:text-gray-200"><%= t('assign_to_employee') %></label>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Search by name or employee ID (optional)</p>
+              </div>
+            </div>
+            <div class="relative">
+              <input
+                type="text"
+                id="employee_search_create"
+                name="employee_search"
+                class="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+                placeholder="Search employee by name or CEPID (optional)..."
+                autocomplete="off">
+              <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-green-500 dark:text-green-400"></i>
+              <input type="hidden" id="assigned_to" name="assigned_to">
+
+              <!-- Search results dropdown -->
+              <div id="employee_search_results_create" class="absolute z-50 w-full mt-1 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto backdrop-blur-sm" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 2px solid #10b981;">
+                <!-- Results will be populated here -->
+              </div>
+
+              <!-- Selected employee display -->
+              <div id="selected_employee_create" class="hidden mt-2 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-md">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center">
+                      <i class="fas fa-user text-blue-600 dark:text-blue-300"></i>
+                    </div>
+                    <div>
+                      <div class="font-semibold text-blue-800 dark:text-blue-200" id="selected_employee_name_create"></div>
+                      <div class="text-sm text-blue-600 dark:text-blue-400" id="selected_employee_details_create"></div>
+                    </div>
+                  </div>
+                  <button type="button" id="clear_selection_create" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label for="date_assigned" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('assignment_date') %></label>
+            <input type="date" id="date_assigned" name="date_assigned"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              value="<%= typeof formData !== 'undefined' && formData.date_assigned ? formData.date_assigned : '' %>">
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-info-circle"></i>
+              <%= t('assignment_date_info') %>
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex flex-wrap gap-2 mt-8">
+        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-plus"></i> <%= t('create_asset') %>
+        </button>
+        <a href="/items" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-times"></i> <%= t('cancel') %>
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Duplicate ID Warning Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" id="duplicateIdModal" style="display:none;">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 text-2xl"></i>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100"><%= t('asset_id_exists') %></h4>
+      </div>
+      <div class="mb-4">
+        <p class="mb-2"><%= t('asset_id_in_use') %></p>
+        <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 mb-2" id="duplicateAssetInfo"></div>
+        <p class="text-sm text-gray-500 dark:text-gray-400"><%= t('choose_different_asset_id') %></p>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button id="viewExistingAsset" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+          <i class="fas fa-eye mr-2"></i> <%= t('view_existing_asset') %>
+        </button>
+        <button id="closeDuplicateModal" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+          <i class="fas fa-times mr-2"></i> <%= t('close') %>
+        </button>
+      </div>
     </div>
   </div>
 </div>
-
-<style>
-/* Additional styles for textarea */
-.form-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ced4da;
-  border-radius: 0.375rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  resize: vertical;
-  min-height: 80px;
-  font-family: inherit;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.form-textarea:focus {
-  border-color: #80bdff;
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.form-textarea::placeholder {
-  color: #6c757d;
-  opacity: 1;
-}
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -272,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
       clearTimeout(duplicateCheckTimeout);
 
       // Reset validation state
-      cepValidation.className = 'validation-feedback';
+      cepValidation.className = 'text-xs mt-1';
       cepValidation.innerHTML = '';
 
       if (newValue.length === 0) {
@@ -280,13 +351,13 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       if (newValue.length < 3) {
-        cepValidation.className = 'validation-feedback warning';
+        cepValidation.className = 'text-xs mt-1 text-yellow-700 dark:text-yellow-300';
         cepValidation.innerHTML = '<i class="fas fa-info-circle"></i> Asset ID should be at least 3 characters';
         return;
       }
 
       // Show checking state
-      cepValidation.className = 'validation-feedback checking';
+      cepValidation.className = 'text-xs mt-1 text-blue-700 dark:text-blue-300';
       cepValidation.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
 
       // Check for duplicates after delay
@@ -304,19 +375,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (data.exists) {
         duplicateAssetData = data.asset;
-        cepValidation.className = 'validation-feedback error';
+        cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
         cepValidation.innerHTML = `
           <i class="fas fa-exclamation-triangle"></i>
           Asset ID already exists -
-          <a href="#" onclick="showDuplicateModal()" class="error-link">View existing asset</a>
+          <a href="#" onclick="showDuplicateModal()" class="underline text-blue-700 dark:text-blue-300">View existing asset</a>
         `;
       } else {
-        cepValidation.className = 'validation-feedback success';
+        cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
         cepValidation.innerHTML = '<i class="fas fa-check"></i> Asset ID available';
       }
     } catch (error) {
       console.error('Error checking duplicate:', error);
-      cepValidation.className = 'validation-feedback error';
+      cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
       cepValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error checking availability';
     }
   }
@@ -326,16 +397,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (duplicateAssetData) {
       const duplicateInfo = document.getElementById('duplicateAssetInfo');
       duplicateInfo.innerHTML = `
-        <div class="asset-card">
-          <div class="asset-header">
-            <span class="entity-id">${duplicateAssetData.cep_brc}</span>
-            <span class="entity-name">${duplicateAssetData.name}</span>
-          </div>
-          <div class="asset-details">
-            <div><strong>Type:</strong> ${duplicateAssetData.type_name || 'N/A'}</div>
-            <div><strong>Brand:</strong> ${duplicateAssetData.brand_name || 'N/A'}</div>
-            <div><strong>Status:</strong> ${duplicateAssetData.assigned_to_name ? 'Assigned to ' + duplicateAssetData.assigned_to_name : 'Unassigned'}</div>
-          </div>
+        <div class="mb-2">
+          <span class="font-mono font-semibold text-blue-700 dark:text-blue-300">${duplicateAssetData.cep_brc}</span>
+          <span class="ml-2 font-semibold text-gray-800 dark:text-gray-100">${duplicateAssetData.name}</span>
+        </div>
+        <div class="text-sm text-gray-700 dark:text-gray-200">
+          <div><strong>Type:</strong> ${duplicateAssetData.type_name || 'N/A'}</div>
+          <div><strong>Brand:</strong> ${duplicateAssetData.brand_name || 'N/A'}</div>
+          <div><strong>Status:</strong> ${duplicateAssetData.assigned_to_name ? 'Assigned to ' + duplicateAssetData.assigned_to_name : 'Unassigned'}</div>
         </div>
       `;
 
@@ -349,10 +418,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Form submission handling
   form.addEventListener('submit', function(event) {
-    console.log('Form is submitting!');
-
     // Check for validation errors
-    if (cepValidation.classList.contains('error')) {
+    if (cepValidation.className.includes('text-red-700')) {
       event.preventDefault();
       showDuplicateModal();
       return;
@@ -364,48 +431,22 @@ document.addEventListener('DOMContentLoaded', function() {
     let firstInvalidField = null;
 
     requiredFields.forEach(field => {
-      field.classList.remove('form-error');
+      field.classList.remove('border-red-500');
       if (!field.value.trim()) {
         valid = false;
-        field.classList.add('form-error');
+        field.classList.add('border-red-500');
         if (!firstInvalidField) {
           firstInvalidField = field;
         }
-        console.log('Missing required field:', field.name);
       }
     });
 
     if (!valid) {
       event.preventDefault();
-
-      // Show error message
-      const errorAlert = document.createElement('div');
-      errorAlert.className = 'alert alert-danger';
-      errorAlert.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <div>
-          <strong>Please fill out all required fields</strong>
-          <p>Fields marked with * are required to create an asset.</p>
-        </div>
-      `;
-
-      // Insert error at top of form
-      form.insertBefore(errorAlert, form.firstChild);
-
-      // Scroll to first invalid field
       if (firstInvalidField) {
         firstInvalidField.focus();
         firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-
-      // Remove error after 5 seconds
-      setTimeout(() => {
-        if (errorAlert.parentNode) {
-          errorAlert.remove();
-        }
-      }, 5000);
-    } else {
-      console.log('Form validation passed');
     }
   });
 
@@ -436,5 +477,371 @@ document.addEventListener('DOMContentLoaded', function() {
   if (firstInput) {
     firstInput.focus();
   }
+});
+
+// Warranty calculation logic
+document.addEventListener('DOMContentLoaded', function() {
+  const warrantyStartDate = document.getElementById('warranty_start_date');
+  const warrantyMonths = document.getElementById('warranty_months');
+  const warrantyEndDate = document.getElementById('warranty_end_date');
+  const warrantyStatus = document.getElementById('warrantyStatus');
+  const warrantyStatusContent = document.getElementById('warrantyStatusContent');
+
+  function calculateWarrantyEndDate() {
+    const startDate = warrantyStartDate.value;
+    const months = parseInt(warrantyMonths.value);
+
+    if (startDate && months) {
+      const start = new Date(startDate);
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + months);
+
+      warrantyEndDate.value = end.toISOString().split('T')[0];
+      updateWarrantyStatus(end);
+    } else {
+      warrantyEndDate.value = '';
+      warrantyStatus.style.display = 'none';
+    }
+  }
+
+  function updateWarrantyStatus(endDate) {
+    if (!endDate) {
+      warrantyStatus.style.display = 'none';
+      return;
+    }
+
+    const now = new Date();
+    const diffTime = endDate - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    let statusClass, statusText, statusIcon;
+
+    if (diffDays < 0) {
+      // Expired
+      statusClass = 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700';
+      statusIcon = 'fas fa-exclamation-circle text-red-600 dark:text-red-400';
+      statusText = `Warranty expired ${Math.abs(diffDays)} days ago`;
+    } else if (diffDays <= 30) {
+      // Expiring soon
+      statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700';
+      statusIcon = 'fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400';
+      statusText = `Warranty expires in ${diffDays} days`;
+    } else {
+      // Active
+      statusClass = 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700';
+      statusIcon = 'fas fa-shield-alt text-green-600 dark:text-green-400';
+      statusText = `Warranty active for ${diffDays} more days`;
+    }
+
+    warrantyStatusContent.className = statusClass;
+    warrantyStatusContent.innerHTML = `
+      <i class="${statusIcon}"></i>
+      <span class="font-medium">${statusText}</span>
+    `;
+    warrantyStatus.style.display = 'block';
+  }
+
+  // Event listeners
+  warrantyStartDate.addEventListener('change', calculateWarrantyEndDate);
+  warrantyMonths.addEventListener('change', calculateWarrantyEndDate);
+
+  // Auto-fill warranty start date with purchase date if available
+  const receiptSelect = document.getElementById('receipt');
+  if (receiptSelect) {
+    receiptSelect.addEventListener('change', function() {
+      if (this.value && !warrantyStartDate.value) {
+        // Extract date from receipt option text (format: "RECEIPT - SUPPLIER (DATE)")
+        const optionText = this.options[this.selectedIndex].text;
+        const dateMatch = optionText.match(/\(([^)]+)\)$/);
+        if (dateMatch) {
+          const dateStr = dateMatch[1];
+          const purchaseDate = new Date(dateStr);
+          if (!isNaN(purchaseDate.getTime())) {
+            warrantyStartDate.value = purchaseDate.toISOString().split('T')[0];
+            calculateWarrantyEndDate();
+          }
+        }
+      }
+    });
+  }
+
+  // Calculate warranty end date on page load if values exist
+  if (warrantyStartDate.value && warrantyMonths.value) {
+    calculateWarrantyEndDate();
+  } else if (warrantyEndDate.value) {
+    // Show status for existing warranty end date
+    updateWarrantyStatus(new Date(warrantyEndDate.value));
+  }
+});
+
+// Employee search functionality for create form
+document.addEventListener('DOMContentLoaded', function() {
+  const employeeSearch = document.getElementById('employee_search_create');
+  const assignedToHidden = document.getElementById('assigned_to');
+  const searchResults = document.getElementById('employee_search_results_create');
+  const selectedEmployeeDiv = document.getElementById('selected_employee_create');
+  const selectedEmployeeName = document.getElementById('selected_employee_name_create');
+  const selectedEmployeeDetails = document.getElementById('selected_employee_details_create');
+  const clearSelectionBtn = document.getElementById('clear_selection_create');
+  const dateAssignedInput = document.getElementById('date_assigned');
+
+  let searchTimeout;
+
+  // Employee search functionality
+  employeeSearch.addEventListener('input', function() {
+    const query = this.value.trim();
+
+    clearTimeout(searchTimeout);
+
+    if (query.length === 0) {
+      searchResults.classList.add('hidden');
+      searchResults.innerHTML = '';
+      searchResults.style.minHeight = '0';
+      return;
+    }
+
+    if (query.length < 2) {
+      searchResults.classList.add('hidden');
+      searchResults.innerHTML = '';
+      searchResults.style.minHeight = '0';
+      return;
+    }
+
+    searchTimeout = setTimeout(() => {
+      searchEmployees(query);
+    }, 300);
+  });
+
+  function searchEmployees(query) {
+    fetch(`/employees/api/search?q=${encodeURIComponent(query)}`)
+      .then(response => response.json())
+      .then(data => {
+        displaySearchResults(data.employees || []);
+      })
+      .catch(error => {
+        console.error('Error searching employees:', error);
+        const errorHeader = `
+          <div class="sticky top-0 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 border-b-2 border-green-400 shadow-lg">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-green-500 bg-opacity-30 rounded-full flex items-center justify-center">
+                  <i class="fas fa-exclamation-triangle text-sm"></i>
+                </div>
+                <div>
+                  <div class="font-bold text-lg">Search Error</div>
+                  <div class="text-green-200 text-sm">Employee search failed</div>
+                </div>
+              </div>
+              <div class="text-xs text-green-200 bg-green-500 bg-opacity-20 px-2 py-1 rounded">
+                Press ESC to close
+              </div>
+            </div>
+          </div>
+        `;
+
+        searchResults.innerHTML = `
+          ${errorHeader}
+          <div class="search-results-content">
+            <div class="p-6 text-center">
+              <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
+              </div>
+              <div class="text-red-600 dark:text-red-400 font-medium mb-1">Search Failed</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">Error searching employees</div>
+            </div>
+          </div>
+        `;
+        searchResults.classList.remove('hidden');
+
+        // Ensure background is applied (fix for transparent background issue)
+        searchResults.style.background = 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)';
+        searchResults.style.border = '2px solid #10b981';
+        searchResults.style.borderRadius = '8px';
+        searchResults.style.minHeight = '50px';
+        if (document.documentElement.classList.contains('dark')) {
+          searchResults.style.background = 'linear-gradient(135deg, #1f2937 0%, #111827 100%)';
+          searchResults.style.border = '2px solid #34d399';
+        }
+      });
+  }
+
+  function displaySearchResults(employees) {
+    if (employees.length === 0) {
+      const emptyHeader = `
+        <div class="sticky top-0 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 border-b-2 border-green-400 shadow-lg">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-green-500 bg-opacity-30 rounded-full flex items-center justify-center">
+                <i class="fas fa-users text-sm"></i>
+              </div>
+              <div>
+                <div class="font-bold text-lg">Employees</div>
+                <div class="text-green-200 text-sm">0 employees found</div>
+              </div>
+            </div>
+            <div class="text-xs text-green-200 bg-green-500 bg-opacity-20 px-2 py-1 rounded">
+              Click to select
+            </div>
+          </div>
+        </div>
+      `;
+
+      searchResults.innerHTML = `
+        ${emptyHeader}
+        <div class="search-results-content">
+          <div class="p-6 text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full mb-4">
+              <i class="fas fa-users text-green-600 dark:text-green-400 text-xl"></i>
+            </div>
+            <div class="text-gray-600 dark:text-gray-300 font-medium mb-1">No employees found</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Try adjusting your search terms</div>
+          </div>
+        </div>
+      `;
+      searchResults.classList.remove('hidden');
+
+      // Ensure background is applied (fix for transparent background issue)
+      searchResults.style.background = 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)';
+      searchResults.style.border = '2px solid #10b981';
+      searchResults.style.borderRadius = '8px';
+      searchResults.style.minHeight = '50px';
+      if (document.documentElement.classList.contains('dark')) {
+        searchResults.style.background = 'linear-gradient(135deg, #1f2937 0%, #111827 100%)';
+        searchResults.style.border = '2px solid #34d399';
+      }
+      return;
+    }
+
+    const searchHeader = `
+      <div class="sticky top-0 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 border-b-2 border-green-400 shadow-lg">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-green-500 bg-opacity-30 rounded-full flex items-center justify-center">
+              <i class="fas fa-users text-sm"></i>
+            </div>
+            <div>
+              <div class="font-bold text-lg">Employees</div>
+              <div class="text-green-200 text-sm">${employees.length} employee${employees.length !== 1 ? 's' : ''} found</div>
+            </div>
+          </div>
+          <div class="text-xs text-green-200 bg-green-500 bg-opacity-20 px-2 py-1 rounded">
+            Click to select
+          </div>
+        </div>
+      </div>
+    `;
+
+    const employeesList = employees.map((employee, index) => `
+      <div class="group relative p-4 hover:bg-gradient-to-r hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900 dark:hover:to-emerald-900 border-b-2 border-green-300 dark:border-green-600 cursor-pointer transition-all duration-200 hover:shadow-md employee-result"
+           data-id="${employee.id}"
+           data-name="${employee.name}"
+           data-cep="${employee.cep}"
+           data-department="${employee.department_name}">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-colors">
+            <i class="fas fa-user text-green-600 dark:text-green-300"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-gray-800 dark:text-gray-100 group-hover:text-green-800 dark:group-hover:text-green-200 transition-colors">
+              ${employee.name}
+            </div>
+            <div class="flex items-center gap-3 mt-1">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-medium">
+                <i class="fas fa-id-badge"></i>
+                ${employee.cep}
+              </span>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
+                <i class="fas fa-building"></i>
+                ${employee.department_name}
+              </span>
+            </div>
+          </div>
+          <div class="text-green-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+        <div class="absolute inset-0 border-l-4 border-transparent group-hover:border-green-500 transition-colors duration-200"></div>
+      </div>
+    `).join('');
+
+    // Build the complete search results structure
+    const completeResults = `
+      ${searchHeader}
+      <div class="search-results-content">
+        ${employeesList}
+      </div>
+    `;
+
+    searchResults.innerHTML = completeResults;
+    searchResults.classList.remove('hidden');
+
+    // Ensure background is applied (fix for transparent background issue)
+    searchResults.style.background = 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)';
+    searchResults.style.border = '2px solid #10b981';
+    searchResults.style.borderRadius = '8px';
+    searchResults.style.minHeight = '50px';
+    if (document.documentElement.classList.contains('dark')) {
+      searchResults.style.background = 'linear-gradient(135deg, #1f2937 0%, #111827 100%)';
+      searchResults.style.border = '2px solid #34d399';
+    }
+
+    // Add click handlers to results
+    searchResults.querySelectorAll('.employee-result').forEach(result => {
+      result.addEventListener('click', function() {
+        selectEmployee({
+          id: this.dataset.id,
+          name: this.dataset.name,
+          cep: this.dataset.cep,
+          department_name: this.dataset.department
+        });
+      });
+    });
+
+    searchResults.classList.remove('hidden');
+  }
+
+  function selectEmployee(employee) {
+    assignedToHidden.value = employee.id;
+
+    selectedEmployeeName.textContent = employee.name;
+    selectedEmployeeDetails.textContent = `${employee.cep} • ${employee.department_name}`;
+
+    employeeSearch.style.display = 'none';
+    selectedEmployeeDiv.classList.remove('hidden');
+    searchResults.classList.add('hidden');
+
+    // Auto-fill assignment date
+    if (!dateAssignedInput.value) {
+      dateAssignedInput.value = new Date().toISOString().split('T')[0];
+    }
+  }
+
+  // Clear selection
+  clearSelectionBtn.addEventListener('click', function() {
+    assignedToHidden.value = '';
+    employeeSearch.value = '';
+    employeeSearch.style.display = 'block';
+    selectedEmployeeDiv.classList.add('hidden');
+    searchResults.classList.add('hidden');
+    employeeSearch.focus();
+  });
+
+  // Hide search results when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!employeeSearch.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.classList.add('hidden');
+      searchResults.innerHTML = '';
+      searchResults.style.minHeight = '0';
+    }
+  });
+
+  // ESC key handling
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      searchResults.classList.add('hidden');
+      searchResults.innerHTML = '';
+      searchResults.style.minHeight = '0';
+    }
+  });
 });
 </script>

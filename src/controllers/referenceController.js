@@ -34,9 +34,11 @@ exports.assetTypes = async (req, res) => {
 };
 
 exports.showAddAssetTypeForm = (req, res) => {
-  res.render('references/add-asset-type', {
+  res.render('layout', {
     title: 'Add Asset Type',
+    body: 'references/add-asset-type',
     formData: {},
+    user: req.session.user
   });
 };
 
@@ -53,9 +55,11 @@ exports.addAssetType = async (req, res) => {
     if (!name || name.trim() === '') {
       console.log('Validation failed: name is empty');
       req.flash('error', 'Asset type name is required and cannot be empty');
-      return res.render('references/add-asset-type', {
+      return res.render('layout', {
         title: 'Add Asset Type',
-        formData: req.body
+        body: 'references/add-asset-type',
+        formData: req.body,
+        user: req.session.user
       });
     }
 
@@ -69,9 +73,11 @@ exports.addAssetType = async (req, res) => {
     if (existingType.rows.length > 0) {
       console.log('Asset type already exists');
       req.flash('error', 'An asset type with this name already exists');
-      return res.render('references/add-asset-type', {
+      return res.render('layout', {
         title: 'Add Asset Type',
-        formData: req.body
+        body: 'references/add-asset-type',
+        formData: req.body,
+        user: req.session.user
       });
     }
 
@@ -89,9 +95,11 @@ exports.addAssetType = async (req, res) => {
   } catch (error) {
     console.error('Error adding asset type:', error);
     req.flash('error', 'Failed to add asset type: ' + error.message);
-    res.render('references/add-asset-type', {
+    res.render('layout', {
       title: 'Add Asset Type',
-      formData: req.body
+      body: 'references/add-asset-type',
+      formData: req.body,
+      user: req.session.user
     });
   }
 };
@@ -197,7 +205,7 @@ exports.deleteAssetType = async (req, res) => {
   }
 };
 
-// Statuses
+// Status
 exports.statuses = async (req, res) => {
   try {
     const statuses = await db.query(`
@@ -205,16 +213,20 @@ exports.statuses = async (req, res) => {
         s.id,
         s.name,
         s.description,
+        s.icon,
+        s.color,
+        s.is_active,
+        s.status_order,
         COUNT(i.id) as item_count
       FROM statuses s
       LEFT JOIN items i ON i.status_id = s.id
-      GROUP BY s.id, s.name, s.description
-      ORDER BY s.name
+      GROUP BY s.id, s.name, s.description, s.icon, s.color, s.is_active, s.status_order
+      ORDER BY s.status_order ASC, s.name ASC
     `);
 
     res.render('layout', {
       title: 'Status Options',
-      body: 'references/statuses',
+      body: 'references/status',
       user: req.session.user,
       statuses: statuses.rows,
       isReferencePage: true
@@ -231,29 +243,145 @@ exports.statuses = async (req, res) => {
 };
 
 exports.showAddStatusForm = (req, res) => {
+  // Define available icons (FontAwesome and Emojis)
+  const availableIcons = [
+    { value: 'fas fa-tag', label: 'Tag (Default)', type: 'fontawesome' },
+    { value: 'fas fa-check-circle', label: 'Check Circle', type: 'fontawesome' },
+    { value: 'fas fa-box', label: 'Box', type: 'fontawesome' },
+    { value: 'fas fa-tools', label: 'Tools', type: 'fontawesome' },
+    { value: 'fas fa-archive', label: 'Archive', type: 'fontawesome' },
+    { value: 'fas fa-question-circle', label: 'Question Circle', type: 'fontawesome' },
+    { value: 'fas fa-wrench', label: 'Wrench', type: 'fontawesome' },
+    { value: 'fas fa-star', label: 'Star', type: 'fontawesome' },
+    { value: 'fas fa-check', label: 'Check', type: 'fontawesome' },
+    { value: 'fas fa-user-check', label: 'User Check', type: 'fontawesome' },
+    { value: 'fas fa-exclamation-triangle', label: 'Warning Triangle', type: 'fontawesome' },
+    { value: 'fas fa-ban', label: 'Ban', type: 'fontawesome' },
+    { value: 'fas fa-undo', label: 'Undo', type: 'fontawesome' },
+    { value: 'fas fa-clock', label: 'Clock', type: 'fontawesome' },
+    { value: 'fas fa-shipping-fast', label: 'Shipping', type: 'fontawesome' },
+    { value: 'fas fa-truck', label: 'Truck', type: 'fontawesome' },
+    { value: 'fas fa-clipboard-check', label: 'Clipboard Check', type: 'fontawesome' },
+    { value: 'fas fa-shopping-cart', label: 'Shopping Cart', type: 'fontawesome' },
+    { value: 'fas fa-warehouse', label: 'Warehouse', type: 'fontawesome' },
+    { value: 'fas fa-cog', label: 'Settings', type: 'fontawesome' },
+    // Emoji icons
+    { value: '✅', label: 'Check Mark', type: 'emoji' },
+    { value: '📦', label: 'Package', type: 'emoji' },
+    { value: '🔧', label: 'Wrench', type: 'emoji' },
+    { value: '📄', label: 'Document', type: 'emoji' },
+    { value: '❓', label: 'Question Mark', type: 'emoji' },
+    { value: '🛠️', label: 'Hammer & Wrench', type: 'emoji' },
+    { value: '⭐', label: 'Star', type: 'emoji' },
+    { value: '👤', label: 'User', type: 'emoji' },
+    { value: '⚠️', label: 'Warning', type: 'emoji' },
+    { value: '🚫', label: 'Prohibited', type: 'emoji' },
+    { value: '↩️', label: 'Return', type: 'emoji' },
+    { value: '👁️', label: 'Eye', type: 'emoji' },
+    { value: '🔒', label: 'Lock', type: 'emoji' },
+    { value: '💾', label: 'Save', type: 'emoji' },
+    { value: '🗑️', label: 'Trash', type: 'emoji' },
+    { value: '🧪', label: 'Test Tube', type: 'emoji' },
+    { value: '🔖', label: 'Bookmark', type: 'emoji' },
+    { value: '🏷️', label: 'Tag', type: 'emoji' },
+    { value: '📋', label: 'Clipboard', type: 'emoji' },
+    { value: '🎯', label: 'Target', type: 'emoji' }
+  ];
+
+  // Define available colors (Named and RGB)
+  const availableColors = [
+    { value: '#6B7280', label: 'Gray (Default)', type: 'rgb', preview: '#6B7280' },
+    { value: '#10B981', label: 'Emerald Green', type: 'rgb', preview: '#10B981' },
+    { value: '#3B82F6', label: 'Blue', type: 'rgb', preview: '#3B82F6' },
+    { value: '#F59E0B', label: 'Amber', type: 'rgb', preview: '#F59E0B' },
+    { value: '#EF4444', label: 'Red', type: 'rgb', preview: '#EF4444' },
+    { value: '#F97316', label: 'Orange', type: 'rgb', preview: '#F97316' },
+    { value: '#8B5CF6', label: 'Violet', type: 'rgb', preview: '#8B5CF6' },
+    { value: '#6366F1', label: 'Indigo', type: 'rgb', preview: '#6366F1' },
+    { value: '#EC4899', label: 'Pink', type: 'rgb', preview: '#EC4899' },
+    { value: '#14B8A6', label: 'Teal', type: 'rgb', preview: '#14B8A6' },
+    { value: '#059669', label: 'Green', type: 'rgb', preview: '#059669' },
+    { value: '#DC2626', label: 'Dark Red', type: 'rgb', preview: '#DC2626' },
+    { value: '#2563EB', label: 'Royal Blue', type: 'rgb', preview: '#2563EB' },
+    { value: '#7C3AED', label: 'Purple', type: 'rgb', preview: '#7C3AED' },
+    { value: '#0891B2', label: 'Cyan', type: 'rgb', preview: '#0891B2' },
+    { value: '#374151', label: 'Dark Gray', type: 'rgb', preview: '#374151' },
+    { value: '#B91C1C', label: 'Crimson', type: 'rgb', preview: '#B91C1C' },
+    { value: '#065F46', label: 'Dark Green', type: 'rgb', preview: '#065F46' }
+  ];
+
   res.render('layout', {
     title: 'Add Status',
     body: 'references/add-status',
     user: req.session.user,
+    formData: {},
+    availableIcons: availableIcons,
+    availableColors: availableColors,
     isReferencePage: true
   });
 };
 
 exports.addStatus = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, icon, color, is_active } = req.body;
+
+    // Validate required fields
+    if (!name || name.trim() === '') {
+      req.flash('error', 'Status name is required and cannot be empty');
+      return res.render('layout', {
+        title: 'Add Status',
+        body: 'references/add-status',
+        formData: req.body,
+        user: req.session.user,
+        isReferencePage: true
+      });
+    }
+
+    const trimmedName = name.trim();
+    const trimmedDescription = description ? description.trim() : null;
+
+    // Check if status already exists
+    const existingStatus = await db.query('SELECT id FROM statuses WHERE LOWER(name) = LOWER($1)', [trimmedName]);
+
+    if (existingStatus.rows.length > 0) {
+      req.flash('error', 'A status with this name already exists');
+      return res.render('layout', {
+        title: 'Add Status',
+        body: 'references/add-status',
+        formData: req.body,
+        user: req.session.user,
+        isReferencePage: true
+      });
+    }
+
+    // Get the next order number
+    const maxOrderResult = await db.query('SELECT COALESCE(MAX(status_order), 0) + 1 as next_order FROM statuses');
+    const nextOrder = maxOrderResult.rows[0].next_order;
 
     await db.query(`
-      INSERT INTO statuses (name, description)
-      VALUES ($1, $2)
-    `, [name, description]);
+      INSERT INTO statuses (name, description, icon, color, is_active, status_order, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+    `, [
+      trimmedName,
+      trimmedDescription,
+      icon || 'fas fa-tag',
+      color || 'gray',
+      is_active === 'true' || is_active === true,
+      nextOrder
+    ]);
 
     req.flash('success', 'Status added successfully');
-    res.redirect('/references/statuses');
+    res.redirect('/references/status');
   } catch (error) {
     console.error('Error adding status:', error);
-    req.flash('error', 'Failed to add status');
-    res.redirect('/references/statuses/add');
+    req.flash('error', 'Failed to add status: ' + error.message);
+    res.render('layout', {
+      title: 'Add Status',
+      body: 'references/add-status',
+      formData: req.body,
+      user: req.session.user,
+      isReferencePage: true
+    });
   }
 };
 
@@ -262,47 +390,149 @@ exports.showEditStatusForm = async (req, res) => {
     const statusId = req.params.id;
 
     const status = await db.query(`
-      SELECT id, name, description
+      SELECT id, name, description, icon, color, is_active, status_order
       FROM statuses
       WHERE id = $1
     `, [statusId]);
 
     if (status.rows.length === 0) {
       req.flash('error', 'Status not found');
-      return res.redirect('/references/statuses');
+      return res.redirect('/references/status');
     }
+
+    // Define available icons (FontAwesome and Emojis)
+    const availableIcons = [
+      { value: 'fas fa-tag', label: 'Tag (Default)', type: 'fontawesome' },
+      { value: 'fas fa-check-circle', label: 'Check Circle', type: 'fontawesome' },
+      { value: 'fas fa-box', label: 'Box', type: 'fontawesome' },
+      { value: 'fas fa-tools', label: 'Tools', type: 'fontawesome' },
+      { value: 'fas fa-archive', label: 'Archive', type: 'fontawesome' },
+      { value: 'fas fa-question-circle', label: 'Question Circle', type: 'fontawesome' },
+      { value: 'fas fa-wrench', label: 'Wrench', type: 'fontawesome' },
+      { value: 'fas fa-star', label: 'Star', type: 'fontawesome' },
+      { value: 'fas fa-check', label: 'Check', type: 'fontawesome' },
+      { value: 'fas fa-user-check', label: 'User Check', type: 'fontawesome' },
+      { value: 'fas fa-exclamation-triangle', label: 'Warning Triangle', type: 'fontawesome' },
+      { value: 'fas fa-ban', label: 'Ban', type: 'fontawesome' },
+      { value: 'fas fa-undo', label: 'Undo', type: 'fontawesome' },
+      { value: 'fas fa-clock', label: 'Clock', type: 'fontawesome' },
+      { value: 'fas fa-shipping-fast', label: 'Shipping', type: 'fontawesome' },
+      { value: 'fas fa-truck', label: 'Truck', type: 'fontawesome' },
+      { value: 'fas fa-clipboard-check', label: 'Clipboard Check', type: 'fontawesome' },
+      { value: 'fas fa-shopping-cart', label: 'Shopping Cart', type: 'fontawesome' },
+      { value: 'fas fa-warehouse', label: 'Warehouse', type: 'fontawesome' },
+      { value: 'fas fa-cog', label: 'Settings', type: 'fontawesome' },
+      // Emoji icons
+      { value: '✅', label: 'Check Mark', type: 'emoji' },
+      { value: '📦', label: 'Package', type: 'emoji' },
+      { value: '🔧', label: 'Wrench', type: 'emoji' },
+      { value: '📄', label: 'Document', type: 'emoji' },
+      { value: '❓', label: 'Question Mark', type: 'emoji' },
+      { value: '🛠️', label: 'Hammer & Wrench', type: 'emoji' },
+      { value: '⭐', label: 'Star', type: 'emoji' },
+      { value: '👤', label: 'User', type: 'emoji' },
+      { value: '⚠️', label: 'Warning', type: 'emoji' },
+      { value: '🚫', label: 'Prohibited', type: 'emoji' },
+      { value: '↩️', label: 'Return', type: 'emoji' },
+      { value: '👁️', label: 'Eye', type: 'emoji' },
+      { value: '🔒', label: 'Lock', type: 'emoji' },
+      { value: '💾', label: 'Save', type: 'emoji' },
+      { value: '🗑️', label: 'Trash', type: 'emoji' },
+      { value: '🧪', label: 'Test Tube', type: 'emoji' },
+      { value: '🔖', label: 'Bookmark', type: 'emoji' },
+      { value: '🏷️', label: 'Tag', type: 'emoji' },
+      { value: '📋', label: 'Clipboard', type: 'emoji' },
+      { value: '🎯', label: 'Target', type: 'emoji' }
+    ];
+
+    // Define available colors (Named and RGB)
+    const availableColors = [
+      { value: '#6B7280', label: 'Gray (Default)', type: 'rgb', preview: '#6B7280' },
+      { value: '#10B981', label: 'Emerald Green', type: 'rgb', preview: '#10B981' },
+      { value: '#3B82F6', label: 'Blue', type: 'rgb', preview: '#3B82F6' },
+      { value: '#F59E0B', label: 'Amber', type: 'rgb', preview: '#F59E0B' },
+      { value: '#EF4444', label: 'Red', type: 'rgb', preview: '#EF4444' },
+      { value: '#F97316', label: 'Orange', type: 'rgb', preview: '#F97316' },
+      { value: '#8B5CF6', label: 'Violet', type: 'rgb', preview: '#8B5CF6' },
+      { value: '#6366F1', label: 'Indigo', type: 'rgb', preview: '#6366F1' },
+      { value: '#EC4899', label: 'Pink', type: 'rgb', preview: '#EC4899' },
+      { value: '#14B8A6', label: 'Teal', type: 'rgb', preview: '#14B8A6' },
+      { value: '#059669', label: 'Green', type: 'rgb', preview: '#059669' },
+      { value: '#DC2626', label: 'Dark Red', type: 'rgb', preview: '#DC2626' },
+      { value: '#2563EB', label: 'Royal Blue', type: 'rgb', preview: '#2563EB' },
+      { value: '#7C3AED', label: 'Purple', type: 'rgb', preview: '#7C3AED' },
+      { value: '#0891B2', label: 'Cyan', type: 'rgb', preview: '#0891B2' },
+      { value: '#374151', label: 'Dark Gray', type: 'rgb', preview: '#374151' },
+      { value: '#B91C1C', label: 'Crimson', type: 'rgb', preview: '#B91C1C' },
+      { value: '#065F46', label: 'Dark Green', type: 'rgb', preview: '#065F46' }
+    ];
 
     res.render('layout', {
       title: 'Edit Status',
       body: 'references/edit-status',
       user: req.session.user,
       status: status.rows[0],
+      availableIcons: availableIcons,
+      availableColors: availableColors,
       isReferencePage: true
     });
   } catch (error) {
     console.error('Error fetching status:', error);
     req.flash('error', 'Could not fetch status data');
-    res.redirect('/references/statuses');
+    res.redirect('/references/status');
   }
 };
 
 exports.editStatus = async (req, res) => {
   try {
     const statusId = req.params.id;
-    const { name, description } = req.body;
+    const { name, description, icon, color, is_active } = req.body;
 
-    await db.query(`
+    // Validate required fields
+    if (!name || name.trim() === '') {
+      req.flash('error', 'Status name is required and cannot be empty');
+      return res.redirect(`/references/status/${statusId}/edit`);
+    }
+
+    const trimmedName = name.trim();
+    const trimmedDescription = description ? description.trim() : null;
+
+    // Check if another status with the same name exists (excluding current one)
+    const existingStatus = await db.query(
+      'SELECT id FROM statuses WHERE LOWER(name) = LOWER($1) AND id != $2',
+      [trimmedName, statusId]
+    );
+
+    if (existingStatus.rows.length > 0) {
+      req.flash('error', 'A status with this name already exists');
+      return res.redirect(`/references/status/${statusId}/edit`);
+    }
+
+    const result = await db.query(`
       UPDATE statuses
-      SET name = $1, description = $2
-      WHERE id = $3
-    `, [name, description, statusId]);
+      SET name = $1, description = $2, icon = $3, color = $4, is_active = $5, updated_at = NOW()
+      WHERE id = $6
+      RETURNING id, name
+    `, [
+      trimmedName,
+      trimmedDescription,
+      icon || 'fas fa-tag',
+      color || 'gray',
+      is_active === 'true' || is_active === true,
+      statusId
+    ]);
+
+    if (result.rows.length === 0) {
+      req.flash('error', 'Status not found');
+      return res.redirect('/references/status');
+    }
 
     req.flash('success', 'Status updated successfully');
-    res.redirect('/references/statuses');
+    res.redirect('/references/status');
   } catch (error) {
     console.error('Error updating status:', error);
-    req.flash('error', 'Failed to update status');
-    res.redirect(`/references/statuses/${req.params.id}/edit`);
+    req.flash('error', 'Failed to update status: ' + error.message);
+    res.redirect(`/references/status/${req.params.id}/edit`);
   }
 };
 
@@ -311,25 +541,72 @@ exports.deleteStatus = async (req, res) => {
     const statusId = req.params.id;
 
     // Check if there are any items using this status
-    const result = await db.query(`
+    const itemResult = await db.query(`
       SELECT COUNT(*) as count
       FROM items
       WHERE status_id = $1
     `, [statusId]);
 
-    if (parseInt(result.rows[0].count) > 0) {
-      req.flash('error', `Cannot delete: This status is used by ${result.rows[0].count} items`);
-      return res.redirect('/references/statuses');
+    const itemCount = parseInt(itemResult.rows[0].count);
+
+    if (itemCount > 0) {
+      req.flash('error', `Cannot delete: This status is used by ${itemCount} items`);
+      return res.redirect('/references/status');
     }
 
-    await db.query(`DELETE FROM statuses WHERE id = $1`, [statusId]);
+    // Check if there are any printers, PDAs, or SIM cards using this status
+    const printerResult = await db.query(`
+      SELECT COUNT(*) as count
+      FROM printers
+      WHERE status_id = $1
+    `, [statusId]);
 
-    req.flash('success', 'Status deleted successfully');
-    res.redirect('/references/statuses');
+    const pdaResult = await db.query(`
+      SELECT COUNT(*) as count
+      FROM pdas
+      WHERE status_id = $1
+    `, [statusId]);
+
+    const simResult = await db.query(`
+      SELECT COUNT(*) as count
+      FROM sim_cards
+      WHERE status_id = $1
+    `, [statusId]);
+
+    const printerCount = parseInt(printerResult.rows[0].count);
+    const pdaCount = parseInt(pdaResult.rows[0].count);
+    const simCount = parseInt(simResult.rows[0].count);
+
+    const totalUsage = itemCount + printerCount + pdaCount + simCount;
+
+    if (totalUsage > 0) {
+      let usageMessage = 'Cannot delete: This status is used by ';
+      const usageParts = [];
+
+      if (itemCount > 0) usageParts.push(`${itemCount} items`);
+      if (printerCount > 0) usageParts.push(`${printerCount} printers`);
+      if (pdaCount > 0) usageParts.push(`${pdaCount} PDAs`);
+      if (simCount > 0) usageParts.push(`${simCount} SIM cards`);
+
+      usageMessage += usageParts.join(', ');
+
+      req.flash('error', usageMessage);
+      return res.redirect('/references/status');
+    }
+
+    const deleteResult = await db.query(`DELETE FROM statuses WHERE id = $1 RETURNING name`, [statusId]);
+
+    if (deleteResult.rows.length === 0) {
+      req.flash('error', 'Status not found');
+    } else {
+      req.flash('success', `Status "${deleteResult.rows[0].name}" deleted successfully`);
+    }
+
+    res.redirect('/references/status');
   } catch (error) {
     console.error('Error deleting status:', error);
     req.flash('error', 'Failed to delete status');
-    res.redirect('/references/statuses');
+    res.redirect('/references/status');
   }
 };
 
@@ -340,13 +617,14 @@ exports.locations = async (req, res) => {
       SELECT
         l.id,
         l.name,
+        l.description,
         l.address,
         COUNT(DISTINCT i.id) as item_count,
         COUNT(DISTINCT e.id) as employee_count
       FROM locations l
       LEFT JOIN items i ON i.location_id = l.id
       LEFT JOIN employees e ON e.location_id = l.id
-      GROUP BY l.id, l.name, l.address
+      GROUP BY l.id, l.name, l.description, l.address
       ORDER BY l.name
     `);
 
@@ -379,12 +657,12 @@ exports.showAddLocationForm = (req, res) => {
 
 exports.addLocation = async (req, res) => {
   try {
-    const { name, address } = req.body;
+    const { name, description, address } = req.body;
 
     await db.query(`
-      INSERT INTO locations (name, address)
-      VALUES ($1, $2)
-    `, [name, address]);
+      INSERT INTO locations (name, description, address)
+      VALUES ($1, $2, $3)
+    `, [name, description, address]);
 
     req.flash('success', 'Location added successfully');
     res.redirect('/references/locations');
@@ -400,7 +678,7 @@ exports.showEditLocationForm = async (req, res) => {
     const locationId = req.params.id;
 
     const location = await db.query(`
-      SELECT id, name, address
+      SELECT id, name, description, address
       FROM locations
       WHERE id = $1
     `, [locationId]);
@@ -427,13 +705,13 @@ exports.showEditLocationForm = async (req, res) => {
 exports.editLocation = async (req, res) => {
   try {
     const locationId = req.params.id;
-    const { name, address } = req.body;
+    const { name, description, address } = req.body;
 
     await db.query(`
       UPDATE locations
-      SET name = $1, address = $2
-      WHERE id = $3
-    `, [name, address, locationId]);
+      SET name = $1, description = $2, address = $3
+      WHERE id = $4
+    `, [name, description, address, locationId]);
 
     req.flash('success', 'Location updated successfully');
     res.redirect('/references/locations');
@@ -960,5 +1238,267 @@ exports.unassignSoftware = async (req, res) => {
   } catch (error) {
     console.error('Error unassigning software:', error);
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.getStatuses = async (req, res) => {
+  try {
+    const statuses = await db.query(`
+      SELECT
+        s.id,
+        s.name,
+        s.description,
+        s.icon,
+        s.color,
+        s.is_active,
+        s.status_order,
+        COUNT(i.id) as item_count
+      FROM statuses s
+      LEFT JOIN items i ON i.status_id = s.id
+      GROUP BY s.id, s.name, s.description, s.icon, s.color, s.is_active, s.status_order
+      ORDER BY s.status_order ASC, s.name ASC
+    `);
+
+    res.render('layout', {
+      title: 'Status Options',
+      body: 'references/status',
+      user: req.session.user,
+      statuses: statuses.rows,
+      isReferencePage: true
+    });
+  } catch (error) {
+    console.error('Error fetching statuses:', error);
+    res.status(500).render('layout', {
+      title: 'Error',
+      body: 'error',
+      message: 'Could not fetch status options',
+      user: req.session.user
+    });
+  }
+};
+
+exports.createStatus = async (req, res) => {
+  try {
+    const { name, description, icon, color, is_active } = req.body;
+
+    await db.query(
+      'INSERT INTO statuses (name, description, icon, color, is_active) VALUES ($1, $2, $3, $4, $5)',
+      [name, description, icon || 'fas fa-tag', color || 'gray', is_active === 'true']
+    );
+
+    res.redirect('/references/status');
+  } catch (error) {
+    console.error('Error creating status:', error);
+    res.status(500).render('error', { error: 'Failed to create status' });
+  }
+};
+
+exports.updateStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, icon, color, is_active } = req.body;
+
+    await db.query(
+      'UPDATE statuses SET name = $1, description = $2, icon = $3, color = $4, is_active = $5 WHERE id = $6',
+      [name, description, icon || 'fas fa-tag', color || 'gray', is_active === 'true', id]
+    );
+
+    res.redirect('/references/status');
+  } catch (error) {
+    console.error('Error updating status:', error);
+    res.status(500).render('error', { error: 'Failed to update status' });
+  }
+};
+
+// Departments
+
+exports.departments = async (req, res) => {
+  try {
+    const departments = await db.query(`
+      SELECT
+        d.id,
+        d.name,
+        d.description,
+        COUNT(e.id) as employee_count
+      FROM departments d
+      LEFT JOIN employees e ON e.dept_id = d.id
+      GROUP BY d.id, d.name, d.description
+      ORDER BY d.name
+    `);
+
+    res.render('layout', {
+      title: 'Departments',
+      body: 'references/departments',
+      user: req.session.user,
+      departments: departments.rows,
+      isReferencePage: true
+    });
+  } catch (error) {
+    console.error('Error fetching departments:', error);
+    res.status(500).render('layout', {
+      title: 'Error',
+      body: 'error',
+      message: 'Could not fetch departments',
+      user: req.session.user
+    });
+  }
+};
+
+
+
+exports.showAddDepartmentForm = (req, res) => {
+  res.render('layout', {
+    title: 'Add Department',
+    body: 'references/add-department',
+    user: req.session.user,
+    isReferencePage: true
+  });
+};
+
+exports.addDepartment = async (req, res) => {
+  try {
+    const { name, description } = req.body;
+
+    // Validate required fields
+    if (!name || name.trim() === '') {
+      req.flash('error', 'Department name is required and cannot be empty');
+      return res.render('layout', {
+        title: 'Add Department',
+        body: 'references/add-department',
+        formData: req.body,
+        user: req.session.user
+      });
+    }
+
+    const trimmedName = name.trim();
+    const trimmedDescription = description ? description.trim() : null;
+
+    // Check if department already exists
+    const existingDept = await db.query('SELECT id FROM departments WHERE LOWER(name) = LOWER($1)', [trimmedName]);
+
+    if (existingDept.rows.length > 0) {
+      req.flash('error', 'A department with this name already exists');
+      return res.render('layout', {
+        title: 'Add Department',
+        body: 'references/add-department',
+        formData: req.body,
+        user: req.session.user
+      });
+    }
+
+    await db.query(`
+      INSERT INTO departments (name, description, created_at, updated_at)
+      VALUES ($1, $2, NOW(), NOW())
+    `, [trimmedName, trimmedDescription]);
+
+    req.flash('success', 'Department added successfully');
+    res.redirect('/references/departments');
+  } catch (error) {
+    console.error('Error adding department:', error);
+    req.flash('error', 'Failed to add department: ' + error.message);
+    res.render('layout', {
+      title: 'Add Department',
+      body: 'references/add-department',
+      formData: req.body,
+      user: req.session.user
+    });
+  }
+};
+
+exports.showEditDepartmentForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await db.query('SELECT * FROM departments WHERE id = $1', [id]);
+
+    if (result.rows.length === 0) {
+      req.flash('error', 'Department not found');
+      return res.redirect('/references/departments');
+    }
+
+    res.render('layout', {
+      title: 'Edit Department',
+      body: 'references/edit-department',
+      department: result.rows[0],
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error('Error loading department for edit:', error);
+    req.flash('error', 'Failed to load department');
+    res.redirect('/references/departments');
+  }
+};
+
+exports.editDepartment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description } = req.body;
+
+    // Validate required fields
+    if (!name || name.trim() === '') {
+      req.flash('error', 'Department name is required and cannot be empty');
+      return res.redirect(`/references/departments/${id}/edit`);
+    }
+
+    const trimmedName = name.trim();
+    const trimmedDescription = description ? description.trim() : null;
+
+    // Check if another department with the same name exists (excluding current one)
+    const existingDept = await db.query(
+      'SELECT id FROM departments WHERE LOWER(name) = LOWER($1) AND id != $2',
+      [trimmedName, id]
+    );
+
+    if (existingDept.rows.length > 0) {
+      req.flash('error', 'A department with this name already exists');
+      return res.redirect(`/references/departments/${id}/edit`);
+    }
+
+    const result = await db.query(`
+      UPDATE departments
+      SET name = $1, description = $2, updated_at = NOW()
+      WHERE id = $3
+      RETURNING id, name
+    `, [trimmedName, trimmedDescription, id]);
+
+    if (result.rows.length === 0) {
+      req.flash('error', 'Department not found');
+      return res.redirect('/references/departments');
+    }
+
+    req.flash('success', 'Department updated successfully');
+    res.redirect('/references/departments');
+  } catch (error) {
+    console.error('Error updating department:', error);
+    req.flash('error', 'Failed to update department: ' + error.message);
+    res.redirect(`/references/departments/${req.params.id}/edit`);
+  }
+};
+
+exports.deleteDepartment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if department is in use
+    const usageCheck = await db.query('SELECT COUNT(*) as count FROM employees WHERE dept_id = $1', [id]);
+    const usageCount = parseInt(usageCheck.rows[0].count);
+
+    if (usageCount > 0) {
+      req.flash('error', `Cannot delete this department because it is used by ${usageCount} employees`);
+      return res.redirect('/references/departments');
+    }
+
+    const result = await db.query('DELETE FROM departments WHERE id = $1 RETURNING name', [id]);
+
+    if (result.rows.length === 0) {
+      req.flash('error', 'Department not found');
+    } else {
+      req.flash('success', `Department "${result.rows[0].name}" deleted successfully`);
+    }
+
+    res.redirect('/references/departments');
+  } catch (error) {
+    console.error('Error deleting department:', error);
+    req.flash('error', 'Failed to delete department');
+    res.redirect('/references/departments');
   }
 };

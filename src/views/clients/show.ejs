@@ -1,101 +1,113 @@
-<div class="content-header">
-  <div class="header-title">
-    <h1><i class="fas fa-building"></i> <%= client.name %></h1>
-    <p>Client ID: <strong><%= client.client_id %></strong></p>
-  </div>
-  <div class="header-actions">
-    <a href="/clients" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> Back to Clients
-    </a>
-    <a href="/clients/<%= client.id %>/edit" class="btn btn-primary">
-      <i class="fas fa-edit"></i> Edit Client
-    </a>
-  </div>
-</div>
-
-<% if (locals.messages && messages.success) { %>
-  <div class="alert alert-success">
-    <i class="fas fa-check-circle"></i>
-    <%= messages.success %>
-  </div>
-<% } %>
-
-<div class="details-container">
-  <div class="info-section">
-    <h3><i class="fas fa-info-circle"></i> Client Information</h3>
-    <div class="info-grid">
-      <div class="info-item">
-        <label>Client ID:</label>
-        <span><%= client.client_id %></span>
-      </div>
-      <div class="info-item">
-        <label>Name:</label>
-        <span><%= client.name %></span>
-      </div>
-      <div class="info-item">
-        <label>Description:</label>
-        <span><%= client.description || 'No description provided' %></span>
-      </div>
-      <div class="info-item">
-        <label>Created:</label>
-        <span><%= new Date(client.created_at).toLocaleString() %></span>
-      </div>
-      <div class="info-item">
-        <label>Last Updated:</label>
-        <span><%= new Date(client.updated_at).toLocaleString() %></span>
-      </div>
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-1">
+        <i class="fas fa-building"></i> <%= client.name %>
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400">Client ID: <strong><%= client.client_id %></strong></p>
     </div>
-  </div>
-
-  <div class="equipment-section">
-    <div class="section-header">
-      <h3><i class="fas fa-print"></i> Printers (<%= printers.length %>)</h3>
-      <a href="/printers/new?client_id=<%= client.id %>" class="btn btn-sm btn-primary">
-        <i class="fas fa-plus"></i> Add Printer
+    <div class="flex flex-wrap gap-2">
+      <a href="/clients" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Clients
+      </a>
+      <a href="/clients/<%= client.id %>/edit" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-edit mr-2"></i> Edit Client
       </a>
     </div>
-    
+  </div>
+
+  <% if (locals.messages && messages.success) { %>
+    <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700">
+      <i class="fas fa-check-circle"></i>
+      <%= messages.success %>
+    </div>
+  <% } %>
+
+  <!-- Client Info -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 mb-8">
+    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2 mb-4">
+      <i class="fas fa-info-circle"></i> Client Information
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Client ID:</label>
+        <span class="font-mono text-gray-800 dark:text-gray-100"><%= client.client_id %></span>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Name:</label>
+        <span class="text-gray-800 dark:text-gray-100"><%= client.name %></span>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Description:</label>
+        <span class="text-gray-700 dark:text-gray-200"><%= client.description || 'No description provided' %></span>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Created:</label>
+        <span class="text-gray-700 dark:text-gray-200"><%= new Date(client.created_at).toLocaleString() %></span>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Last Updated:</label>
+        <span class="text-gray-700 dark:text-gray-200"><%= new Date(client.updated_at).toLocaleString() %></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printers Section -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+        <i class="fas fa-print"></i> Printers (<%= printers.length %>)
+      </h3>
+      <a href="/printers/new?client_id=<%= client.id %>" class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition text-sm">
+        <i class="fas fa-plus mr-1"></i> Add Printer
+      </a>
+    </div>
     <% if (printers.length === 0) { %>
-      <div class="empty-state">
-        <i class="fas fa-print"></i>
-        <p>No printers assigned to this client</p>
-        <a href="/printers/new?client_id=<%= client.id %>" class="btn btn-primary">Add Printer</a>
+      <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+        <div class="text-3xl text-blue-500 mb-2">
+          <i class="fas fa-print"></i>
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 mb-2">No printers assigned to this client</p>
+        <a href="/printers/new?client_id=<%= client.id %>" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-plus"></i> Add Printer
+        </a>
       </div>
     <% } else { %>
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
+      <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th>ID</th>
-              <th>Supplier</th>
-              <th>Employee</th>
-              <th>Created</th>
-              <th>Actions</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">ID</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Supplier</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Employee</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Created</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             <% printers.forEach(printer => { %>
               <tr>
-                <td>
-                  <a href="/printers/<%= printer.id %>" class="entity-link">
+                <td class="px-4 py-3">
+                  <a href="/printers/<%= printer.id %>" class="font-mono text-blue-700 dark:text-blue-300 hover:underline">
                     #<%= printer.id %>
                   </a>
                 </td>
-                <td><%= printer.supplier %></td>
-                <td>
+                <td class="px-4 py-3"><%= printer.supplier %></td>
+                <td class="px-4 py-3">
                   <% if (printer.employee_name) { %>
                     <%= printer.employee_name %>
                   <% } else { %>
-                    <span class="text-muted">Unassigned</span>
+                    <span class="text-gray-400 dark:text-gray-500 italic">Unassigned</span>
                   <% } %>
                 </td>
-                <td><%= new Date(printer.created_at).toLocaleDateString() %></td>
-                <td>
-                  <div class="action-buttons">
-                    <a href="/printers/<%= printer.id %>" class="btn btn-sm btn-outline-primary">
+                <td class="px-4 py-3 text-gray-500 dark:text-gray-400"><%= new Date(printer.created_at).toLocaleDateString() %></td>
+                <td class="px-4 py-3">
+                  <div class="flex gap-2">
+                    <a href="/printers/<%= printer.id %>" class="inline-flex items-center px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition" title="View">
                       <i class="fas fa-eye"></i>
                     </a>
-                    <a href="/printers/<%= printer.id %>/edit" class="btn btn-sm btn-outline-secondary">
+                    <a href="/printers/<%= printer.id %>/edit" class="inline-flex items-center px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition" title="Edit">
                       <i class="fas fa-edit"></i>
                     </a>
                   </div>
@@ -108,69 +120,75 @@
     <% } %>
   </div>
 
-  <div class="equipment-section">
-    <div class="section-header">
-      <h3><i class="fas fa-mobile-alt"></i> PDAs (<%= pdas.length %>)</h3>
-      <a href="/pdas/new?client_id=<%= client.id %>" class="btn btn-sm btn-primary">
-        <i class="fas fa-plus"></i> Add PDA
+  <!-- PDAs Section -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+        <i class="fas fa-mobile-alt"></i> PDAs (<%= pdas.length %>)
+      </h3>
+      <a href="/pdas/new?client_id=<%= client.id %>" class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition text-sm">
+        <i class="fas fa-plus mr-1"></i> Add PDA
       </a>
     </div>
-    
     <% if (pdas.length === 0) { %>
-      <div class="empty-state">
-        <i class="fas fa-mobile-alt"></i>
-        <p>No PDAs assigned to this client</p>
-        <a href="/pdas/new?client_id=<%= client.id %>" class="btn btn-primary">Add PDA</a>
+      <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+        <div class="text-3xl text-blue-500 mb-2">
+          <i class="fas fa-mobile-alt"></i>
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 mb-2">No PDAs assigned to this client</p>
+        <a href="/pdas/new?client_id=<%= client.id %>" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-plus"></i> Add PDA
+        </a>
       </div>
     <% } else { %>
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
+      <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th>Serial Number</th>
-              <th>Model</th>
-              <th>Cost</th>
-              <th>Status</th>
-              <th>SIM Cards</th>
-              <th>Created</th>
-              <th>Actions</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Serial Number</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Model</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Cost</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Status</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">SIM Cards</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Created</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             <% pdas.forEach(pda => { %>
               <tr>
-                <td>
-                  <a href="/pdas/<%= pda.id %>" class="entity-link">
+                <td class="px-4 py-3">
+                  <a href="/pdas/<%= pda.id %>" class="font-mono text-blue-700 dark:text-blue-300 hover:underline">
                     <%= pda.serial_number %>
                   </a>
                 </td>
-                <td><%= pda.model || '-' %></td>
-                <td>
+                <td class="px-4 py-3"><%= pda.model || '-' %></td>
+                <td class="px-4 py-3">
                   <% if (pda.cost) { %>
                     €<%= parseFloat(pda.cost).toFixed(2) %>
                   <% } else { %>
                     -
                   <% } %>
                 </td>
-                <td>
+                <td class="px-4 py-3">
                   <% if (pda.status_name) { %>
-                    <span class="badge badge-info"><%= pda.status_name %></span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold"><%= pda.status_name %></span>
                   <% } else { %>
                     -
                   <% } %>
                 </td>
-                <td>
-                  <span class="badge badge-secondary">
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">
                     <i class="fas fa-sim-card"></i> <%= pda.sim_count || 0 %>
                   </span>
                 </td>
-                <td><%= new Date(pda.created_at).toLocaleDateString() %></td>
-                <td>
-                  <div class="action-buttons">
-                    <a href="/pdas/<%= pda.id %>" class="btn btn-sm btn-outline-primary">
+                <td class="px-4 py-3 text-gray-500 dark:text-gray-400"><%= new Date(pda.created_at).toLocaleDateString() %></td>
+                <td class="px-4 py-3">
+                  <div class="flex gap-2">
+                    <a href="/pdas/<%= pda.id %>" class="inline-flex items-center px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition" title="View">
                       <i class="fas fa-eye"></i>
                     </a>
-                    <a href="/pdas/<%= pda.id %>/edit" class="btn btn-sm btn-outline-secondary">
+                    <a href="/pdas/<%= pda.id %>/edit" class="inline-flex items-center px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition" title="Edit">
                       <i class="fas fa-edit"></i>
                     </a>
                   </div>
@@ -183,66 +201,72 @@
     <% } %>
   </div>
 
-  <div class="equipment-section">
-    <div class="section-header">
-      <h3><i class="fas fa-sim-card"></i> SIM Cards (<%= simCards.length %>)</h3>
-      <a href="/simcards/new?client_id=<%= client.id %>" class="btn btn-sm btn-primary">
-        <i class="fas fa-plus"></i> Add SIM Card
+  <!-- SIM Cards Section -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+        <i class="fas fa-sim-card"></i> SIM Cards (<%= simCards.length %>)
+      </h3>
+      <a href="/simcards/new?client_id=<%= client.id %>" class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition text-sm">
+        <i class="fas fa-plus mr-1"></i> Add SIM Card
       </a>
     </div>
-    
     <% if (simCards.length === 0) { %>
-      <div class="empty-state">
-        <i class="fas fa-sim-card"></i>
-        <p>No SIM cards assigned to this client</p>
-        <a href="/simcards/new?client_id=<%= client.id %>" class="btn btn-primary">Add SIM Card</a>
+      <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+        <div class="text-3xl text-blue-500 mb-2">
+          <i class="fas fa-sim-card"></i>
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 mb-2">No SIM cards assigned to this client</p>
+        <a href="/simcards/new?client_id=<%= client.id %>" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-plus"></i> Add SIM Card
+        </a>
       </div>
     <% } else { %>
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
+      <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th>SIM Number</th>
-              <th>Carrier</th>
-              <th>Monthly Cost</th>
-              <th>Status</th>
-              <th>Assigned PDA</th>
-              <th>Actions</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">SIM Number</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Carrier</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Monthly Cost</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Status</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Assigned PDA</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             <% simCards.forEach(sim => { %>
               <tr>
-                <td>
-                  <a href="/simcards/<%= sim.id %>" class="entity-link">
+                <td class="px-4 py-3">
+                  <a href="/simcards/<%= sim.id %>" class="font-mono text-blue-700 dark:text-blue-300 hover:underline">
                     <%= sim.sim_number %>
                   </a>
                 </td>
-                <td><%= sim.carrier %></td>
-                <td>
+                <td class="px-4 py-3"><%= sim.carrier %></td>
+                <td class="px-4 py-3">
                   <% if (sim.monthly_cost) { %>
                     €<%= parseFloat(sim.monthly_cost).toFixed(2) %>/month
                   <% } else { %>
                     -
                   <% } %>
                 </td>
-                <td>
+                <td class="px-4 py-3">
                   <% if (sim.status_name) { %>
-                    <span class="badge badge-info"><%= sim.status_name %></span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold"><%= sim.status_name %></span>
                   <% } else { %>
                     -
                   <% } %>
                 </td>
-                <td>
+                <td class="px-4 py-3">
                   <% if (sim.pda_serial) { %>
                     <%= sim.pda_serial %>
                   <% } else { %>
-                    <span class="text-muted">Unassigned</span>
+                    <span class="text-gray-400 dark:text-gray-500 italic">Unassigned</span>
                   <% } %>
                 </td>
-                <td>
-                  <div class="action-buttons">
-                    <a href="/simcards/<%= sim.id %>" class="btn btn-sm btn-outline-primary">
+                <td class="px-4 py-3">
+                  <div class="flex gap-2">
+                    <a href="/simcards/<%= sim.id %>" class="inline-flex items-center px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition" title="View">
                       <i class="fas fa-eye"></i>
                     </a>
                   </div>
@@ -255,34 +279,38 @@
     <% } %>
   </div>
 
-  <div class="cost-summary">
-    <h3><i class="fas fa-calculator"></i> Cost Summary</h3>
-    <div class="cost-grid">
-      <div class="cost-item">
-        <label>Printers Total:</label>
-        <span>€<%= totals.printers.toFixed(2) %></span>
+  <!-- Cost Summary -->
+  <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8">
+    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2 mb-4">
+      <i class="fas fa-calculator"></i> Cost Summary
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Printers Total:</label>
+        <span class="text-gray-800 dark:text-gray-100 font-mono">€<%= totals.printers.toFixed(2) %></span>
       </div>
-      <div class="cost-item">
-        <label>PDAs Total:</label>
-        <span>€<%= totals.pdas.toFixed(2) %></span>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">PDAs Total:</label>
+        <span class="text-gray-800 dark:text-gray-100 font-mono">€<%= totals.pdas.toFixed(2) %></span>
       </div>
-      <div class="cost-item">
-        <label>SIM Cards (Monthly):</label>
-        <span>€<%= totals.simCards.toFixed(2) %>/month</span>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">SIM Cards (Monthly):</label>
+        <span class="text-gray-800 dark:text-gray-100 font-mono">€<%= totals.simCards.toFixed(2) %>/month</span>
       </div>
-      <div class="cost-item total">
-        <label>Equipment Total:</label>
-        <span>€<%= totals.total.toFixed(2) %></span>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Equipment Total:</label>
+        <span class="text-gray-800 dark:text-gray-100 font-mono font-bold">€<%= totals.total.toFixed(2) %></span>
       </div>
     </div>
   </div>
 
-  <div class="actions-section">
-    <a href="/clients/<%= client.id %>/history" class="btn btn-info">
-      <i class="fas fa-history"></i> View History
+  <!-- Actions -->
+  <div class="flex flex-wrap gap-2 mt-4">
+    <a href="/clients/<%= client.id %>/history" class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition">
+      <i class="fas fa-history mr-2"></i> View History
     </a>
-    <button class="btn btn-danger" onclick="confirmDelete(<%= client.id %>, '<%= client.name %>')">
-      <i class="fas fa-trash"></i> Delete Client
+    <button class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition" data-confirm-delete="Are you sure you want to delete client '<%= client.name %>' (ID: <%= client.id %>)? This action cannot be undone.">
+      <i class="fas fa-trash mr-2"></i> Delete Client
     </button>
   </div>
 </div>

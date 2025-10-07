@@ -1,527 +1,695 @@
-<div class="modern-login">
-  <div class="login-background">
-    <div class="bg-shapes">
-      <div class="shape-server"></div>
-      <div class="shape-circuit"></div>
-      <div class="shape-chip"></div>
-      <div class="shape-network"></div>
-    </div>
-  </div>
-
-  <div class="login-container">
-    <div class="login-card">
-      <div class="login-header">
-        <div class="logo-container">
-          <div class="logo-icon">
-            <i class="fas fa-server"></i>
-          </div>
-          <div class="logo-text">
-            <h1>AssetTrack</h1>
-            <p>IT Asset Management System</p>
-          </div>
-        </div>
-      </div>
-
-      <% if (typeof error !== 'undefined' && error) { %>
-        <div class="alert alert-danger modern-alert">
-          <i class="fas fa-exclamation-triangle"></i>
-          <span><%= error %></span>
-        </div>
-      <% } %>
-
-      <form id="loginForm" method="POST" action="/auth/login" data-no-ajax class="modern-form">
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <div class="input-container">
-            <i class="fas fa-envelope input-icon"></i>
-            <input type="email" id="email" name="email" class="form-input"
-                   value="<%= locals.email || '' %>" required autofocus
-                   placeholder="Enter your email">
-            <div class="input-underline"></div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="password">Password</label>
-          <div class="input-container">
-            <i class="fas fa-lock input-icon"></i>
-            <input type="password" id="password" name="password" class="form-input"
-                   required placeholder="Enter your password">
-            <button type="button" class="password-toggle" onclick="togglePassword()">
-              <i class="fas fa-eye" id="passwordToggleIcon"></i>
-            </button>
-            <div class="input-underline"></div>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn-login">
-            <span class="btn-text">Sign In</span>
-            <div class="btn-loader" style="display: none;">
-              <div class="spinner"></div>
-            </div>
-          </button>
-        </div>
-      </form>
-
-      <div class="login-footer">
-        <div class="footer-links">
-          <a href="#" class="link-forgot">Forgot Password?</a>
-        </div>
-        <div class="footer-info">
-          <p>Don't have an account? Contact your system administrator.</p>
-          <p class="version">
-            <i class="fas fa-shield-alt"></i>
-            Secure Login • v2.0.0
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="login-side-panel">
-      <div class="panel-content">
-        <div class="feature-highlights">
-          <div class="highlight-item">
-            <i class="fas fa-shield-alt"></i>
-            <span>Enterprise Security</span>
-          </div>
-          <div class="highlight-item">
-            <i class="fas fa-network-wired"></i>
-            <span>Network Monitoring</span>
-          </div>
-          <div class="highlight-item">
-            <i class="fas fa-server"></i>
-            <span>Asset Tracking</span>
-          </div>
-          <div class="highlight-item">
-            <i class="fas fa-chart-line"></i>
-            <span>Real-time Analytics</span>
-          </div>
-        </div>
-
-        <div class="system-stats">
-          <div class="stat-display">
-            <div class="stat-item">
-              <span class="stat-label">System Status</span>
-              <span class="stat-value online">ONLINE</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Uptime</span>
-              <span class="stat-value">99.98%</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Assets Monitored</span>
-              <span class="stat-value">1,247</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <style>
-/* Modern Login Styles */
-.modern-login {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
+html, body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
 }
-
-.login-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-}
-
-.bg-shapes {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-
-.shape-server {
-  position: absolute;
-  width: 60px;
-  height: 80px;
-  background: rgba(0, 255, 127, 0.1);
-  border: 2px solid rgba(0, 255, 127, 0.2);
-  border-radius: 8px;
-  top: 15%;
-  left: 10%;
-  animation: pulseServer 4s ease-in-out infinite;
-}
-
-.shape-server::before {
-  content: '';
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  height: 8px;
-  background: rgba(0, 255, 127, 0.3);
-  border-radius: 2px;
-}
-
-.shape-server::after {
-  content: '';
-  position: absolute;
-  top: 25px;
-  left: 10px;
-  right: 10px;
-  height: 8px;
-  background: rgba(0, 255, 127, 0.3);
-  border-radius: 2px;
-}
-
-.shape-circuit {
-  position: absolute;
-  width: 100px;
-  height: 100px;
-  border: 2px solid rgba(0, 191, 255, 0.2);
-  border-radius: 50%;
-  top: 60%;
-  right: 15%;
-  animation: rotateCircuit 8s linear infinite;
-}
-
-.shape-circuit::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  background: rgba(0, 191, 255, 0.3);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.shape-chip {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 215, 0, 0.1);
-  border: 2px solid rgba(255, 215, 0, 0.2);
-  border-radius: 4px;
-  bottom: 30%;
-  left: 20%;
-  animation: blinkChip 3s ease-in-out infinite;
-}
-
-.shape-chip::before {
-  content: '';
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  border-radius: 2px;
-}
-
-.shape-network {
-  position: absolute;
-  width: 80px;
-  height: 2px;
-  background: rgba(255, 105, 180, 0.2);
-  top: 25%;
-  right: 25%;
-  animation: dataFlow 2s ease-in-out infinite;
-}
-
-.shape-network::before {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: 0;
-  width: 16px;
-  height: 16px;
-  background: rgba(255, 105, 180, 0.3);
-  border-radius: 50%;
-  animation: dataPacket 2s ease-in-out infinite;
-}
-
-@keyframes pulseServer {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(0, 255, 127, 0.4);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 10px rgba(0, 255, 127, 0);
-  }
-}
-
-@keyframes rotateCircuit {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes blinkChip {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
-}
-
-@keyframes dataFlow {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.6; }
-}
-
-@keyframes dataPacket {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(64px); }
-}
-
-.login-container {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  max-width: 1000px;
-  width: 100%;
-  height: 100vh;
-  background: white;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-  animation: slideInUp 0.8s ease-out;
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.login-card {
-  padding: 3rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.login-header {
-  margin-bottom: 2.5rem;
-  text-align: center;
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.logo-icon {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #1a1a2e, #0f3460);
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: #00ff7f;
-  box-shadow: 0 8px 20px rgba(26, 26, 46, 0.3);
-  animation: serverPulse 3s ease-in-out infinite;
-}
-
-@keyframes serverPulse {
-  0%, 100% {
-    box-shadow: 0 8px 20px rgba(26, 26, 46, 0.3);
-  }
-  50% {
-    box-shadow: 0 8px 30px rgba(0, 255, 127, 0.4);
-  }
-}
-
-.logo-text h1 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #333;
-  background: linear-gradient(135deg, #1a1a2e, #0f3460);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.logo-text p {
-  margin: 0.25rem 0 0 0;
-  color: #666;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.modern-alert {
-  background: linear-gradient(135deg, #fee, #fdd);
-  border: 1px solid #f8d7da;
-  border-radius: 12px;
-  padding: 1rem 1.5rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: #721c24;
-  animation: slideInDown 0.5s ease-out;
-}
-
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modern-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-group {
-  position: relative;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #333;
-  font-size: 0.9rem;
-}
-
-.input-container {
-  position: relative;
-}
-
-.form-input {
-  width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  border: 2px solid #f0f0f0;
-  border-radius: 12px;
-  font-size: 1rem;
-  background: white;
-  transition: all 0.3s ease;
-  outline: none;
+* {
   box-sizing: border-box;
 }
+.text-gray-900, .text-black {
+  color: #ffffff !important;
+}
+input::placeholder {
+  color: #9ca3af !important;
+}
+</style>
 
-.form-input:focus {
-  border-color: #1a1a2e;
-  box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.1);
-  transform: translateY(-2px);
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden" style="background: linear-gradient(135deg, #000000 0%, #1f2937 50%, #000000 100%) !important; min-height: 100vh !important;">
+  <!-- Animated background with gray effects -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute w-96 h-96 bg-gradient-to-br from-gray-700/40 to-gray-600/20 rounded-full blur-3xl animate-float-slow -top-20 -left-20"></div>
+    <div class="absolute w-72 h-72 bg-gradient-to-br from-gray-500/30 to-gray-700/20 rounded-full blur-3xl animate-float-reverse -bottom-20 -right-20"></div>
+    <div class="absolute w-40 h-40 bg-gradient-to-br from-gray-400/15 to-gray-600/10 rounded-full blur-2xl animate-bounce-slow left-1/2 top-1/4"></div>
+    <div class="absolute w-64 h-64 bg-gradient-to-br from-gray-600/25 to-gray-500/15 rounded-full blur-2xl animate-pulse-slow bottom-1/4 left-1/4"></div>
+    <div class="absolute w-32 h-32 bg-gradient-to-br from-gray-300/10 to-gray-500/5 rounded-full blur-xl animate-drift top-3/4 right-1/3"></div>
+  </div>
+
+  <!-- Enhanced grid overlay with movement -->
+  <div class="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(156,163,175,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(156,163,175,0.4)_1px,transparent_1px)] bg-[size:60px_60px] animate-grid-drift"></div>
+
+  <!-- Floating particles -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="particle-float particle-1"></div>
+    <div class="particle-float particle-2"></div>
+    <div class="particle-float particle-3"></div>
+    <div class="particle-float particle-4"></div>
+    <div class="particle-float particle-5"></div>
+  </div>
+
+  <div id="glassCard" class="relative z-10 w-full max-w-md rounded-2xl shadow-2xl p-8 transition-all duration-500 animate-fade-in-up glass-morphism" style="background: rgba(31, 41, 55, 0.8) !important; border: 1px solid rgba(75, 85, 99, 0.5) !important; backdrop-filter: blur(20px) !important;">
+      <div class="flex flex-col items-center mb-8 animate-fade-in">
+        <div class="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl shadow-lg animate-bounce">
+          <i class="fas fa-server text-white text-3xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-white mt-4 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent animate-gradient-x">AssetTrack</h1>
+        <p class="text-gray-300">IT Asset Management</p>
+      </div>
+
+      <form id="loginForm" method="POST" action="/auth/login" class="space-y-6">
+        <div>
+          <label for="login" class="block text-sm font-medium text-gray-200">
+            <i class="fas fa-user mr-1"></i>
+            Email or CEP
+          </label>
+          <div class="relative mt-1">
+            <input
+              type="text"
+              name="login"
+              id="login"
+              required
+              autofocus
+              style="background: rgba(31, 41, 55, 0.8) !important; border: 1px solid #4b5563 !important; color: white !important;" class="block w-full rounded-lg py-2 pl-5 pr-3 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 peer"
+              placeholder="Enter your email or CEP ID"
+              value="<%= typeof login !== 'undefined' ? login : '' %>"
+              autocomplete="username"
+            >
+            <span class="input-icon pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400 transition-all duration-300 peer-focus:-left-10 peer-[not(:placeholder-shown)]:-left-10 peer-focus:opacity-0 peer-[not(:placeholder-shown)]:opacity-0">
+              <i class="fas fa-id-badge"></i>
+            </span>
+          </div>
+          <div class="mt-1 text-xs text-gray-400">
+            <i class="fas fa-info-circle mr-1"></i>
+            Use your email or CEP ID to log in.
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-200">Password</label>
+          <div class="relative mt-1">
+            <input
+              type="password"
+              name="password"
+              id="password"
+              required
+              style="background: rgba(31, 41, 55, 0.8) !important; border: 1px solid #4b5563 !important; color: white !important;" class="block w-full rounded-lg py-2 pl-5 pr-10 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 peer"
+              placeholder="Password"
+              autocomplete="current-password"
+            >
+            <span class="input-icon pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400 transition-all duration-300 peer-focus:-left-10 peer-[not(:placeholder-shown)]:-left-10 peer-focus:opacity-0 peer-[not(:placeholder-shown)]:opacity-0">
+              <i class="fas fa-lock"></i>
+            </span>
+            <button type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-400 transition"
+                    data-action="toggle-password"
+                    data-param-target="password"
+                    data-param-icon="passwordToggleIcon">
+              <i class="fas fa-eye" id="passwordToggleIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-600 bg-gray-800/60 rounded" <%= typeof remember !== 'undefined' && remember ? 'checked' : '' %>>
+            <label for="remember" class="ml-2 text-sm text-gray-300">
+              Remember Me
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold shadow-lg hover:scale-105 transition-transform duration-300 flex items-center justify-center gap-2 animate-fade-in-up">
+          <span class="btn-text">Sign In</span>
+        </button>
+      </form>
+
+      <div class="flex flex-col items-center mt-6 gap-2 animate-fade-in">
+        <div class="flex items-center gap-4 text-gray-400 text-xs">
+          <span class="font-mono">v1.0.0</span>
+          <div class="w-px h-3 bg-gray-600"></div>
+          <a href="javascript:void(0)" onclick="showPrivacyPolicy()" class="hover:text-cyan-400 transition-colors cursor-pointer">Privacy Policy</a>
+          <div class="w-px h-3 bg-gray-600"></div>
+          <a href="javascript:void(0)" onclick="showTermsOfService()" class="hover:text-cyan-400 transition-colors cursor-pointer">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+</div>
+<script src="/js/css-loader.js"></script>
+<script src="/js/event-system.js"></script>
+<script>
+
+  // Save last visited page (except auth pages)
+(function() {
+  const skipPaths = ['/auth/login', '/auth/register', '/auth/logout'];
+  if (!skipPaths.includes(window.location.pathname)) {
+    document.cookie = `last_page=${encodeURIComponent(window.location.pathname + window.location.search)}; path=/; max-age=1800; SameSite=Strict;`;
+  }
+})();
+
+// Enhanced password toggle
+function togglePassword() {
+  const passwordInput = document.getElementById('password');
+  const toggleIcon = document.getElementById('passwordToggleIcon');
+
+  if (passwordInput && toggleIcon) {
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      toggleIcon.className = 'fas fa-eye-slash';
+    } else {
+      passwordInput.type = 'password';
+      toggleIcon.className = 'fas fa-eye';
+    }
+  }
 }
 
-.input-icon {
+// Enhanced error message with animation reset
+function showError(message) {
+  // Remove existing error
+  const existingError = document.querySelector('.error-message');
+  if (existingError) {
+    existingError.remove();
+  }
+
+  // Reset login card animation
+  resetLoginAnimation();
+
+  // Create new error element
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'error-message bg-red-900/20 border border-red-500/50 text-red-300 px-4 py-3 rounded relative mb-4 animate-shake-enhanced flex items-center gap-2 backdrop-blur-sm';
+  errorDiv.setAttribute('role', 'alert');
+  errorDiv.innerHTML = `
+    <i class="fas fa-exclamation-circle text-red-400 animate-pulse"></i>
+    <span class="block sm:inline">${message}</span>
+  `;
+
+  // Insert before the submit button
+  const submitButton = document.querySelector('button[type="submit"]');
+  if (submitButton && submitButton.parentNode) {
+    submitButton.parentNode.insertBefore(errorDiv, submitButton);
+  }
+
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (errorDiv && errorDiv.parentNode) {
+      errorDiv.remove();
+    }
+  }, 5000);
+}
+
+// Reset login animation on error
+function resetLoginAnimation() {
+  const glassCard = document.getElementById('glassCard');
+  const loginInput = document.getElementById('login');
+  const passwordInput = document.getElementById('password');
+  const submitButton = document.querySelector('button[type="submit"]');
+
+  if (glassCard) {
+    // Add error shake animation
+    glassCard.classList.add('animate-error-shake');
+    setTimeout(() => {
+      glassCard.classList.remove('animate-error-shake');
+    }, 600);
+  }
+
+  // Reset sign-in button animation
+  if (submitButton) {
+    submitButton.classList.add('animate-button-error');
+    setTimeout(() => {
+      submitButton.classList.remove('animate-button-error');
+    }, 800);
+  }
+
+  // Add input error styling
+  [loginInput, passwordInput].forEach(input => {
+    if (input) {
+      input.classList.add('input-error');
+      setTimeout(() => {
+        input.classList.remove('input-error');
+      }, 1000);
+    }
+  });
+}
+
+// Show loading state
+function setLoading(isLoading) {
+  const submitButton = document.querySelector('button[type="submit"]');
+  const buttonText = submitButton?.querySelector('.btn-text');
+
+  if (!submitButton) return;
+
+  if (isLoading) {
+    submitButton.disabled = true;
+    submitButton.classList.add('loading', 'opacity-50', 'cursor-not-allowed');
+    if (buttonText) {
+      buttonText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...';
+    }
+  } else {
+    submitButton.disabled = false;
+    submitButton.classList.remove('loading', 'opacity-50', 'cursor-not-allowed');
+    if (buttonText) {
+      buttonText.innerHTML = 'Sign In';
+    }
+  }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  // Autofill login field from cookie if present
+  const match = document.cookie.match(/(?:^|; )remember_login=([^;]*)/);
+  if (match) {
+    const loginField = document.getElementById('login');
+    const rememberField = document.getElementById('remember');
+    if (loginField) loginField.value = decodeURIComponent(match[1]);
+    if (rememberField) rememberField.checked = true;
+  }
+
+  // Setup password toggle manually
+  const passwordToggleBtn = document.querySelector('[data-action="toggle-password"]');
+  if (passwordToggleBtn) {
+    passwordToggleBtn.addEventListener('click', function() {
+      togglePassword();
+    });
+  }
+});
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const loginInput = document.getElementById('login')?.value?.trim() || '';
+  const password = document.getElementById('password')?.value || '';
+  const remember = document.getElementById('remember')?.checked || false;
+
+  // Basic validation
+  if (!loginInput || !password) {
+    showError('Please enter both email/CEP ID and password.');
+    return;
+  }
+
+  // Handle remember me functionality
+  if (remember) {
+    document.cookie = `remember_login=${encodeURIComponent(loginInput)}; path=/; max-age=2592000; Secure; SameSite=Strict;`;
+  } else {
+    document.cookie = 'remember_login=; path=/; max-age=0; Secure; SameSite=Strict;';
+  }
+
+  try {
+    setLoading(true);
+
+    // Use URLSearchParams for proper form encoding
+    const formData = new URLSearchParams();
+    formData.append('login', loginInput);
+    formData.append('password', password);
+    if (remember) {
+      formData.append('remember', 'on');
+    }
+
+    const response = await fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+      },
+      body: formData
+    });
+
+    const contentType = response.headers.get('content-type');
+    console.log('Response status:', response.status);
+    console.log('Response content-type:', contentType);
+
+    if (contentType && contentType.includes('application/json')) {
+      const result = await response.json();
+      console.log('JSON response:', result);
+
+      if (result.success) {
+        // Show success message briefly before redirect
+        const successDiv = document.createElement('div');
+        successDiv.className = 'bg-green-900/20 border border-green-500/50 text-green-300 px-4 py-3 rounded relative mb-4 flex items-center gap-2 backdrop-blur-sm';
+        successDiv.innerHTML = `
+          <i class="fas fa-check-circle text-green-400"></i>
+          <span class="block sm:inline">${result.message || 'Login successful!'}</span>
+        `;
+
+        const submitButton = document.querySelector('button[type="submit"]');
+        if (submitButton && submitButton.parentNode) {
+          submitButton.parentNode.insertBefore(successDiv, submitButton);
+        }
+
+        // Redirect after brief delay
+        setTimeout(() => {
+          // Try to redirect to last_page cookie if present and not /auth/*
+          const match = document.cookie.match(/(?:^|; )last_page=([^;]*)/);
+          let redirectUrl = result.redirect || '/';
+          if (match) {
+            const lastPage = decodeURIComponent(match[1]);
+            if (lastPage && !lastPage.startsWith('/auth/')) {
+              redirectUrl = lastPage;
+            }
+          }
+          window.location.href = redirectUrl;
+        }, 1000);
+      } else {
+        // Show error message
+        showError(result.message || 'Login failed. Please try again.');
+      }
+    } else {
+      // Handle non-JSON responses
+      const responseText = await response.text();
+
+      if (response.status >= 400) {
+        showError('An error occurred during login. Please try again.');
+      } else if (response.redirected || response.url !== form.action) {
+        // Handle redirect
+        window.location.href = response.url || '/';
+      } else {
+        // Check if response contains error indicators
+        if (responseText.includes('error') || responseText.includes('Invalid')) {
+          showError('Invalid login credentials. Please try again.');
+        } else {
+          // Assume success and redirect
+          window.location.href = '/';
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    showError('Network error. Please check your connection and try again.');
+  } finally {
+    setLoading(false);
+  }
+});
+
+// Privacy Policy Modal (Dark Mode)
+function showPrivacyPolicy() {
+  const modal = createDarkModal('Privacy Policy', `
+    <div class="space-y-4 text-sm text-gray-300">
+      <h3 class="font-semibold text-lg text-white">Information We Collect</h3>
+      <p>We collect information you provide directly to us, such as when you create an account, use our services, or contact us for support.</p>
+
+      <h3 class="font-semibold text-lg text-white">How We Use Your Information</h3>
+      <p>We use the information we collect to provide, maintain, and improve our services, process transactions, and communicate with you.</p>
+
+      <h3 class="font-semibold text-lg text-white">Information Sharing</h3>
+      <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy.</p>
+
+      <h3 class="font-semibold text-lg text-white">Data Security</h3>
+      <p>We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+
+      <h3 class="font-semibold text-lg text-white">Contact Us</h3>
+      <p>If you have any questions about this Privacy Policy, please contact us at <span class="text-cyan-400">privacy@assettrack.com</span></p>
+    </div>
+  `);
+  document.body.appendChild(modal);
+}
+
+// Terms of Service Modal (Dark Mode)
+function showTermsOfService() {
+  const modal = createDarkModal('Terms of Service', `
+    <div class="space-y-4 text-sm text-gray-300">
+      <h3 class="font-semibold text-lg text-white">Acceptance of Terms</h3>
+      <p>By accessing and using AssetTrack, you accept and agree to be bound by the terms and provision of this agreement.</p>
+
+      <h3 class="font-semibold text-lg text-white">Use License</h3>
+      <p>Permission is granted to temporarily use AssetTrack for personal, non-commercial transitory viewing only.</p>
+
+      <h3 class="font-semibold text-lg text-white">User Account</h3>
+      <p>You are responsible for safeguarding the password and for all activities that occur under your account.</p>
+
+      <h3 class="font-semibold text-lg text-white">Prohibited Uses</h3>
+      <p>You may not use our service for any unlawful purpose or to solicit others to perform unlawful acts.</p>
+
+      <h3 class="font-semibold text-lg text-white">Service Modifications</h3>
+      <p>We reserve the right to modify or discontinue the service at any time without notice.</p>
+
+      <h3 class="font-semibold text-lg text-white">Contact Information</h3>
+      <p>Questions about the Terms of Service should be sent to us at <span class="text-cyan-400">legal@assettrack.com</span></p>
+    </div>
+  `);
+  document.body.appendChild(modal);
+}
+
+// Create dark modal utility function
+function createDarkModal(title, content) {
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in';
+  modal.innerHTML = `
+    <div class="bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto animate-modal-appear">
+      <div class="sticky top-0 bg-gray-800/90 backdrop-blur-sm border-b border-gray-700 px-6 py-4 rounded-t-2xl">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fas fa-shield-alt text-cyan-400"></i>
+            ${title}
+          </h2>
+          <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700/50">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6">
+        ${content}
+      </div>
+      <div class="sticky bottom-0 bg-gray-800/90 backdrop-blur-sm px-6 py-4 rounded-b-2xl border-t border-gray-700">
+        <div class="flex gap-3">
+          <button onclick="this.closest('.fixed').remove()" class="flex-1 py-3 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg hover:from-cyan-600 hover:to-blue-700 transition-all duration-300 font-medium">
+            <i class="fas fa-check mr-2"></i>Accept & Close
+          </button>
+          <button onclick="this.closest('.fixed').remove()" class="py-3 px-4 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 hover:text-white transition-colors">
+            <i class="fas fa-times mr-2"></i>Close
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Close on background click
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+
+  // Close on Escape key
+  const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+      modal.remove();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
+
+  return modal;
+}
+</script>
+<style>
+@keyframes animate-shake {
+  10%, 90% { transform: translateX(-1px);}
+  20%, 80% { transform: translateX(2px);}
+  30%, 50%, 70% { transform: translateX(-4px);}
+  40%, 60% { transform: translateX(4px);}
+}
+.animate-shake { animation: animate-shake 0.5s; }
+
+@keyframes animate-shake-enhanced {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  10% { transform: translateX(-2px) translateY(-1px); }
+  20% { transform: translateX(2px) translateY(1px); }
+  30% { transform: translateX(-4px) translateY(-1px); }
+  40% { transform: translateX(4px) translateY(1px); }
+  50% { transform: translateX(-2px) translateY(-1px); }
+  60% { transform: translateX(2px) translateY(1px); }
+  70% { transform: translateX(-1px) translateY(-1px); }
+  80% { transform: translateX(1px) translateY(1px); }
+  90% { transform: translateX(-1px) translateY(0); }
+}
+.animate-shake-enhanced { animation: animate-shake-enhanced 0.6s ease-in-out; }
+
+@keyframes animate-error-shake {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  10% { transform: translateY(-2px) rotate(-0.5deg); }
+  20% { transform: translateY(2px) rotate(0.5deg); }
+  30% { transform: translateY(-4px) rotate(-0.5deg); }
+  40% { transform: translateY(4px) rotate(0.5deg); }
+  50% { transform: translateY(-3px) rotate(-0.5deg); }
+  60% { transform: translateY(3px) rotate(0.5deg); }
+  70% { transform: translateY(-2px) rotate(-0.25deg); }
+  80% { transform: translateY(2px) rotate(0.25deg); }
+  90% { transform: translateY(-1px) rotate(0); }
+}
+.animate-error-shake { animation: animate-error-shake 0.6s ease-in-out; }
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-modal-appear { animation: modal-appear 0.3s ease-out; }
+
+@keyframes animate-button-error {
+  0%, 100% { transform: scale(1); }
+  10% { transform: scale(0.98) rotate(-1deg); }
+  20% { transform: scale(1.02) rotate(1deg); }
+  30% { transform: scale(0.98) rotate(-1deg); }
+  40% { transform: scale(1.01) rotate(0.5deg); }
+  50% { transform: scale(0.99) rotate(-0.5deg); }
+  60% { transform: scale(1.01) rotate(0.5deg); }
+  70% { transform: scale(0.99) rotate(0); }
+  80% { transform: scale(1.005); }
+  90% { transform: scale(0.995); }
+}
+.animate-button-error {
+  animation: animate-button-error 0.8s ease-in-out;
+  background: linear-gradient(45deg, #ef4444, #dc2626) !important;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(10px, -15px) rotate(90deg); }
+  50% { transform: translate(-5px, -25px) rotate(180deg); }
+  75% { transform: translate(-15px, 10px) rotate(270deg); }
+}
+.animate-float-slow { animation: float-slow 20s ease-in-out infinite; }
+
+@keyframes float-reverse {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-12px, 20px) rotate(-90deg); }
+  50% { transform: translate(8px, 30px) rotate(-180deg); }
+  75% { transform: translate(18px, -12px) rotate(-270deg); }
+}
+.animate-float-reverse { animation: float-reverse 25s ease-in-out infinite; }
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
+.animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
+
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(15px, -10px) rotate(120deg); }
+  66% { transform: translate(-8px, 20px) rotate(240deg); }
+}
+.animate-drift { animation: drift 15s ease-in-out infinite; }
+
+@keyframes grid-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(5px, 5px); }
+}
+.animate-grid-drift { animation: grid-drift 10s ease-in-out infinite; }
+
+/* Floating particles */
+.particle-float {
   position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  font-size: 0.9rem;
-  transition: color 0.3s ease;
-}
-
-.form-input:focus + .input-icon {
-  color: #1a1a2e;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: #999;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-}
-
-.password-toggle:hover {
-  color: #1a1a2e;
-  background: rgba(26, 26, 46, 0.1);
-}
-
-.input-underline {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  width: 0;
-  background: linear-gradient(135deg, #1a1a2e, #0f3460);
-  transition: width 0.3s ease;
-}
-
-.form-input:focus ~ .input-underline {
-  width: 100%;
-}
-
-.btn-login {
-  width: 100%;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, #1a1a2e, #0f3460);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  margin-top: 0.5rem;
-}
-
-.btn-login:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(26, 26, 46, 0.3);
-}
-
-.btn-login:active {
-  transform: translateY(0);
-}
-
-.btn-login:disabled {
+  width: 3px;
+  height: 3px;
+  background: rgba(156, 163, 175, 0.6);
+  border-radius: 50%;
   opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
 }
 
-.btn-loader {
+.particle-1 {
+  top: 20%;
+  left: 10%;
+  animation: particle-float-1 12s linear infinite;
+}
+
+.particle-2 {
+  top: 60%;
+  left: 80%;
+  animation: particle-float-2 15s linear infinite;
+}
+
+.particle-3 {
+  top: 80%;
+  left: 30%;
+  animation: particle-float-3 18s linear infinite;
+}
+
+.particle-4 {
+  top: 40%;
+  left: 70%;
+  animation: particle-float-4 14s linear infinite;
+}
+
+.particle-5 {
+  top: 10%;
+  left: 60%;
+  animation: particle-float-5 16s linear infinite;
+}
+
+@keyframes particle-float-1 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.3; }
+  50% { transform: translateY(-100px) translateX(50px) scale(1.2); opacity: 0.8; }
+}
+
+@keyframes particle-float-2 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.4; }
+  50% { transform: translateY(-80px) translateX(-30px) scale(0.8); opacity: 0.9; }
+}
+
+@keyframes particle-float-3 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.2; }
+  50% { transform: translateY(-120px) translateX(20px) scale(1.5); opacity: 0.7; }
+}
+
+@keyframes particle-float-4 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.5; }
+  50% { transform: translateY(-90px) translateX(-40px) scale(1.1); opacity: 0.8; }
+}
+
+@keyframes particle-float-5 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.3; }
+  50% { transform: translateY(-110px) translateX(60px) scale(0.9); opacity: 0.9; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+.animate-fade-in { animation: fade-in 1s cubic-bezier(.4,0,.2,1);}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(40px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+.animate-fade-in-up { animation: fade-in-up 1s cubic-bezier(.4,0,.2,1);}
+
+@keyframes gradient-x {
+  0%,100% { background-position: 0% 50%;}
+  50% { background-position: 100% 50%;}
+}
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 3s ease-in-out infinite;
+}
+
+@keyframes bounce-slow {
+  0%,100% { transform: translateY(0);}
+  50% { transform: translateY(-30px);}
+}
+.animate-bounce-slow { animation: bounce-slow 4s infinite;}
+
+/* Enhanced background animation with delays */
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+/* Hide icon when input has value or is focused */
+input:not(:placeholder-shown) + .input-icon,
+input:focus + .input-icon {
+  left: -2.5rem !important;
+  opacity: 0 !important;
+}
+
+/* Enhanced loading animation */
+.loading::after {
+  content: "";
   position: absolute;
+  width: 16px;
+  height: 16px;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid white;
+  margin-left: -8px;
+  margin-top: -8px;
   border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #ffffff;
   animation: spin 1s linear infinite;
 }
 
@@ -530,242 +698,28 @@
   100% { transform: rotate(360deg); }
 }
 
-.login-footer {
-  margin-top: 2rem;
-  text-align: center;
+/* Input error styling */
+.input-error {
+  border-color: #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  animation: input-error-pulse 0.5s ease-in-out;
 }
 
-.footer-links {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+@keyframes input-error-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1); }
 }
 
-.footer-links a {
-  color: #1a1a2e;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease;
+/* Enhanced modal styles */
+.fixed.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
 }
 
-.footer-links a:hover {
-  color: #0f3460;
-  text-decoration: underline;
-}
-
-.footer-info p {
-  margin: 0.5rem 0;
-  color: #666;
-  font-size: 0.85rem;
-}
-
-.version {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  color: #1a1a2e !important;
-}
-
-.login-side-panel {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  color: white;
-  padding: 3rem;
-  display: flex;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.login-side-panel::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(0, 255, 127, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(0, 191, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 60%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
-  opacity: 0.3;
-}
-
-.panel-content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-}
-
-.feature-highlights {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2.5rem;
-}
-
-.highlight-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.highlight-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateX(5px);
-}
-
-.highlight-item i {
-  width: 20px;
-  text-align: center;
-  opacity: 0.9;
-  color: #00ff7f;
-}
-
-.system-stats {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 15px;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-display {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.stat-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-item:last-child {
-  border-bottom: none;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-.stat-value {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.stat-value.online {
-  color: #00ff7f;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .login-container {
-    grid-template-columns: 1fr;
-    max-width: 400px;
-    height: auto;
-    border-radius: 0;
-  }
-
-  .login-side-panel {
-    display: none;
-  }
-
-  .login-card {
-    padding: 2rem;
-  }
-
-  .logo-container {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .modern-login {
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .modern-login {
-    padding: 0;
-  }
-
-  .login-container {
-    width: 100%;
-    height: 100vh;
-  }
-
-  .login-card {
-    padding: 1.5rem;
+/* Better responsive modal */
+@media (max-width: 640px) {
+  .animate-modal-appear {
+    max-width: 95vw;
+    margin: 0 auto;
   }
 }
 </style>
-
-<script>
-function togglePassword() {
-  const passwordInput = document.getElementById('password');
-  const toggleIcon = document.getElementById('passwordToggleIcon');
-
-  if (passwordInput.type === 'password') {
-    passwordInput.type = 'text';
-    toggleIcon.className = 'fas fa-eye-slash';
-  } else {
-    passwordInput.type = 'password';
-    toggleIcon.className = 'fas fa-eye';
-  }
-}
-
-// Form submission with loading state
-document.getElementById('loginForm').addEventListener('submit', function(e) {
-  const submitBtn = document.querySelector('.btn-login');
-  const btnText = document.querySelector('.btn-text');
-  const btnLoader = document.querySelector('.btn-loader');
-
-  submitBtn.disabled = true;
-  btnText.style.display = 'none';
-  btnLoader.style.display = 'block';
-
-  // Re-enable after 5 seconds in case of issues
-  setTimeout(() => {
-    submitBtn.disabled = false;
-    btnText.style.display = 'block';
-    btnLoader.style.display = 'none';
-  }, 5000);
-});
-
-// IT-themed background animations
-document.addEventListener('DOMContentLoaded', function() {
-  const shapes = document.querySelectorAll('.bg-shapes > div');
-  shapes.forEach((shape, index) => {
-    shape.style.animationDelay = `${index * 0.5}s`;
-  });
-
-  // Simulate real-time data updates
-  setInterval(() => {
-    const uptimeElement = document.querySelector('.stat-value:not(.online)');
-    if (uptimeElement && uptimeElement.textContent.includes('%')) {
-      const currentUptime = parseFloat(uptimeElement.textContent);
-      const newUptime = (currentUptime + Math.random() * 0.01).toFixed(2);
-      uptimeElement.textContent = newUptime + '%';
-    }
-  }, 5000);
-});
-</script>

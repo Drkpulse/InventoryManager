@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Cookie Test | IT Asset Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .button { background: #007cba; color: white; border: none; padding: 12px 24px; margin: 8px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .button:hover { background: #005c8a; }
+        .button.success { background: #28a745; }
+        .button.danger { background: #dc3545; }
+        .button.warning { background: #ffc107; color: #000; }
+        .output { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin: 15px 0; border-radius: 5px; font-family: 'Courier New', monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; font-size: 12px; }
+        .status { padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .status.success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .status.error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .status.info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #dee2e6; border-radius: 5px; }
+        .hidden { display: none !important; }
+
+        /* Cookie popup styles for testing */
+        #cookieConsentPopup {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #cookieManagerModal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); z-index: 9998;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .cookie-modal { background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .cookie-buttons { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .cookie-buttons button { flex: 1; min-width: 120px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Production Cookie System Test</h1>
+
+        <div class="status info">
+            <strong>🎯 Production Ready Features:</strong><br>
+            ✅ No inline event handlers (CSP compliant)<br>
+            ✅ Robust error handling and retry logic<br>
+            ✅ Proper event listener attachment<br>
+            ✅ Comprehensive logging and debugging<br>
+            ✅ Secure cookie settings with SameSite<br>
+        </div>
+
+        <div id="testStatus" class="status"></div>
+
+        <div class="section">
+            <h3>🔧 System Controls</h3>
+            <button class="button" onclick="runFullDiagnostic()">🔍 Full Diagnostic</button>
+            <button class="button success" onclick="testCookieSystem()">🧪 Test Cookie System</button>
+            <button class="button warning" onclick="debugCookieSystem()">🐛 Debug System</button>
+            <button class="button danger" onclick="clearOutput()">🧹 Clear Output</button>
+        </div>
+
+        <div class="section">
+            <h3>🍪 Cookie Controls</h3>
+            <button class="button" onclick="showTestPopup()">👁️ Show Popup</button>
+            <button class="button success" onclick="directAccept()">✅ Direct Accept</button>
+            <button class="button danger" onclick="directReject()">❌ Direct Reject</button>
+            <button class="button" onclick="showManager()">⚙️ Show Manager</button>
+            <button class="button warning" onclick="resetConsent()">🔄 Reset Consent</button>
+        </div>
+
+        <div class="section">
+            <h3>📊 System Status</h3>
+            <div id="systemStatus">Loading...</div>
+        </div>
+
+        <div class="section">
+            <h3>📝 Console Output</h3>
+            <div id="output" class="output">Initializing production cookie test...\n</div>
+        </div>
+    </div>
+
+    <!-- Test Cookie Popup -->
+    <div id="cookieConsentPopup" class="hidden">
+        <div class="cookie-modal">
+            <h3>🍪 Cookie Preferences</h3>
+            <p>We use cookies to improve your experience. Choose your preferences:</p>
+            <div class="cookie-buttons">
+                <button id="acceptAllCookiesBtn" class="button success">Accept All</button>
+                <button id="showCookieManagerBtn" class="button">Customize</button>
+                <button id="rejectCookiesBtn" class="button danger">Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Cookie Manager -->
+    <div id="cookieManagerModal" class="hidden">
+        <div class="cookie-modal">
+            <h3>⚙️ Cookie Manager</h3>
+            <p>Customize your cookie preferences:</p>
+
+            <div style="margin: 15px 0;">
+                <label>
+                    <input type="checkbox" id="performanceCookies"> Performance & Analytics
+                </label>
+            </div>
+
+            <div style="margin: 15px 0;">
+                <label>
+                    <input type="checkbox" id="preferenceCookies"> Preferences & Settings
+                </label>
+            </div>
+
+            <div class="cookie-buttons">
+                <button id="clearAllCookiesBtn" class="button danger">Clear All</button>
+                <button id="exportCookieDataBtn" class="button">Export Data</button>
+                <button id="closeCookieManagerBtn2" class="button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load production cookie manager -->
+    <script src="/js/cookie-manager-production.js"></script>
+
+    <script>
+        let logs = [];
+
+        // Enhanced console capture
+        function setupConsoleCapture() {
+            const output = document.getElementById('output');
+            const originalLog = console.log;
+            const originalError = console.error;
+            const originalWarn = console.warn;
+
+            function addToOutput(level, args) {
+                const timestamp = new Date().toLocaleTimeString();
+                const message = `[${timestamp}][${level}] ${args.join(' ')}\n`;
+                logs.push(message);
+                output.textContent += message;
+                output.scrollTop = output.scrollHeight;
+
+                // Keep only last 100 log entries
+                if (logs.length > 100) {
+                    logs = logs.slice(-50);
+                    output.textContent = logs.join('');
+                }
+            }
+
+            console.log = function(...args) {
+                originalLog.apply(console, args);
+                addToOutput('LOG', args);
+            };
+
+            console.error = function(...args) {
+                originalError.apply(console, args);
+                addToOutput('ERROR', args);
+            };
+
+            console.warn = function(...args) {
+                originalWarn.apply(console, args);
+                addToOutput('WARN', args);
+            };
+        }
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('testStatus');
+            status.className = 'status ' + type;
+            status.innerHTML = message;
+        }
+
+        function updateSystemStatus() {
+            const systemStatus = document.getElementById('systemStatus');
+            const popup = document.getElementById('cookieConsentPopup');
+            const manager = document.getElementById('cookieManagerModal');
+            const acceptBtn = document.getElementById('acceptAllCookiesBtn');
+            const consent = localStorage.getItem('cookieConsent');
+
+            const status = `
+                <strong>DOM Elements:</strong><br>
+                • Popup: ${popup ? '✅ Found' : '❌ Missing'}<br>
+                • Manager: ${manager ? '✅ Found' : '❌ Missing'}<br>
+                • Accept Button: ${acceptBtn ? '✅ Found' : '❌ Missing'}<br><br>
+
+                <strong>Functions:</strong><br>
+                • acceptAllCookies: ${typeof window.acceptAllCookies}<br>
+                • rejectCookies: ${typeof window.rejectCookies}<br>
+                • showCookieManager: ${typeof window.showCookieManager}<br>
+                • debugCookieSystem: ${typeof window.debugCookieSystem}<br><br>
+
+                <strong>State:</strong><br>
+                • Consent: ${consent || 'Not set'}<br>
+                • Popup Visible: ${popup && !popup.classList.contains('hidden')}<br>
+                • Manager Visible: ${manager && !manager.classList.contains('hidden')}
+            `;
+
+            systemStatus.innerHTML = status;
+        }
+
+        // Test functions
+        function runFullDiagnostic() {
+            console.log('🔍 === FULL DIAGNOSTIC START ===');
+            updateSystemStatus();
+
+            if (typeof window.debugCookieSystem === 'function') {
+                console.log('Running debugCookieSystem...');
+                window.debugCookieSystem();
+            }
+
+            console.log('✅ === FULL DIAGNOSTIC COMPLETE ===');
+            updateStatus('Full diagnostic completed. Check console output.', 'info');
+        }
+
+        function testCookieSystem() {
+            console.log('🧪 === TESTING COOKIE SYSTEM ===');
+
+            if (typeof window.testCookieSystem === 'function') {
+                window.testCookieSystem();
+                updateStatus('Cookie system test initiated. Popup should appear.', 'success');
+            } else {
+                console.error('testCookieSystem function not available');
+                updateStatus('❌ Test function not available', 'error');
+            }
+
+            updateSystemStatus();
+        }
+
+        function debugCookieSystem() {
+            console.log('🐛 === DEBUG COOKIE SYSTEM ===');
+
+            if (typeof window.debugCookieSystem === 'function') {
+                window.debugCookieSystem();
+                updateStatus('Debug information logged. Check console.', 'info');
+            } else {
+                console.error('debugCookieSystem function not available');
+                updateStatus('❌ Debug function not available', 'error');
+            }
+
+            updateSystemStatus();
+        }
+
+        function showTestPopup() {
+            console.log('👁️ Manually showing test popup...');
+            const popup = document.getElementById('cookieConsentPopup');
+            if (popup) {
+                popup.classList.remove('hidden');
+                updateStatus('Test popup shown manually.', 'info');
+            } else {
+                updateStatus('❌ Popup element not found', 'error');
+            }
+            updateSystemStatus();
+        }
+
+        function directAccept() {
+            console.log('✅ Direct accept test...');
+            if (typeof window.acceptAllCookies === 'function') {
+                window.acceptAllCookies();
+                updateStatus('Direct accept called.', 'success');
+            } else {
+                updateStatus('❌ Accept function not available', 'error');
+            }
+            updateSystemStatus();
+        }
+
+        function directReject() {
+            console.log('❌ Direct reject test...');
+            if (typeof window.rejectCookies === 'function') {
+                window.rejectCookies();
+                updateStatus('Direct reject called.', 'success');
+            } else {
+                updateStatus('❌ Reject function not available', 'error');
+            }
+            updateSystemStatus();
+        }
+
+        function showManager() {
+            console.log('⚙️ Show manager test...');
+            if (typeof window.showCookieManager === 'function') {
+                window.showCookieManager();
+                updateStatus('Manager show called.', 'info');
+            } else {
+                updateStatus('❌ Manager function not available', 'error');
+            }
+            updateSystemStatus();
+        }
+
+        function resetConsent() {
+            console.log('🔄 Resetting consent...');
+            localStorage.removeItem('cookieConsent');
+            updateStatus('Consent cleared from localStorage.', 'warning');
+            updateSystemStatus();
+        }
+
+        function clearOutput() {
+            document.getElementById('output').textContent = 'Output cleared...\n';
+            logs = [];
+            updateStatus('Output cleared.', 'info');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupConsoleCapture();
+            console.log('🚀 Production cookie test page loaded');
+
+            // Initial status update
+            updateSystemStatus();
+
+            // Update status every 5 seconds
+            setInterval(updateSystemStatus, 5000);
+
+            // Wait a bit for scripts to load, then run initial diagnostic
+            setTimeout(() => {
+                console.log('⏰ Running initial diagnostic...');
+                runFullDiagnostic();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

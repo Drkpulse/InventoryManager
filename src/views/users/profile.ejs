@@ -1,22 +1,224 @@
-<h1>My Profile</h1>
-
-<form method="POST" action="/users/profile">
-  <div class="form-group">
-    <label for="name">Name</label>
-    <input type="text" id="name" name="name" value="<%= profile.name %>" required>
+<section class="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 text-gray-900 dark:text-white animate-fadeIn">
+  <!-- Header Section -->
+  <div class="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
+    <div>
+      <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-900 to-blue-700 bg-clip-text text-transparent flex items-center gap-3">
+        <i class="fas fa-user-circle"></i> My Profile
+      </h1>
+      <p class="text-gray-500 dark:text-gray-300 mt-2 text-lg">Manage your personal information and account settings</p>
+    </div>
+    <div class="flex gap-4 items-center">
+      <a href="/users/settings" class="bg-gradient-to-r from-indigo-900 to-blue-700 text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
+        <i class="fas fa-cog"></i> Settings
+      </a>
+      <a href="/dashboard" class="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+    </div>
   </div>
 
-  <div class="form-group">
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" value="<%= profile.email %>" required>
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 p-4 rounded-xl mb-6 flex items-center gap-3">
+      <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i> <%= success %>
+    </div>
+  <% } %>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-red-100 dark:bg-red-900/40 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 p-4 rounded-xl mb-6 flex items-center gap-3">
+      <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i> <%= error %>
+    </div>
+  <% } %>
+
+  <!-- Profile Overview Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border-t-4 border-indigo-900">
+      <div class="flex items-center gap-6">
+        <div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl text-white bg-indigo-900">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white"><%= profile.name %></h3>
+          <p class="text-lg text-gray-600 dark:text-gray-300"><%= profile.cep_id || 'N/A' %></p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Employee ID</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border-t-4 border-blue-600">
+      <div class="flex items-center gap-6">
+        <div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl text-white bg-blue-600">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Account Role</h3>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white"><%= profile.role || 'User' %></p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Access Level</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border-t-4 border-green-600">
+      <div class="flex items-center gap-6">
+        <div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl text-white bg-green-600">
+          <i class="fas fa-calendar-plus"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Member Since</h3>
+          <p class="text-lg font-bold text-gray-900 dark:text-white"><%= profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A' %></p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Account created</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border-t-4 border-orange-600">
+      <div class="flex items-center gap-6">
+        <div class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl text-white bg-orange-600">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Last Login</h3>
+          <p class="text-lg font-bold text-gray-900 dark:text-white"><%= profile.last_login ? new Date(profile.last_login).toLocaleDateString() : 'Never' %></p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Recent activity</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="form-group">
-    <label for="role">Role</label>
-    <input type="text" id="role" value="<%= profile.role %>" disabled>
+  <!-- Personal Information Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-8">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+        <i class="fas fa-id-card text-indigo-900"></i> Personal Information
+      </h3>
+    </div>
+    <div class="p-8">
+      <form method="POST" action="/users/profile">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
+            <input type="text" id="name" name="name" value="<%= profile.name %>" required
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+          </div>
+
+          <div>
+            <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+            <input type="email" id="email" name="email" value="<%= profile.email %>" required
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+          </div>
+
+          <div>
+            <label for="cep_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Employee ID (CEP)</label>
+            <input type="text" id="cep_id" value="<%= profile.cep_id || 'Not assigned' %>" disabled
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+            <small class="text-sm text-gray-500 dark:text-gray-400 mt-1">This field cannot be changed</small>
+          </div>
+
+          <div>
+            <label for="role" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Account Role</label>
+            <input type="text" id="role" value="<%= profile.role || 'User' %>" disabled
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+            <small class="text-sm text-gray-500 dark:text-gray-400 mt-1">Contact administrator to change role</small>
+          </div>
+        </div>
+
+        <div class="flex gap-4 mt-8">
+          <button type="submit" class="bg-gradient-to-r from-indigo-900 to-blue-700 text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
+            <i class="fas fa-save"></i> Update Profile
+          </button>
+          <button type="reset" class="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
+            <i class="fas fa-undo"></i> Reset Changes
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <div class="form-group">
-    <button type="submit" class="btn">Update Profile</button>
+  <!-- Account Information Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-8">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+        <i class="fas fa-info-circle text-indigo-900"></i> Account Information
+      </h3>
+    </div>
+    <div class="p-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+          <span class="font-semibold text-gray-700 dark:text-gray-300">Account Status:</span>
+          <span class="<%= profile.active ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' %> font-bold flex items-center gap-2">
+            <i class="fas fa-<%= profile.active ? 'check-circle' : 'times-circle' %>"></i>
+            <%= profile.active ? 'Active' : 'Inactive' %>
+          </span>
+        </div>
+
+        <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+          <span class="font-semibold text-gray-700 dark:text-gray-300">Account Created:</span>
+          <span class="text-gray-900 dark:text-white font-medium"><%= profile.created_at ? new Date(profile.created_at).toLocaleString() : 'N/A' %></span>
+        </div>
+
+        <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+          <span class="font-semibold text-gray-700 dark:text-gray-300">Last Updated:</span>
+          <span class="text-gray-900 dark:text-white font-medium"><%= profile.updated_at ? new Date(profile.updated_at).toLocaleString() : 'N/A' %></span>
+        </div>
+
+        <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+          <span class="font-semibold text-gray-700 dark:text-gray-300">Last Login:</span>
+          <span class="text-gray-900 dark:text-white font-medium"><%= profile.last_login ? new Date(profile.last_login).toLocaleString() : 'Never logged in' %></span>
+        </div>
+
+        <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+          <span class="font-semibold text-gray-700 dark:text-gray-300">User ID:</span>
+          <span class="text-gray-900 dark:text-white font-medium"><%= profile.id %></span>
+        </div>
+
+        <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+          <span class="font-semibold text-gray-700 dark:text-gray-300">Settings Version:</span>
+          <span class="text-gray-900 dark:text-white font-medium"><%= profile.settings ? 'Customized' : 'Default' %></span>
+        </div>
+      </div>
+    </div>
   </div>
-</form>
+
+  <!-- Quick Actions Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-8">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+        <i class="fas fa-bolt text-indigo-900"></i> Quick Actions
+      </h3>
+    </div>
+    <div class="p-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <a href="/users/settings" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg transition hover:-translate-y-1 hover:shadow-2xl border border-gray-200 dark:border-gray-700 flex items-center gap-4 text-inherit no-underline">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white bg-indigo-900">
+            <i class="fas fa-cog"></i>
+          </div>
+          <div>
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Account Settings</h4>
+            <p class="text-gray-600 dark:text-gray-300 text-sm">Configure display, notifications, and security preferences</p>
+          </div>
+        </a>
+
+
+
+        <a href="/dashboard" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg transition hover:-translate-y-1 hover:shadow-2xl border border-gray-200 dark:border-gray-700 flex items-center gap-4 text-inherit no-underline">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white bg-green-600">
+            <i class="fas fa-tachometer-alt"></i>
+          </div>
+          <div>
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Dashboard</h4>
+            <p class="text-gray-600 dark:text-gray-300 text-sm">Return to your main dashboard</p>
+          </div>
+        </a>
+
+        <a href="/auth/logout" class="action-item danger bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60 text-red-900 dark:text-red-100">
+          <div class="action-icon">
+            <i class="fas fa-sign-out-alt text-red-600 dark:text-red-400"></i>
+          </div>
+          <div class="action-content">
+            <h4>Sign Out</h4>
+            <p>Securely log out of your account</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

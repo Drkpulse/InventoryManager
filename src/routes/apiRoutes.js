@@ -1,26 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
-
-// Middleware to check if user is logged in
-const isAuthenticated = (req, res, next) => {
-  if (req.session.user) {
-    return next();
-  }
-  res.status(401).json({ error: 'Authentication required' });
-};
-
-// Notifications routes
-router.post('/notifications/read-all', isAuthenticated, (req, res) => {
-  // In a real app, you would update the database
-  res.json({
-    success: true,
-    message: 'All notifications marked as read'
-  });
-});
+const { isAuthenticated, isAdmin } = require('../middleware/auth');
+const WarrantyController = require('../controllers/warrantyController');
 
 
-// Employees API routes (remove the /api prefix since it's already in the mount path)
+// Employees API routes
 router.get('/employees/available', isAuthenticated, async (req, res) => {
   try {
     const employees = await db.query(`
@@ -78,8 +63,83 @@ router.get('/items/check-duplicate/:assetId', isAuthenticated, async (req, res) 
   }
 });
 
-const dashboardController = require('../controllers/dashboardController');
 // Global search endpoint
+const dashboardController = require('../controllers/dashboardController');
 router.get('/search', dashboardController.searchAssets);
+
+// === ENHANCED WARRANTY ENDPOINTS ===
+
+// Get warranty summary for dashboard
+router.get('/warranties/summary', isAuthenticated, WarrantyController.getWarrantySummary);
+
+// Get warranty items with filtering and pagination
+router.get('/warranties/items', isAuthenticated, WarrantyController.getWarrantyItems);
+
+// Update item warranty information
+router.put('/warranties/items/:id', isAuthenticated, WarrantyController.updateItemWarranty);
+
+// Get warranty statistics
+router.get('/warranties/stats', isAuthenticated, WarrantyController.getWarrantyStats);
+
+// Manual warranty check (admin only)
+router.post('/warranties/check', isAdmin, WarrantyController.manualWarrantyCheck);
+
+// === SYSTEM ENDPOINTS ===
+
+// System statistics endpoint
+router.get('/system/stats', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+
+    // Get various statistics
+    const [
+      totalItems,
+      totalEmployees,
+      unassignedItems,
+
+      warrantyStats
+    ] = await Promise.all([
+      db.query('SELECT COUNT(*) as count FROM items'),
+      db.query('SELECT COUNT(*) as count FROM employees WHERE left_date IS NULL'),
+      db.query('SELECT COUNT(*) as count FROM items WHERE assigned_to IS NULL'),
+
+      db.query(`
+        SELECT
+          COUNT(CASE WHEN warranty_status = 'expired' THEN 1 END) as expired,
+          COUNT(CASE WHEN warranty_status = 'expiring_soon' THEN 1 END) as expiring
+        FROM warranty_status_view
+      `)
+    ]);
+
+    const warrantyData = warrantyStats.rows[0];
+
+    res.json({
+      success: true,
+      stats: {
+        totalItems: parseInt(totalItems.rows[0].count),
+        totalEmployees: parseInt(totalEmployees.rows[0].count),
+        unassignedItems: parseInt(unassignedItems.rows[0].count),
+
+        expiredWarranties: parseInt(warrantyData.expired) || 0,
+        expiringWarranties: parseInt(warrantyData.expiring) || 0
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching system stats:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch system statistics'
+    });
+  }
+});
+
+
+
+
+
+
+
+
 
 module.exports = router;

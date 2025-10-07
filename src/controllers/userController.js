@@ -27,7 +27,8 @@ exports.getSettings = async (req, res) => {
       title: 'User Settings',
       body: 'users/settings',
       user: user,
-      showUpdated: showUpdated
+      showUpdated: showUpdated,
+      t: res.locals.t // <-- add this line
     });
   } catch (error) {
     console.error('Error loading settings:', error);
@@ -58,7 +59,6 @@ exports.updateDisplaySettings = async (req, res) => {
       theme: theme || 'light',
       language: language || 'en',
       timezone: timezone || 'UTC',
-      items_per_page: items_per_page || '20'
     };
 
     // Save to database
@@ -71,13 +71,13 @@ exports.updateDisplaySettings = async (req, res) => {
     };
 
     req.flash('success', 'Display settings updated successfully');
-    
+
     // Set cookie for immediate theme application
     res.cookie('user_theme', settings.theme || 'light', {
       maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
       httpOnly: false // Allow JavaScript access
     });
-    
+
     res.redirect('/users/settings?updated=true');
   } catch (error) {
     console.error('Error updating display settings:', error);
@@ -88,11 +88,11 @@ exports.updateDisplaySettings = async (req, res) => {
 exports.updateNotificationSettings = async (req, res) => {
   try {
     const userId = req.session.user.id;
-    const { 
-      email_notifications, 
-      browser_notifications, 
-      maintenance_alerts, 
-      assignment_notifications 
+    const {
+      email_notifications,
+      browser_notifications,
+      maintenance_alerts,
+      assignment_notifications
     } = req.body;
 
     // Make sure settings column exists

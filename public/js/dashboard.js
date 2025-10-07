@@ -589,3 +589,27 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
+// Expose dashboard functions globally
+window.performGlobalSearch = performGlobalSearch;
+window.hideSearchResults = hideSearchResults;
+window.displaySearchResults = displaySearchResults;
+
+// Simple search result navigation
+document.addEventListener('click', function(e) {
+  const searchItem = e.target.closest('.search-result-item');
+  if (searchItem) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const url = searchItem.getAttribute('data-url') || searchItem.onclick?.toString().match(/window\.location\.href='([^']+)'/)?.[1];
+    if (url) {
+      // Use simple SPA navigation
+      if (window.spaController) {
+        window.spaController.navigateToUrl(url);
+      } else {
+        window.location.href = url;
+      }
+    }
+  }
+});

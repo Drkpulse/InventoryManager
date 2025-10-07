@@ -1,0 +1,343 @@
+<!-- Performance Monitor Page -->
+<div class="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900 dark:to-indigo-900 py-8">
+  <div class="max-w-7xl mx-auto px-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center">
+          <i class="fas fa-tachometer-alt text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Performance Monitor</h1>
+          <p class="text-gray-600 dark:text-gray-300">System performance metrics and user analytics</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="showCookieManager()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
+          <i class="fas fa-cookie-bite mr-2"></i>Cookie Manager
+        </button>
+        <button onclick="location.reload()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
+          <i class="fas fa-sync-alt mr-2"></i>Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- System Performance Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Memory Usage -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Memory Usage</h3>
+          <i class="fas fa-memory text-blue-500"></i>
+        </div>
+        <div class="space-y-2">
+          <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <%= (performance.memory.heapUsed / 1024 / 1024).toFixed(1) %>MB
+          </div>
+          <div class="text-sm text-gray-500">
+            Heap: <%= (performance.memory.heapTotal / 1024 / 1024).toFixed(1) %>MB
+          </div>
+          <div class="text-sm text-gray-500">
+            External: <%= (performance.memory.external / 1024 / 1024).toFixed(1) %>MB
+          </div>
+        </div>
+      </div>
+
+      <!-- Uptime -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Uptime</h3>
+          <i class="fas fa-clock text-green-500"></i>
+        </div>
+        <div class="space-y-2">
+          <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+            <%= Math.floor(performance.uptime / 3600) %>h <%= Math.floor((performance.uptime % 3600) / 60) %>m
+          </div>
+          <div class="text-sm text-gray-500">
+            <%= new Date(Date.now() - performance.uptime * 1000).toLocaleString() %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Database Connections -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">DB Connections</h3>
+          <i class="fas fa-database text-purple-500"></i>
+        </div>
+        <div class="space-y-2">
+          <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <%= dbStats.active_connections %>/<%= dbStats.max_connections %>
+          </div>
+          <div class="text-sm text-gray-500">
+            <%= ((dbStats.active_connections / dbStats.max_connections) * 100).toFixed(1) %>% used
+          </div>
+        </div>
+      </div>
+
+      <!-- Database Size -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Database Size</h3>
+          <i class="fas fa-hard-drive text-orange-500"></i>
+        </div>
+        <div class="space-y-2">
+          <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">
+            <%= (dbStats.db_size / 1024 / 1024).toFixed(1) %>MB
+          </div>
+          <div class="text-sm text-gray-500">
+            Total database size
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Analytics -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <i class="fas fa-users text-green-500"></i>
+        User Analytics & Cookie Usage
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="userAnalytics">
+        <!-- Active Sessions -->
+        <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-user-check text-green-600"></i>
+            <div class="font-medium text-green-900 dark:text-green-300">Active Sessions</div>
+          </div>
+          <div class="text-2xl font-bold text-green-700 dark:text-green-400" id="activeSessions">Loading...</div>
+          <div class="text-sm text-green-600 dark:text-green-500">Currently online</div>
+        </div>
+
+        <!-- Cookie Consent Rate -->
+        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-cookie-bite text-blue-600"></i>
+            <div class="font-medium text-blue-900 dark:text-blue-300">Cookie Consent</div>
+          </div>
+          <div class="text-2xl font-bold text-blue-700 dark:text-blue-400" id="cookieConsent">Loading...</div>
+          <div class="text-sm text-blue-600 dark:text-blue-500">Acceptance rate</div>
+        </div>
+
+        <!-- Average Session Duration -->
+        <div class="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-clock text-orange-600"></i>
+            <div class="font-medium text-orange-900 dark:text-orange-300">Avg. Session</div>
+          </div>
+          <div class="text-2xl font-bold text-orange-700 dark:text-orange-400" id="avgSession">Loading...</div>
+          <div class="text-sm text-orange-600 dark:text-orange-500">Duration</div>
+        </div>
+
+        <!-- Performance Score -->
+        <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <i class="fas fa-gauge-high text-purple-600"></i>
+            <div class="font-medium text-purple-900 dark:text-purple-300">Performance</div>
+          </div>
+          <div class="text-2xl font-bold text-purple-700 dark:text-purple-400" id="perfScore">Loading...</div>
+          <div class="text-sm text-purple-600 dark:text-purple-500">Overall score</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Information -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- System Info -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <i class="fas fa-server text-indigo-500"></i>
+          System Information
+        </h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Node.js Version</div>
+            <div class="font-semibold text-gray-900 dark:text-white"><%= performance.nodeVersion %></div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Platform</div>
+            <div class="font-semibold text-gray-900 dark:text-white"><%= performance.platform %></div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Architecture</div>
+            <div class="font-semibold text-gray-900 dark:text-white"><%= performance.arch %></div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Process ID</div>
+            <div class="font-semibold text-gray-900 dark:text-white"><%= process.pid %></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CPU Usage -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <i class="fas fa-microchip text-red-500"></i>
+          CPU Usage
+        </h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">User CPU Time</div>
+            <div class="font-semibold text-gray-900 dark:text-white"><%= (performance.cpuUsage.user / 1000).toFixed(1) %>ms</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">System CPU Time</div>
+            <div class="font-semibold text-gray-900 dark:text-white"><%= (performance.cpuUsage.system / 1000).toFixed(1) %>ms</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Database Tables -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <i class="fas fa-table text-blue-500"></i>
+        Table Statistics
+      </h3>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700">
+              <th class="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Table</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Size</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Live Rows</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Inserts</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Updates</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Deletes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% tableStats.forEach(table => { %>
+              <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="py-3 px-4 font-medium text-gray-900 dark:text-white">
+                  <%= table.tablename %>
+                </td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">
+                  <%= table.table_size %>
+                </td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">
+                  <%= table.live_tuples.toLocaleString() %>
+                </td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">
+                  <%= table.inserts.toLocaleString() %>
+                </td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">
+                  <%= table.updates.toLocaleString() %>
+                </td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">
+                  <%= table.deletes.toLocaleString() %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Query Performance Monitoring -->
+    <% if (slowQueries && slowQueries.length > 0) { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <i class="fas fa-stopwatch text-yellow-500"></i>
+        Slowest Queries
+      </h3>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700">
+              <th class="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">Query</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Calls</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Avg Time (ms)</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white">Total Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% slowQueries.forEach(query => { %>
+              <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="py-3 px-4 font-mono text-sm text-gray-700 dark:text-gray-300 max-w-md truncate">
+                  <%= query.query.substring(0, 100) %><% if (query.query.length > 100) { %>...<% } %>
+                </td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">
+                  <%= query.calls.toLocaleString() %>
+                </td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">
+                  <%= parseFloat(query.mean_time).toFixed(2) %>
+                </td>
+                <td class="py-3 px-4 text-right text-gray-700 dark:text-gray-300">
+                  <%= parseFloat(query.total_time).toFixed(2) %>ms
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <% } else { %>
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-6">
+      <div class="flex items-start gap-4">
+        <div class="flex-shrink-0">
+          <i class="fas fa-chart-line text-blue-600 dark:text-blue-400 text-2xl"></i>
+        </div>
+        <div class="flex-1">
+          <h4 class="font-semibold text-blue-800 dark:text-blue-300 mb-2">Query Performance Monitoring</h4>
+          <p class="text-blue-700 dark:text-blue-400 mb-4">
+            Query performance monitoring is currently disabled. To enable detailed query statistics and performance tracking, configure the pg_stat_statements extension.
+          </p>
+          <div class="bg-blue-100 dark:bg-blue-800/30 rounded-lg p-4 mb-4">
+            <h5 class="font-medium text-blue-800 dark:text-blue-300 mb-2">To enable query monitoring:</h5>
+            <ol class="list-decimal list-inside space-y-1 text-blue-700 dark:text-blue-400 text-sm">
+              <li>Run: <code class="bg-blue-200 dark:bg-blue-700 px-1 rounded">./setup-pg-stat-statements.sh</code></li>
+              <li>Restart PostgreSQL service</li>
+              <li>Run: <code class="bg-blue-200 dark:bg-blue-700 px-1 rounded">./run-migrations.sh</code></li>
+            </ol>
+          </div>
+          <p class="text-blue-600 dark:text-blue-400 text-sm">
+            <i class="fas fa-lightbulb mr-1"></i>
+            Once configured, you'll see detailed query performance metrics, execution times, and optimization opportunities.
+          </p>
+        </div>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+// Performance monitoring
+document.addEventListener('DOMContentLoaded', function() {
+  loadUserAnalytics();
+
+  // Auto-refresh user analytics every 30 seconds
+  setInterval(loadUserAnalytics, 30000);
+});
+
+async function loadUserAnalytics() {
+  try {
+    const response = await fetch('/admin/analytics/users');
+    const data = await response.json();
+
+    if (data.success) {
+      const analytics = data.analytics;
+      document.getElementById('activeSessions').textContent = analytics.activeSessions;
+      document.getElementById('cookieConsent').textContent = analytics.cookieConsentRate;
+      document.getElementById('avgSession').textContent = analytics.avgSessionDuration;
+      document.getElementById('perfScore').textContent = analytics.performanceScore;
+    } else {
+      throw new Error(data.error || 'Failed to load analytics');
+    }
+  } catch (error) {
+    console.error('Error loading user analytics:', error);
+    // Fallback to local cookie consent status
+    const cookieConsentRate = localStorage.getItem('cookieConsent') ? '100%' : '0%';
+    document.getElementById('activeSessions').textContent = '0';
+    document.getElementById('cookieConsent').textContent = cookieConsentRate;
+    document.getElementById('avgSession').textContent = '0m 0s';
+    document.getElementById('perfScore').textContent = '0/100';
+  }
+}
+
+
+
+
+
+</script>

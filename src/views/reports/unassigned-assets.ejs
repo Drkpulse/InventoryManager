@@ -1,12 +1,16 @@
-<div class="report-container">
-  <div class="report-header">
-    <h1>Unassigned Assets Analytics Report</h1>
-    <div class="report-actions">
-      <a href="/reports/export-assets?filter=unassigned" class="btn btn-primary">
-        <i class="fas fa-download"></i> Export to CSV
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+        <i class="fas fa-exclamation-triangle text-yellow-500"></i> Unassigned Assets Analytics Report
+      </h1>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a href="/reports/export-assets?filter=unassigned" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-download mr-2"></i> Export to CSV
       </a>
-      <a href="/reports" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Back to Reports
+      <a href="/reports" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Reports
       </a>
     </div>
   </div>
@@ -57,216 +61,214 @@
   %>
 
   <!-- Key Metrics -->
-  <div class="report-summary">
-    <div class="summary-card alert">
-      <div class="summary-icon">
-        <i class="fas fa-exclamation-triangle"></i>
-      </div>
-      <h3>Total Unassigned</h3>
-      <div class="summary-number"><%= totalUnassigned %></div>
-      <div class="summary-detail">Assets requiring assignment</div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div class="bg-yellow-100 dark:bg-yellow-900 rounded-lg shadow p-6 flex flex-col items-center">
+      <div class="text-3xl text-yellow-600 dark:text-yellow-300 mb-2"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">Total Unassigned</div>
+      <div class="text-2xl font-bold text-gray-900 dark:text-gray-100"><%= totalUnassigned %></div>
+      <div class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">Assets requiring assignment</div>
     </div>
-
-    <div class="summary-card value">
-      <div class="summary-icon">
-        <i class="fas fa-dollar-sign"></i>
-      </div>
-      <h3>Total Value</h3>
-      <div class="summary-number">$<%= totalValue.toLocaleString() %></div>
-      <div class="summary-detail">In unassigned assets</div>
+    <div class="bg-green-100 dark:bg-green-900 rounded-lg shadow p-6 flex flex-col items-center">
+      <div class="text-3xl text-green-600 dark:text-green-300 mb-2"><i class="fas fa-dollar-sign"></i></div>
+      <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">Total Value</div>
+      <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">$<%= totalValue.toLocaleString() %></div>
+      <div class="text-xs text-green-700 dark:text-green-300 mt-1">In unassigned assets</div>
     </div>
-
-    <div class="summary-card average">
-      <div class="summary-icon">
-        <i class="fas fa-calculator"></i>
-      </div>
-      <h3>Average Value</h3>
-      <div class="summary-number">$<%= avgValue.toFixed(0) %></div>
-      <div class="summary-detail">Per unassigned asset</div>
+    <div class="bg-blue-100 dark:bg-blue-900 rounded-lg shadow p-6 flex flex-col items-center">
+      <div class="text-3xl text-blue-600 dark:text-blue-300 mb-2"><i class="fas fa-calculator"></i></div>
+      <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">Average Value</div>
+      <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">$<%= avgValue.toFixed(0) %></div>
+      <div class="text-xs text-blue-700 dark:text-blue-300 mt-1">Per unassigned asset</div>
     </div>
-
-    <div class="summary-card utilization">
-      <div class="summary-icon">
-        <i class="fas fa-chart-pie"></i>
-      </div>
-      <h3>Utilization Gap</h3>
-      <div class="summary-number"><%= totalUnassigned %>%</div>
-      <div class="summary-detail">Assets not in use</div>
+    <div class="bg-purple-100 dark:bg-purple-900 rounded-lg shadow p-6 flex flex-col items-center">
+      <div class="text-3xl text-purple-600 dark:text-purple-300 mb-2"><i class="fas fa-chart-pie"></i></div>
+      <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">Utilization Gap</div>
+      <div class="text-2xl font-bold text-gray-900 dark:text-gray-100"><%= totalUnassigned %>%</div>
+      <div class="text-xs text-purple-700 dark:text-purple-300 mt-1">Assets not in use</div>
     </div>
   </div>
 
   <!-- Analytics Dashboard -->
-  <div class="analytics-grid">
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
     <!-- Asset Type Analysis -->
-    <div class="analytics-card">
-      <h3><i class="fas fa-tags"></i> Unassigned by Asset Type</h3>
-      <div class="chart-container">
-        <% if (topTypes.length > 0) { %>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i class="fas fa-tags"></i> Unassigned by Asset Type
+      </h3>
+      <% if (topTypes.length > 0) { %>
+        <div class="flex flex-col gap-2">
           <% topTypes.forEach(([type, count]) => { %>
-            <div class="bar-item">
-              <div class="bar-label"><%= type %></div>
-              <div class="bar-container">
-                <div class="bar-fill" style="width: <%= (count / totalUnassigned * 100).toFixed(1) %>%"></div>
-                <span class="bar-value"><%= count %> (<%= (count / totalUnassigned * 100).toFixed(1) %>%)</span>
+            <div class="flex items-center gap-2">
+              <span class="w-32 text-xs text-gray-700 dark:text-gray-200"><%= type %></span>
+              <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+                <div class="absolute left-0 top-0 h-3 rounded bg-blue-500 dark:bg-blue-400" style="width: <%= (count / totalUnassigned * 100).toFixed(1) %>%"></div>
               </div>
+              <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= count %> (<%= (count / totalUnassigned * 100).toFixed(1) %>%)</span>
             </div>
           <% }) %>
-        <% } else { %>
-          <p class="no-data">No type data available</p>
-        <% } %>
-      </div>
+        </div>
+      <% } else { %>
+        <div class="text-gray-500 dark:text-gray-400 text-sm">No type data available</div>
+      <% } %>
     </div>
 
     <!-- Brand Analysis -->
-    <div class="analytics-card">
-      <h3><i class="fas fa-building"></i> Top Brands Unassigned</h3>
-      <div class="chart-container">
-        <% if (topBrands.length > 0) { %>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i class="fas fa-building"></i> Top Brands Unassigned
+      </h3>
+      <% if (topBrands.length > 0) { %>
+        <div class="flex flex-col gap-2">
           <% topBrands.forEach(([brand, count]) => { %>
-            <div class="bar-item">
-              <div class="bar-label"><%= brand %></div>
-              <div class="bar-container">
-                <div class="bar-fill" style="width: <%= (count / totalUnassigned * 100).toFixed(1) %>%"></div>
-                <span class="bar-value"><%= count %> (<%= (count / totalUnassigned * 100).toFixed(1) %>%)</span>
+            <div class="flex items-center gap-2">
+              <span class="w-32 text-xs text-gray-700 dark:text-gray-200"><%= brand %></span>
+              <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+                <div class="absolute left-0 top-0 h-3 rounded bg-green-500 dark:bg-green-400" style="width: <%= (count / totalUnassigned * 100).toFixed(1) %>%"></div>
               </div>
+              <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= count %> (<%= (count / totalUnassigned * 100).toFixed(1) %>%)</span>
             </div>
           <% }) %>
-        <% } else { %>
-          <p class="no-data">No brand data available</p>
-        <% } %>
-      </div>
+        </div>
+      <% } else { %>
+        <div class="text-gray-500 dark:text-gray-400 text-sm">No brand data available</div>
+      <% } %>
     </div>
 
     <!-- Age Analysis -->
-    <div class="analytics-card">
-      <h3><i class="fas fa-clock"></i> Days Since Acquisition</h3>
-      <div class="chart-container">
-        <div class="bar-item">
-          <div class="bar-label">0-30 days</div>
-          <div class="bar-container">
-            <div class="bar-fill recent" style="width: <%= totalUnassigned > 0 ? (ageBreakdown['0-30'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
-            <span class="bar-value"><%= ageBreakdown['0-30'] %></span>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i class="fas fa-clock"></i> Days Since Acquisition
+      </h3>
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-2">
+          <span class="w-32 text-xs text-gray-700 dark:text-gray-200">0-30 days</span>
+          <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+            <div class="absolute left-0 top-0 h-3 rounded bg-blue-400 dark:bg-blue-600" style="width: <%= totalUnassigned > 0 ? (ageBreakdown['0-30'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
           </div>
+          <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= ageBreakdown['0-30'] %></span>
         </div>
-        <div class="bar-item">
-          <div class="bar-label">31-90 days</div>
-          <div class="bar-container">
-            <div class="bar-fill moderate" style="width: <%= totalUnassigned > 0 ? (ageBreakdown['31-90'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
-            <span class="bar-value"><%= ageBreakdown['31-90'] %></span>
+        <div class="flex items-center gap-2">
+          <span class="w-32 text-xs text-gray-700 dark:text-gray-200">31-90 days</span>
+          <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+            <div class="absolute left-0 top-0 h-3 rounded bg-yellow-400 dark:bg-yellow-600" style="width: <%= totalUnassigned > 0 ? (ageBreakdown['31-90'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
           </div>
+          <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= ageBreakdown['31-90'] %></span>
         </div>
-        <div class="bar-item">
-          <div class="bar-label">91-365 days</div>
-          <div class="bar-container">
-            <div class="bar-fill warning" style="width: <%= totalUnassigned > 0 ? (ageBreakdown['91-365'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
-            <span class="bar-value"><%= ageBreakdown['91-365'] %></span>
+        <div class="flex items-center gap-2">
+          <span class="w-32 text-xs text-gray-700 dark:text-gray-200">91-365 days</span>
+          <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+            <div class="absolute left-0 top-0 h-3 rounded bg-orange-400 dark:bg-orange-600" style="width: <%= totalUnassigned > 0 ? (ageBreakdown['91-365'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
           </div>
+          <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= ageBreakdown['91-365'] %></span>
         </div>
-        <div class="bar-item">
-          <div class="bar-label">Over 1 year</div>
-          <div class="bar-container">
-            <div class="bar-fill critical" style="width: <%= totalUnassigned > 0 ? (ageBreakdown['365+'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
-            <span class="bar-value"><%= ageBreakdown['365+'] %></span>
+        <div class="flex items-center gap-2">
+          <span class="w-32 text-xs text-gray-700 dark:text-gray-200">Over 1 year</span>
+          <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+            <div class="absolute left-0 top-0 h-3 rounded bg-red-400 dark:bg-red-600" style="width: <%= totalUnassigned > 0 ? (ageBreakdown['365+'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
           </div>
+          <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= ageBreakdown['365+'] %></span>
         </div>
       </div>
     </div>
 
     <!-- Value Distribution -->
-    <div class="analytics-card">
-      <h3><i class="fas fa-money-bill-wave"></i> Value Distribution</h3>
-      <div class="chart-container">
-        <div class="bar-item">
-          <div class="bar-label">Under $500</div>
-          <div class="bar-container">
-            <div class="bar-fill low-value" style="width: <%= totalUnassigned > 0 ? (valueRanges['under_500'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
-            <span class="bar-value"><%= valueRanges['under_500'] %></span>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+        <i class="fas fa-money-bill-wave"></i> Value Distribution
+      </h3>
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-2">
+          <span class="w-32 text-xs text-gray-700 dark:text-gray-200">Under $500</span>
+          <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+            <div class="absolute left-0 top-0 h-3 rounded bg-green-400 dark:bg-green-600" style="width: <%= totalUnassigned > 0 ? (valueRanges['under_500'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
           </div>
+          <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= valueRanges['under_500'] %></span>
         </div>
-        <div class="bar-item">
-          <div class="bar-label">$500 - $1,000</div>
-          <div class="bar-container">
-            <div class="bar-fill mid-value" style="width: <%= totalUnassigned > 0 ? (valueRanges['500-1000'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
-            <span class="bar-value"><%= valueRanges['500-1000'] %></span>
+        <div class="flex items-center gap-2">
+          <span class="w-32 text-xs text-gray-700 dark:text-gray-200">$500 - $1,000</span>
+          <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+            <div class="absolute left-0 top-0 h-3 rounded bg-blue-400 dark:bg-blue-600" style="width: <%= totalUnassigned > 0 ? (valueRanges['500-1000'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
           </div>
+          <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= valueRanges['500-1000'] %></span>
         </div>
-        <div class="bar-item">
-          <div class="bar-label">$1,000 - $5,000</div>
-          <div class="bar-container">
-            <div class="bar-fill high-value" style="width: <%= totalUnassigned > 0 ? (valueRanges['1000-5000'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
-            <span class="bar-value"><%= valueRanges['1000-5000'] %></span>
+        <div class="flex items-center gap-2">
+          <span class="w-32 text-xs text-gray-700 dark:text-gray-200">$1,000 - $5,000</span>
+          <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+            <div class="absolute left-0 top-0 h-3 rounded bg-purple-400 dark:bg-purple-600" style="width: <%= totalUnassigned > 0 ? (valueRanges['1000-5000'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
           </div>
+          <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= valueRanges['1000-5000'] %></span>
         </div>
-        <div class="bar-item">
-          <div class="bar-label">Over $5,000</div>
-          <div class="bar-container">
-            <div class="bar-fill premium-value" style="width: <%= totalUnassigned > 0 ? (valueRanges['over_5000'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
-            <span class="bar-value"><%= valueRanges['over_5000'] %></span>
+        <div class="flex items-center gap-2">
+          <span class="w-32 text-xs text-gray-700 dark:text-gray-200">Over $5,000</span>
+          <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-3 relative">
+            <div class="absolute left-0 top-0 h-3 rounded bg-red-400 dark:bg-red-600" style="width: <%= totalUnassigned > 0 ? (valueRanges['over_5000'] / totalUnassigned * 100).toFixed(1) : 0 %>%"></div>
           </div>
+          <span class="ml-2 text-xs text-gray-500 dark:text-gray-400"><%= valueRanges['over_5000'] %></span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Recommendations -->
-  <div class="recommendations-section">
-    <h2><i class="fas fa-lightbulb"></i> Recommendations & Insights</h2>
-    <div class="recommendations-grid">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-10">
+    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2 mb-4">
+      <i class="fas fa-lightbulb"></i> Recommendations & Insights
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       <% if (ageBreakdown['365+'] > 0) { %>
-        <div class="recommendation-card urgent">
-          <h4><i class="fas fa-exclamation-circle"></i> Urgent Action Required</h4>
-          <p><%= ageBreakdown['365+'] %> assets have been unassigned for over a year. Consider reviewing if these assets are still needed or can be disposed of.</p>
+        <div class="bg-red-100 dark:bg-red-900 rounded-lg p-4 flex flex-col gap-2">
+          <h4 class="font-semibold text-red-700 dark:text-red-300 flex items-center gap-2"><i class="fas fa-exclamation-circle"></i> Urgent Action Required</h4>
+          <p class="text-gray-700 dark:text-gray-200"><%= ageBreakdown['365+'] %> assets have been unassigned for over a year. Consider reviewing if these assets are still needed or can be disposed of.</p>
         </div>
       <% } %>
-
       <% if (totalValue > 50000) { %>
-        <div class="recommendation-card financial">
-          <h4><i class="fas fa-dollar-sign"></i> Financial Impact</h4>
-          <p>$<%= totalValue.toLocaleString() %> worth of assets are sitting idle. Prioritize assignment to maximize ROI.</p>
+        <div class="bg-green-100 dark:bg-green-900 rounded-lg p-4 flex flex-col gap-2">
+          <h4 class="font-semibold text-green-700 dark:text-green-300 flex items-center gap-2"><i class="fas fa-dollar-sign"></i> Financial Impact</h4>
+          <p class="text-gray-700 dark:text-gray-200">$<%= totalValue.toLocaleString() %> worth of assets are sitting idle. Prioritize assignment to maximize ROI.</p>
         </div>
       <% } %>
-
       <% if (topTypes.length > 0 && topTypes[0][1] > totalUnassigned * 0.4) { %>
-        <div class="recommendation-card category">
-          <h4><i class="fas fa-chart-bar"></i> Category Focus</h4>
-          <p><%= topTypes[0][0] %> represents <%= ((topTypes[0][1] / totalUnassigned) * 100).toFixed(1) %>% of unassigned assets. Focus assignment efforts on this category.</p>
+        <div class="bg-blue-100 dark:bg-blue-900 rounded-lg p-4 flex flex-col gap-2">
+          <h4 class="font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2"><i class="fas fa-chart-bar"></i> Category Focus</h4>
+          <p class="text-gray-700 dark:text-gray-200"><%= topTypes[0][0] %> represents <%= ((topTypes[0][1] / totalUnassigned) * 100).toFixed(1) %>% of unassigned assets. Focus assignment efforts on this category.</p>
         </div>
       <% } %>
-
-      <div class="recommendation-card process">
-        <h4><i class="fas fa-cogs"></i> Process Improvement</h4>
-        <p>Consider implementing automatic assignment workflows or regular review cycles to prevent asset accumulation.</p>
+      <div class="bg-purple-100 dark:bg-purple-900 rounded-lg p-4 flex flex-col gap-2">
+        <h4 class="font-semibold text-purple-700 dark:text-purple-300 flex items-center gap-2"><i class="fas fa-cogs"></i> Process Improvement</h4>
+        <p class="text-gray-700 dark:text-gray-200">Consider implementing automatic assignment workflows or regular review cycles to prevent asset accumulation.</p>
       </div>
     </div>
   </div>
 
   <!-- Action Items -->
-  <div class="action-section">
-    <h2><i class="fas fa-tasks"></i> Quick Actions</h2>
-    <div class="action-buttons">
-      <a href="/items?assigned=unassigned" class="btn btn-primary">
-        <i class="fas fa-list"></i> View All Unassigned Items
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-10">
+    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2 mb-4">
+      <i class="fas fa-tasks"></i> Quick Actions
+    </h2>
+    <div class="flex flex-wrap gap-3">
+      <a href="/items?assigned=unassigned" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-list mr-2"></i> View All Unassigned Items
       </a>
-      <a href="/employees" class="btn btn-secondary">
-        <i class="fas fa-users"></i> View Employees for Assignment
+      <a href="/employees" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-users mr-2"></i> View Employees for Assignment
       </a>
-      <a href="/items/bulk-assign" class="btn btn-info">
-        <i class="fas fa-user-friends"></i> Bulk Assignment Tool
+      <a href="/items/bulk-assign" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-user-friends mr-2"></i> Bulk Assignment Tool
       </a>
-      <a href="/reports/asset-utilization" class="btn btn-success">
-        <i class="fas fa-chart-line"></i> Full Utilization Report
+      <a href="/reports/asset-utilization" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-chart-line mr-2"></i> Full Utilization Report
       </a>
     </div>
   </div>
 
   <% if (totalUnassigned === 0) { %>
-    <div class="empty-state success">
-      <div class="empty-icon">
+    <div class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-green-400 rounded bg-green-50 dark:bg-green-950 mt-8">
+      <div class="text-4xl text-green-500 mb-2">
         <i class="fas fa-check-circle"></i>
       </div>
-      <h3>Excellent Asset Management!</h3>
-      <p>All assets are currently assigned. Your inventory utilization is at 100%.</p>
-      <a href="/items/new" class="btn btn-primary">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">Excellent Asset Management!</h3>
+      <p class="text-gray-500 dark:text-gray-400">All assets are currently assigned. Your inventory utilization is at 100%.</p>
+      <a href="/items/new" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2 mt-4">
         <i class="fas fa-plus"></i> Add New Asset
       </a>
     </div>

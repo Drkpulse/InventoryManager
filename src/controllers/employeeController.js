@@ -100,8 +100,12 @@ exports.createEmployeeForm = async (req, res) => {
     // Get locations for dropdown
     const locations = await db.query('SELECT * FROM locations ORDER BY name');
 
-    // Get software for dropdown
-    const software = await db.query('SELECT * FROM software ORDER BY name');
+    // Get software for assignments (optional)
+    const software = await db.query(`
+      SELECT id, name, version, vendor, license_type, cost_per_license, description
+      FROM software
+      ORDER BY name
+    `);
 
     res.render('layout', {
       title: 'Add New Employee',
@@ -122,8 +126,7 @@ exports.createEmployee = async (req, res) => {
 
   try {
     const {
-      name, cep, email, location_id, dept_id, joined_date,
-      software_assignments // Array of software IDs
+      name, cep, email, location_id, dept_id, joined_date
     } = req.body;
 
     await client.query('BEGIN');
@@ -137,26 +140,9 @@ exports.createEmployee = async (req, res) => {
 
     const employeeId = result.rows[0].id;
 
-    // Handle software assignments
-    const assignedSoftware = [];
-    if (software_assignments && Array.isArray(software_assignments)) {
-      for (const softwareId of software_assignments) {
-        if (softwareId) {
-          await client.query(`
-            INSERT INTO employee_software (employee_id, software_id, assigned_date)
-            VALUES ($1, $2, CURRENT_DATE)
-          `, [employeeId, softwareId]);
+    await client.query('COMMIT');
 
-          // Get software name for history
-          const softwareResult = await client.query('SELECT name FROM software WHERE id = $1', [softwareId]);
-          if (softwareResult.rows.length > 0) {
-            assignedSoftware.push(softwareResult.rows[0].name);
-          }
-        }
-      }
-    }
-
-    // Log the creation in history
+    // Log the creation in history after transaction commits
     try {
       await historyLogger.logEmployeeHistory(
         employeeId,
@@ -168,7 +154,6 @@ exports.createEmployee = async (req, res) => {
           location_id,
           dept_id,
           joined_date,
-          software_assigned: assignedSoftware,
           created_by: req.session.user.name
         },
         req.session.user.id
@@ -177,7 +162,6 @@ exports.createEmployee = async (req, res) => {
       console.error('Failed to log history, but employee was created:', historyError);
     }
 
-    await client.query('COMMIT');
     res.redirect(`/employees/${employeeId}`);
   } catch (error) {
     await client.query('ROLLBACK');
@@ -214,24 +198,12 @@ exports.updateEmployeeForm = async (req, res) => {
     // Get locations for dropdown
     const locations = await db.query('SELECT * FROM locations ORDER BY name');
 
-    // Get software for dropdown
-    const software = await db.query('SELECT * FROM software ORDER BY name');
-
-    // Get currently assigned software
-    const assignedSoftware = await db.query(`
-      SELECT software_id FROM employee_software WHERE employee_id = $1
-    `, [id]);
-
-    const assignedSoftwareIds = assignedSoftware.rows.map(row => row.software_id);
-
     res.render('layout', {
       title: 'Edit Employee',
       body: 'employees/edit',
       employee: employeeResult.rows[0],
       departments: departments.rows,
       locations: locations.rows,
-      software: software.rows,
-      assignedSoftwareIds: assignedSoftwareIds,
       user: req.session.user
     });
   } catch (error) {
@@ -246,8 +218,7 @@ exports.updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      name, cep, email, location_id, dept_id, joined_date, left_date,
-      software_assignments
+      name, cep, email, location_id, dept_id, joined_date, left_date
     } = req.body;
 
     await client.query('BEGIN');
@@ -260,15 +231,7 @@ exports.updateEmployee = async (req, res) => {
       return res.status(404).send('Employee not found');
     }
 
-    // Get original software assignments
-    const originalSoftwareResult = await client.query(`
-      SELECT s.name, es.software_id
-      FROM employee_software es
-      JOIN software s ON es.software_id = s.id
-      WHERE es.employee_id = $1
-    `, [id]);
-    const originalSoftware = originalSoftwareResult.rows;
-
+    // Update employee
     await client.query(`
       UPDATE employees SET
         name = $1,
@@ -281,29 +244,6 @@ exports.updateEmployee = async (req, res) => {
         updated_at = NOW()
       WHERE id = $8
     `, [name, cep, email, location_id, dept_id, joined_date, left_date || null, id]);
-
-    // Update software assignments
-    // First, remove all existing assignments
-    await client.query('DELETE FROM employee_software WHERE employee_id = $1', [id]);
-
-    // Then add new assignments and track changes
-    const newSoftware = [];
-    if (software_assignments && Array.isArray(software_assignments)) {
-      for (const softwareId of software_assignments) {
-        if (softwareId) {
-          await client.query(`
-            INSERT INTO employee_software (employee_id, software_id, assigned_date)
-            VALUES ($1, $2, CURRENT_DATE)
-          `, [id, softwareId]);
-
-          // Get software name for history
-          const softwareResult = await client.query('SELECT name FROM software WHERE id = $1', [softwareId]);
-          if (softwareResult.rows.length > 0) {
-            newSoftware.push(softwareResult.rows[0].name);
-          }
-        }
-      }
-    }
 
     // Log what has changed
     const changes = {};
@@ -324,21 +264,12 @@ exports.updateEmployee = async (req, res) => {
       }
     }
 
-    // Track software changes
-    const oldSoftwareNames = originalSoftware.map(s => s.name);
-    const addedSoftware = newSoftware.filter(s => !oldSoftwareNames.includes(s));
-    const removedSoftware = oldSoftwareNames.filter(s => !newSoftware.includes(s));
-
-    if (addedSoftware.length > 0 || removedSoftware.length > 0) {
-      changes.software_changes = {
-        added: addedSoftware,
-        removed: removedSoftware,
-        current: newSoftware
-      };
-    }
-
     changes.updated_by = req.session.user.name;
 
+    // Commit the transaction BEFORE logging history
+    await client.query('COMMIT');
+
+    // Log history AFTER the transaction is committed to avoid deadlocks
     if (Object.keys(changes).length > 0) {
       try {
         await historyLogger.logEmployeeHistory(
@@ -348,25 +279,104 @@ exports.updateEmployee = async (req, res) => {
           req.session.user.id
         );
       } catch (historyError) {
-        console.error('Failed to log history:', historyError);
+        console.error('Failed to log history (transaction already committed):', historyError);
+        // Don't fail the entire operation if history logging fails
       }
     }
 
-    await client.query('COMMIT');
     res.redirect(`/employees/${id}`);
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error updating employee:', error);
-
-    if (error.code === '23505') {
-      return res.status(400).send('Email or CEP already exists');
-    }
-
-    if (error.code === '23503') {
-      return res.status(400).send('Invalid reference: Check department or location');
-    }
-
     res.status(500).send('Server error');
+  } finally {
+    client.release();
+  }
+};
+
+exports.unassignItemFromEmployee = async (req, res) => {
+  const client = await db.getClient();
+
+  try {
+    const { id, itemId } = req.params;
+
+    await client.query('BEGIN');
+
+    // Get employee and item info for logging
+    const employeeResult = await client.query(`
+      SELECT name, cep FROM employees WHERE id = $1
+    `, [id]);
+
+    const itemResult = await client.query(`
+      SELECT i.*, t.name as type_name
+      FROM items i
+      LEFT JOIN types t ON i.type_id = t.id
+      WHERE i.id = $1 AND i.assigned_to = $2
+    `, [itemId, id]);
+
+    if (employeeResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    if (itemResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Item not found or not assigned to this employee' });
+    }
+
+    const employee = employeeResult.rows[0];
+    const item = itemResult.rows[0];
+
+    // Unassign the item
+    await client.query(`
+      UPDATE items
+      SET assigned_to = NULL, date_assigned = NULL, updated_at = NOW()
+      WHERE id = $1
+    `, [itemId]);
+
+    await client.query('COMMIT');
+
+    // Log the unassignment in item history
+    try {
+      const historyLogger = require('../utils/historyLogger');
+      await historyLogger.logItemHistory(
+        itemId,
+        'unassigned',
+        {
+          previous_employee: employee.name,
+          previous_employee_cep: employee.cep,
+          unassigned_by: req.session.user.name,
+          reason: 'Unassigned via employee delete process'
+        },
+        req.session.user.id
+      );
+
+      // Also log unassignment in employee history
+      await historyLogger.logEmployeeHistory(
+        id,
+        'unassigned',
+        {
+          item_id: itemId,
+          item_name: item.name,
+          item_cep_brc: item.cep_brc,
+          reason: 'Unassigned via employee delete process',
+          unassigned_by: req.session.user.name
+        },
+        req.session.user.id
+      );
+    } catch (historyError) {
+      console.error('Failed to log history:', historyError);
+    }
+
+    res.json({
+      success: true,
+      message: `Item "${item.name}" has been unassigned from ${employee.name}`
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error unassigning item:', error);
+    res.status(500).json({ error: 'Server error: ' + error.message });
   } finally {
     client.release();
   }
@@ -376,33 +386,75 @@ exports.deleteEmployee = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if user wants to unassign items first
-    if (req.isAjax) {
+    // If this is an AJAX request, return employee and items info for confirmation
+    if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
+      // Get employee info
+      const employeeResult = await db.query(`
+        SELECT name, cep FROM employees WHERE id = $1
+      `, [id]);
+
+      if (employeeResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Employee not found' });
+      }
+
       // Check for assigned items
       const itemsResult = await db.query(`
-        SELECT i.cep_brc, i.name, t.name as type_name
+        SELECT i.id, i.cep_brc, i.name, t.name as type_name
         FROM items i
         LEFT JOIN types t ON i.type_id = t.id
         WHERE i.assigned_to = $1
       `, [id]);
 
       return res.json({
+        employee: employeeResult.rows[0],
         hasAssignedItems: itemsResult.rows.length > 0,
+        itemCount: itemsResult.rows.length,
         items: itemsResult.rows
       });
     }
 
-    // Direct deletion without unassigning
+    // Handle actual deletion (should come with CEP confirmation for employees with no items)
+    const { cepConfirmation } = req.body;
+
+    // Get employee info
+    const employeeResult = await db.query(`
+      SELECT name, cep FROM employees WHERE id = $1
+    `, [id]);
+
+    if (employeeResult.rows.length === 0) {
+      return res.status(404).redirect('/employees?error=employee_not_found');
+    }
+
+    const employee = employeeResult.rows[0];
+
+    // Check for assigned items
+    const itemsResult = await db.query(`
+      SELECT COUNT(*) as count FROM items WHERE assigned_to = $1
+    `, [id]);
+
+    const itemCount = parseInt(itemsResult.rows[0].count);
+
+    // If employee has no items, require CEP confirmation
+    if (itemCount === 0) {
+      if (!cepConfirmation || cepConfirmation !== employee.cep) {
+        return res.status(400).redirect('/employees?error=invalid_cep_confirmation');
+      }
+    } else {
+      // Employee has assigned items - should not delete directly
+      return res.status(400).redirect('/employees?error=employee_has_items');
+    }
+
+    // Delete employee (only if no items and CEP confirmed)
     await db.query('DELETE FROM employees WHERE id = $1', [id]);
-    return res.redirect('/employees');
+    return res.redirect('/employees?deleted=true');
   } catch (error) {
     console.error('Error deleting employee:', error);
 
-    if (req.isAjax) {
+    if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
       return res.status(500).json({ error: 'Server error: ' + error.message });
     }
 
-    res.status(500).send('Server error');
+    res.status(500).redirect('/employees?error=server_error');
   }
 };
 
@@ -463,6 +515,20 @@ exports.unassignAndDeleteEmployee = async (req, res) => {
           },
           req.session.user.id
         );
+
+        // Also log unassignment in employee history
+        await historyLogger.logEmployeeHistory(
+          id,
+          'unassigned',
+          {
+            item_id: item.id,
+            item_name: item.name,
+            item_cep_brc: item.cep_brc,
+            reason: 'Employee deleted',
+            unassigned_by: req.session.user.name
+          },
+          req.session.user.id
+        );
       } catch (historyError) {
         console.error(`Failed to log history for item ${item.cep_brc}:`, historyError);
       }
@@ -512,71 +578,107 @@ exports.unassignAndDeleteEmployee = async (req, res) => {
 exports.getEmployeeHistory = async (req, res) => {
   try {
     const { id } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const perPage = parseInt(req.query.perPage) || 10;
+    const offset = (page - 1) * perPage;
 
-    // Get the employee details
+    // Get employee details
     const employeeResult = await db.query(`
-      SELECT e.*,
-             d.name as department_name,
-             l.name as location_name
+      SELECT e.*, d.name as department_name
       FROM employees e
       LEFT JOIN departments d ON e.dept_id = d.id
-      LEFT JOIN locations l ON e.location_id = l.id
       WHERE e.id = $1
     `, [id]);
 
     if (employeeResult.rows.length === 0) {
-      return res.status(404).send('Employee not found');
+      if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
+        return res.status(404).json({
+          success: false,
+          error: 'Employee not found'
+        });
+      }
+      req.flash('error', 'Employee not found');
+      return res.redirect('/employees');
     }
 
-    // Get the comprehensive employee history (including related items)
-    const history = await historyLogger.getEmployeeHistory(id);
+    const employee = employeeResult.rows[0];
 
-    // Helper functions for the view
-    const formatActionType = (actionType, historyType) => {
-      const typeMap = {
-        'created': 'Employee Created',
-        'updated': 'Employee Updated',
-        'deleted': 'Employee Deleted',
-        'assigned': historyType === 'item' ? 'Item Assigned' : 'Software Assigned',
-        'unassigned': historyType === 'item' ? 'Item Unassigned' : 'Software Unassigned'
-      };
-      return typeMap[actionType] || actionType.charAt(0).toUpperCase() + actionType.slice(1);
-    };
+    // Get total count of history entries
+    const countResult = await db.query(`
+      SELECT COUNT(*) as total
+      FROM employee_history
+      WHERE employee_id = $1
+    `, [id]);
 
-    const formatFieldName = (field) => {
-      const fieldMap = {
-        'name': 'Name',
-        'cep': 'Employee ID',
-        'email': 'Email',
-        'dept_id': 'Department',
-        'location_id': 'Location',
-        'joined_date': 'Joined Date',
-        'left_date': 'Left Date',
-        'software_changes': 'Software Changes'
-      };
-      return fieldMap[field] || field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ');
-    };
+    const totalItems = parseInt(countResult.rows[0].total);
+    const totalPages = Math.ceil(totalItems / perPage);
 
-    const formatFieldValue = (value) => {
-      if (value === null || value === undefined) return 'None';
-      if (value instanceof Date) return value.toLocaleDateString();
-      if (typeof value === 'object') return JSON.stringify(value, null, 2);
-      return value;
-    };
+    // Get paginated history
+    const historyResult = await db.query(`
+      SELECT eh.*, u.name as performed_by_name
+      FROM employee_history eh
+      LEFT JOIN users u ON eh.performed_by = u.id
+      WHERE eh.employee_id = $1
+      ORDER BY eh.created_at DESC
+      LIMIT $2 OFFSET $3
+    `, [id, perPage, offset]);
 
+    // Get all history for stats
+    const allHistoryResult = await db.query(`
+      SELECT eh.*, u.name as user_name
+      FROM employee_history eh
+      LEFT JOIN users u ON eh.performed_by = u.id
+      WHERE eh.employee_id = $1
+      ORDER BY eh.created_at DESC
+    `, [id]);
+
+    // Get users for filter
+    const usersResult = await db.query('SELECT id, name FROM users ORDER BY name');
+
+    const paginatedHistory = historyResult.rows;
+    const history = allHistoryResult.rows;
+    const users = usersResult.rows;
+
+    // Calculate stats
+    const profileChanges = history.filter(h => h.action_type === 'updated').length;
+    const itemActivities = history.filter(h =>
+      h.action_type === 'assigned' || h.action_type === 'unassigned'
+    ).length;
+
+    const startIndex = offset;
+    const endIndex = Math.min(offset + perPage, totalItems);
+
+    // Regular page load with layout
     res.render('layout', {
-      title: 'Employee History',
+      title: `${employee.name} History`,
       body: 'employees/history',
-      employee: employeeResult.rows[0],
-      history: history,
-      formatActionType,
-      formatFieldName,
-      formatFieldValue,
+      employee,
+      history,
+      paginatedHistory,
+      users,
+      currentPage: page,
+      totalPages,
+      itemsPerPage: perPage,
+      totalItems,
+      startIndex,
+      endIndex,
+      profileChanges,
+      itemActivities,
       user: req.session.user
     });
+
   } catch (error) {
     console.error('Error fetching employee history:', error);
-    res.status(500).send('Server error');
+
+    if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to load employee history'
+      });
+    }
+
+    req.flash('error', 'Error loading employee history');
+    res.redirect('/employees');
   }
 };
 

@@ -1,160 +1,114 @@
-<h1>New Purchase Receipt</h1>
-
-<div class="alert alert-info">
-  Use this form to record a new purchase with one or more items.
-</div>
-
-<form method="POST" action="/items/new-receipt" id="receiptForm">
-  <div class="form-section">
-    <h3>Receipt Information</h3>
-
-    <div class="form-group">
-      <label for="receipt">Receipt Number</label>
-      <input type="text" id="receipt" name="receipt" required>
-      <small>The unique identifier for this purchase receipt</small>
+<div class="max-w-3xl mx-auto my-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-0">
+  <div class="p-8">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+      <i class="fas fa-file-invoice"></i><%= t('new_purchase_receipt') %>
+    </h1>
+    <div class="mb-6 px-4 py-3 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700">
+      <%= t('use_this_form_to_record_a_new_purchase') %>
     </div>
 
-    <div class="form-group">
-      <label for="supplier">Supplier</label>
-      <input type="text" id="supplier" name="supplier" required>
-    </div>
-
-    <div class="form-group">
-      <label for="date_acquired">Purchase Date</label>
-      <input type="date" id="date_acquired" name="date_acquired" value="<%= new Date().toISOString().split('T')[0] %>" required>
-    </div>
-  </div>
-
-  <div class="form-section">
-    <h3>Items</h3>
-    <p>Add the items that were purchased on this receipt.</p>
-
-    <div id="items-container">
-      <!-- First item (required) -->
-      <div class="item-entry">
-        <h4>Item 1</h4>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Item ID (CEP/BRC)</label>
-            <input type="text" name="cep_brc" required>
+    <form method="POST" action="/items/new-receipt" id="receiptForm" class="space-y-10">
+      <!-- Receipt Information -->
+      <div class="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4"><%= t('receipt_information') %></h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label for="receipt" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('receipt_number') %></label>
+            <input type="text" id="receipt" name="receipt" required
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <small class="text-gray-500 dark:text-gray-400"><%= t('receipt_number_info') %></small>
           </div>
-
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" name="name" required>
+          <div>
+            <label for="supplier" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('supplier') %></label>
+            <input type="text" id="supplier" name="supplier" required
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
           </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Type</label>
-            <select name="type_id" required>
-              <option value="">Select Type</option>
-              <% types.forEach(type => { %>
-                <option value="<%= type.id %>"><%= type.name %></option>
-              <% }) %>
-            </select>
+          <div>
+            <label for="date_acquired" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('purchase_date') %></label>
+            <input type="date" id="date_acquired" name="date_acquired" value="<%= new Date().toISOString().split('T')[0] %>" required
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
           </div>
-
-          <div class="form-group">
-            <label>Price</label>
-            <input type="number" name="price" min="0" step="0.01">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Brand</label>
-            <select name="brand_id">
-              <option value="">Select Brand</option>
-              <% brands.forEach(brand => { %>
-                <option value="<%= brand.id %>"><%= brand.name %></option>
-              <% }) %>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Model</label>
-            <input type="text" name="model">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Serial Number</label>
-          <input type="text" name="serial_cod">
         </div>
       </div>
-    </div>
 
-    <button type="button" class="btn btn-secondary" id="addItemBtn">Add Another Item</button>
+      <!-- Items Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2"><%= t('items') %></h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-4"><%= t('add_the_items_that_were_purchased_on_this_receipt') %></p>
+        <div id="items-container">
+          <!-- First item (required) -->
+          <div class="item-entry bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-4 relative">
+            <h4 class="font-semibold text-gray-700 dark:text-gray-200 mb-4"><%= t('item') %> 1</h4>
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+              <div class="flex-1">
+                <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('item_id') %> (CEP/BRC)</label>
+                <input type="text" name="cep_brc" required
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              </div>
+              <div class="flex-1">
+                <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('name') %></label>
+                <input type="text" name="name" required
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              </div>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+              <div class="flex-1">
+                <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('type') %></label>
+                <select name="type_id" required
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                  <option value=""><%= t('select_type') %></option>
+                  <% types.forEach(type => { %>
+                    <option value="<%= type.id %>"><%= type.name %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="flex-1">
+                <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('price') %></label>
+                <input type="number" name="price" min="0" step="0.01"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              </div>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+              <div class="flex-1">
+                <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('brand') %></label>
+                <select name="brand_id"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                  <option value=""><%= t('select_brand') %></option>
+                  <% brands.forEach(brand => { %>
+                    <option value="<%= brand.id %>"><%= brand.name %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="flex-1">
+                <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('model') %></label>
+                <input type="text" name="model"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              </div>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200"><%= t('serial_number') %></label>
+              <input type="text" name="serial_cod"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            </div>
+          </div>
+        </div>
+        <button type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition" id="addItemBtn">
+          <i class="fas fa-plus"></i> <%= t('add_another_item') %>
+        </button>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="flex flex-wrap gap-2 mt-8">
+        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-save"></i> <%= t('save_receipt_with_items') %>
+        </button>
+        <a href="/items" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-times"></i> <%= t('cancel') %>
+        </a>
+      </div>
+    </form>
   </div>
-
-  <div class="form-group submit-section">
-    <button type="submit" class="btn">Save Receipt with Items</button>
-    <a href="/items" class="btn btn-secondary">Cancel</a>
-  </div>
-</form>
-
-<style>
-  .form-section {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #eee;
-  }
-
-  .form-section h3 {
-    margin-bottom: 1rem;
-    color: var(--secondary);
-  }
-
-  .item-entry {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    position: relative;
-  }
-
-  .item-entry h4 {
-    margin-bottom: 1rem;
-  }
-
-  .form-row {
-    display: flex;
-    gap: 1rem;
-  }
-
-  .form-row .form-group {
-    flex: 1;
-  }
-
-  .remove-item {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    color: var(--danger);
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-  }
-
-  .btn-secondary {
-    background-color: #6c757d;
-  }
-
-  .submit-section {
-    margin-top: 2rem;
-  }
-
-  .alert-info {
-    background-color: #d1ecf1;
-    border-color: #bee5eb;
-    color: #0c5460;
-  }
-</style>
+</div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -168,61 +122,61 @@
 
       // Create new item entry
       const newItem = document.createElement('div');
-      newItem.className = 'item-entry';
+      newItem.className = 'item-entry bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-4 relative';
 
       newItem.innerHTML = `
-        <h4>Item ${itemCount}</h4>
-        <button type="button" class="remove-item" title="Remove Item">&times;</button>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Item ID (CEP/BRC)</label>
-            <input type="text" name="cep_brc">
+        <h4 class="font-semibold text-gray-700 dark:text-gray-200 mb-4">Item ${itemCount}</h4>
+        <button type="button" class="remove-item absolute top-2 right-2 text-red-600 dark:text-red-400 bg-transparent border-none text-xl cursor-pointer" title="Remove Item">&times;</button>
+        <div class="flex flex-col md:flex-row gap-4 mb-4">
+          <div class="flex-1">
+            <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Item ID (CEP/BRC)</label>
+            <input type="text" name="cep_brc"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
           </div>
-
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" name="name">
+          <div class="flex-1">
+            <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Name</label>
+            <input type="text" name="name"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
           </div>
         </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Type</label>
-            <select name="type_id">
+        <div class="flex flex-col md:flex-row gap-4 mb-4">
+          <div class="flex-1">
+            <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Type</label>
+            <select name="type_id"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
               <option value="">Select Type</option>
               ${Array.from(document.querySelectorAll('select[name="type_id"]:first-of-type option'))
                 .map(opt => `<option value="${opt.value}">${opt.text}</option>`)
                 .join('')}
             </select>
           </div>
-
-          <div class="form-group">
-            <label>Price</label>
-            <input type="number" name="price" min="0" step="0.01">
+          <div class="flex-1">
+            <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Price</label>
+            <input type="number" name="price" min="0" step="0.01"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
           </div>
         </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Brand</label>
-            <select name="brand_id">
+        <div class="flex flex-col md:flex-row gap-4 mb-4">
+          <div class="flex-1">
+            <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Brand</label>
+            <select name="brand_id"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
               <option value="">Select Brand</option>
               ${Array.from(document.querySelectorAll('select[name="brand_id"]:first-of-type option'))
                 .map(opt => `<option value="${opt.value}">${opt.text}</option>`)
                 .join('')}
             </select>
           </div>
-
-          <div class="form-group">
-            <label>Model</label>
-            <input type="text" name="model">
+          <div class="flex-1">
+            <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Model</label>
+            <input type="text" name="model"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
           </div>
         </div>
-
-        <div class="form-group">
-          <label>Serial Number</label>
-          <input type="text" name="serial_cod">
+        <div>
+          <label class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Serial Number</label>
+          <input type="text" name="serial_cod"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
         </div>
       `;
 

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cookie Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        button { margin: 5px; padding: 10px; }
+        .hidden { display: none !important; }
+        #cookieConsentPopup {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #cookieManagerModal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .buttons { margin-top: 15px; }
+        .buttons button { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Cookie Popup Test</h1>
+
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <button id="showPopupBtn">Show Cookie Popup</button>
+        <button id="clearConsentBtn">Clear Consent (for testing)</button>
+        <button id="checkStateBtn">Check Current State</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="output" style="background: #f5f5f5; padding: 10px; height: 200px; overflow-y: scroll;"></div>
+    </div>
+
+    <!-- Cookie Consent Popup -->
+    <div id="cookieConsentPopup" class="hidden">
+        <div class="modal-content">
+            <h3>Cookie Preferences</h3>
+            <p>We use cookies to improve your experience. Choose your preferences:</p>
+            <div class="buttons">
+                <button id="acceptAllCookiesBtn">Accept All</button>
+                <button id="showCookieManagerBtn">Customize</button>
+                <button id="rejectCookiesBtn">Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Manager Modal -->
+    <div id="cookieManagerModal" class="hidden">
+        <div class="modal-content">
+            <h3>Cookie Manager</h3>
+            <p>Customize your cookie preferences:</p>
+
+            <div style="margin: 15px 0;">
+                <label>
+                    <input type="checkbox" id="performanceCookies"> Performance Cookies
+                </label>
+            </div>
+
+            <div style="margin: 15px 0;">
+                <label>
+                    <input type="checkbox" id="preferenceCookies"> Preference Cookies
+                </label>
+            </div>
+
+            <div class="buttons">
+                <button id="clearAllCookiesBtn">Clear All Cookies</button>
+                <button id="exportCookieDataBtn">Export Data</button>
+                <button id="closeCookieManagerBtn2">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load the event handlers script
+        const script = document.createElement('script');
+        script.src = '/js/event-handlers.js';
+        document.head.appendChild(script);
+
+        // Test helper functions
+        function log(message) {
+            const output = document.getElementById('output');
+            const time = new Date().toLocaleTimeString();
+            output.innerHTML += `[${time}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+
+        function showPopup() {
+            const popup = document.getElementById('cookieConsentPopup');
+            popup.classList.remove('hidden');
+            log('Cookie popup shown');
+        }
+
+        function clearConsent() {
+            localStorage.removeItem('cookieConsent');
+            log('Consent cleared from localStorage');
+        }
+
+        function checkState() {
+            const popup = document.getElementById('cookieConsentPopup');
+            const manager = document.getElementById('cookieManagerModal');
+            const consent = localStorage.getItem('cookieConsent');
+
+            log(`Popup visible: ${!popup.classList.contains('hidden')}`);
+            log(`Manager visible: ${!manager.classList.contains('hidden')}`);
+            log(`Consent in localStorage: ${consent}`);
+        }
+
+        // Initial log
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Test page loaded');
+
+            // Attach event listeners to test buttons
+            document.getElementById('showPopupBtn').addEventListener('click', showPopup);
+            document.getElementById('clearConsentBtn').addEventListener('click', clearConsent);
+            document.getElementById('checkStateBtn').addEventListener('click', checkState);
+
+            // Wait a bit for event handlers to load, then test
+            setTimeout(() => {
+                log('Checking if functions are available:');
+                log(`acceptAllCookies: ${typeof window.acceptAllCookies}`);
+                log(`rejectCookies: ${typeof window.rejectCookies}`);
+                log(`showCookieManager: ${typeof window.showCookieManager}`);
+                log(`hideCookieManager: ${typeof window.hideCookieManager}`);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

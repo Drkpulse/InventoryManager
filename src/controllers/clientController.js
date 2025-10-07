@@ -28,7 +28,7 @@ exports.getAllClients = async (req, res) => {
 
     // Get clients with pagination
     const clientsResult = await db.query(`
-      SELECT c.*, 
+      SELECT c.*,
              COUNT(p.id) as printer_count,
              COUNT(pd.id) as pda_count
       FROM clients c
@@ -50,9 +50,12 @@ exports.getAllClients = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching clients:', error);
-    res.status(500).render('error', { 
+    res.status(500).render('layout', {
+      title: 'Server Error',
+      body: 'error-content',
       error: 'Failed to fetch clients',
-      user: req.user 
+      status: 500,
+      user: req.user
     });
   }
 };
@@ -73,9 +76,12 @@ exports.getClientById = async (req, res) => {
     `, [id]);
 
     if (clientResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'Client not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -128,10 +134,15 @@ exports.getClientById = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching client:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to fetch client details',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to fetch client details',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
@@ -144,17 +155,22 @@ exports.createClientForm = async (req, res) => {
     });
   } catch (error) {
     console.error('Error rendering create form:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to load create form',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to load create form',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
 exports.createClient = async (req, res) => {
   try {
     const { client_id, name, description } = req.body;
-    
+
     const validationErrors = validateClientData({ client_id, name });
     if (validationErrors.length > 0) {
       return res.status(400).render('layout', {
@@ -218,9 +234,12 @@ exports.updateClientForm = async (req, res) => {
     const result = await db.query('SELECT * FROM clients WHERE id = $1', [id]);
 
     if (result.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'Client not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -232,10 +251,15 @@ exports.updateClientForm = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching client for edit:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to load edit form',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to load edit form',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 
@@ -259,9 +283,12 @@ exports.updateClient = async (req, res) => {
     // Get current client data
     const currentResult = await db.query('SELECT * FROM clients WHERE id = $1', [id]);
     if (currentResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'Client not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -285,7 +312,7 @@ exports.updateClient = async (req, res) => {
 
     // Update client
     const result = await db.query(`
-      UPDATE clients 
+      UPDATE clients
       SET client_id = $1, name = $2, description = $3, updated_at = CURRENT_TIMESTAMP
       WHERE id = $4
       RETURNING *
@@ -334,8 +361,8 @@ exports.deleteClient = async (req, res) => {
     const pdasResult = await db.query('SELECT COUNT(*) FROM pdas WHERE client_id = $1', [id]);
 
     if (parseInt(printersResult.rows[0].count) > 0 || parseInt(pdasResult.rows[0].count) > 0) {
-      return res.status(400).json({ 
-        error: 'Cannot delete client with associated printers or PDAs' 
+      return res.status(400).json({
+        error: 'Cannot delete client with associated printers or PDAs'
       });
     }
 
@@ -362,9 +389,12 @@ exports.getClientHistory = async (req, res) => {
 
     const clientResult = await db.query('SELECT * FROM clients WHERE id = $1', [id]);
     if (clientResult.rows.length === 0) {
-      return res.status(404).render('error', { 
+      return res.status(404).render('layout', {
+        title: 'Not Found',
+        body: 'error-content',
         error: 'Client not found',
-        user: req.user 
+        status: 404,
+        user: req.user
       });
     }
 
@@ -392,10 +422,15 @@ exports.getClientHistory = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching client history:', error);
-    res.status(500).render('error', { 
-      error: 'Failed to fetch client history',
-      user: req.user 
-    });
+    res.status(500).render('layout', {
+        title: 'Server Error',
+        body: 'error-content',
+        error: 'Failed to fetch client history',
+      user: req.user
+    ,
+        status: 500,
+        user: req.user
+      });
   }
 };
 

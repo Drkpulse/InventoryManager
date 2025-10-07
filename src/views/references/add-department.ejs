@@ -1,0 +1,66 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-2xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div>
+        <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <a href="/references" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
+            <i class="fas fa-cog"></i> References
+          </a>
+          <i class="fas fa-chevron-right mx-2"></i>
+          <a href="/references/departments" class="hover:text-blue-600 dark:hover:text-blue-400">Departments</a>
+          <i class="fas fa-chevron-right mx-2"></i>
+          <span class="text-gray-700 dark:text-gray-200">Add Department</span>
+        </nav>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Add Department</h1>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    <% if (typeof error !== 'undefined' && error.length > 0) { %>
+      <div class="mb-4 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-4 py-3 rounded">
+        <% error.forEach(msg => { %>
+          <p><%= msg %></p>
+        <% }) %>
+      </div>
+    <% } %>
+    <% if (typeof success !== 'undefined' && success.length > 0) { %>
+      <div class="mb-4 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-4 py-3 rounded">
+        <% success.forEach(msg => { %>
+          <p><%= msg %></p>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+      <form method="POST" action="/references/departments" class="space-y-6">
+        <div>
+          <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+            Department Name <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="name" name="name" required
+                 value="<%= typeof formData !== 'undefined' && formData ? formData.name || '' : '' %>"
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                 placeholder="Enter department name">
+        </div>
+
+        <div>
+          <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+            Description
+          </label>
+          <textarea id="description" name="description" rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    placeholder="Enter department description (optional)"><%= typeof formData !== 'undefined' && formData ? formData.description || '' : '' %></textarea>
+        </div>
+
+        <div class="flex gap-3 pt-4">
+          <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+            <i class="fas fa-plus mr-2"></i> Add Department
+          </button>
+          <a href="/references/departments" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+            <i class="fas fa-arrow-left mr-2"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

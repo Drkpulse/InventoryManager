@@ -1,50 +1,99 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <h1>Employee Management</h1>
-    <div class="header-actions">
-      <div class="search-container">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" id="employeeSearch" placeholder="Search employees by name, ID, or department..." autocomplete="off" value="<%= currentFilters && currentFilters.search || '' %>">
-        <div class="search-results" id="searchResults"></div>
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+        <i class="fas fa-users"></i> <%= t('employee_management') %>
+      </h1>
+    </div>
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <button id="exportEmployeesBtn" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-download mr-2 group-hover:translate-y-1 transition-transform duration-300"></i> <%= t('export_employee_list') %>
+      </button>
+      <a href="/employees/new" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-user-plus mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('add_new_employee') %>
+      </a>
+    </div>
+  </div>
+
+  <!-- Error Messages -->
+  <% if (req.query.error) { %>
+    <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
+      <div class="flex items-center gap-2 text-red-800 dark:text-red-200">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span class="font-semibold">Error:</span>
+        <% if (req.query.error === 'employee_not_found') { %>
+          Employee not found.
+        <% } else if (req.query.error === 'invalid_cep_confirmation') { %>
+          Invalid CEP ID confirmation. Please enter the correct CEP ID to confirm deletion.
+        <% } else if (req.query.error === 'employee_has_items') { %>
+          Cannot delete employee with assigned items. Please unassign all items first.
+        <% } else if (req.query.error === 'server_error') { %>
+          A server error occurred. Please try again.
+        <% } else { %>
+          <%= req.query.error %>
+        <% } %>
       </div>
-      <div class="action-buttons">
-        <button id="exportEmployeesBtn" class="btn btn-success">
-          <i class="fas fa-download"></i> Export Employee List
-        </button>
-        <a href="/employees/new" class="btn btn-primary">
-          <i class="fas fa-user-plus"></i> Add New Employee
-        </a>
+    </div>
+  <% } %>
+
+  <!-- Success Messages -->
+  <% if (showDeletedMessage) { %>
+    <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+      <div class="flex items-center gap-2 text-green-800 dark:text-green-200">
+        <i class="fas fa-check-circle"></i>
+        <span class="font-semibold">Success:</span>
+        Employee has been successfully deleted.
       </div>
+    </div>
+  <% } %>
+
+  <!-- Search Bar -->
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+        <i class="fas fa-search text-blue-600 dark:text-blue-300"></i>
+      </div>
+      <div>
+        <label class="block font-semibold text-gray-700 dark:text-gray-200">Search Employees</label>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Find employees by name, ID, or department</p>
+      </div>
+    </div>
+    <div class="relative">
+      <input type="text" id="employeeSearch" placeholder="Search by Employee Name, ID, or Department..." autocomplete="off"
+        class="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        value="<%= currentFilters && currentFilters.search || '' %>">
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-blue-500 dark:text-blue-400"></i>
     </div>
   </div>
 
   <% if (showDeletedMessage) { %>
-    <div class="alert alert-success">
+    <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700">
       <i class="fas fa-check-circle"></i>
-      Employee was successfully deleted and all their items have been unassigned.
+      <span><%= t('employee_deleted') %></span>
     </div>
   <% } %>
 
   <!-- Advanced Filters Panel -->
-  <div class="filters-panel" id="filtersPanel">
-    <div class="filters-header" id="filtersToggle">
-      <div class="filters-title">
+  <div class="mb-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+    <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" id="filtersToggle">
+      <div class="flex items-center gap-2">
         <i class="fas fa-filter"></i>
-        <h3>Advanced Filters</h3>
-        <span class="filter-badge" id="filterBadge">0</span>
+        <h3 class="font-semibold text-gray-700 dark:text-gray-200"><%= t('advanced_filters') %></h3>
+        <span class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold" id="filterBadge">0</span>
       </div>
-      <div class="filters-actions">
-        <span class="applied-filters-preview" id="appliedFiltersPreview">No filters applied</span>
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500 dark:text-gray-400" id="appliedFiltersPreview"><%= t('no_filters_applied') %></span>
         <i class="fas fa-chevron-down toggle-icon"></i>
       </div>
     </div>
-
-    <div class="filters-content" id="filtersContent">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label for="departmentFilter">Department</label>
-          <select id="departmentFilter" name="department">
-            <option value="">All Departments</option>
+    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 hidden" id="filtersContent">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+        <div>
+          <label for="departmentFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('department') %></label>
+          <select id="departmentFilter" name="department"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <option value=""><%= t('all_departments') %></option>
             <% if (typeof departments !== 'undefined') { %>
               <% departments.forEach(dept => { %>
                 <option value="<%= dept.id %>" <%= currentFilters && currentFilters.department == dept.id ? 'selected' : '' %>>
@@ -54,11 +103,11 @@
             <% } %>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label for="locationFilter">Location</label>
-          <select id="locationFilter" name="location">
-            <option value="">All Locations</option>
+        <div>
+          <label for="locationFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Location</label>
+          <select id="locationFilter" name="location"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <option value=""><%= t('all_locations') %></option>
             <% if (typeof locations !== 'undefined') { %>
               <% locations.forEach(location => { %>
                 <option value="<%= location.id %>" <%= currentFilters && currentFilters.location == location.id ? 'selected' : '' %>>
@@ -68,34 +117,36 @@
             <% } %>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label for="statusFilter">Employment Status</label>
-          <select id="statusFilter" name="status">
-            <option value="" <%= currentFilters && currentFilters.status === '' ? 'selected' : '' %>>All Employees</option>
-            <option value="active" <%= !currentFilters || currentFilters.status === 'active' ? 'selected' : '' %>>Active Employees</option>
-            <option value="inactive" <%= currentFilters && currentFilters.status === 'inactive' ? 'selected' : '' %>>Former Employees</option>
+        <div>
+          <label for="statusFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('employment_status') %></label>
+          <select id="statusFilter" name="status"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <option value="" <%= currentFilters && currentFilters.status === '' ? 'selected' : '' %>><%= t('all_employees') %></option>
+            <option value="active" <%= !currentFilters || currentFilters.status === 'active' ? 'selected' : '' %>><%= t('active_employees') %></option>
+            <option value="inactive" <%= currentFilters && currentFilters.status === 'inactive' ? 'selected' : '' %>><%= t('former_employees') %></option>
           </select>
         </div>
-
-        <div class="filter-group">
-          <label for="joinedDateRange">Joined Date Range</label>
-          <div class="date-range">
-            <input type="date" id="joinedDateFrom" name="joinedDateFrom" value="<%= currentFilters && currentFilters.joinedDateFrom || '' %>">
-            <span>to</span>
-            <input type="date" id="joinedDateTo" name="joinedDateTo" value="<%= currentFilters && currentFilters.joinedDateTo || '' %>">
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('joined_date_range') %></label>
+          <div class="flex items-center gap-2">
+            <input type="date" id="joinedDateFrom" name="joinedDateFrom"
+              class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 w-32"
+              value="<%= currentFilters && currentFilters.joinedDateFrom || '' %>">
+            <span class="text-gray-400 dark:text-gray-500"><%= t('to') %></span>
+            <input type="date" id="joinedDateTo" name="joinedDateTo"
+              class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 w-32"
+              value="<%= currentFilters && currentFilters.joinedDateTo || '' %>">
           </div>
         </div>
       </div>
-
-      <div class="filter-actions-bar">
-        <div class="applied-filters-display" id="appliedFilters"></div>
-        <div class="filter-buttons">
-          <button type="button" id="applyFilters" class="btn btn-primary">
-            <i class="fas fa-search"></i> Apply Filters
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap gap-2 text-xs" id="appliedFilters"></div>
+        <div class="flex gap-2">
+          <button type="button" id="applyFilters" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+            <i class="fas fa-search group-hover:scale-110 transition-transform duration-300"></i> <%= t('apply_filters') %>
           </button>
-          <button type="button" id="resetFilters" class="btn btn-secondary">
-            <i class="fas fa-times"></i> Reset All
+          <button type="button" id="resetFilters" class="group px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+            <i class="fas fa-times group-hover:-rotate-12 transition-transform duration-300"></i> <%= t('reset_all') %>
           </button>
         </div>
       </div>
@@ -103,129 +154,101 @@
   </div>
 
   <% if (employees && employees.length > 0) { %>
-    <div class="content-section">
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
+    <div id="employeesTableBlock">
+      <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th class="checkbox-col">
-                <input type="checkbox" id="selectAll">
-              </th>
-              <th class="sortable" data-sort="name">
-                Name <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="cep">
-                Employee ID <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="email">
-                Email <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="department_name">
-                Department <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="location_name">
-                Location <i class="fas fa-sort"></i>
-              </th>
-              <th class="sortable" data-sort="joined_date">
-                Status <i class="fas fa-sort"></i>
-              </th>
-              <th class="actions-col">Actions</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200"><%= t('name') %></th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200"><%= t('employee_id') %></th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200"><%= t('email') %></th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200"><%= t('department') %></th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200"><%= t('location') %></th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200"><%= t('status') %></th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200"><%= t('actions') %></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             <%
             // Sort employees to show active first
             const sortedEmployees = employees.sort((a, b) => {
-              // Active employees (no left_date) first
               if (!a.left_date && b.left_date) return -1;
               if (a.left_date && !b.left_date) return 1;
-              // Then sort by name
               return a.name.localeCompare(b.name);
             });
             %>
             <% sortedEmployees.forEach(employee => { %>
-              <tr data-employee-id="<%= employee.id %>" class="table-row <%= employee.left_date ? 'former-employee' : 'active-employee' %>">
-                <td>
-                  <input type="checkbox" class="row-checkbox" value="<%= employee.id %>">
-                </td>
-                <td>
-                  <div class="entity-info">
-                    <a href="/employees/<%= employee.id %>" class="entity-name">
-                      <%= employee.name %>
-                    </a>
-                    <% if (employee.left_date) { %>
-                      <span class="status-indicator former">Former Employee</span>
-                    <% } %>
-                  </div>
-                </td>
-                <td>
-                  <span class="entity-id"><%= employee.cep %></span>
-                </td>
-                <td>
-                  <a href="mailto:<%= employee.email %>" class="entity-name">
-                    <%= employee.email %>
+              <tr class="<%= employee.left_date ? 'bg-gray-50 dark:bg-gray-900' : '' %>">
+                <td class="px-4 py-3">
+                  <a href="/employees/<%= employee.id %>" class="font-semibold text-blue-700 dark:text-blue-300 hover:underline">
+                    <%= employee.name %>
                   </a>
+                  <% if (employee.left_date) { %>
+                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded bg-gray-300 dark:bg-gray-700 text-xs text-gray-700 dark:text-gray-200">Former</span>
+                  <% } %>
                 </td>
-                <td>
+                <td class="px-4 py-3 font-mono text-xs text-gray-700 dark:text-gray-300"><%= employee.cep %></td>
+                <td class="px-4 py-3">
+                  <a href="mailto:<%= employee.email %>" class="text-gray-700 dark:text-gray-200 hover:underline"><%= employee.email %></a>
+                </td>
+                <td class="px-4 py-3">
                   <% if (employee.department_name) { %>
-                    <span class="category-badge">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
                       <i class="fas fa-building"></i> <%= employee.department_name %>
                     </span>
                   <% } else { %>
-                    <span class="badge badge-secondary">
-                      <i class="fas fa-minus"></i> Not Assigned
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs">
+                      <i class="fas fa-minus"></i> <%= t('not_assigned') %>
                     </span>
                   <% } %>
                 </td>
-                <td>
+                <td class="px-4 py-3">
                   <% if (employee.location_name) { %>
-                    <span class="brand-badge">
-                      <i class="fas fa-map-marker-alt"></i>
-                      <%= employee.location_name %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-semibold">
+                      <i class="fas fa-map-marker-alt"></i> <%= employee.location_name %>
                     </span>
                   <% } else { %>
-                    <span class="badge badge-secondary">
-                      <i class="fas fa-minus"></i> Not Assigned
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs">
+                      <i class="fas fa-minus"></i> <%= t('not_assigned') %>
                     </span>
                   <% } %>
                 </td>
-                <td>
+                <td class="px-4 py-3">
                   <%
-                    let statusClass = 'badge-success';
+                    let statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300';
                     let statusIcon = 'fas fa-check-circle';
                     let statusText = 'Active';
-
                     if (employee.left_date) {
-                      statusClass = 'badge-dark';
+                      statusClass = 'bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-200';
                       statusIcon = 'fas fa-user-times';
                       statusText = 'Former';
                     }
                   %>
-                  <span class="status-badge <%= statusClass %>">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded <%= statusClass %> text-xs font-semibold">
                     <i class="<%= statusIcon %>"></i> <%= statusText %>
                   </span>
                   <% if (employee.joined_date) { %>
-                    <small class="entity-detail">
-                      Joined <%= new Date(employee.joined_date).toLocaleDateString() %>
-                    </small>
+                    <div class="text-xs text-gray-500 dark:text-gray-400"><%= t('joined') %> <%= new Date(employee.joined_date).toLocaleDateString() %></div>
                   <% } %>
                 </td>
-                <td class="actions-cell">
-                  <div class="action-buttons-inline">
-                    <a href="/employees/<%= employee.id %>" class="btn-action btn-view" title="View Details">
+                <td class="px-4 py-3">
+                  <div class="flex gap-1">
+                    <a href="/employees/<%= employee.id %>" class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition" title="Ver Detalhes">
                       <i class="fas fa-eye"></i>
                     </a>
-                    <a href="/employees/<%= employee.id %>/edit" class="btn-action btn-edit" title="Edit">
+                    <a href="/employees/<%= employee.id %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="Editar">
                       <i class="fas fa-edit"></i>
                     </a>
-                    <a href="/employees/<%= employee.id %>/history" class="btn-action btn-history" title="View History">
+                    <a href="/employees/<%= employee.id %>/history" class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 transition" title="Ver Histórico">
                       <i class="fas fa-history"></i>
                     </a>
-                    <form style="display: inline;" method="POST" action="/employees/<%= employee.id %>/delete" class="inline-form" onsubmit="return confirmDelete('<%= employee.name %>');">
-                      <button type="submit" class="btn-action btn-delete" title="Delete Employee">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </form>
+                    <button type="button" class="delete-employee-btn inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition group hover:scale-105 hover:shadow-lg"
+                      title="Delete Employee"
+                      data-employee-id="<%= employee.id %>"
+                      data-employee-name="<%= employee.name %>"
+                      data-employee-cep="<%= employee.cep %>">
+                      <i class="fas fa-trash group-hover:scale-110 transition-transform duration-300"></i>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -234,425 +257,542 @@
         </table>
       </div>
 
-      <!-- Bulk Actions -->
-      <div class="bulk-actions" id="bulkActions" style="display: none;">
-        <div class="bulk-actions-content">
-          <span class="selection-count">0 employees selected</span>
-          <div class="bulk-buttons">
-            <button class="btn btn-info" id="bulkExport">
-              <i class="fas fa-download"></i> Export Selected
-            </button>
-            <button class="btn btn-warning" id="bulkTransfer">
-              <i class="fas fa-exchange-alt"></i> Bulk Transfer
-            </button>
-            <button class="btn btn-danger" id="bulkDelete">
-              <i class="fas fa-trash"></i> Delete Selected
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Results Summary Bottom with Pagination -->
-      <div class="results-summary-bottom">
-        <div class="results-stats">
-          <span class="results-count">
+      <!-- Results Summary & Pagination -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8">
+        <div class="flex flex-col gap-2">
+          <span class="text-sm text-gray-700 dark:text-gray-200">
             <i class="fas fa-users"></i>
-            Showing <strong id="employeeCount"><%= employees.length %></strong> of <%= typeof totalEmployees !== 'undefined' ? totalEmployees : employees.length %> employees
+            <%= t('showing') %> <strong id="employeeCount"><%= employees.length %></strong> <%= t('of') %> <%= typeof totalEmployees !== 'undefined' ? totalEmployees : employees.length %> <%= t('employees') %>
           </span>
-          <div class="stats-display">
-            <span class="stat-item">
-              <i class="fas fa-check-circle text-success"></i>
-              <%= employees.filter(emp => !emp.left_date).length %> Active
+          <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <span>
+              <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i>
+              <%= employees.filter(emp => !emp.left_date).length %> <%= t('active') %>
             </span>
             <% if (employees.filter(emp => emp.left_date).length > 0) { %>
-              <span class="stat-item">
-                <i class="fas fa-user-times text-muted"></i>
-                <%= employees.filter(emp => emp.left_date).length %> Former
+              <span>
+                <i class="fas fa-user-times text-gray-400 dark:text-gray-500"></i>
+                <%= employees.filter(emp => emp.left_date).length %> <%= t('former') %>
               </span>
             <% } %>
           </div>
-          <div class="pagination-controls">
-            <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
-              <div class="pagination">
-                <% if (currentPage > 1) { %>
-                  <a href="?page=<%= currentPage - 1 %><%
-                    const urlParams = new URLSearchParams(req.query);
-                    urlParams.delete('page');
-                    for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="btn btn-sm">&laquo; Previous</a>
-                <% } %>
-
-                <span class="page-info">Page <%= currentPage %> of <%= totalPages %></span>
-
-                <% if (currentPage < totalPages) { %>
-                  <a href="?page=<%= currentPage + 1 %><%
-                    const urlParams = new URLSearchParams(req.query);
-                    urlParams.delete('page');
-                    for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>" class="btn btn-sm">Next &raquo;</a>
-                <% } %>
-              </div>
-            <% } %>
-
-            <div class="items-per-page-compact">
-              <select id="employeesPerPage">
-                <option value="10" <%= typeof perPage !== 'undefined' && perPage == 10 ? 'selected' : '' %>>10</option>
-                <option value="25" <%= typeof perPage !== 'undefined' && perPage == 25 ? 'selected' : '' %>>25</option>
-                <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
-                <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
-              </select>
-              <span>per page</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
+            <div class="flex items-center gap-2">
+              <% if (currentPage > 1) { %>
+                <a href="?page=<%= currentPage - 1 %><%
+                  const urlParams = new URLSearchParams(req.query);
+                  urlParams.delete('page');
+                  for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>"
+                  class="pagination-link px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition flex items-center gap-1">
+                  <i class="fas fa-chevron-left"></i> <%= t('previous') %>
+                </a>
+              <% } %>
+              <span class="text-xs text-gray-500 dark:text-gray-400"><%= t('page') %> <%= currentPage %> <%= t('of') %> <%= totalPages %></span>
+              <% if (currentPage < totalPages) { %>
+                <a href="?page=<%= currentPage + 1 %><%
+                  const urlParams = new URLSearchParams(req.query);
+                  urlParams.delete('page');
+                  for (const [key, value] of urlParams) { %>&<%= key %>=<%= encodeURIComponent(value) %><% } %>"
+                  class="pagination-link px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded transition flex items-center gap-1">
+                  Next <i class="fas fa-chevron-right"></i>
+                </a>
+              <% } %>
             </div>
+          <% } %>
+          <div>
+            <select id="employeesPerPage" class="ml-2 px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-xs">
+              <option value="10" <%= typeof perPage !== 'undefined' && perPage == 10 ? 'selected' : '' %>>10</option>
+              <option value="25" <%= typeof perPage !== 'undefined' && perPage == 25 ? 'selected' : '' %>>25</option>
+              <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
+              <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
+            </select>
+            <span class="text-xs text-gray-500 dark:text-gray-400"><%= t('per_page') %></span>
           </div>
         </div>
       </div>
     </div>
   <% } else { %>
-    <div class="content-section">
-      <div class="empty-state">
-        <div class="empty-icon">
-          <i class="fas fa-users"></i>
-        </div>
-        <h3>No employees found</h3>
-        <p>No employees match your current search or filter criteria.</p>
-        <div class="empty-actions">
-          <button id="clearFiltersBtn" class="btn btn-secondary" style="display: none;">
-            <i class="fas fa-times"></i> Clear All Filters
-          </button>
-          <a href="/employees/new" class="btn btn-primary">
-            <i class="fas fa-user-plus"></i> Add First Employee
-          </a>
-        </div>
+    <div class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950 mt-8">
+      <div class="text-4xl text-blue-500 mb-2">
+        <i class="fas fa-users"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1"><%= t('no_employees_found') %></h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-4"><%= t('no_employees_match') %></p>
+      <div class="flex gap-2 justify-center">
+        <button id="clearFiltersBtn" class="group px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg" style="display: none;">
+          <i class="fas fa-times group-hover:-rotate-12 transition-transform duration-300"></i> <%= t('clear_all_filters') %>
+        </button>
+        <a href="/employees/new" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-user-plus mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('add_first_employee') %>
+        </a>
       </div>
     </div>
   <% } %>
 </div>
 
+<!-- Employee Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div id="modalContent" class="p-6">
+      <!-- Content will be populated by JavaScript -->
+    </div>
+  </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Get URL parameters to preserve filter values
-  const urlParams = new URLSearchParams(window.location.search);
-
-  // Initialize filters with URL parameter values
-  const statusFilter = document.getElementById('statusFilter');
-  const departmentFilter = document.getElementById('departmentFilter');
-  const locationFilter = document.getElementById('locationFilter');
-  const joinedDateFrom = document.getElementById('joinedDateFrom');
-  const joinedDateTo = document.getElementById('joinedDateTo');
+  // Simple search functionality
   const searchInput = document.getElementById('employeeSearch');
-
-  // Set filter values from URL parameters
-  if (statusFilter) {
-    statusFilter.value = urlParams.get('status') || urlParams.get('statusFilter') || 'active';
-  }
-
-  if (departmentFilter) {
-    departmentFilter.value = urlParams.get('department') || urlParams.get('departmentFilter') || '';
-  }
-
-  if (locationFilter) {
-    locationFilter.value = urlParams.get('location') || urlParams.get('locationFilter') || '';
-  }
-
-  if (joinedDateFrom) {
-    joinedDateFrom.value = urlParams.get('joinedDateFrom') || '';
-  }
-
-  if (joinedDateTo) {
-    joinedDateTo.value = urlParams.get('joinedDateTo') || '';
-  }
-
   if (searchInput) {
-    searchInput.value = urlParams.get('search') || '';
-  }
+    let searchTimeout;
 
-  // Search functionality
-  const searchResults = document.getElementById('searchResults');
+    searchInput.addEventListener('input', function(e) {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.trim().toLowerCase();
 
-  // Filters functionality
-  const filtersToggle = document.getElementById('filtersToggle');
-  const filtersPanel = document.querySelector('.filters-panel');
-  const filtersContent = document.getElementById('filtersContent');
-  const filterBadge = document.getElementById('filterBadge');
-  const appliedFiltersPreview = document.getElementById('appliedFiltersPreview');
+      searchTimeout = setTimeout(() => {
+        const tableBody = document.querySelector('#employeesTableBlock tbody');
+        if (tableBody) {
+          const rows = tableBody.querySelectorAll('tr');
 
-  // Initialize filters to collapsed state (expand if filters are applied)
-  const hasActiveFilters = urlParams.get('department') || urlParams.get('location') ||
-                          urlParams.get('joinedDateFrom') || urlParams.get('joinedDateTo') ||
-                          urlParams.get('search') ||
-                          (urlParams.get('status') && urlParams.get('status') !== 'active');
-
-  if (hasActiveFilters) {
-    filtersPanel.classList.add('expanded');
-    filtersContent.classList.add('expanded');
-  } else {
-    filtersContent.classList.remove('expanded');
-    filtersPanel.classList.remove('expanded');
-  }
-
-  // Filter toggle with proper animation
-  filtersToggle.addEventListener('click', () => {
-    const isExpanded = filtersPanel.classList.contains('expanded');
-
-    if (isExpanded) {
-      filtersPanel.classList.remove('expanded');
-      filtersContent.classList.remove('expanded');
-    } else {
-      filtersPanel.classList.add('expanded');
-      filtersContent.classList.add('expanded');
-    }
-  });
-
-  // Update filter count and display applied filters
-  function updateFilterCount() {
-    const filters = document.querySelectorAll('#filtersContent select, #filtersContent input[type="date"]');
-    let count = 0;
-    let appliedFilters = [];
-    let previewText = '';
-
-    filters.forEach(filter => {
-      if (filter.value && filter.value.trim() !== '') {
-        // Skip counting status filter if it's the default "active"
-        if (filter.id === 'statusFilter' && filter.value === 'active') {
-          return;
+          rows.forEach(row => {
+            if (query === '' || row.textContent.toLowerCase().includes(query)) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
         }
-
-        count++;
-        let filterLabel = filter.closest('.filter-group').querySelector('label').textContent;
-        let filterValue = filter.value;
-
-        if (filter.tagName === 'SELECT' && filter.selectedIndex > 0) {
-          filterValue = filter.options[filter.selectedIndex].textContent;
-        }
-
-        appliedFilters.push({
-          name: filterLabel,
-          value: filterValue,
-          element: filter
-        });
-      }
+      }, 300);
     });
-
-    // Include search term if present
-    if (searchInput && searchInput.value.trim()) {
-      count++;
-      appliedFilters.push({
-        name: 'Search',
-        value: searchInput.value.trim(),
-        element: searchInput
-      });
-    }
-
-    filterBadge.textContent = count;
-
-    // Update preview text
-    if (count > 0) {
-      if (count === 1) {
-        previewText = appliedFilters[0].name;
-      } else if (count === 2) {
-        previewText = `${appliedFilters[0].name} & ${appliedFilters[1].name}`;
-      } else {
-        previewText = `${count} filters active`;
-      }
-    } else {
-      previewText = 'No filters applied';
-    }
-    appliedFiltersPreview.textContent = previewText;
-
-    // Update applied filters display
-    const appliedFiltersElement = document.getElementById('appliedFilters');
-    if (appliedFiltersElement) {
-      appliedFiltersElement.innerHTML = appliedFilters.map((filter, index) =>
-        `<span class="filter-tag" data-filter-index="${index}">
-          ${filter.name}: ${filter.value}
-          <span class="remove" onclick="removeFilter(${index})" title="Remove filter">&times;</span>
-        </span>`
-      ).join('');
-    }
-
-    // Store current filters
-    window.currentFilters = appliedFilters;
   }
 
-  // Function to remove individual filters
-  window.removeFilter = function(index) {
-    const filter = window.currentFilters[index];
-    if (filter.element === searchInput) {
-      searchInput.value = '';
-      if (searchResults) {
-        searchResults.classList.remove('active');
-      }
-    } else {
-      filter.element.value = '';
-      // If removing status filter, set back to default 'active'
-      if (filter.element.id === 'statusFilter') {
-        filter.element.value = 'active';
-      }
-    }
-    updateFilterCount();
-  };
+  // Delete button functionality
+  document.querySelectorAll('.delete-employee-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const employeeId = this.dataset.employeeId;
+      const employeeName = this.dataset.employeeName;
+      const employeeCep = this.dataset.employeeCep;
 
-  // Add event listeners to all filter inputs
-  document.querySelectorAll('#filtersContent select, #filtersContent input').forEach(input => {
-    input.addEventListener('change', updateFilterCount);
-    input.addEventListener('input', updateFilterCount);
+      confirmEmployeeDelete(employeeId, employeeName, employeeCep);
+    });
   });
-
-  if (searchInput) {
-    searchInput.addEventListener('input', updateFilterCount);
-  }
-
-  // Initial filter count
-  updateFilterCount();
-
-  // Apply filters
-  const applyFiltersBtn = document.getElementById('applyFilters');
-  if (applyFiltersBtn) {
-    applyFiltersBtn.addEventListener('click', () => {
-      const params = new URLSearchParams();
-
-      // Add all filter values, using correct parameter names
-      if (departmentFilter && departmentFilter.value) {
-        params.append('department', departmentFilter.value);
-      }
-
-      if (locationFilter && locationFilter.value) {
-        params.append('location', locationFilter.value);
-      }
-
-      if (statusFilter && statusFilter.value) {
-        params.append('status', statusFilter.value);
-      }
-
-      if (joinedDateFrom && joinedDateFrom.value) {
-        params.append('joinedDateFrom', joinedDateFrom.value);
-      }
-
-      if (joinedDateTo && joinedDateTo.value) {
-        params.append('joinedDateTo', joinedDateTo.value);
-      }
-
-      if (searchInput && searchInput.value.trim()) {
-        params.append('search', searchInput.value.trim());
-      }
-
-      // Navigate to the filtered results
-      window.location.search = params.toString();
-    });
-  }
-
-  // Reset filters
-  const resetFiltersBtn = document.getElementById('resetFilters');
-  if (resetFiltersBtn) {
-    resetFiltersBtn.addEventListener('click', () => {
-      // Reset to default state (active employees only)
-      window.location.href = window.location.pathname + '?status=active';
-    });
-  }
-
-  // Auto-apply filters on Enter key in search
-  if (searchInput) {
-    searchInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        document.getElementById('applyFilters').click();
-      }
-    });
-  }
-
-  // Checkbox functionality for bulk actions
-  const selectAllCheckbox = document.getElementById('selectAll');
-  const employeeCheckboxes = document.querySelectorAll('.row-checkbox');
-  const bulkActions = document.getElementById('bulkActions');
-  const selectionCount = bulkActions?.querySelector('.selection-count');
-
-  if (selectAllCheckbox) {
-    selectAllCheckbox.addEventListener('change', function() {
-      employeeCheckboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
-      });
-      updateBulkActions();
-    });
-  }
-
-  employeeCheckboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', updateBulkActions);
-  });
-
-  function updateBulkActions() {
-    const selectedCount = document.querySelectorAll('.row-checkbox:checked').length;
-    if (selectedCount > 0 && bulkActions) {
-      bulkActions.style.display = 'block';
-      if (selectionCount) {
-        selectionCount.textContent = `${selectedCount} employee${selectedCount !== 1 ? 's' : ''} selected`;
-      }
-    } else if (bulkActions) {
-      bulkActions.style.display = 'none';
-    }
-
-    // Update select all checkbox state
-    if (selectAllCheckbox) {
-      selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < employeeCheckboxes.length;
-      selectAllCheckbox.checked = selectedCount === employeeCheckboxes.length && employeeCheckboxes.length > 0;
-    }
-  }
-
-  // Items per page change
-  const employeesPerPageSelect = document.getElementById('employeesPerPage');
-  if (employeesPerPageSelect) {
-    // Set current value from URL
-    const currentPerPage = urlParams.get('perPage');
-    if (currentPerPage) {
-      employeesPerPageSelect.value = currentPerPage;
-    }
-
-    employeesPerPageSelect.addEventListener('change', function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      urlParams.set('perPage', this.value);
-      urlParams.delete('page'); // Reset to first page
-      window.location.search = urlParams.toString();
-    });
-  }
-
-  // Export functionality
-  const exportBtn = document.getElementById('exportEmployeesBtn');
-  if (exportBtn) {
-    exportBtn.addEventListener('click', () => {
-      const exportParams = new URLSearchParams(window.location.search);
-      exportParams.append('export_type', 'current_view');
-      exportParams.append('export_timestamp', new Date().toISOString());
-
-      // Create export URL
-      const exportUrl = `/employees/export?${exportParams.toString()}`;
-
-      // Create hidden iframe for download
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = exportUrl;
-      document.body.appendChild(iframe);
-
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 2000);
-    });
-  }
-
-  // Close search results when clicking outside
-  document.addEventListener('click', (e) => {
-    if (searchInput && searchResults && !searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-      searchResults.classList.remove('active');
-    }
-  });
-
-  // Show clear filters button in empty state if filters are applied
-  const clearFiltersBtn = document.getElementById('clearFiltersBtn');
-  if (clearFiltersBtn && hasActiveFilters) {
-    clearFiltersBtn.style.display = 'inline-flex';
-    clearFiltersBtn.addEventListener('click', () => {
-      window.location.href = window.location.pathname + '?status=active';
-    });
-  }
 });
 
-// Confirmation for delete
-function confirmDelete(employeeName) {
-  return confirm(`Are you sure you want to delete ${employeeName}? This action cannot be undone and will unassign all their items.`);
+// CSRF Helper Function - Prevents token duplication
+function createCSRFHeaders(additionalHeaders = {}) {
+  const csrfToken = document.querySelector('meta[name="csrf-token"]');
+
+  // Start with clean headers object - avoid spreading existing headers that might contain duplicates
+  const headers = {};
+
+  // Add additional headers first (but not x-csrf-token)
+  Object.keys(additionalHeaders).forEach(key => {
+    if (key.toLowerCase() !== 'x-csrf-token') {
+      headers[key] = additionalHeaders[key];
+    }
+  });
+
+  // Ensure X-Requested-With is always present
+  if (!headers['X-Requested-With']) {
+    headers['X-Requested-With'] = 'XMLHttpRequest';
+  }
+
+  // Add CSRF token - force overwrite to absolutely prevent duplication
+  if (csrfToken && csrfToken.getAttribute('content')) {
+    const tokenValue = csrfToken.getAttribute('content').trim();
+    if (tokenValue && !tokenValue.includes(',')) {  // Extra safety check
+      headers['x-csrf-token'] = tokenValue;
+    }
+  }
+
+  return headers;
+}
+
+// Employee delete confirmation function (same as in employee show page)
+function confirmEmployeeDelete(employeeId, employeeName, employeeCep) {
+  // Show loading state
+  document.getElementById('deleteModal').style.display = 'flex';
+  document.getElementById('modalContent').innerHTML = `
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-blue-500 text-2xl mb-4"></i>
+      <p class="text-gray-600 dark:text-gray-300">Checking employee assignments...</p>
+    </div>
+  `;
+
+  // Create headers with CSRF token
+  const headers = createCSRFHeaders({
+    'Content-Type': 'application/json'
+  });
+
+  // Fetch employee deletion info
+  fetch(`/employees/${employeeId}/delete`, {
+    method: 'POST',
+    headers: headers
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    const modalContent = document.getElementById('modalContent');
+
+    // Store the employee CEP in the modal for later use
+    modalContent.setAttribute('data-employee-cep', employeeCep);
+
+    if (data.hasAssignedItems) {
+      // Employee has assigned items - show items and prevent deletion
+      modalContent.innerHTML = `
+        <div class="text-center mb-6">
+          <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Cannot Delete Employee</h3>
+          <p class="text-gray-600 dark:text-gray-300">
+            <strong>${employeeName}</strong> (ID: ${employeeCep}) has <strong>${data.itemCount}</strong> assigned item(s).
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <h4 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">Assigned Items:</h4>
+          <div class="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md">
+            ${data.items.map(item => `
+              <div class="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0" id="item-row-${item.id}">
+                <div class="flex-1">
+                  <div class="font-medium text-gray-800 dark:text-gray-100">${item.name}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">${item.cep_brc} • ${item.type_name || 'N/A'}</div>
+                </div>
+                <div class="ml-3">
+                  <button type="button"
+                    class="unassign-item-btn px-3 py-1 text-xs bg-yellow-100 dark:bg-yellow-900 hover:bg-yellow-200 dark:hover:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-md transition border border-yellow-300 dark:border-yellow-700"
+                    data-item-id="${item.id}"
+                    data-item-name="${item.name}"
+                    data-employee-id="${employeeId}"
+                    data-employee-name="${employeeName}">
+                    <i class="fas fa-unlink mr-1"></i> Unassign
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-4 mb-6">
+          <div class="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+            <i class="fas fa-info-circle"></i>
+            <span class="text-sm">You can unassign items individually using the buttons above, or go to the employee profile to manage all assignments.</span>
+          </div>
+        </div>
+
+        <div class="flex gap-3 justify-end">
+          <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+            Close
+          </button>
+        </div>
+      `;
+
+      // Add event handlers for unassign buttons
+      document.querySelectorAll('.unassign-item-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const itemId = this.dataset.itemId;
+          const itemName = this.dataset.itemName;
+          const employeeId = this.dataset.employeeId;
+          const employeeName = this.dataset.employeeName;
+
+          confirmUnassignItem(employeeId, itemId, itemName, employeeName);
+        });
+      });
+    } else {
+      // Employee has no assigned items - show CEP confirmation
+      modalContent.innerHTML = `
+        <div class="text-center mb-6">
+          <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Confirm Employee Deletion</h3>
+          <p class="text-gray-600 dark:text-gray-300">
+            You are about to permanently delete <strong>${employeeName}</strong>.
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md p-4 mb-4">
+            <div class="flex items-center gap-2 text-green-800 dark:text-green-200">
+              <i class="fas fa-check-circle"></i>
+              <span class="text-sm">This employee has <strong>0 assigned items</strong>.</span>
+            </div>
+          </div>
+
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-4 mb-4">
+            <div class="flex items-center gap-2 text-red-800 dark:text-red-200">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span class="text-sm">This action cannot be undone. All employee data will be permanently deleted.</span>
+            </div>
+          </div>
+
+          <form id="deleteEmployeeForm" method="POST" action="/employees/${employeeId}/delete">
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              To confirm deletion, enter the employee CEP ID: <strong>${employeeCep}</strong>
+            </label>
+            <input type="text" name="cepConfirmation" id="cepConfirmation"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Enter CEP ID to confirm" required>
+            <div id="cepValidation" class="text-xs mt-1"></div>
+          </form>
+        </div>
+
+        <div class="flex gap-3 justify-end">
+          <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+            Cancel
+          </button>
+          <button type="button" id="confirmDeleteBtn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition" disabled>
+            Delete Employee
+          </button>
+        </div>
+      `;
+
+      // Add CEP validation
+      const cepInput = document.getElementById('cepConfirmation');
+      const confirmBtn = document.getElementById('confirmDeleteBtn');
+      const validation = document.getElementById('cepValidation');
+
+      cepInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value === employeeCep) {
+          confirmBtn.disabled = false;
+          confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          validation.className = 'text-xs mt-1 text-green-600';
+          validation.innerHTML = '<i class="fas fa-check"></i> CEP ID confirmed';
+        } else if (value.length > 0) {
+          confirmBtn.disabled = true;
+          confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          validation.className = 'text-xs mt-1 text-red-600';
+          validation.innerHTML = '<i class="fas fa-times"></i> CEP ID does not match';
+        } else {
+          confirmBtn.disabled = true;
+          confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          validation.className = 'text-xs mt-1';
+          validation.innerHTML = '';
+        }
+      });
+
+      confirmBtn.addEventListener('click', function() {
+        if (cepInput.value.trim() === employeeCep) {
+          document.getElementById('deleteEmployeeForm').submit();
+        }
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error checking employee assignments:', error);
+
+    // Determine error message
+    let errorMessage = 'Unable to check employee assignments. Please try again.';
+    if (error.message.includes('403')) {
+      errorMessage = 'Permission denied. Please refresh the page and try again.';
+    } else if (error.message.includes('500')) {
+      errorMessage = 'Server error occurred. Please try again later.';
+    } else if (error.message.includes('CSRF')) {
+      errorMessage = 'Security token expired. Please refresh the page and try again.';
+    }
+
+    document.getElementById('modalContent').innerHTML = `
+      <div class="text-center">
+        <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-4"></i>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Error</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-2">${errorMessage}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Error details: ${error.message}</p>
+        <div class="flex gap-3 justify-end">
+          <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+            Close
+          </button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function confirmUnassignItem(employeeId, itemId, itemName, employeeName) {
+  if (confirm(`Are you sure you want to unassign "${itemName}" from ${employeeName}?\n\nThis action cannot be undone.`)) {
+    // Find the item row to show loading state
+    const itemRow = document.getElementById(`item-row-${itemId}`);
+    const unassignBtn = itemRow.querySelector('.unassign-item-btn');
+
+    // Show loading state
+    unassignBtn.disabled = true;
+    unassignBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Unassigning...';
+    unassignBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+    // Create headers with CSRF token
+    const headers = createCSRFHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    // Send unassign request
+    fetch(`/employees/${employeeId}/unassign-item/${itemId}`, {
+      method: 'POST',
+      headers: headers
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Remove the item row with animation
+        itemRow.style.transition = 'opacity 0.3s ease-out';
+        itemRow.style.opacity = '0';
+
+        setTimeout(() => {
+          itemRow.remove();
+
+          // Check if there are any items left
+          const remainingItems = document.querySelectorAll('[id^="item-row-"]');
+          if (remainingItems.length === 0) {
+            // No more items - show CEP confirmation form
+            const employeeCep = document.getElementById('modalContent').getAttribute('data-employee-cep');
+
+            document.getElementById('modalContent').innerHTML = `
+              <div class="text-center mb-6">
+                <i class="fas fa-check-circle text-green-500 text-3xl mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">All Items Unassigned!</h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                  All items have been successfully unassigned from <strong>${employeeName}</strong>.
+                  You can now proceed with deleting the employee.
+                </p>
+              </div>
+
+              <div class="mb-6">
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-4 mb-4">
+                  <div class="flex items-center gap-2 text-red-800 dark:text-red-200">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span class="text-sm">This action cannot be undone. All employee data will be permanently deleted.</span>
+                  </div>
+                </div>
+
+                <form id="deleteEmployeeFormFinal" method="POST" action="/employees/${employeeId}/delete">
+                  <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    To confirm deletion, enter the employee CEP ID: <strong>${employeeCep}</strong>
+                  </label>
+                  <input type="text" name="cepConfirmation" id="cepConfirmationFinal"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="Enter CEP ID to confirm" required>
+                  <div id="cepValidationFinal" class="text-xs mt-1"></div>
+                </form>
+              </div>
+
+              <div class="flex gap-3 justify-end">
+                <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+                  Cancel
+                </button>
+                <button type="button" id="confirmDeleteBtnFinal" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition" disabled>
+                  Delete Employee
+                </button>
+              </div>
+            `;
+
+            // Add CEP validation for the final confirmation
+            const cepInputFinal = document.getElementById('cepConfirmationFinal');
+            const confirmBtnFinal = document.getElementById('confirmDeleteBtnFinal');
+            const validationFinal = document.getElementById('cepValidationFinal');
+
+            cepInputFinal.addEventListener('input', function() {
+              const value = this.value.trim();
+              if (value === employeeCep) {
+                confirmBtnFinal.disabled = false;
+                confirmBtnFinal.classList.remove('opacity-50', 'cursor-not-allowed');
+                validationFinal.className = 'text-xs mt-1 text-green-600';
+                validationFinal.innerHTML = '<i class="fas fa-check"></i> CEP ID confirmed';
+              } else if (value.length > 0) {
+                confirmBtnFinal.disabled = true;
+                confirmBtnFinal.classList.add('opacity-50', 'cursor-not-allowed');
+                validationFinal.className = 'text-xs mt-1 text-red-600';
+                validationFinal.innerHTML = '<i class="fas fa-times"></i> CEP ID does not match';
+              } else {
+                confirmBtnFinal.disabled = true;
+                confirmBtnFinal.classList.add('opacity-50', 'cursor-not-allowed');
+                validationFinal.className = 'text-xs mt-1';
+                validationFinal.innerHTML = '';
+              }
+            });
+
+            confirmBtnFinal.addEventListener('click', function() {
+              if (cepInputFinal.value.trim() === employeeCep) {
+                document.getElementById('deleteEmployeeFormFinal').submit();
+              }
+            });
+          } else {
+            // Update the count in the modal header
+            const countElement = document.querySelector('.text-gray-600.dark\\:text-gray-300');
+            if (countElement) {
+              const newCount = remainingItems.length;
+              countElement.innerHTML = `<strong>${employeeName}</strong> (ID: ${document.getElementById('modalContent').getAttribute('data-employee-cep')}) has <strong>${newCount}</strong> assigned item(s).`;
+            }
+          }
+        }, 300);
+
+        // Show success notification
+        showNotification(data.message, 'success');
+
+        // Reload the page to refresh the assigned items list
+        setTimeout(() => {
+          location.reload();
+        }, 1500);
+      } else {
+        throw new Error(data.error || 'Failed to unassign item');
+      }
+    })
+    .catch(error => {
+      console.error('Error unassigning item:', error);
+
+      // Reset button state
+      unassignBtn.disabled = false;
+      unassignBtn.innerHTML = '<i class="fas fa-unlink mr-1"></i> Unassign';
+      unassignBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+      // Show error notification
+      showNotification('Failed to unassign item: ' + error.message, 'error');
+    });
+  }
+}
+
+function showNotification(message, type = 'info') {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
+
+  if (type === 'success') {
+    notification.classList.add('bg-green-500', 'text-white');
+    notification.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${message}`;
+  } else if (type === 'error') {
+    notification.classList.add('bg-red-500', 'text-white');
+    notification.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>${message}`;
+  } else {
+    notification.classList.add('bg-blue-500', 'text-white');
+    notification.innerHTML = `<i class="fas fa-info-circle mr-2"></i>${message}`;
+  }
+
+  document.body.appendChild(notification);
+
+  // Show notification
+  setTimeout(() => {
+    notification.classList.remove('translate-x-full');
+  }, 100);
+
+  // Hide notification after 4 seconds
+  setTimeout(() => {
+    notification.classList.add('translate-x-full');
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 4000);
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
 }
 </script>
+

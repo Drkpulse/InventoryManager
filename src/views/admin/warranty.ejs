@@ -1,0 +1,654 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="page-header-simple flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+        <i class="fas fa-shield-alt"></i> Warranty Management
+      </h1>
+      <p class="text-gray-600 dark:text-gray-300">Monitor and manage asset warranties</p>
+    </div>
+    <div class="flex flex-wrap gap-2 header-actions">
+      <button onclick="runWarrantyCheck()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-sync mr-2"></i> Check Warranties
+      </button>
+      <button onclick="exportWarranties()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-download mr-2"></i> Export
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Expired</p>
+          <p id="expiredCount" class="text-2xl font-bold text-red-600 dark:text-red-400">-</p>
+        </div>
+        <div class="bg-red-100 dark:bg-red-900 p-3 rounded-full">
+          <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Expiring Soon</p>
+          <p id="expiringSoonCount" class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">-</p>
+        </div>
+        <div class="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-full">
+          <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
+          <p id="activeCount" class="text-2xl font-bold text-green-600 dark:text-green-400">-</p>
+        </div>
+        <div class="bg-green-100 dark:bg-green-900 p-3 rounded-full">
+          <i class="fas fa-shield-alt text-green-600 dark:text-green-400"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">No Warranty</p>
+          <p id="noWarrantyCount" class="text-2xl font-bold text-gray-600 dark:text-gray-400">-</p>
+        </div>
+        <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-full">
+          <i class="fas fa-minus-circle text-gray-600 dark:text-gray-400"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+        <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+          <option value="all">All Statuses</option>
+          <option value="expired">Expired</option>
+          <option value="expiring_soon">Expiring Soon</option>
+          <option value="expiring_later">Expiring Later</option>
+          <option value="active">Active</option>
+          <option value="no_warranty">No Warranty</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="searchInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
+        <input type="text" id="searchInput" placeholder="Search assets..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+      </div>
+
+      <div>
+        <label for="limitSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Items per page</label>
+        <select id="limitSelect" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+          <option value="20">20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+
+      <div class="flex items-end">
+        <button onclick="loadWarrantyItems()" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition">
+          <i class="fas fa-search mr-2"></i> Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Warranty Items</h3>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Asset</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Assigned To</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Warranty End</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="warrantyTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tr>
+            <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+              <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+              <p>Loading warranty information...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div id="paginationContainer" class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+      <!-- Pagination will be inserted here -->
+    </div>
+  </div>
+</div>
+
+<!-- Edit Warranty Modal -->
+<div id="editWarrantyModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Edit Warranty</h4>
+      <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form id="editWarrantyForm" data-no-ajax="true">
+      <input type="hidden" id="editItemId">
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Asset</label>
+        <p id="editAssetInfo" class="text-gray-600 dark:text-gray-400"></p>
+      </div>
+
+      <div class="mb-4">
+        <label for="editWarrantyStart" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Warranty Start Date</label>
+        <input type="date" id="editWarrantyStart" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+      </div>
+
+      <div class="mb-4">
+        <label for="editWarrantyMonths" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Warranty Period (Months)</label>
+        <select id="editWarrantyMonths" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+          <option value="">No Warranty</option>
+          <option value="6">6 months</option>
+          <option value="12">12 months</option>
+          <option value="24">24 months</option>
+          <option value="36">36 months</option>
+          <option value="48">48 months</option>
+          <option value="60">60 months</option>
+        </select>
+      </div>
+
+      <div class="mb-6">
+        <label for="editWarrantyEnd" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Warranty End Date</label>
+        <input type="date" id="editWarrantyEnd" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300" readonly>
+      </div>
+
+      <div class="flex gap-2 justify-end">
+        <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 font-medium rounded-md transition">
+          Cancel
+        </button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition">
+          <i class="fas fa-save mr-2"></i> Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div id="statusModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <i id="statusIcon" class="text-2xl"></i>
+      <h4 id="statusTitle" class="text-lg font-bold text-gray-800 dark:text-gray-100"></h4>
+    </div>
+    <div id="statusMessage" class="mb-4 text-gray-600 dark:text-gray-300"></div>
+    <div class="flex justify-end">
+      <button onclick="closeStatusModal()" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 font-medium rounded-md transition">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+    let currentPage = 1;
+    let currentEditingItem = null;
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadWarrantySummary();
+        loadWarrantyItems();
+
+        // Set up event listeners
+        document.getElementById('editWarrantyStart').addEventListener('change', calculateWarrantyEndDate);
+        document.getElementById('editWarrantyMonths').addEventListener('change', calculateWarrantyEndDate);
+        document.getElementById('editWarrantyForm').addEventListener('submit', updateWarranty);
+    });
+
+    // Load warranty summary
+    async function loadWarrantySummary() {
+        try {
+            const response = await fetch('/api/warranties/summary');
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('expiredCount').textContent = data.expired || 0;
+                document.getElementById('expiringSoonCount').textContent = data.expiring || 0;
+                document.getElementById('activeCount').textContent = data.active || 0;
+                document.getElementById('noWarrantyCount').textContent = data.no_warranty || 0;
+            } else {
+                throw new Error('Failed to load warranty summary');
+            }
+        } catch (error) {
+            console.error('Error loading warranty summary:', error);
+            showStatusModal('error', 'Error', 'Failed to load warranty summary');
+        }
+    }
+
+    // Load warranty items
+    async function loadWarrantyItems(page = 1) {
+        try {
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchInput').value;
+            const limit = document.getElementById('limitSelect').value;
+
+            const params = new URLSearchParams({
+                page: page,
+                limit: limit
+            });
+
+            if (status && status !== 'all') params.append('status', status);
+            if (search.trim()) params.append('search', search.trim());
+
+            const response = await fetch(`/api/warranties/items?${params}`);
+            if (response.ok) {
+                const data = await response.json();
+                displayWarrantyItems(data.items);
+                displayPagination(data.pagination);
+                currentPage = page;
+            } else {
+                throw new Error('Failed to load warranty items');
+            }
+        } catch (error) {
+            console.error('Error loading warranty items:', error);
+            document.getElementById('warrantyTableBody').innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-red-500 dark:text-red-400">
+                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                        <p>Error loading warranty items</p>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // Display warranty items in table
+    function displayWarrantyItems(items) {
+        const tbody = document.getElementById('warrantyTableBody');
+
+        if (items.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-inbox text-2xl mb-2"></i>
+                        <p>No warranty items found</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = items.map(item => {
+            const statusInfo = getWarrantyStatusInfo(item.warranty_status, item.days_until_expiry);
+
+            return `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="px-6 py-4">
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-gray-100">
+                                <a href="/items/${item.id}/${item.cep_brc}" class="hover:underline">${item.name}</a>
+                            </div>
+                            <div class="text-sm font-mono text-gray-500 dark:text-gray-400">${item.cep_brc}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900 dark:text-gray-100">${item.type_name || 'N/A'}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">${item.brand_name || 'N/A'}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900 dark:text-gray-100">
+                            ${item.employee_name ? `<a href="/employees/${item.employee_id}" class="hover:underline">${item.employee_name}</a>` : 'Unassigned'}
+                        </div>
+                        ${item.department_name ? `<div class="text-sm text-gray-500 dark:text-gray-400">${item.department_name}</div>` : ''}
+                    </td>
+                    <td class="px-6 py-4">
+                        ${item.warranty_end_date ? `
+                            <div class="text-sm text-gray-900 dark:text-gray-100">
+                                ${new Date(item.warranty_end_date).toLocaleDateString()}
+                            </div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                ${item.warranty_months ? `${item.warranty_months} months` : ''}
+                            </div>
+                        ` : '<span class="text-gray-400">No warranty</span>'}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.class}">
+                            <i class="${statusInfo.icon} mr-1"></i>
+                            ${statusInfo.text}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex gap-2">
+                            <button onclick="editWarranty(${item.id}, '${item.cep_brc}', '${item.name}', '${item.warranty_start_date || ''}', ${item.warranty_months || 'null'}, '${item.warranty_end_date || ''}')"
+                                class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <a href="/items/${item.id}/${item.cep_brc}" class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // Get warranty status styling
+    function getWarrantyStatusInfo(status, daysUntilExpiry) {
+        switch (status) {
+            case 'expired':
+                return {
+                    class: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                    icon: 'fas fa-exclamation-circle',
+                    text: `Expired ${Math.abs(daysUntilExpiry)} days ago`
+                };
+            case 'expiring_soon':
+                return {
+                    class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                    icon: 'fas fa-exclamation-triangle',
+                    text: `Expires in ${daysUntilExpiry} days`
+                };
+            case 'expiring_later':
+                return {
+                    class: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+                    icon: 'fas fa-clock',
+                    text: `Expires in ${daysUntilExpiry} days`
+                };
+            case 'active':
+                return {
+                    class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                    icon: 'fas fa-shield-alt',
+                    text: `${daysUntilExpiry} days left`
+                };
+            case 'no_warranty':
+            default:
+                return {
+                    class: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+                    icon: 'fas fa-minus-circle',
+                    text: 'No warranty'
+                };
+        }
+    }
+
+    // Display pagination
+    function displayPagination(pagination) {
+        const container = document.getElementById('paginationContainer');
+
+        if (pagination.totalPages <= 1) {
+            container.innerHTML = `
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                    Showing ${pagination.total} items
+                </div>
+            `;
+            return;
+        }
+
+        let paginationHTML = `
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                    Showing page ${pagination.currentPage} of ${pagination.totalPages} (${pagination.total} total items)
+                </div>
+                <div class="flex gap-2">
+        `;
+
+        // Previous button
+        if (pagination.hasPrev) {
+            paginationHTML += `<button onclick="loadWarrantyItems(${pagination.currentPage - 1})" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition">Previous</button>`;
+        }
+
+        // Page numbers (show current page and 2 pages on each side)
+        const startPage = Math.max(1, pagination.currentPage - 2);
+        const endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+
+        for (let i = startPage; i <= endPage; i++) {
+            const isActive = i === pagination.currentPage;
+            paginationHTML += `
+                <button onclick="loadWarrantyItems(${i})" class="px-3 py-1 ${isActive ? 'bg-blue-600 text-white' : 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-500'} rounded-md transition">
+                    ${i}
+                </button>
+            `;
+        }
+
+        // Next button
+        if (pagination.hasNext) {
+            paginationHTML += `<button onclick="loadWarrantyItems(${pagination.currentPage + 1})" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition">Next</button>`;
+        }
+
+        paginationHTML += `
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = paginationHTML;
+    }
+
+    // Edit warranty
+    function editWarranty(id, cepBrc, name, warrantyStart, warrantyMonths, warrantyEnd) {
+        currentEditingItem = { id, cepBrc, name };
+
+        document.getElementById('editItemId').value = id;
+        document.getElementById('editAssetInfo').textContent = `${name} (${cepBrc})`;
+        document.getElementById('editWarrantyStart').value = warrantyStart || '';
+        document.getElementById('editWarrantyMonths').value = warrantyMonths || '';
+        document.getElementById('editWarrantyEnd').value = warrantyEnd || '';
+
+        document.getElementById('editWarrantyModal').classList.remove('hidden');
+    }
+
+    // Calculate warranty end date
+    function calculateWarrantyEndDate() {
+        const startDate = document.getElementById('editWarrantyStart').value;
+        const months = parseInt(document.getElementById('editWarrantyMonths').value);
+
+        if (startDate && months) {
+            const start = new Date(startDate);
+            const end = new Date(start);
+            end.setMonth(end.getMonth() + months);
+            document.getElementById('editWarrantyEnd').value = end.toISOString().split('T')[0];
+        } else {
+            document.getElementById('editWarrantyEnd').value = '';
+        }
+    }
+
+    // Update warranty
+    async function updateWarranty(event) {
+        event.preventDefault();
+
+        const itemId = document.getElementById('editItemId').value;
+        const warrantyStart = document.getElementById('editWarrantyStart').value || null;
+        const warrantyMonths = document.getElementById('editWarrantyMonths').value || null;
+        const warrantyEnd = document.getElementById('editWarrantyEnd').value || null;
+
+        try {
+            const response = await fetch(`/api/warranties/items/${itemId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    warranty_start_date: warrantyStart,
+                    warranty_months: warrantyMonths ? parseInt(warrantyMonths) : null,
+                    warranty_end_date: warrantyEnd
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showStatusModal('success', 'Success', 'Warranty information updated successfully');
+                closeEditModal();
+                loadWarrantySummary();
+                loadWarrantyItems(currentPage);
+            } else {
+                showStatusModal('error', 'Error', data.error || 'Failed to update warranty information');
+            }
+        } catch (error) {
+            console.error('Error updating warranty:', error);
+            showStatusModal('error', 'Error', 'Failed to communicate with server');
+        }
+    }
+
+    // Close edit modal
+    function closeEditModal() {
+        document.getElementById('editWarrantyModal').classList.add('hidden');
+        currentEditingItem = null;
+    }
+
+    // Run warranty check
+    async function runWarrantyCheck() {
+        const button = event.target;
+        const originalText = button.innerHTML;
+
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Checking...';
+
+        try {
+            const response = await fetch('/api/warranties/check', {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showStatusModal('success', 'Warranty Check Complete', data.message);
+                loadWarrantySummary();
+                loadWarrantyItems(currentPage);
+            } else {
+                showStatusModal('error', 'Warranty Check Failed', data.error || 'An error occurred during the warranty check');
+            }
+        } catch (error) {
+            console.error('Error running warranty check:', error);
+            showStatusModal('error', 'Warranty Check Failed', 'Failed to communicate with server');
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+
+    // Export warranties
+    async function exportWarranties() {
+        try {
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchInput').value;
+            const limit = document.getElementById('limitSelect').value;
+
+            const params = new URLSearchParams({
+                page: 1,
+                limit: 10000 // Large number to export all (adjust as needed)
+            });
+
+            if (status && status !== 'all') params.append('status', status);
+            if (search.trim()) params.append('search', search.trim());
+
+            const response = await fetch(`/api/warranties/items?${params}`);
+            if (!response.ok) throw new Error('Failed to fetch warranty items for export');
+            const data = await response.json();
+
+            if (!data.items || data.items.length === 0) {
+                showStatusModal('info', 'Export', 'No warranty items found to export.');
+                return;
+            }
+
+            // Prepare CSV
+            const headers = [
+                'Asset Name',
+                'Asset Code',
+                'Type',
+                'Brand',
+                'Assigned To',
+                'Department',
+                'Warranty Start',
+                'Warranty End',
+                'Warranty Months',
+                'Status'
+            ];
+            const rows = data.items.map(item => [
+                `"${item.name || ''}"`,
+                `"${item.cep_brc || ''}"`,
+                `"${item.type_name || ''}"`,
+                `"${item.brand_name || ''}"`,
+                `"${item.employee_name || ''}"`,
+                `"${item.department_name || ''}"`,
+                `"${item.warranty_start_date || ''}"`,
+                `"${item.warranty_end_date || ''}"`,
+                `"${item.warranty_months || ''}"`,
+                `"${item.warranty_status || ''}"`
+            ].join(','));
+
+            const csvContent = [headers.join(','), ...rows].join('\r\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+
+            // Download
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'warranties_export.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showStatusModal('success', 'Export', 'Warranty data exported as CSV.');
+        } catch (error) {
+            console.error('Export error:', error);
+            showStatusModal('error', 'Export Failed', 'Could not export warranty data.');
+        }
+    }
+
+    // Show status modal
+    function showStatusModal(type, title, message) {
+        const modal = document.getElementById('statusModal');
+        const icon = document.getElementById('statusIcon');
+        const titleElem = document.getElementById('statusTitle');
+        const messageElem = document.getElementById('statusMessage');
+
+        let iconClass = '';
+        let iconColor = '';
+
+        switch (type) {
+            case 'success':
+                iconClass = 'fas fa-check-circle';
+                iconColor = 'text-green-500';
+                break;
+            case 'error':
+                iconClass = 'fas fa-times-circle';
+                iconColor = 'text-red-500';
+                break;
+            case 'info':
+            default:
+                iconClass = 'fas fa-info-circle';
+                iconColor = 'text-blue-500';
+                break;
+        }
+
+        icon.className = `${iconClass} ${iconColor} text-2xl`;
+        titleElem.textContent = title;
+        messageElem.textContent = message;
+
+        modal.classList.remove('hidden');
+    }
+
+    // Close status modal
+    function closeStatusModal() {
+        document.getElementById('statusModal').classList.add('hidden');
+    }
+
+</script>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Debug | IT Asset Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .button { background: #007cba; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        .button:hover { background: #005c8a; }
+        .output { background: #f8f8f8; border: 1px solid #ddd; padding: 15px; margin: 15px 0; border-radius: 5px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍪 Cookie Popup Debug Tool</h1>
+
+        <div class="status info">
+            <strong>Instructions:</strong><br>
+            1. Open browser DevTools (F12)<br>
+            2. Click buttons below to test cookie functionality<br>
+            3. Watch console for detailed logs<br>
+            4. Check if popup appears/disappears correctly
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <h3>Test Controls</h3>
+        <button class="button" onclick="runDiagnostic()">🔍 Run Diagnostic</button>
+        <button class="button" onclick="showPopup()">👁️ Show Cookie Popup</button>
+        <button class="button" onclick="testAccept()">✅ Test Accept</button>
+        <button class="button" onclick="testReject()">❌ Test Reject</button>
+        <button class="button" onclick="testCustomize()">⚙️ Test Customize</button>
+        <button class="button" onclick="clearAndReset()">🧹 Clear & Reset</button>
+
+        <h3>Console Output</h3>
+        <div id="output" class="output">Waiting for tests...</div>
+    </div>
+
+    <!-- Load the main layout scripts -->
+    <script src="/js/event-handlers.js"></script>
+    <script>
+        let originalConsoleLog = console.log;
+        let originalConsoleError = console.error;
+        let originalConsoleWarn = console.warn;
+
+        // Capture console output
+        function captureConsole() {
+            const output = document.getElementById('output');
+
+            console.log = function(...args) {
+                originalConsoleLog.apply(console, args);
+                output.textContent += '[LOG] ' + args.join(' ') + '\n';
+                output.scrollTop = output.scrollHeight;
+            };
+
+            console.error = function(...args) {
+                originalConsoleError.apply(console, args);
+                output.textContent += '[ERROR] ' + args.join(' ') + '\n';
+                output.scrollTop = output.scrollHeight;
+            };
+
+            console.warn = function(...args) {
+                originalConsoleWarn.apply(console, args);
+                output.textContent += '[WARN] ' + args.join(' ') + '\n';
+                output.scrollTop = output.scrollHeight;
+            };
+        }
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = 'status ' + type;
+            status.innerHTML = message;
+        }
+
+        function runDiagnostic() {
+            console.log('=== Cookie Diagnostic Started ===');
+
+            // Check elements
+            const popup = document.getElementById('cookieConsentPopup');
+            const manager = document.getElementById('cookieManagerModal');
+            const acceptBtn = document.getElementById('acceptAllCookiesBtn');
+            const rejectBtn = document.getElementById('rejectCookiesBtn');
+            const managerBtn = document.getElementById('showCookieManagerBtn');
+
+            console.log('Popup element exists:', !!popup);
+            console.log('Manager element exists:', !!manager);
+            console.log('Accept button exists:', !!acceptBtn);
+            console.log('Reject button exists:', !!rejectBtn);
+            console.log('Manager button exists:', !!managerBtn);
+
+            // Check if buttons have event listeners
+            if (acceptBtn) {
+                console.log('Accept button onclick:', typeof acceptBtn.onclick);
+                console.log('Accept button has listeners:', acceptBtn.onclick !== null);
+            }
+
+            // Check functions
+            console.log('acceptAllCookies function:', typeof window.acceptAllCookies);
+            console.log('rejectCookies function:', typeof window.rejectCookies);
+            console.log('showCookieManager function:', typeof window.showCookieManager);
+            console.log('hideCookieManager function:', typeof window.hideCookieManager);
+
+            // Check current state
+            console.log('Current consent:', localStorage.getItem('cookieConsent'));
+
+            if (popup) {
+                console.log('Popup classes:', popup.className);
+                console.log('Popup style display:', popup.style.display);
+                console.log('Popup visible:', !popup.classList.contains('hidden') && popup.style.display !== 'none');
+            }
+
+            // Test function availability
+            if (typeof window.testCookieButtons === 'function') {
+                console.log('Running testCookieButtons...');
+                window.testCookieButtons();
+            }
+
+            console.log('=== Diagnostic Complete ===');
+
+            let issues = [];
+            if (!popup) issues.push('Popup element missing');
+            if (!acceptBtn) issues.push('Accept button missing');
+            if (typeof window.acceptAllCookies !== 'function') issues.push('acceptAllCookies function missing');
+
+            if (issues.length === 0) {
+                updateStatus('✅ All systems appear to be working!', 'success');
+            } else {
+                updateStatus('❌ Issues found: ' + issues.join(', '), 'error');
+            }
+        }
+
+        function showPopup() {
+            console.log('Showing popup manually...');
+            const popup = document.getElementById('cookieConsentPopup');
+            if (popup) {
+                popup.classList.remove('hidden');
+                popup.style.display = 'flex';
+                updateStatus('Popup should now be visible', 'info');
+            } else {
+                updateStatus('❌ Popup element not found', 'error');
+            }
+        }
+
+        function testAccept() {
+            console.log('Testing accept function...');
+            if (typeof window.acceptAllCookies === 'function') {
+                window.acceptAllCookies();
+                updateStatus('Accept function called - check if popup disappeared', 'success');
+            } else {
+                updateStatus('❌ Accept function not available', 'error');
+            }
+        }
+
+        function testReject() {
+            console.log('Testing reject function...');
+            if (typeof window.rejectCookies === 'function') {
+                window.rejectCookies();
+                updateStatus('Reject function called - check if popup disappeared', 'success');
+            } else {
+                updateStatus('❌ Reject function not available', 'error');
+            }
+        }
+
+        function testCustomize() {
+            console.log('Testing customize function...');
+            if (typeof window.showCookieManager === 'function') {
+                window.showCookieManager();
+                updateStatus('Customize function called - check if manager appeared', 'success');
+            } else {
+                updateStatus('❌ Customize function not available', 'error');
+            }
+        }
+
+        function clearAndReset() {
+            console.log('Clearing consent and resetting...');
+            localStorage.removeItem('cookieConsent');
+            showPopup();
+            updateStatus('Consent cleared and popup shown', 'info');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            captureConsole();
+            console.log('Cookie debug tool loaded');
+
+            // Wait a moment for scripts to load
+            setTimeout(() => {
+                runDiagnostic();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

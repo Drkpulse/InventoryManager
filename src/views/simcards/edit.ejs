@@ -1,158 +1,145 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <h1><i class="fas fa-edit"></i> Edit SIM Card: <%= simCard.sim_number %></h1>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/simcards/<%= simCard.id %>" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to SIM Card
-        </a>
-      </div>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+  <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+        <i class="fas fa-edit"></i> Edit SIM Card: <%= simCard.sim_number %>
+      </h1>
+      <a href="/simcards/<%= simCard.id %>" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md font-semibold transition">
+        <i class="fas fa-arrow-left mr-2"></i> Back to SIM Card
+      </a>
     </div>
-  </div>
 
-<% if (locals.errors && errors.length > 0) { %>
-  <div class="alert alert-danger">
-    <i class="fas fa-exclamation-triangle"></i>
-    <strong>Please fix the following errors:</strong>
-    <ul class="mb-0 mt-2">
-      <% errors.forEach(error => { %>
-        <li><%= error %></li>
-      <% }); %>
-    </ul>
-  </div>
-<% } %>
-
-<div class="form-container">
-  <form method="POST" action="/simcards/<%= simCard.id %>" class="needs-validation" novalidate>
-    <div class="form-section">
-      <h3><i class="fas fa-info-circle"></i> SIM Card Information</h3>
-      
-      <div class="form-row">
-        <div class="form-group col-md-6">
-          <label for="sim_number" class="required">SIM Number</label>
-          <input 
-            type="text" 
-            class="form-control" 
-            id="sim_number" 
-            name="sim_number" 
-            value="<%= simCard.sim_number %>"
-            placeholder="e.g., SIM001234567"
-            required
-          >
-          <div class="invalid-feedback">
-            Please provide a SIM number.
-          </div>
+    <% if (locals.errors && errors.length > 0) { %>
+      <div class="mb-6 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span class="font-semibold">Please fix the following errors:</span>
         </div>
-        
-        <div class="form-group col-md-6">
-          <label for="carrier" class="required">Carrier</label>
-          <input 
-            type="text" 
-            class="form-control" 
-            id="carrier" 
-            name="carrier" 
-            value="<%= simCard.carrier %>"
-            placeholder="e.g., Vodafone, MEO, NOS"
-            required
-          >
-          <div class="invalid-feedback">
-            Please provide a carrier name.
+        <ul class="list-disc pl-6 space-y-1">
+          <% errors.forEach(error => { %>
+            <li><%= error %></li>
+          <% }); %>
+        </ul>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/simcards/<%= simCard.id %>" class="space-y-8" novalidate>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+          <i class="fas fa-info-circle"></i> SIM Card Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="sim_number" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 required">SIM Number</label>
+            <input
+              type="text"
+              id="sim_number"
+              name="sim_number"
+              value="<%= simCard.sim_number %>"
+              placeholder="e.g., SIM001234567"
+              required
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            >
+            <div class="text-xs text-red-600 mt-1 hidden">Please provide a SIM number.</div>
+          </div>
+          <div>
+            <label for="carrier" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 required">Carrier</label>
+            <input
+              type="text"
+              id="carrier"
+              name="carrier"
+              value="<%= simCard.carrier %>"
+              placeholder="e.g., Vodafone, MEO, NOS"
+              required
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            >
+            <div class="text-xs text-red-600 mt-1 hidden">Please provide a carrier name.</div>
           </div>
         </div>
       </div>
-      
-      <div class="form-row">
-        <div class="form-group col-md-6">
-          <label for="client_id" class="required">Client</label>
-          <select 
-            class="form-control" 
-            id="client_id" 
-            name="client_id" 
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label for="client_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 required">Client</label>
+          <select
+            id="client_id"
+            name="client_id"
             required
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
             <option value="">Select a client...</option>
             <% clients.forEach(client => { %>
-              <option value="<%= client.id %>" 
+              <option value="<%= client.id %>"
                 <%= simCard.client_id == client.id ? 'selected' : '' %>>
                 <%= client.name %> (<%= client.client_id %>)
               </option>
             <% }); %>
           </select>
-          <div class="invalid-feedback">
-            Please select a client.
-          </div>
+          <div class="text-xs text-red-600 mt-1 hidden">Please select a client.</div>
         </div>
-        
-        <div class="form-group col-md-6">
-          <label for="status_id" class="required">Status</label>
-          <select 
-            class="form-control" 
-            id="status_id" 
-            name="status_id" 
+        <div>
+          <label for="status_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 required">Status</label>
+          <select
+            id="status_id"
+            name="status_id"
             required
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
             <option value="">Select a status...</option>
             <% statuses.forEach(status => { %>
-              <option value="<%= status.id %>" 
+              <option value="<%= status.id %>"
                 <%= simCard.status_id == status.id ? 'selected' : '' %>>
                 <%= status.name %>
               </option>
             <% }); %>
           </select>
-          <div class="invalid-feedback">
-            Please select a status.
-          </div>
+          <div class="text-xs text-red-600 mt-1 hidden">Please select a status.</div>
         </div>
       </div>
-      
-      <div class="form-row">
-        <div class="form-group col-md-6">
-          <label for="pda_id">Assigned PDA (Optional)</label>
-          <select 
-            class="form-control" 
-            id="pda_id" 
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label for="pda_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assigned PDA (Optional)</label>
+          <select
+            id="pda_id"
             name="pda_id"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
             <option value="">No PDA assigned</option>
             <% pdas.forEach(pda => { %>
-              <option value="<%= pda.id %>" 
+              <option value="<%= pda.id %>"
                 <%= simCard.pda_id == pda.id ? 'selected' : '' %>>
                 <%= pda.serial_number %> (<%= pda.client_name %>)
               </option>
             <% }); %>
           </select>
-          <small class="form-text text-muted">
-            Optional: Assign this SIM card to a specific PDA
-          </small>
+          <small class="text-gray-500 dark:text-gray-400">Optional: Assign this SIM card to a specific PDA</small>
         </div>
-        
-        <div class="form-group col-md-6">
-          <label for="monthly_cost">Monthly Cost (€)</label>
-          <input 
-            type="number" 
-            step="0.01" 
-            class="form-control" 
-            id="monthly_cost" 
-            name="monthly_cost" 
+        <div>
+          <label for="monthly_cost" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Monthly Cost (€)</label>
+          <input
+            type="number"
+            step="0.01"
+            id="monthly_cost"
+            name="monthly_cost"
             value="<%= simCard.monthly_cost || '' %>"
             placeholder="e.g., 25.00"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
-          <small class="form-text text-muted">
-            Monthly cost in euros (optional)
-          </small>
+          <small class="text-gray-500 dark:text-gray-400">Monthly cost in euros (optional)</small>
         </div>
       </div>
-    </div>
 
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary">
-        <i class="fas fa-save"></i> Update SIM Card
-      </button>
-      <a href="/simcards/<%= simCard.id %>" class="btn btn-secondary">
-        <i class="fas fa-times"></i> Cancel
-      </a>
-    </div>
-  </form>
+      <div class="flex items-center gap-4 mt-8">
+        <button type="submit" class="inline-flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+          <i class="fas fa-save mr-2"></i> Update SIM Card
+        </button>
+        <a href="/simcards/<%= simCard.id %>" class="inline-flex items-center px-6 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+          <i class="fas fa-times mr-2"></i> Cancel
+        </a>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>
@@ -173,5 +160,3 @@
   }, false);
 })();
 </script>
-
-</div> <!-- end page-container -->

@@ -1,63 +1,635 @@
-<h1>System Logs</h1>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+        <i class="fas fa-clipboard-list text-blue-600 dark:text-blue-400"></i>
+        System Logs
+      </h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-1">Monitor application activity and system events</p>
+    </div>
+    <div class="flex items-center gap-3 mt-4 lg:mt-0">
+      <button id="autoRefreshBtn" onclick="toggleAutoRefresh()"
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition flex items-center gap-2">
+        <i class="fas fa-play"></i> Auto-refresh (30s)
+      </button>
+      <button onclick="location.reload()"
+        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition flex items-center gap-2">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+    </div>
+  </div>
 
-<div class="logs-container">
-  <div class="log-filters">
-    <form class="filter-form">
-      <div class="filter-group">
-        <label for="logLevel">Log Level:</label>
-        <select id="logLevel" name="level">
-          <option value="">All Levels</option>
-          <option value="error">Error</option>
-          <option value="warn">Warning</option>
-          <option value="info">Info</option>
-          <option value="debug">Debug</option>
-        </select>
+  <!-- Statistics Dashboard -->
+  <% if (typeof stats !== 'undefined' && stats) { %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <!-- Total Logs -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Logs</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-gray-100"><%= stats.total.toLocaleString() %></p>
+          </div>
+          <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+            <i class="fas fa-file-alt text-blue-600 dark:text-blue-400 text-xl"></i>
+          </div>
+        </div>
       </div>
 
-      <div class="filter-group">
-        <label for="startDate">From:</label>
-        <input type="datetime-local" id="startDate" name="startDate">
+      <!-- Filtered Results -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">After Filters</p>
+            <p class="text-2xl font-bold text-green-600 dark:text-green-400"><%= stats.filtered.toLocaleString() %></p>
+          </div>
+          <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+            <i class="fas fa-filter text-green-600 dark:text-green-400 text-xl"></i>
+          </div>
+        </div>
       </div>
 
-      <div class="filter-group">
-        <label for="endDate">To:</label>
-        <input type="datetime-local" id="endDate" name="endDate">
+      <!-- Error Count -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Errors</p>
+            <p class="text-2xl font-bold text-red-600 dark:text-red-400"><%= stats.levels?.error || 0 %></p>
+          </div>
+          <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
+            <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 text-xl"></i>
+          </div>
+        </div>
       </div>
 
-      <button type="submit" class="btn">Filter</button>
+      <!-- Warning Count -->
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Warnings</p>
+            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400"><%= stats.levels?.warn || 0 %></p>
+          </div>
+          <div class="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl">
+            <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Statistics -->
+    <% if (stats.categories && Object.keys(stats.categories).length > 0) { %>
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-chart-pie text-purple-600 dark:text-purple-400"></i>
+          Log Categories
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <% Object.entries(stats.categories).forEach(([category, count]) => { %>
+            <% if (count > 0) { %>
+              <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="text-2xl font-bold text-gray-800 dark:text-gray-100"><%= count %></div>
+                <div class="text-sm text-gray-600 dark:text-gray-400 capitalize"><%= category.replace('_', ' ') %></div>
+              </div>
+            <% } %>
+          <% }) %>
+        </div>
+      </div>
+    <% } %>
+  <% } %>
+
+  <!-- Advanced Filter Panel -->
+  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+        <i class="fas fa-sliders-h text-blue-600 dark:text-blue-400"></i>
+        Log Filters
+      </h3>
+      <button type="button" onclick="toggleFilters()" class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+        <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
+        <span id="filterToggleText">Advanced</span>
+      </button>
+    </div>
+
+    <form method="GET" class="space-y-4">
+      <!-- Basic Filters (always visible) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label for="logLevel" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Log Level</label>
+          <select id="logLevel" name="level"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+            <option value="">All Levels</option>
+            <option value="error" <%= filters && filters.level === 'error' ? 'selected' : '' %>>🔴 Error</option>
+            <option value="warn" <%= filters && filters.level === 'warn' ? 'selected' : '' %>>🟡 Warning</option>
+            <option value="info" <%= filters && filters.level === 'info' ? 'selected' : '' %>>🔵 Info</option>
+            <option value="debug" <%= filters && filters.level === 'debug' ? 'selected' : '' %>>⚪ Debug</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+          <select id="category" name="category"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+            <option value="">All Categories</option>
+            <% if (typeof categories !== 'undefined' && categories) { %>
+              <% categories.forEach(cat => { %>
+                <option value="<%= cat %>" <%= filters && filters.category === cat ? 'selected' : '' %>>
+                  <%= cat === 'security' ? '🔒 Security' :
+                      cat === 'database' ? '💾 Database' :
+                      cat === 'user_activity' ? '👤 User Activity' :
+                      cat === 'system' ? '⚙️  System' :
+                      cat === 'application' ? '📱 Application' :
+                      cat === 'uncategorized' ? '📋 Other' :
+                      cat.charAt(0).toUpperCase() + cat.slice(1).replace('_', ' ') %>
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+
+        <div>
+          <label for="limit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Results Limit</label>
+          <select id="limit" name="limit"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+            <option value="25" <%= filters && filters.limit === '25' ? 'selected' : '' %>>25</option>
+            <option value="50" <%= filters && filters.limit === '50' ? 'selected' : '' %>>50</option>
+            <option value="100" <%= filters && filters.limit === '100' ? 'selected' : '' %>>100</option>
+            <option value="250" <%= filters && filters.limit === '250' ? 'selected' : '' %>>250</option>
+            <option value="500" <%= filters && filters.limit === '500' ? 'selected' : '' %>>500</option>
+          </select>
+        </div>
+
+        <div class="flex items-end">
+          <div class="flex items-center space-x-2 w-full">
+            <input type="checkbox" id="hideNoise" name="hideNoise" value="true"
+              <%= filters && filters.hideNoise === 'true' ? 'checked' : '' %>
+              class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
+            <label for="hideNoise" class="text-sm font-medium text-gray-700 dark:text-gray-300">Hide noise</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Filters (collapsible) -->
+      <div id="advancedFilters" class="hidden space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date & Time</label>
+            <input type="datetime-local" id="startDate" name="startDate" value="<%= filters && filters.startDate || '' %>"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+          </div>
+          <div>
+            <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Date & Time</label>
+            <input type="datetime-local" id="endDate" name="endDate" value="<%= filters && filters.endDate || '' %>"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex flex-wrap gap-3 pt-4">
+        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2">
+          <i class="fas fa-filter"></i> Apply Filters
+        </button>
+        <a href="/admin/logs" class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors flex items-center gap-2">
+          <i class="fas fa-times"></i> Clear All
+        </a>
+        <button type="button" onclick="setQuickFilter('error')" class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-200 text-sm rounded-lg transition-colors">
+          Errors Only
+        </button>
+        <button type="button" onclick="setQuickFilter('security')" class="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-800 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 dark:text-purple-200 text-sm rounded-lg transition-colors">
+          Security
+        </button>
+        <button type="button" onclick="setQuickFilter('today')" class="px-4 py-2 bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-200 text-sm rounded-lg transition-colors">
+          Today Only
+        </button>
+      </div>
     </form>
   </div>
 
-  <div class="logs-content">
+  <!-- Logs Table -->
+  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
     <% if (typeof logs !== 'undefined' && logs && logs.length > 0) { %>
-      <table class="logs-table">
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Level</th>
-            <th>Message</th>
-            <th>User</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% logs.forEach(log => { %>
-            <tr class="log-<%= log.level || 'info' %>">
-              <td><%= new Date(log.timestamp).toLocaleString() %></td>
-              <td>
-                <span class="log-level <%= log.level || 'info' %>">
-                  <%= (log.level || 'info').toUpperCase() %>
-                </span>
-              </td>
-              <td><%= log.message || 'No message' %></td>
-              <td><%= log.user_name || 'System' %></td>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900/50">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Level</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Message</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Context</th>
             </tr>
-          <% }) %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% logs.forEach((log, index) => { %>
+              <tr class="
+                <%= log.level === 'error' ? 'bg-red-50/50 dark:bg-red-900/10 hover:bg-red-50 dark:hover:bg-red-900/20' : '' %>
+                <%= log.level === 'warn' ? 'bg-yellow-50/50 dark:bg-yellow-900/10 hover:bg-yellow-50 dark:hover:bg-yellow-900/20' : '' %>
+                <%= log.level === 'info' ? 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10' : '' %>
+                <%= log.level === 'debug' ? 'hover:bg-gray-50 dark:hover:bg-gray-700/30' : '' %>
+                transition-colors cursor-pointer
+              " onclick="expandLogRow('<%= index %>')">
+
+                <!-- Timestamp -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900 dark:text-gray-100 font-medium">
+                    <%= new Date(log.timestamp).toLocaleTimeString() %>
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    <%= log.timeAgo || new Date(log.timestamp).toLocaleDateString() %>
+                  </div>
+                </td>
+
+                <!-- Level -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="
+                    inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                    <%= log.level === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200' : '' %>
+                    <%= log.level === 'warn' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200' : '' %>
+                    <%= log.level === 'info' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200' : '' %>
+                    <%= log.level === 'debug' ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200' : '' %>
+                  ">
+                    <% if (log.level === 'error') { %>
+                      🔴
+                    <% } else if (log.level === 'warn') { %>
+                      🟡
+                    <% } else if (log.level === 'info') { %>
+                      🔵
+                    <% } else if (log.level === 'debug') { %>
+                      ⚪
+                    <% } %>
+                    <%= (log.level || 'info').toUpperCase() %>
+                  </span>
+                </td>
+
+                <!-- Category -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="
+                    inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                    <%= log.category === 'security' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200' : '' %>
+                    <%= log.category === 'database' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : '' %>
+                    <%= log.category === 'user_activity' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-200' : '' %>
+                    <%= log.category === 'system' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200' : '' %>
+                    <%= log.category === 'application' ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200' : '' %>
+                    <%= log.category === 'uncategorized' ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200' : '' %>
+                  ">
+                    <% if (log.category === 'security') { %>
+                      🔒
+                    <% } else if (log.category === 'database') { %>
+                      💾
+                    <% } else if (log.category === 'user_activity') { %>
+                      👤
+                    <% } else if (log.category === 'system') { %>
+                      ⚙️
+                    <% } else if (log.category === 'application') { %>
+                      📱
+                    <% } else { %>
+                      📋
+                    <% } %>
+                    <%= log.category ? log.category.replace('_', ' ') : 'other' %>
+                  </span>
+                </td>
+
+                <!-- Message -->
+                <td class="px-6 py-4">
+                  <div class="max-w-md">
+                    <div class="text-sm text-gray-900 dark:text-gray-100 line-clamp-2">
+                      <%= log.message || 'No message' %>
+                    </div>
+                    <% if (log.url || log.method || log.ip) { %>
+                      <div class="mt-1 flex flex-wrap gap-2 text-xs">
+                        <% if (log.method && log.url) { %>
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded">
+                            <i class="fas fa-globe"></i>
+                            <%= log.method %> <%= log.url %>
+                          </span>
+                        <% } %>
+                        <% if (log.ip) { %>
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <%= log.ip %>
+                          </span>
+                        <% } %>
+                      </div>
+                    <% } %>
+                  </div>
+                </td>
+
+                <!-- Context -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-1">
+                      <i class="fas fa-file text-xs"></i>
+                      <span><%= log.source ? log.source.replace('.log', '') : 'system' %></span>
+                    </div>
+                    <% if (log.user) { %>
+                      <div class="flex items-center gap-1 text-xs">
+                        <i class="fas fa-user"></i>
+                        <span>User <%= log.user %></span>
+                      </div>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Expandable row for additional details -->
+              <tr id="expandedRow_<%= index %>" class="hidden">
+                <td colspan="5" class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50">
+                  <div class="space-y-3">
+                    <% if (log.stack) { %>
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                          <i class="fas fa-code text-red-500"></i>
+                          Stack Trace
+                        </h4>
+                        <pre class="text-xs bg-gray-900 dark:bg-gray-800 text-green-400 p-3 rounded-lg overflow-x-auto font-mono"><%= log.stack %></pre>
+                      </div>
+                    <% } %>
+
+                    <!-- Full log details in JSON format -->
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        Full Log Details
+                      </h4>
+                      <div class="bg-gray-900 dark:bg-gray-800 text-gray-100 p-3 rounded-lg text-xs font-mono overflow-x-auto">
+                        <pre><%= JSON.stringify(log, null, 2) %></pre>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
     <% } else { %>
-      <p class="no-logs">No logs found for the selected criteria.</p>
+      <div class="flex flex-col items-center justify-center py-20 text-center">
+        <div class="w-24 h-24 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-4">
+          <i class="fas fa-clipboard-list text-3xl text-blue-600 dark:text-blue-400"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          <% if (typeof error !== 'undefined' && error) { %>
+            Error Loading Logs
+          <% } else { %>
+            No Logs Found
+          <% } %>
+        </h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
+          <% if (typeof error !== 'undefined' && error) { %>
+            <%= error %>
+          <% } else { %>
+            No logs match your current filter criteria. Try adjusting your filters or clearing them to see more results.
+          <% } %>
+        </p>
+        <div class="flex gap-3">
+          <% if (typeof error === 'undefined' || !error) { %>
+            <button onclick="location.reload()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          <% } %>
+          <a href="/admin/logs" class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors flex items-center gap-2">
+            <i class="fas fa-times"></i> Clear Filters
+          </a>
+        </div>
+      </div>
     <% } %>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="mt-8 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
+    <div class="flex items-center gap-4">
+      <div class="text-sm text-gray-600 dark:text-gray-400">
+        <i class="fas fa-clock mr-1"></i>
+        Last updated: <span class="font-medium"><%= new Date().toLocaleString() %></span>
+      </div>
+      <% if (typeof stats !== 'undefined' && stats && stats.displayed > 0) { %>
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+          Showing <span class="font-medium"><%= stats.displayed %></span> of <span class="font-medium"><%= stats.filtered %></span> logs
+        </div>
+      <% } %>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <% if (typeof user !== 'undefined' && user && user.permissions && user.permissions.includes('admin.settings')) { %>
+        <a href="/admin/backups" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm">
+          <i class="fas fa-database"></i> Backups
+        </a>
+      <% } %>
+
+      <button onclick="exportLogs()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm">
+        <i class="fas fa-download"></i> Export
+      </button>
+    </div>
   </div>
 </div>
 
-<link rel="stylesheet" href="/css/styles.css">
+<!-- Enhanced JavaScript -->
+<script>
+// Auto-refresh functionality
+let autoRefresh = false;
+let refreshInterval;
+let refreshCountdown = 30;
+let countdownInterval;
+
+function toggleAutoRefresh() {
+  autoRefresh = !autoRefresh;
+  const button = document.getElementById('autoRefreshBtn');
+
+  if (autoRefresh) {
+    button.innerHTML = '<i class="fas fa-pause"></i> Stop Auto-refresh';
+    button.className = 'px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition flex items-center gap-2';
+
+    // Start countdown
+    refreshCountdown = 30;
+    refreshInterval = setInterval(() => {
+      location.reload();
+    }, 30000);
+
+    countdownInterval = setInterval(() => {
+      refreshCountdown--;
+      if (refreshCountdown > 0) {
+        button.innerHTML = `<i class="fas fa-pause"></i> Auto-refresh (${refreshCountdown}s)`;
+      }
+    }, 1000);
+  } else {
+    button.innerHTML = '<i class="fas fa-play"></i> Auto-refresh (30s)';
+    button.className = 'px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition flex items-center gap-2';
+
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+    }
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+    }
+  }
+}
+
+// Filter panel toggle
+function toggleFilters() {
+  const advancedFilters = document.getElementById('advancedFilters');
+  const toggleIcon = document.getElementById('filterToggleIcon');
+  const toggleText = document.getElementById('filterToggleText');
+
+  if (advancedFilters.classList.contains('hidden')) {
+    advancedFilters.classList.remove('hidden');
+    toggleIcon.className = 'fas fa-chevron-up';
+    toggleText.textContent = 'Simple';
+  } else {
+    advancedFilters.classList.add('hidden');
+    toggleIcon.className = 'fas fa-chevron-down';
+    toggleText.textContent = 'Advanced';
+  }
+}
+
+// Quick filter functions
+function setQuickFilter(type) {
+  const form = document.querySelector('form');
+  const levelSelect = document.getElementById('logLevel');
+  const categorySelect = document.getElementById('category');
+  const startDateInput = document.getElementById('startDate');
+
+  // Clear existing filters
+  levelSelect.value = '';
+  categorySelect.value = '';
+  startDateInput.value = '';
+
+  switch(type) {
+    case 'error':
+      levelSelect.value = 'error';
+      break;
+    case 'security':
+      categorySelect.value = 'security';
+      break;
+    case 'today':
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      startDateInput.value = today.toISOString().slice(0, -8); // Remove seconds and timezone
+      break;
+  }
+
+  form.submit();
+}
+
+// Expand log row functionality
+function expandLogRow(index) {
+  const expandedRow = document.getElementById(`expandedRow_${index}`);
+
+  if (expandedRow.classList.contains('hidden')) {
+    // Hide all other expanded rows first
+    document.querySelectorAll('[id^="expandedRow_"]').forEach(row => {
+      row.classList.add('hidden');
+    });
+
+    // Show this row
+    expandedRow.classList.remove('hidden');
+  } else {
+    expandedRow.classList.add('hidden');
+  }
+}
+
+// Export logs functionality
+function exportLogs() {
+  const currentUrl = new URL(window.location);
+  const exportUrl = new URL('/admin/logs/export', window.location.origin);
+
+  // Copy current filters to export URL
+  for (const [key, value] of currentUrl.searchParams) {
+    exportUrl.searchParams.set(key, value);
+  }
+
+  // Create temporary link and click it
+  const link = document.createElement('a');
+  link.href = exportUrl.toString();
+  link.download = `logs_${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey || e.metaKey) {
+    switch(e.key) {
+      case 'r':
+        e.preventDefault();
+        location.reload();
+        break;
+      case 'f':
+        e.preventDefault();
+        document.getElementById('logLevel').focus();
+        break;
+      case 'e':
+        e.preventDefault();
+        exportLogs();
+        break;
+    }
+  }
+});
+
+// Add tooltips for keyboard shortcuts
+document.addEventListener('DOMContentLoaded', function() {
+  // Add keyboard shortcut hints to buttons
+  const refreshBtn = document.querySelector('button[onclick="location.reload()"]');
+  if (refreshBtn) {
+    refreshBtn.title = 'Refresh (Ctrl+R)';
+  }
+
+  const exportBtn = document.querySelector('button[onclick="exportLogs()"]');
+  if (exportBtn) {
+    exportBtn.title = 'Export Logs (Ctrl+E)';
+  }
+
+  const levelSelect = document.getElementById('logLevel');
+  if (levelSelect) {
+    levelSelect.title = 'Focus filters (Ctrl+F)';
+  }
+});
+
+// Auto-scroll to top when filters change
+document.querySelector('form').addEventListener('submit', function() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// Add smooth transitions for expandable rows
+document.addEventListener('DOMContentLoaded', function() {
+  const style = document.createElement('style');
+  style.textContent = `
+    .line-clamp-2 {
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    tr[onclick]:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .transition-all {
+      transition: all 0.2s ease-in-out;
+    }
+  `;
+  document.head.appendChild(style);
+});
+</script>
+
+<style>
+  /* Custom scrollbar for code blocks */
+  pre::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  pre::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+  }
+
+  pre::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+  }
+
+  pre::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+</style>

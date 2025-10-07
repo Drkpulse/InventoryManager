@@ -1,131 +1,196 @@
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="app-logo">
+<aside class="w-72 min-h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-200">
+  <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+    <div class="flex items-center gap-3 text-indigo-900 dark:text-indigo-300 text-xl font-bold">
       <i class="fas fa-laptop-code"></i>
       <span>IT Asset Manager</span>
     </div>
-    <button id="sidebarToggle" class="sidebar-toggle">
-      <i class="fas fa-chevron-left"></i>
-    </button>
   </div>
 
-  <nav class="sidebar-nav">
-    <div class="nav-header">Main Menu</div>
-    <a href="/" class="nav-link">
+  <nav class="flex-1 overflow-y-auto px-2 py-4">
+    <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2">Main Menu</div>
+    <a href="/" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-tachometer-alt"></i>
-      <span>Dashboard</span>
+      <span><%= t('dashboard') %></span>
     </a>
-    <a href="/items" class="nav-link">
+
+    <% if (can('items.view')) { %>
+    <a href="/items" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
       <i class="fas fa-laptop"></i>
-      <span>Assets</span>
-    </a>
-    <a href="/employees" class="nav-link">
-      <i class="fas fa-users"></i>
-      <span>Employees</span>
-    </a>
-    <a href="/software" class="nav-link">
-      <i class="fas fa-laptop-code"></i>
-      <span>Software</span>
-    </a>
-    <a href="/clients" class="nav-link">
-      <i class="fas fa-building"></i>
-      <span>Clients</span>
-    </a>
-    <a href="/printers" class="nav-link">
-      <i class="fas fa-print"></i>
-      <span>Printers</span>
-    </a>
-    <div class="nav-item has-dropdown">
-      <a href="#" class="nav-link dropdown-trigger">
-        <i class="fas fa-mobile-alt"></i>
-        <span>Mobile Devices</span>
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-      </a>
-      <div class="nav-dropdown">
-        <a href="/pdas" class="nav-link">
-          <i class="fas fa-mobile-alt"></i>
-          <span>PDAs</span>
-        </a>
-        <a href="/simcards" class="nav-link">
-          <i class="fas fa-sim-card"></i>
-          <span>SIM Cards</span>
-        </a>
-      </div>
-    </div>
-
-    <div class="nav-header">Reports</div>
-    <a href="/reports/assets" class="nav-link">
-      <i class="fas fa-chart-bar"></i>
-      <span>Asset Reports</span>
-    </a>
-    <a href="/reports/purchase-history" class="nav-link">
-      <i class="fas fa-receipt"></i>
-      <span>Purchase History</span>
-    </a>
-    <a href="/reports/assets-by-employee" class="nav-link">
-      <i class="fas fa-user-tag"></i>
-      <span>Assets by Employee</span>
-    </a>
-
-    <% if (user && user.role === 'admin') { %>
-    <div class="nav-header">Administration</div>
-    <a href="/admin/users" class="nav-link">
-      <i class="fas fa-user-shield"></i>
-      <span>User Management</span>
-    </a>
-    <a href="/admin/settings" class="nav-link">
-      <i class="fas fa-cogs"></i>
-      <span>System Settings</span>
-    </a>
-    <a href="/admin/logs" class="nav-link">
-      <i class="fas fa-list-alt"></i>
-      <span>Activity Logs</span>
-    </a>
-    <a href="/notifications/broadcast" class="nav-link">
-      <i class="fas fa-bullhorn"></i>
-      <span>Send Notification</span>
+      <span><%= t('Assets') %></span>
     </a>
     <% } %>
 
-    <!-- Reference Data Section -->
-    <div class="nav-section">
-      <div class="nav-header">Reference Data</div>
-      <ul class="nav-list">
-        <li class="nav-item">
-          <a href="/references/asset-types" class="nav-link">
-            <i class="fas fa-tags"></i>
-            Asset Types
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="/references/brands" class="nav-link">
-            <i class="fas fa-trademark"></i>
-            Brands
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="/references/statuses" class="nav-link">
-            <i class="fas fa-flag"></i>
-            Statuses
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="/references/locations" class="nav-link">
-            <i class="fas fa-map-marker-alt"></i>
-            Locations
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="/departments" class="nav-link">
-            <i class="fas fa-building"></i>
-            Departments
-          </a>
-        </li>
-      </ul>
+    <% if (can('employees.view')) { %>
+    <a href="/employees" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-users"></i>
+      <span><%= t('employees') %></span>
+    </a>
+    <% } %>
+
+    <% if (can('software.view')) { %>
+    <a href="/software" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-laptop-code"></i>
+      <span><%= t('software') %></span>
+    </a>
+    <% } %>
+
+    <% if (can('clients.view')) { %>
+    <a href="/clients" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-building"></i>
+      <span><%= t('clients') %></span>
+    </a>
+    <% } %>
+
+    <% if (can('printers.view')) { %>
+    <a href="/printers" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-print"></i>
+      <span><%= t('printers') %></span>
+    </a>
+    <% } %>
+
+    <% if (can('pdas.view')) { %>
+      <a href="/pdas" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-mobile-alt"></i>
+      <span><%= t('pdas') %></span>
+      </a>
+    <% } %>
+
+     <% if (can('sim_cards.view')) { %>
+      <a href="/simcards" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-sim-card"></i>
+      <span><%= t('sim_cards') %></span>
+      </a>
+    <% } %>
+
+    <% if (can('admin.settings')) { %>
+    <a href="/admin/warranty" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-shield-alt"></i>
+      <span><%= t('warranties') %></span>
+    </a>
+    <% } %>
+
+    <!-- Reports Section -->
+    <% if (can('reports.view')) { %>
+    <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2 mt-4">Reports</div>
+    <a href="/reports/assets" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-chart-bar"></i>
+      <span><%= t('reports.assets') %></span>
+    </a>
+    <a href="/reports/purchase-history" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-receipt"></i>
+      <span><%= t('reports.purchase_history') %></span>
+    </a>
+    <a href="/reports/assets-by-employee" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-user-tag"></i>
+      <span><%= t('reports.assets_by_employee') %></span>
+    </a>
+    <% } %>
+
+    <!-- Developer Section -->
+        <% if (hasRole('developer')) { %>
+    <div class="text-xs font-semibold text-purple-400 dark:text-purple-300 uppercase px-2 mb-2 mt-4 flex items-center gap-2">
+      <i class="fas fa-code text-purple-400 ml-1"></i> Developer Menu
     </div>
+    <a href="/admin/security" class="flex items-center gap-3 px-4 py-2 rounded-lg text-purple-900 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-shield-alt text-purple-500"></i>
+      <span>Security Center</span>
+      <span class="text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-0.5 rounded ml-auto">New</span>
+    </a>
+    <a href="/admin/logs" class="flex items-center gap-3 px-4 py-2 rounded-lg text-purple-900 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-file-alt"></i>
+      <span>System Logs</span>
+    </a>
+    <a href="/admin/permissions" class="flex items-center gap-3 px-4 py-2 rounded-lg text-purple-900 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-key"></i>
+      <span><%= t('admin.permissions') %></span>
+      <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded ml-auto">View</span>
+    </a>
+
+    <a href="/admin/database" class="flex items-center gap-3 px-4 py-2 rounded-lg text-purple-900 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-database"></i>
+      <span>Database Tools</span>
+    </a>
+    <a href="/admin/migrations" class="flex items-center gap-3 px-4 py-2 rounded-lg text-purple-900 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-exchange-alt"></i>
+      <span>Run Migrations</span>
+    </a>
+    <a href="/admin/performance" class="flex items-center gap-3 px-4 py-2 rounded-lg text-purple-900 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-tachometer-alt"></i>
+      <span>Performance</span>
+    </a>
+    <% } %>
+
+    <!-- Administration Section -->
+    <% if (can('admin.settings')) { %>
+    <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2 mt-4">
+      <%= t('administration') %>
+    </div>
+
+    <% if (can('users.view')) { %>
+    <a href="/admin/users" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-users-cog"></i>
+      <span><%= t('admin.users') %></span>
+      <% if (can('users.create')) { %>
+        <i class="fas fa-plus text-green-400 text-xs ml-auto" title="Can create users"></i>
+      <% } %>
+    </a>
+    <% } %>
+
+    <% if (can('roles.view')) { %>
+    <a href="/admin/roles" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-user-shield"></i>
+      <span><%= t('admin.roles') %></span>
+      <% if (can('roles.create')) { %>
+        <i class="fas fa-plus text-green-400 text-xs ml-auto" title="Can create roles"></i>
+      <% } %>
+    </a>
+    <% } %>
+
+    <% if (can('admin.settings')) { %>
+    <a href="/admin/settings" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-cogs"></i>
+      <span><%= t('admin.settings') %></span>
+    </a>
+    <% } %>
+
+
+
+
+    <% if (can('admin.settings')) { %>
+    <a href="/admin/license" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-scroll"></i>
+      <span><%= t('admin.license') %></span>
+    </a>
+    <% } %>
+    <% } %>
+
+    <% if (can('references.view')) { %>
+    <!-- Reference Data Section -->
+    <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase px-2 mb-2 mt-4">Reference Data</div>
+    <a href="/references/asset-types" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-tags"></i>
+      <span><%= t('references.asset_types') %></span>
+    </a>
+    <a href="/references/brands" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-trademark"></i>
+      <span><%= t('references.brands') %></span>
+    </a>
+    <a href="/references/status" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-flag"></i>
+      <span><%= t('references.status') %></span>
+    </a>
+    <a href="/references/locations" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-map-marker-alt"></i>
+      <span><%= t('references.locations') %></span>
+    </a>
+    <a href="/references/departments" class="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-indigo-50 dark:hover:bg-gray-800 transition font-medium">
+      <i class="fas fa-building"></i>
+      <span><%= t('references.departments') %></span>
+    </a>
+    <% } %>
   </nav>
 
-  <div class="sidebar-footer">
-    <small>v1.0.0</small>
+  <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500 text-center">
+    ALPHA-1.0.0
   </div>
 </aside>

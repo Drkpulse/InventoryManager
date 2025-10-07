@@ -1,165 +1,198 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <h1><i class="fas fa-sim-card"></i> SIM Card Management</h1>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/simcards/new" class="btn btn-primary">
-          <i class="fas fa-plus"></i> Add New SIM Card
-        </a>
-      </div>
+<section class="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 text-gray-900 dark:text-white animate-fadeIn">
+  <!-- Header Section -->
+  <div class="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
+    <div>
+      <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-900 to-blue-700 bg-clip-text text-transparent flex items-center gap-3">
+        <i class="fas fa-sim-card"></i> SIM Card Management
+      </h1>
+      <p class="text-gray-500 dark:text-gray-300 mt-2 text-lg">Manage mobile SIM cards and data plans</p>
+    </div>
+    <div class="flex gap-4 items-center">
+      <a href="/simcards/new" class="bg-gradient-to-r from-indigo-900 to-blue-700 text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
+        <i class="fas fa-plus"></i> Add New SIM Card
+      </a>
     </div>
   </div>
 
-<% if (locals.messages && messages.success) { %>
-  <div class="alert alert-success">
-    <i class="fas fa-check-circle"></i>
-    <%= messages.success %>
-  </div>
-<% } %>
+  <% if (locals.messages && messages.success) { %>
+    <div class="bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 p-4 rounded-xl mb-6 flex items-center gap-3">
+      <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i> <%= messages.success %>
+    </div>
+  <% } %>
 
-<div class="table-controls">
-  <div class="table-info">
-    <span>Showing <%= simCards.length %> of <%= totalSIMCards %> SIM cards</span>
-  </div>
-  <div class="table-filters">
-    <select class="form-control" onchange="filterSIMCards('client', this.value)">
-      <option value="">All Clients</option>
-      <% clients.forEach(client => { %>
-        <option value="<%= client.id %>" <%= filters.client == client.id ? 'selected' : '' %>>
-          <%= client.name %>
-        </option>
-      <% }); %>
-    </select>
-    <select class="form-control" onchange="filterSIMCards('status', this.value)">
-      <option value="">All Statuses</option>
-      <% statuses.forEach(status => { %>
-        <option value="<%= status.id %>" <%= filters.status == status.id ? 'selected' : '' %>>
-          <%= status.name %>
-        </option>
-      <% }); %>
-    </select>
-    <select class="form-control" onchange="filterSIMCards('assignment', this.value)">
-      <option value="">All SIM Cards</option>
-      <option value="assigned" <%= filters.assignment === 'assigned' ? 'selected' : '' %>>Assigned to PDA</option>
-      <option value="unassigned" <%= filters.assignment === 'unassigned' ? 'selected' : '' %>>Unassigned</option>
-    </select>
-  </div>
-</div>
+    <!-- Table Controls -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+      <span class="text-gray-700 dark:text-gray-200 text-sm">
+        Showing <%= simCards.length %> of <%= totalSIMCards %> SIM cards
+      </span>
+      <div class="flex flex-wrap gap-2">
+        <select class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          onchange="filterSIMCards('client', this.value)">
+          <option value="">All Clients</option>
+          <% clients.forEach(client => { %>
+            <option value="<%= client.id %>" <%= filters.client == client.id ? 'selected' : '' %>>
+              <%= client.name %>
+            </option>
+          <% }); %>
+        </select>
+        <select class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          onchange="filterSIMCards('status', this.value)">
+          <option value="">All Statuses</option>
+          <% statuses.forEach(status => { %>
+            <option value="<%= status.id %>" <%= filters.status == status.id ? 'selected' : '' %>>
+              <%= status.name %>
+            </option>
+          <% }); %>
+        </select>
+        <select class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          onchange="filterSIMCards('assignment', this.value)">
+          <option value="">All SIM Cards</option>
+          <option value="assigned" <%= filters.assignment === 'assigned' ? 'selected' : '' %>>Assigned to PDA</option>
+          <option value="unassigned" <%= filters.assignment === 'unassigned' ? 'selected' : '' %>>Unassigned</option>
+        </select>
+      </div>
+    </div>
 
-<div class="table-container">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>SIM Number</th>
-        <th>Carrier</th>
-        <th>Client</th>
-        <th>Monthly Cost</th>
-        <th>Status</th>
-        <th>Assigned PDA</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% if (simCards.length === 0) { %>
-        <tr>
-          <td colspan="7" class="text-center">
-            <div class="empty-state">
-              <i class="fas fa-sim-card"></i>
-              <h3>No SIM cards found</h3>
-              <p>Start by adding your first SIM card.</p>
-              <a href="/simcards/new" class="btn btn-primary">Add New SIM Card</a>
-            </div>
-          </td>
-        </tr>
-      <% } else { %>
-        <% simCards.forEach(sim => { %>
+    <!-- Table -->
+    <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-900">
           <tr>
-            <td>
-              <a href="/simcards/<%= sim.id %>" class="entity-link">
-                <%= sim.sim_number %>
-              </a>
-            </td>
-            <td><%= sim.carrier %></td>
-            <td>
-              <a href="/clients/<%= sim.client_id %>">
-                <%= sim.client_name %> (<%= sim.client_code %>)
-              </a>
-            </td>
-            <td>
-              <% if (sim.monthly_cost) { %>
-                €<%= parseFloat(sim.monthly_cost).toFixed(2) %>/month
-              <% } else { %>
-                <span class="text-muted">-</span>
-              <% } %>
-            </td>
-            <td>
-              <% if (sim.status_name) { %>
-                <span class="badge badge-info"><%= sim.status_name %></span>
-              <% } else { %>
-                <span class="text-muted">-</span>
-              <% } %>
-            </td>
-            <td>
-              <% if (sim.pda_serial) { %>
-                <%= sim.pda_serial %>
-              <% } else { %>
-                <span class="text-muted">Unassigned</span>
-              <% } %>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <a href="/simcards/<%= sim.id %>" class="btn btn-sm btn-outline-primary">
-                  <i class="fas fa-eye"></i>
-                </a>
-              </div>
-            </td>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">SIM Number</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Carrier</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Client</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Monthly Cost</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Status</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Assigned PDA</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Actions</th>
           </tr>
-        <% }); %>
-      <% } %>
-    </tbody>
-  </table>
-</div>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <% if (simCards.length === 0) { %>
+            <tr>
+              <td colspan="7" class="text-center py-12">
+                <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+                  <div class="text-4xl text-blue-500 mb-2">
+                    <i class="fas fa-sim-card"></i>
+                  </div>
+                  <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No SIM cards found</h3>
+                  <p class="text-gray-500 dark:text-gray-400">Start by adding your first SIM card.</p>
+                  <a href="/simcards/new" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Add New SIM Card
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% simCards.forEach(sim => { %>
+              <tr>
+                <td class="px-4 py-3">
+                  <a href="/simcards/<%= sim.id %>" class="text-blue-600 dark:text-blue-300 hover:underline font-mono">
+                    <%= sim.sim_number %>
+                  </a>
+                </td>
+                <td class="px-4 py-3 text-gray-700 dark:text-gray-200"><%= sim.carrier %></td>
+                <td class="px-4 py-3">
+                  <a href="/clients/<%= sim.client_id %>" class="text-purple-700 dark:text-purple-300 hover:underline">
+                    <%= sim.client_name %> (<%= sim.client_code %>)
+                  </a>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (sim.monthly_cost) { %>
+                    <span class="text-gray-800 dark:text-gray-100">€<%= parseFloat(sim.monthly_cost).toFixed(2) %>/month</span>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500 italic">-</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (sim.status_name) { %>
+                    <span class="inline-block px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-semibold"><%= sim.status_name %></span>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500 italic">-</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (sim.pda_serial) { %>
+                    <span class="inline-block px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 text-xs font-semibold"><%= sim.pda_serial %></span>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500 italic">Unassigned</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex gap-2">
+                    <a href="/simcards/<%= sim.id %>" class="inline-flex items-center px-3 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" title="View">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="/simcards/<%= sim.id %>/edit" class="inline-flex items-center px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900 hover:bg-yellow-200 dark:hover:bg-yellow-800 text-yellow-700 dark:text-yellow-200 rounded-md transition" title="Edit">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <button class="inline-flex items-center px-3 py-1.5 bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-200 rounded-md transition" onclick="confirmDelete('<%= sim.id %>', '<%= sim.sim_number %>')" title="Delete">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
 
-<% if (totalPages > 1) { %>
-  <div class="pagination-container">
-    <nav aria-label="Page navigation">
-      <ul class="pagination">
-        <% if (currentPage > 1) { %>
-          <li class="page-item">
-            <a class="page-link" href="?page=<%= currentPage - 1 %>">
-              <i class="fas fa-chevron-left"></i> Previous
-            </a>
-          </li>
-        <% } %>
-        
-        <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
-          <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-          </li>
-        <% } %>
-        
-        <% if (currentPage < totalPages) { %>
-          <li class="page-item">
-            <a class="page-link" href="?page=<%= currentPage + 1 %>">
-              Next <i class="fas fa-chevron-right"></i>
-            </a>
-          </li>
-        <% } %>
-      </ul>
-    </nav>
-  </div>
-<% } %>
+    <!-- Pagination -->
+    <% if (totalPages > 1) { %>
+      <div class="flex justify-center mt-8">
+        <nav aria-label="Page navigation">
+          <ul class="inline-flex items-center -space-x-px">
+            <% if (currentPage > 1) { %>
+              <li>
+                <a class="px-3 py-2 ml-0 leading-tight text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-l-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                  href="?page=<%= currentPage - 1 %>">
+                  <i class="fas fa-chevron-left"></i> Previous
+                </a>
+              </li>
+            <% } %>
+            <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+              <li>
+                <a class="px-3 py-2 leading-tight border border-gray-300 dark:border-gray-700
+                  <%= i === currentPage
+                    ? 'bg-blue-600 text-white dark:bg-blue-700 dark:text-white font-bold'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' %>
+                  transition"
+                  href="?page=<%= i %>"><%= i %></a>
+              </li>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+              <li>
+                <a class="px-3 py-2 leading-tight text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-r-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                  href="?page=<%= currentPage + 1 %>">
+                  Next <i class="fas fa-chevron-right"></i>
+                </a>
+              </li>
+            <% } %>
+          </ul>
+        </nav>
+      </div>
+    <% } %>
 
-<script>
-function filterSIMCards(type, value) {
-  const url = new URL(window.location);
-  if (value) {
-    url.searchParams.set(type, value);
-  } else {
-    url.searchParams.delete(type);
-  }
-  window.location = url;
-}
-</script>
+    <script>
+      function filterSIMCards(type, value) {
+        const url = new URL(window.location);
+        if (value) {
+          url.searchParams.set(type, value);
+        } else {
+          url.searchParams.delete(type);
+        }
+        window.location = url;
+      }
 
-</div> <!-- end page-container -->
+      function confirmDelete(simId, simNumber) {
+        if (confirm(`Are you sure you want to delete SIM card "${simNumber}"? This action cannot be undone.`)) {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = `/simcards/${simId}/delete`;
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
+    </script>
+</section>

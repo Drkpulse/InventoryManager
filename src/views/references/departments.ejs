@@ -1,0 +1,208 @@
+<div class="container mx-auto px-4 py-8">
+	<!-- Header & Breadcrumbs -->
+	<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+	  <div>
+		<nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+		  <a href="/references" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
+			<i class="fas fa-cog"></i> References
+		  </a>
+		  <i class="fas fa-chevron-right mx-2"></i>
+		  <span class="text-gray-700 dark:text-gray-200">Departments</span>
+		</nav>
+		<h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Departments</h1>
+		<div class="flex items-center gap-4 mt-2 text-gray-700 dark:text-gray-300 text-sm">
+		  <span class="flex items-center gap-2">
+			<i class="fas fa-building"></i>
+			<%= departments ? departments.length : 0 %> departments
+		  </span>
+		</div>
+	  </div>
+	  <div class="flex gap-2">
+		<a href="/references" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+		  <i class="fas fa-arrow-left mr-2"></i> Back to References
+		</a>
+		<a href="/references/departments/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+		  <i class="fas fa-plus mr-2"></i> Add New Department
+		</a>
+	  </div>
+	</div>
+
+	<!-- Flash Messages -->
+	<% if (typeof error !== 'undefined' && error.length > 0) { %>
+	  <div class="mb-4 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-4 py-3 rounded">
+		<% error.forEach(msg => { %>
+		  <p><%= msg %></p>
+		<% }) %>
+	  </div>
+	<% } %>
+	<% if (typeof success !== 'undefined' && success.length > 0) { %>
+	  <div class="mb-4 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-4 py-3 rounded">
+		<% success.forEach(msg => { %>
+		  <p><%= msg %></p>
+		<% }) %>
+	  </div>
+	<% } %>
+
+	<div>
+	  <% if (departments && departments.length > 0) { %>
+		<div class="overflow-x-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+		  <table class="min-w-full text-sm">
+			<thead>
+			  <tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+				<th class="px-4 py-3 text-left font-semibold"><i class="fas fa-building"></i> Name</th>
+				<th class="px-4 py-3 text-left font-semibold"><i class="fas fa-info-circle"></i> Description</th>
+				<th class="px-4 py-3 text-left font-semibold"><i class="fas fa-users"></i> Employees Using</th>
+				<th class="px-4 py-3 text-left font-semibold">Actions</th>
+			  </tr>
+			</thead>
+			<tbody>
+			  <% departments.forEach(department => { %>
+				<tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
+				  <td class="px-4 py-3 font-semibold text-gray-800 dark:text-gray-100"><%= department.name %></td>
+				  <td class="px-4 py-3">
+					<% if (department.description) { %>
+					  <span class="text-gray-700 dark:text-gray-200"><%= department.description %></span>
+					<% } else { %>
+					  <span class="text-gray-400 dark:text-gray-500 italic">No description</span>
+					<% } %>
+				  </td>
+				  <td class="px-4 py-3">
+					<% if (parseInt(department.employee_count) > 0) { %>
+					  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-semibold">
+						<i class="fas fa-check-circle"></i>
+						<%= department.employee_count %> employees
+					  </span>
+					<% } else { %>
+					  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
+						<i class="fas fa-minus-circle"></i>
+						Not used
+					  </span>
+					<% } %>
+				  </td>
+				  <td class="px-4 py-3">
+					<div class="flex gap-1">
+					  <a href="/references/departments/<%= department.id %>/edit"
+						 class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition"
+						 title="Edit Department">
+						<i class="fas fa-edit"></i>
+					  </a>
+					  <% if (parseInt(department.employee_count) === 0) { %>
+						<form method="POST"
+							  action="/references/departments/<%= department.id %>/delete"
+							  class="inline delete-form"
+							  data-department-name="<%= department.name %>">
+						  <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition" title="Delete Department">
+							<i class="fas fa-trash"></i>
+						  </button>
+						</form>
+					  <% } else { %>
+						<button class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-500 cursor-not-allowed" disabled
+								title="Cannot delete: this department is used by <%= department.employee_count %> employees">
+						  <i class="fas fa-trash"></i>
+						</button>
+					  <% } %>
+					</div>
+				  </td>
+				</tr>
+			  <% }) %>
+			</tbody>
+		  </table>
+		  <!-- Results Summary -->
+		  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+			<div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
+			  <i class="fas fa-building"></i>
+			  Showing <strong><%= departments.length %></strong> departments
+			</div>
+			<div class="flex gap-6 text-xs text-gray-500 dark:text-gray-400 italic">
+			  <%
+				const usedDepartments = departments.filter(d => parseInt(d.employee_count) > 0).length;
+				const unusedDepartments = departments.length - usedDepartments;
+			  %>
+			  <span><span class="font-semibold"><%= usedDepartments %></span> In Use</span>
+			  <span><span class="font-semibold"><%= unusedDepartments %></span> Unused</span>
+			</div>
+		  </div>
+		</div>
+
+	  <% } else { %>
+		<div class="flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+		  <div class="mb-4 text-4xl text-gray-400 dark:text-gray-600">
+			<i class="fas fa-building"></i>
+		  </div>
+		  <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Departments Found</h3>
+		  <p class="text-gray-500 dark:text-gray-400 mb-4">Departments help organize employees by their functional areas. Start by adding your first department.</p>
+		  <div class="flex gap-2">
+			<a href="/references/departments/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+			  <i class="fas fa-plus mr-2"></i> Add First Department
+			</a>
+			<a href="/references" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+			  <i class="fas fa-cog mr-2"></i> Manage References
+			</a>
+		  </div>
+		</div>
+	  <% } %>
+	</div>
+
+	<!-- Delete Confirmation Modal -->
+	<div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" style="display: none;">
+	  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
+		<div class="flex items-center gap-3 mb-4">
+		  <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
+		  <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Confirm Delete</h4>
+		</div>
+		<div class="mb-4">
+		  <p class="mb-2">Are you sure you want to delete the department "<span id="deleteDepartmentName"></span>"?</p>
+		  <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">This action cannot be undone.</p>
+		</div>
+		<div class="flex gap-2 justify-end">
+		  <button type="button" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition" onclick="closeDeleteModal()">
+			<i class="fas fa-times mr-2"></i> Cancel
+		  </button>
+		  <button type="button" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition" id="confirmDeleteBtn">
+			<i class="fas fa-trash mr-2"></i> Delete
+		  </button>
+		</div>
+	  </div>
+	</div>
+  </div>
+
+  <script>
+  let currentDeleteForm = null;
+
+  document.addEventListener('DOMContentLoaded', function() {
+	// Handle delete form submissions
+	const deleteForms = document.querySelectorAll('.delete-form');
+
+	deleteForms.forEach(form => {
+	  form.addEventListener('submit', function(e) {
+		e.preventDefault();
+
+		const departmentName = this.dataset.departmentName;
+		currentDeleteForm = this;
+
+		document.getElementById('deleteDepartmentName').textContent = departmentName;
+		document.getElementById('deleteModal').style.display = 'flex';
+	  });
+	});
+
+	// Handle confirm delete
+	document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+	  if (currentDeleteForm) {
+		// Actually submit the form
+		currentDeleteForm.submit();
+	  }
+	});
+  });
+
+  function closeDeleteModal() {
+	document.getElementById('deleteModal').style.display = 'none';
+	currentDeleteForm = null;
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('deleteModal').addEventListener('click', function(e) {
+	if (e.target === this) {
+	  closeDeleteModal();
+	}
+  });
+  </script>

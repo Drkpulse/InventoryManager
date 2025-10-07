@@ -1,0 +1,401 @@
+<!-- Security Logs View -->
+<div class="security-logs-container">
+  <!-- Page Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        <i class="fas fa-list-alt text-blue-600 mr-2"></i>Security Logs
+      </h1>
+      <p class="text-gray-600 dark:text-gray-300 mt-2">
+        View detailed security events and monitor system activity
+      </p>
+    </div>
+    <div class="flex space-x-3">
+      <a href="/admin/security" class="btn btn-outline">
+        <i class="fas fa-arrow-left mr-2"></i>Back to Center
+      </a>
+      <button onclick="exportLogs()" class="btn btn-primary">
+        <i class="fas fa-download mr-2"></i>Export
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <i class="fas fa-filter text-gray-500 mr-2"></i>Filters
+    </h2>
+
+    <form method="GET" action="/admin/security/logs" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <!-- Event Type Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Event Type</label>
+        <select name="event_type" class="form-select w-full">
+          <option value="">All Types</option>
+          <% eventTypes.forEach(type => { %>
+            <option value="<%= type %>" <%= filters.eventType === type ? 'selected' : '' %>>
+              <%= type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <!-- Severity Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Severity</label>
+        <select name="severity" class="form-select w-full">
+          <option value="">All Severities</option>
+          <% severityLevels.forEach(level => { %>
+            <option value="<%= level %>" <%= filters.severity === level ? 'selected' : '' %>>
+              <%= level.toUpperCase() %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <!-- Timeframe Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Timeframe</label>
+        <select name="timeframe" class="form-select w-full">
+          <option value="1h" <%= filters.timeframe === '1h' ? 'selected' : '' %>>Last Hour</option>
+          <option value="24h" <%= filters.timeframe === '24h' ? 'selected' : '' %>>Last 24 Hours</option>
+          <option value="7d" <%= filters.timeframe === '7d' ? 'selected' : '' %>>Last 7 Days</option>
+          <option value="30d" <%= filters.timeframe === '30d' ? 'selected' : '' %>>Last 30 Days</option>
+        </select>
+      </div>
+
+      <!-- Results Per Page -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Per Page</label>
+        <select name="limit" class="form-select w-full">
+          <option value="25" <%= pagination.limit === 25 ? 'selected' : '' %>>25</option>
+          <option value="50" <%= pagination.limit === 50 ? 'selected' : '' %>>50</option>
+          <option value="100" <%= pagination.limit === 100 ? 'selected' : '' %>>100</option>
+        </select>
+      </div>
+
+      <!-- Apply Button -->
+      <div class="flex items-end">
+        <button type="submit" class="btn btn-primary w-full">
+          <i class="fas fa-search mr-2"></i>Apply Filters
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
+    <div class="flex justify-between items-center">
+      <div class="text-sm text-gray-600 dark:text-gray-300">
+        Showing <%= ((pagination.page - 1) * pagination.limit) + 1 %> to
+        <%= Math.min(pagination.page * pagination.limit, pagination.total) %> of
+        <%= pagination.total %> security events
+      </div>
+      <div class="text-sm text-gray-600 dark:text-gray-300">
+        Page <%= pagination.page %> of <%= pagination.totalPages %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Security Logs Table -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+    <% if (logs.length > 0) { %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Timestamp
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Event Type
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Severity
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                User
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                IP Address
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Details
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% logs.forEach(log => { %>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <%= new Date(log.created_at).toLocaleString() %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                  <%= log.event_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <%
+                    const severityColors = {
+                      'low': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                      'medium': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+                      'high': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+                      'critical': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                    };
+                    const severityColor = severityColors[log.severity] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+                  %>
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <%= severityColor %>">
+                    <%= log.severity.toUpperCase() %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <% if (log.user_name) { %>
+                    <div>
+                      <div class="font-medium"><%= log.user_name %></div>
+                      <div class="text-gray-500 dark:text-gray-400"><%= log.user_email %></div>
+                    </div>
+                  <% } else { %>
+                    <span class="text-gray-400 dark:text-gray-500">System</span>
+                  <% } %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-mono">
+                  <%= log.ip_address || 'N/A' %>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-xs">
+                  <% if (log.event_data) { %>
+                    <button onclick="showEventDetails('<%= log.id %>', '<%= encodeURIComponent(JSON.stringify(log.event_data)) %>')"
+                            class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                      <i class="fas fa-eye mr-1"></i>View Details
+                    </button>
+                  <% } %>
+                  <% if (log.user_agent) { %>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate" title="<%= log.user_agent %>">
+                      <%= log.user_agent.substring(0, 50) %><%= log.user_agent.length > 50 ? '...' : '' %>
+                    </div>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="text-center py-12">
+        <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Security Events Found</h3>
+        <p class="text-gray-500 dark:text-gray-400">
+          No security events match your current filter criteria.
+        </p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Pagination -->
+  <% if (pagination.totalPages > 1) { %>
+    <div class="mt-6 flex justify-center">
+      <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+        <!-- Previous Page -->
+        <% if (pagination.page > 1) { %>
+          <a href="?page=<%= pagination.page - 1 %>&event_type=<%= filters.eventType || '' %>&severity=<%= filters.severity || '' %>&timeframe=<%= filters.timeframe || '24h' %>&limit=<%= pagination.limit %>"
+             class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+        <% } %>
+
+        <!-- Page Numbers -->
+        <% for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.totalPages, pagination.page + 2); i++) { %>
+          <% if (i === pagination.page) { %>
+            <span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 dark:bg-blue-900 text-sm font-medium text-blue-600 dark:text-blue-300">
+              <%= i %>
+            </span>
+          <% } else { %>
+            <a href="?page=<%= i %>&event_type=<%= filters.eventType || '' %>&severity=<%= filters.severity || '' %>&timeframe=<%= filters.timeframe || '24h' %>&limit=<%= pagination.limit %>"
+               class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <%= i %>
+            </a>
+          <% } %>
+        <% } %>
+
+        <!-- Next Page -->
+        <% if (pagination.page < pagination.totalPages) { %>
+          <a href="?page=<%= pagination.page + 1 %>&event_type=<%= filters.eventType || '' %>&severity=<%= filters.severity || '' %>&timeframe=<%= filters.timeframe || '24h' %>&limit=<%= pagination.limit %>"
+             class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <i class="fas fa-chevron-right"></i>
+          </a>
+        <% } %>
+      </nav>
+    </div>
+  <% } %>
+</div>
+
+<!-- Event Details Modal -->
+<div id="eventDetailsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800">
+    <div class="mt-3">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Event Details</h3>
+        <button onclick="closeEventDetails()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div id="eventDetailsContent" class="text-sm text-gray-700 dark:text-gray-300">
+        <!-- Content will be populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showEventDetails(eventId, eventData) {
+  const modal = document.getElementById('eventDetailsModal');
+  const content = document.getElementById('eventDetailsContent');
+
+  // Decode the event data
+  try {
+    eventData = decodeURIComponent(eventData);
+    eventData = JSON.parse(eventData);
+  } catch (e) {
+    // If parsing fails, use as string
+  }
+
+  // Format the event data
+  let formattedData = '';
+  if (typeof eventData === 'object') {
+    formattedData = '<pre class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg overflow-auto">' +
+                   JSON.stringify(eventData, null, 2) + '</pre>';
+  } else {
+    formattedData = '<div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">' + eventData + '</div>';
+  }
+
+  content.innerHTML = formattedData;
+  modal.classList.remove('hidden');
+}
+
+function closeEventDetails() {
+  document.getElementById('eventDetailsModal').classList.add('hidden');
+}
+
+function exportLogs() {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/admin/security/export-logs';
+
+  // Add current filters
+  const eventType = new URLSearchParams(window.location.search).get('event_type');
+  const severity = new URLSearchParams(window.location.search).get('severity');
+  const timeframe = new URLSearchParams(window.location.search).get('timeframe');
+
+  if (eventType) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'event_type';
+    input.value = eventType;
+    form.appendChild(input);
+  }
+
+  if (severity) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'severity';
+    input.value = severity;
+    form.appendChild(input);
+  }
+
+  if (timeframe) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'timeframe';
+    input.value = timeframe;
+    form.appendChild(input);
+  }
+
+  // Add CSRF token
+  const csrfInput = document.createElement('input');
+  csrfInput.type = 'hidden';
+  csrfInput.name = '_csrf';
+  csrfInput.value = '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>';
+  form.appendChild(csrfInput);
+
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+}
+
+// Close modal when clicking outside
+document.getElementById('eventDetailsModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeEventDetails();
+  }
+});
+</script>
+
+<style>
+.security-logs-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.form-select {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: white;
+  font-size: 0.875rem;
+}
+
+.dark .form-select {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-outline {
+  border: 1px solid #d1d5db;
+  color: #374151;
+  background-color: transparent;
+}
+
+.btn-outline:hover {
+  background-color: #f9fafb;
+}
+
+.dark .btn-outline {
+  border-color: #4b5563;
+  color: #d1d5db;
+}
+
+.dark .btn-outline:hover {
+  background-color: #374151;
+}
+
+@media (max-width: 768px) {
+  .security-logs-container {
+    padding: 10px;
+  }
+
+  .overflow-x-auto {
+    font-size: 0.75rem;
+  }
+}
+</style>

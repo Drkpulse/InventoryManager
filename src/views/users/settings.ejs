@@ -1,231 +1,179 @@
-<div class="page-container">
+<section class="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 text-gray-900 dark:text-white animate-fadeIn">
+  <!-- Header Section -->
+  <div class="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
+    <div>
+      <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-900 to-blue-700 bg-clip-text text-transparent flex items-center gap-3">
+        <i class="fas fa-cog"></i> User Settings
+      </h1>
+      <p class="text-gray-500 dark:text-gray-300 mt-2 text-lg">Manage your account preferences and privacy settings</p>
+    </div>
+    <div class="flex gap-4 items-center">
+      <a href="/users/profile" class="bg-gradient-to-r from-indigo-900 to-blue-700 text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
+        <i class="fas fa-user"></i> Profile
+      </a>
+      <a href="/dashboard" class="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+    </div>
+  </div>ass="page-container">
   <div class="page-header-simple">
-    <h1><i class="fas fa-cog"></i> User Settings</h1>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Dashboard
-        </a>
-      </div>
+    <div class="header-title-section">
+      <h1><i class="fas fa-cog"></i> Account Settings</h1>
+      <p class="text-muted">Customize your account preferences and security settings</p>
     </div>
   </div>
 
-  <% if (locals.success) { %>
-    <div class="alert alert-success">
-      <i class="fas fa-check-circle"></i>
-      <%= success %>
-    </div>
-  <% } %>
-
-  <% if (locals.error) { %>
-    <div class="alert alert-danger">
-      <i class="fas fa-exclamation-triangle"></i>
-      <%= error %>
-    </div>
-  <% } %>
-
   <% if (locals.showUpdated) { %>
-    <div class="alert alert-success">
-      <i class="fas fa-check-circle"></i>
-      Settings updated successfully!
+    <div class="bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 p-4 rounded-xl mb-6 flex items-center gap-3">
+      <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i> Settings updated successfully
     </div>
   <% } %>
 
-  <div class="form-container">
-    <!-- Display Settings -->
-    <div class="form-section">
-      <h3><i class="fas fa-palette"></i> Display Settings</h3>
-      <form method="POST" action="/users/settings/display" class="needs-validation" novalidate>
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="theme" class="required">Theme</label>
-            <select id="theme" name="theme" class="form-control" required>
-              <option value="light" <%= (!user.settings || user.settings.theme === 'light') ? 'selected' : '' %>>
-                <i class="fas fa-sun"></i> Light Mode
-              </option>
-              <option value="dark" <%= (user.settings && user.settings.theme === 'dark') ? 'selected' : '' %>>
-                <i class="fas fa-moon"></i> Dark Mode
-              </option>
-              <option value="auto" <%= (user.settings && user.settings.theme === 'auto') ? 'selected' : '' %>>
-                <i class="fas fa-adjust"></i> Auto (System)
-              </option>
+  <% if (locals.success && locals.success.length > 0) { %>
+    <div class="bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 p-4 rounded-xl mb-6 flex items-center gap-3">
+      <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i> <%= locals.success[0] %>
+    </div>
+  <% } %>
+
+  <% if (locals.error && locals.error.length > 0) { %>
+    <div class="bg-red-100 dark:bg-red-900/40 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 p-4 rounded-xl mb-6 flex items-center gap-3">
+      <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i> <%= locals.error[0] %>
+    </div>
+  <% } %>
+
+  <!-- Display Settings -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-8">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+        <i class="fas fa-palette text-indigo-900"></i> Display Settings
+      </h3>
+    </div>
+    <div class="p-8">
+      <form method="POST" action="/users/settings/display">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="theme" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Theme</label>
+            <select id="theme" name="theme" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+              <option value="light" <%= (!user.settings || user.settings.theme === 'light') ? 'selected' : '' %>>Light Mode</option>
+              <option value="dark" <%= (user.settings && user.settings.theme === 'dark') ? 'selected' : '' %>>Dark Mode</option>
+              <option value="auto" <%= (user.settings && user.settings.theme === 'auto') ? 'selected' : '' %>>Auto Mode</option>
             </select>
-            <small class="form-text text-muted">Choose your preferred color scheme</small>
+            <small class="text-sm text-gray-500 dark:text-gray-400 mt-1">Choose your preferred color scheme</small>
           </div>
 
-          <div class="form-group col-md-6">
-            <label for="language" class="required">Language</label>
-            <select id="language" name="language" class="form-control" required>
-              <option value="en" <%= (!user.settings || user.settings.language === 'en') ? 'selected' : '' %>>
-                🇺🇸 English
-              </option>
-              <option value="pt-PT" <%= (user.settings && user.settings.language === 'pt-PT') ? 'selected' : '' %>>
-                🇵🇹 Português (Portugal)
-              </option>
-              <option value="es" <%= (user.settings && user.settings.language === 'es') ? 'selected' : '' %>>
-                🇪🇸 Español
-              </option>
-              <option value="fr" <%= (user.settings && user.settings.language === 'fr') ? 'selected' : '' %>>
-                🇫🇷 Français
-              </option>
+          <div>
+            <label for="language" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Language</label>
+            <select id="language" name="language" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+              <option value="en" <%= (!user.settings || user.settings.language === 'en') ? 'selected' : '' %>>🇺🇸 English</option>
+              <option value="pt-PT" <%= (user.settings && user.settings.language === 'pt-PT') ? 'selected' : '' %>>🇵🇹 Português (Portugal)</option>
+              <option value="es" <%= (user.settings && user.settings.language === 'es') ? 'selected' : '' %>>🇪🇸 Español</option>
+              <option value="fr" <%= (user.settings && user.settings.language === 'fr') ? 'selected' : '' %>>🇫🇷 Français</option>
             </select>
-            <small class="form-text text-muted">Select your preferred language</small>
+            <small class="text-sm text-gray-500 dark:text-gray-400 mt-1">Select your preferred language</small>
           </div>
-        </div>
 
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="timezone">Timezone</label>
-            <select id="timezone" name="timezone" class="form-control">
+          <div>
+            <label for="timezone" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Timezone</label>
+            <select id="timezone" name="timezone" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
               <option value="UTC" <%= (!user.settings || user.settings.timezone === 'UTC') ? 'selected' : '' %>>UTC</option>
               <option value="Europe/Lisbon" <%= (user.settings && user.settings.timezone === 'Europe/Lisbon') ? 'selected' : '' %>>Europe/Lisbon</option>
               <option value="Europe/Madrid" <%= (user.settings && user.settings.timezone === 'Europe/Madrid') ? 'selected' : '' %>>Europe/Madrid</option>
               <option value="Europe/Paris" <%= (user.settings && user.settings.timezone === 'Europe/Paris') ? 'selected' : '' %>>Europe/Paris</option>
               <option value="America/New_York" <%= (user.settings && user.settings.timezone === 'America/New_York') ? 'selected' : '' %>>America/New_York</option>
             </select>
-            <small class="form-text text-muted">Your local timezone for date/time display</small>
+            <small class="text-sm text-gray-500 dark:text-gray-400 mt-1">Your local timezone for date/time display</small>
           </div>
 
-          <div class="form-group col-md-6">
-            <label for="items_per_page">Items per Page</label>
-            <select id="items_per_page" name="items_per_page" class="form-control">
+          <div>
+            <label for="items_per_page" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Items Per Page</label>
+            <select id="items_per_page" name="items_per_page" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
               <option value="10" <%= (user.settings && user.settings.items_per_page === '10') ? 'selected' : '' %>>10</option>
               <option value="20" <%= (!user.settings || user.settings.items_per_page === '20') ? 'selected' : '' %>>20</option>
               <option value="50" <%= (user.settings && user.settings.items_per_page === '50') ? 'selected' : '' %>>50</option>
               <option value="100" <%= (user.settings && user.settings.items_per_page === '100') ? 'selected' : '' %>>100</option>
             </select>
-            <small class="form-text text-muted">Number of items to display per page in lists</small>
+            <small class="text-sm text-gray-500 dark:text-gray-400 mt-1">Number of items to display per page in lists</small>
           </div>
         </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">
+        <div class="flex gap-4 mt-8">
+          <button type="submit" class="bg-gradient-to-r from-indigo-900 to-blue-700 text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
             <i class="fas fa-save"></i> Save Display Settings
           </button>
         </div>
       </form>
     </div>
+  </div>
 
-    <!-- Notification Settings -->
-    <div class="form-section">
-      <h3><i class="fas fa-bell"></i> Notification Settings</h3>
-      <form method="POST" action="/users/settings/notifications">
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" 
-                     <%= (!user.settings || user.settings.email_notifications !== false) ? 'checked' : '' %>>
-              <label class="form-check-label" for="email_notifications">
-                <i class="fas fa-envelope"></i> Email Notifications
-              </label>
-            </div>
-            <small class="form-text text-muted">Receive notifications via email</small>
-          </div>
 
-          <div class="form-group col-md-6">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="browser_notifications" name="browser_notifications" 
-                     <%= (!user.settings || user.settings.browser_notifications !== false) ? 'checked' : '' %>>
-              <label class="form-check-label" for="browser_notifications">
-                <i class="fas fa-desktop"></i> Browser Notifications
-              </label>
-            </div>
-            <small class="form-text text-muted">Show browser notifications</small>
-          </div>
-        </div>
 
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="maintenance_alerts" name="maintenance_alerts" 
-                     <%= (!user.settings || user.settings.maintenance_alerts !== false) ? 'checked' : '' %>>
-              <label class="form-check-label" for="maintenance_alerts">
-                <i class="fas fa-tools"></i> Maintenance Alerts
-              </label>
-            </div>
-            <small class="form-text text-muted">Notifications about equipment maintenance</small>
-          </div>
-
-          <div class="form-group col-md-6">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="assignment_notifications" name="assignment_notifications" 
-                     <%= (!user.settings || user.settings.assignment_notifications !== false) ? 'checked' : '' %>>
-              <label class="form-check-label" for="assignment_notifications">
-                <i class="fas fa-user-plus"></i> Assignment Notifications
-              </label>
-            </div>
-            <small class="form-text text-muted">Notifications about equipment assignments</small>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save"></i> Save Notification Settings
-          </button>
-        </div>
-      </form>
+  <!-- Security Settings -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-8">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+        <i class="fas fa-shield-alt text-indigo-900"></i> Security Settings
+      </h3>
     </div>
-
-    <!-- Security Settings -->
-    <div class="form-section">
-      <h3><i class="fas fa-shield-alt"></i> Security Settings</h3>
+    <div class="p-8">
       <form method="POST" action="/users/settings/security" class="needs-validation" novalidate>
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="current_password" class="required">Current Password</label>
-            <input type="password" id="current_password" name="current_password" class="form-control" required>
-            <div class="invalid-feedback">
-              Please enter your current password.
+        <div class="space-y-6">
+          <div>
+            <label for="current_password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
+            <input type="password" id="current_password" name="current_password" required
+                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+            <small class="text-sm text-gray-500 dark:text-gray-400 mt-1">Enter your current password to change it</small>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="new_password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+              <input type="password" id="new_password" name="new_password" minlength="8" required
+                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+              <small class="text-sm text-gray-500 dark:text-gray-400 mt-1">Minimum 8 characters, include letters and numbers</small>
+            </div>
+
+            <div>
+              <label for="confirm_password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
+              <input type="password" id="confirm_password" name="confirm_password" required
+                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base transition focus:outline-none focus:border-indigo-900 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+              <small class="text-sm text-gray-500 dark:text-gray-400 mt-1">Re-enter your new password</small>
             </div>
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="new_password" class="required">New Password</label>
-            <input type="password" id="new_password" name="new_password" class="form-control" minlength="8" required>
-            <div class="invalid-feedback">
-              Password must be at least 8 characters long.
-            </div>
-            <small class="form-text text-muted">Minimum 8 characters, include letters and numbers</small>
-          </div>
-
-          <div class="form-group col-md-6">
-            <label for="confirm_password" class="required">Confirm Password</label>
-            <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
-            <div class="invalid-feedback">
-              Passwords do not match.
-            </div>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="session_timeout" name="session_timeout" 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <div class="space-y-4">
+            <div class="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <input type="checkbox" id="session_timeout" name="session_timeout"
+                     class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                      <%= (user.settings && user.settings.session_timeout) ? 'checked' : '' %>>
-              <label class="form-check-label" for="session_timeout">
-                <i class="fas fa-clock"></i> Auto-logout after inactivity
+              <label for="session_timeout" class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <i class="fas fa-clock text-indigo-600"></i>
+                <span>Session Timeout</span>
               </label>
             </div>
-            <small class="form-text text-muted">Automatically log out after 30 minutes of inactivity</small>
+            <small class="text-sm text-gray-500 dark:text-gray-400">Automatically log out after 30 minutes of inactivity</small>
           </div>
 
-          <div class="form-group col-md-6">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="two_factor_auth" name="two_factor_auth" 
-                     <%= (user.settings && user.settings.two_factor_auth) ? 'checked' : '' %>>
-              <label class="form-check-label" for="two_factor_auth">
-                <i class="fas fa-lock"></i> Two-Factor Authentication
+          <div class="space-y-4">
+            <div class="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg opacity-50">
+              <input type="checkbox" id="two_factor_auth" name="two_factor_auth"
+                     class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                     <%= (user.settings && user.settings.two_factor_auth) ? 'checked' : '' %> disabled>
+              <label for="two_factor_auth" class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <i class="fas fa-lock text-indigo-600"></i>
+                <span>Two-Factor Authentication</span>
               </label>
             </div>
-            <small class="form-text text-muted">Enable 2FA for enhanced security (coming soon)</small>
+            <small class="text-sm text-gray-500 dark:text-gray-400">Enable 2FA for enhanced security (coming soon)</small>
           </div>
         </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-danger">
-            <i class="fas fa-key"></i> Change Password
+        <div class="flex justify-end mt-8">
+          <button type="submit"
+                  class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2">
+            <i class="fas fa-key"></i>
+            Change Password
           </button>
         </div>
       </form>
@@ -255,7 +203,7 @@
 document.getElementById('confirm_password').addEventListener('input', function() {
   const password = document.getElementById('new_password').value;
   const confirmPassword = this.value;
-  
+
   if (password !== confirmPassword) {
     this.setCustomValidity('Passwords do not match');
   } else {
@@ -268,4 +216,20 @@ document.getElementById('theme').addEventListener('change', function() {
   const body = document.body;
   body.setAttribute('data-theme', this.value);
 });
+
+// Language change handler - reload page to apply translations
+document.getElementById('language').addEventListener('change', function() {
+  // Show a preview message about language change
+  const currentLang = this.value;
+  const messages = {
+    'en': 'Language will be changed to English after saving.',
+    'pt-PT': 'O idioma será alterado para Português após guardar.',
+    'es': 'El idioma se cambiará a Español después de guardar.',
+    'fr': 'La langue sera changée en Français après sauvegarde.'
+  };
+
+  // You could show this message in a small tooltip or notification
+  console.log(messages[currentLang] || messages['en']);
+});
 </script>
+</section>

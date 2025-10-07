@@ -1,0 +1,70 @@
+<!-- CSRF Token Meta Tag - Include this in all pages -->
+<meta name="csrf-token" content="<%= locals.csrfToken || '' %>">
+
+<!-- CSRF Token Helper Function for Forms -->
+<script>
+window.getCsrfToken = function() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  const token = meta ? meta.getAttribute('content') : '';
+
+  // Generate a warning if token is empty (for debugging)
+  if (!token && window.location.hostname !== 'localhost') {
+    console.warn('CSRF token not found - forms may not work properly');
+  }
+
+  return token;
+};
+
+window.addCsrfToForm = function(form) {
+  const existing = form.querySelector('input[name="_csrf"]');
+  if (existing) {
+    existing.value = window.getCsrfToken();
+  } else {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = '_csrf';
+    input.value = window.getCsrfToken();
+    form.appendChild(input);
+  }
+};
+
+// Auto-add CSRF tokens to all forms on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const token = window.getCsrfToken();
+  if (token) {
+    const forms = document.querySelectorAll('form');
+    forms.forEach(function(form) {
+      if (form.method && form.method.toLowerCase() !== 'get') {
+        window.addCsrfToForm(form);
+      }
+    });
+  }
+});
+
+// Auto-add CSRF tokens to AJAX requests
+if (window.jQuery) {
+  jQuery.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+      if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+        const token = window.getCsrfToken();
+        if (token) {
+          xhr.setRequestHeader("X-CSRF-Token", token);
+        }
+      }
+    }
+  });
+}
+
+// For native fetch requests
+const originalFetch = window.fetch;
+window.fetch = function(url, options = {}) {
+  if (options.method && !/^(GET|HEAD|OPTIONS|TRACE)$/i.test(options.method)) {
+    const token = window.getCsrfToken();
+    if (token) {
+      options.headers = options.headers || {};
+      options.headers['X-CSRF-Token'] = token;
+    }
+  }
+  return originalFetch.call(this, url, options);
+};
+</script>

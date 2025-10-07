@@ -1,0 +1,564 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+        <i class="fas fa-layer-group"></i> Bulk Create Assets
+      </h1>
+      <p class="text-gray-600 dark:text-gray-400">Create multiple identical assets with different CEXPT IDs and serial numbers</p>
+    </div>
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <a href="/items" class="group px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg" style="background: linear-gradient(to right, rgb(107, 114, 128), rgb(75, 85, 99)); color: white;">
+        <i class="fas fa-arrow-left mr-2 group-hover:scale-110 transition-transform duration-300"></i> Back to Assets
+      </a>
+    </div>
+  </div>
+
+  <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+      <h3 class="font-bold">Please fix the following errors:</h3>
+      <ul class="list-disc list-inside">
+        <% errors.forEach(error => { %>
+          <li><%= error %></li>
+        <% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <form method="POST" action="/items/bulk-create" id="bulkCreateForm" class="space-y-10">
+    <!-- Base Asset Information -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <i class="fas fa-info-circle"></i> Base Asset Information
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="col-span-1 md:col-span-2">
+          <label for="base_name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset Name <span class="text-red-500">*</span></label>
+          <input type="text" id="base_name" name="base_name"
+            value="<%= typeof formData !== 'undefined' ? formData.base_name : '' %>"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            required placeholder="Enter base name for all assets">
+          <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+            <i class="fas fa-info-circle"></i>
+            This name will be used for all created assets
+          </small>
+        </div>
+
+        <div>
+          <label for="type_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset Type <span class="text-red-500">*</span></label>
+          <select id="type_id" name="type_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required>
+            <option value="">Select asset type</option>
+            <% types.forEach(type => { %>
+              <option value="<%= type.id %>" <%= typeof formData !== 'undefined' && formData.type_id == type.id ? 'selected' : '' %>>
+                <%= type.name %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label for="brand_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Brand</label>
+          <select id="brand_id" name="brand_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <option value="">Select brand</option>
+            <% brands.forEach(brand => { %>
+              <option value="<%= brand.id %>" <%= typeof formData !== 'undefined' && formData.brand_id == brand.id ? 'selected' : '' %>>
+                <%= brand.name %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label for="model" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Model</label>
+          <input type="text" id="model" name="model"
+            value="<%= typeof formData !== 'undefined' ? formData.model : '' %>"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            placeholder="Enter model (optional)">
+        </div>
+
+        <div>
+          <label for="price" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Price per Unit (€)</label>
+          <div class="flex">
+            <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400">€</span>
+            <input type="number" id="price" name="price" min="0" step="0.01"
+              value="<%= typeof formData !== 'undefined' ? formData.price : '' %>"
+              class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-r-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="col-span-1 md:col-span-2">
+          <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Description</label>
+          <textarea id="description" name="description" rows="3"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-vertical"
+            placeholder="Enter description for all assets (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset Details -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <i class="fas fa-list"></i> Asset Details
+      </h3>
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-gray-600 dark:text-gray-400">Add CEXPT ID and Serial Number for each asset you want to create:</p>
+            <p class="text-sm text-gray-500 dark:text-gray-500 mt-1">
+              <i class="fas fa-keyboard mr-1"></i>Press Enter to move to next field • <i class="fas fa-barcode mr-1"></i>Barcode scanners auto-navigate after scan
+            </p>
+          </div>
+          <button type="button" id="addAssetRow" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-1 text-sm">
+            <i class="fas fa-plus"></i> Add Asset
+          </button>
+        </div>
+
+        <!-- Column headers -->
+        <div class="flex gap-3 items-center mb-2">
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">CEXPT ID</label>
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Serial Number</label>
+          </div>
+          <div class="w-10"> <!-- Spacer for remove button column --></div>
+        </div>
+
+        <div id="assetsContainer" class="space-y-3">
+          <!-- Initial row -->
+          <div class="asset-row flex gap-3 items-center">
+            <div class="flex-1">
+              <div class="relative">
+                <input type="text" name="cexpt_ids[]"
+                  class="cexpt-input w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  value="CEXPT" placeholder="CEXPT" required>
+                <div class="validation-message text-xs mt-1"></div>
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="relative">
+                <input type="text" name="serial_numbers[]"
+                  class="serial-input w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  placeholder="Scan or enter serial number" required>
+                <i class="fas fa-barcode absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
+              </div>
+            </div>
+            <button type="button" class="remove-row px-2 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition opacity-50 cursor-not-allowed" disabled>
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between">
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            <span class="font-semibold" id="assetCount">1</span> asset(s) will be created
+          </div>
+          <div class="flex gap-2">
+            <button type="button" id="addMultipleRows" class="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md transition flex items-center gap-1 text-sm">
+              <i class="fas fa-plus-circle"></i> Add 5 More
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="flex flex-wrap gap-2 mt-8">
+      <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+        <i class="fas fa-layer-group"></i> Create All Assets
+      </button>
+      <a href="/items" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const addAssetBtn = document.getElementById('addAssetRow');
+  const addMultipleBtn = document.getElementById('addMultipleRows');
+  const assetsContainer = document.getElementById('assetsContainer');
+  const assetCountSpan = document.getElementById('assetCount');
+
+  // CEXPT ID validation function
+  function setupCexptValidation(input, validationDiv) {
+    let validationTimeout;
+
+    input.addEventListener('input', function() {
+      clearTimeout(validationTimeout);
+      const value = this.value.trim();
+
+      // Reset validation state
+      validationDiv.className = 'validation-message text-xs mt-1';
+      validationDiv.innerHTML = '';
+      this.classList.remove('border-red-500', 'border-green-500');
+
+      // Ensure it starts with CEXPT
+      if (!value.startsWith('CEXPT')) {
+        this.value = 'CEXPT';
+        return;
+      }
+
+      if (value.length < 6) {
+        validationDiv.className = 'validation-message text-xs mt-1 text-yellow-700 dark:text-yellow-300';
+        validationDiv.innerHTML = '<i class="fas fa-info-circle"></i> CEXPT ID should be at least 6 characters';
+        return;
+      }
+
+      // Show checking state
+      validationDiv.className = 'validation-message text-xs mt-1 text-blue-700 dark:text-blue-300';
+      validationDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
+
+      // Check for duplicates after delay
+      validationTimeout = setTimeout(() => {
+        checkDuplicateCexptId(value, input, validationDiv);
+      }, 800);
+    });
+
+    // Position cursor after CEXPT when focused
+    input.addEventListener('focus', function() {
+      if (this.value === 'CEXPT') {
+        setTimeout(() => {
+          this.setSelectionRange(5, 5);
+        }, 0);
+      }
+    });
+
+    // Handle navigation and prevent deleting CEXPT
+    input.addEventListener('keydown', function(e) {
+      const selectionStart = this.selectionStart;
+      const selectionEnd = this.selectionEnd;
+
+      // Handle Enter key for navigation - only if field has content after CEXPT
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        // Only navigate if user has actually entered something after CEXPT
+        if (this.value.length > 5) {
+          navigateToNextField(this, 'serial');
+        }
+        return;
+      }
+
+      // Prevent deleting CEXPT
+      if ((e.key === 'Backspace' || e.key === 'Delete') && selectionStart <= 5) {
+        if (selectionEnd <= 5) {
+          e.preventDefault();
+        }
+      }
+    });
+  }
+
+  // Check for duplicate CEXPT ID
+  async function checkDuplicateCexptId(cexptId, input, validationDiv) {
+    try {
+      const response = await fetch(`/api/items/check-duplicate/${encodeURIComponent(cexptId)}`);
+      const data = await response.json();
+
+      if (data.exists) {
+        input.classList.add('border-red-500');
+        validationDiv.className = 'validation-message text-xs mt-1 text-red-700 dark:text-red-400';
+        validationDiv.innerHTML = `
+          <i class="fas fa-exclamation-triangle"></i>
+          CEXPT ID already exists - Used by: ${data.asset.name}
+        `;
+      } else {
+        input.classList.add('border-green-500');
+        validationDiv.className = 'validation-message text-xs mt-1 text-green-700 dark:text-green-300';
+        validationDiv.innerHTML = '<i class="fas fa-check"></i> CEXPT ID available';
+      }
+    } catch (error) {
+      console.error('Error checking duplicate CEXPT ID:', error);
+      validationDiv.className = 'validation-message text-xs mt-1 text-red-700 dark:text-red-400';
+      validationDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error checking availability';
+    }
+  }
+
+  // Setup serial input for barcode scanning and navigation
+  function setupSerialInput(input) {
+    let scanBuffer = '';
+    let scanTimeout;
+    let isRapidInput = false;
+    let keyPressCount = 0;
+    let lastKeyTime = 0;
+
+    input.addEventListener('keydown', function(e) {
+      const currentTime = Date.now();
+
+      // Handle Enter key for navigation - but only if user intentionally presses it
+      if (e.key === 'Enter') {
+        e.preventDefault();
+
+        // If we have scan buffer from rapid input, use it
+        if (isRapidInput && scanBuffer.length > 0) {
+          this.value = scanBuffer;
+          scanBuffer = '';
+          isRapidInput = false;
+          // Auto-navigate after barcode scan
+          navigateToNextField(this, 'cexpt');
+        } else {
+          // Manual Enter press - only navigate if user hasn't typed recently
+          const timeSinceLastKey = currentTime - lastKeyTime;
+          if (timeSinceLastKey > 300 || this.value.length > 0) {
+            navigateToNextField(this, 'cexpt');
+          }
+        }
+        return;
+      }
+
+      // Track typing patterns to detect barcode scanner
+      if (e.key.length === 1) {
+        const timeDiff = currentTime - lastKeyTime;
+
+        // Rapid input detection (typical barcode scanner behavior)
+        if (timeDiff < 50 && keyPressCount > 3) {
+          isRapidInput = true;
+          scanBuffer += e.key;
+        } else if (timeDiff > 200) {
+          // Reset for new input sequence
+          keyPressCount = 0;
+          isRapidInput = false;
+          scanBuffer = '';
+        }
+
+        keyPressCount++;
+        lastKeyTime = currentTime;
+
+        if (isRapidInput) {
+          scanBuffer += e.key;
+        }
+      }
+
+      // Clear timeout on any keypress
+      clearTimeout(scanTimeout);
+
+      // Clear buffer and flags after period of inactivity
+      scanTimeout = setTimeout(() => {
+        if (isRapidInput && scanBuffer.length > 5) {
+          // Detected barcode scan - apply the value and auto-navigate
+          this.value = scanBuffer;
+          setTimeout(() => {
+            navigateToNextField(this, 'cexpt');
+          }, 100);
+        }
+
+        // Reset all tracking variables
+        scanBuffer = '';
+        isRapidInput = false;
+        keyPressCount = 0;
+      }, 200);
+    });
+
+    // Clear buffer on focus lost
+    input.addEventListener('blur', function() {
+      scanBuffer = '';
+      isRapidInput = false;
+      keyPressCount = 0;
+    });
+
+    // Handle manual input - reset scanner detection on manual changes
+    input.addEventListener('input', function() {
+      // If user is manually typing (slower), reset scanner detection
+      if (!isRapidInput) {
+        scanBuffer = '';
+        keyPressCount = 0;
+      }
+    });
+  }
+
+  // Navigation function to move between fields
+  function navigateToNextField(currentInput, targetType) {
+    const currentRow = currentInput.closest('.asset-row');
+
+    if (targetType === 'serial') {
+      // Move from CEXPT to Serial in same row
+      const serialInput = currentRow.querySelector('.serial-input');
+      if (serialInput) {
+        serialInput.focus();
+        serialInput.select();
+      }
+    } else if (targetType === 'cexpt') {
+      // Move from Serial to next row's CEXPT or create new row
+      const nextRow = currentRow.nextElementSibling;
+
+      if (nextRow) {
+        const nextCexptInput = nextRow.querySelector('.cexpt-input');
+        if (nextCexptInput) {
+          nextCexptInput.focus();
+          nextCexptInput.setSelectionRange(5, nextCexptInput.value.length);
+        }
+      } else {
+        // Add a new row and focus on it
+        addAssetBtn.click();
+        setTimeout(() => {
+          const newRow = assetsContainer.lastElementChild;
+          const newCexptInput = newRow.querySelector('.cexpt-input');
+          if (newCexptInput) {
+            newCexptInput.focus();
+            newCexptInput.setSelectionRange(5, newCexptInput.value.length);
+          }
+        }, 50);
+      }
+    }
+  }
+
+  function updateAssetCount() {
+    const rows = assetsContainer.querySelectorAll('.asset-row');
+    assetCountSpan.textContent = rows.length;
+
+    // Enable/disable remove buttons
+    const removeButtons = assetsContainer.querySelectorAll('.remove-row');
+    removeButtons.forEach((btn, index) => {
+      if (rows.length === 1) {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    });
+  }
+
+  function createAssetRow() {
+    const row = document.createElement('div');
+    row.className = 'asset-row flex gap-3 items-center';
+    row.innerHTML = `
+      <div class="flex-1">
+        <div class="relative">
+          <input type="text" name="cexpt_ids[]"
+            class="cexpt-input w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            value="CEXPT" placeholder="CEXPT" required>
+          <div class="validation-message text-xs mt-1"></div>
+        </div>
+      </div>
+      <div class="flex-1">
+        <div class="relative">
+          <input type="text" name="serial_numbers[]"
+            class="serial-input w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            placeholder="Scan or enter serial number" required>
+          <i class="fas fa-barcode absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"></i>
+        </div>
+      </div>
+      <button type="button" class="remove-row px-2 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition">
+        <i class="fas fa-times"></i>
+      </button>
+    `;
+
+    // Add event listener to remove button
+    const removeBtn = row.querySelector('.remove-row');
+    removeBtn.addEventListener('click', function() {
+      row.remove();
+      updateAssetCount();
+    });
+
+    // Add validation for CEXPT input
+    const cexptInput = row.querySelector('.cexpt-input');
+    const validationDiv = row.querySelector('.validation-message');
+    setupCexptValidation(cexptInput, validationDiv);
+
+    // Setup barcode scanning for serial input
+    const serialInput = row.querySelector('.serial-input');
+    setupSerialInput(serialInput);
+
+    return row;
+  }
+
+  addAssetBtn.addEventListener('click', function() {
+    const newRow = createAssetRow();
+    assetsContainer.appendChild(newRow);
+    updateAssetCount();
+
+    // Focus on the first input of the new row
+    newRow.querySelector('input[name="cexpt_ids[]"]').focus();
+  });
+
+  addMultipleBtn.addEventListener('click', function() {
+    for (let i = 0; i < 5; i++) {
+      const newRow = createAssetRow();
+      assetsContainer.appendChild(newRow);
+    }
+    updateAssetCount();
+  });
+
+  // Add event listener to existing remove button
+  const existingRemoveBtn = assetsContainer.querySelector('.remove-row');
+  if (existingRemoveBtn) {
+    existingRemoveBtn.addEventListener('click', function() {
+      if (assetsContainer.querySelectorAll('.asset-row').length > 1) {
+        existingRemoveBtn.closest('.asset-row').remove();
+        updateAssetCount();
+      }
+    });
+  }
+
+  // Setup validation for initial row
+  const initialCexptInput = assetsContainer.querySelector('.cexpt-input');
+  const initialValidationDiv = assetsContainer.querySelector('.validation-message');
+  const initialSerialInput = assetsContainer.querySelector('.serial-input');
+
+  if (initialCexptInput && initialValidationDiv) {
+    setupCexptValidation(initialCexptInput, initialValidationDiv);
+  }
+
+  if (initialSerialInput) {
+    setupSerialInput(initialSerialInput);
+  }
+
+  // Initial count update
+  updateAssetCount();
+
+  // Form validation
+  const form = document.getElementById('bulkCreateForm');
+  form.addEventListener('submit', function(e) {
+    e.preventDefault(); // Always prevent default to allow async validation
+
+    const cexptIds = Array.from(document.querySelectorAll('input[name="cexpt_ids[]"]')).map(input => input.value.trim());
+    const serialNumbers = Array.from(document.querySelectorAll('input[name="serial_numbers[]"]')).map(input => input.value.trim());
+
+    // Check for empty values first
+    const emptyCexptIds = cexptIds.some(id => id === '' || id === 'CEXPT');
+    const emptySerials = serialNumbers.some(sn => sn === '');
+
+    if (emptyCexptIds) {
+      alert('All CEXPT IDs must be filled in with a value after "CEXPT".');
+      return;
+    }
+
+    if (emptySerials) {
+      alert('All Serial Numbers must be filled in.');
+      return;
+    }
+
+    // Check for duplicate CEXPT IDs within form
+    const duplicateCexptIds = cexptIds.filter((id, index) => cexptIds.indexOf(id) !== index);
+    if (duplicateCexptIds.length > 0) {
+      alert('Duplicate CEXPT IDs found: ' + duplicateCexptIds.join(', ') + '. Each CEXPT ID must be unique.');
+      return;
+    }
+
+    // Check for duplicate Serial Numbers within form
+    const duplicateSerials = serialNumbers.filter((sn, index) => serialNumbers.indexOf(sn) !== index);
+    if (duplicateSerials.length > 0) {
+      alert('Duplicate Serial Numbers found: ' + duplicateSerials.join(', ') + '. Each Serial Number must be unique.');
+      return;
+    }
+
+    // Check for invalid CEXPT IDs (too short)
+    const invalidCexptIds = cexptIds.filter(id => id.length < 6);
+    if (invalidCexptIds.length > 0) {
+      alert('CEXPT IDs must be at least 6 characters long. Invalid IDs: ' + invalidCexptIds.join(', '));
+      return;
+    }
+
+    // Check for existing CEXPT IDs in database
+    const redBorderInputs = document.querySelectorAll('.cexpt-input.border-red-500');
+    if (redBorderInputs.length > 0) {
+      alert('Some CEXPT IDs already exist in the database. Please check the red-bordered fields.');
+      return;
+    }
+
+    // All validations passed, submit the form
+    this.submit();
+  });
+});
+</script>

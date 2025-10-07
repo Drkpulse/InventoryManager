@@ -1,0 +1,319 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Header & Breadcrumbs -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+        <a href="/references" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
+          <i class="fas fa-cog"></i> References
+        </a>
+        <i class="fas fa-chevron-right mx-2"></i>
+        <span class="text-gray-700 dark:text-gray-200">Status Options</span>
+      </nav>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Status Options</h1>
+      <div class="flex items-center gap-4 mt-2 text-gray-700 dark:text-gray-300 text-sm">
+        <span class="flex items-center gap-2">
+          <i class="fas fa-toggle-on"></i>
+          <%= statuses ? statuses.length : 0 %> status options
+        </span>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <a href="/references" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+        <i class="fas fa-arrow-left mr-2"></i> Back to References
+      </a>
+      <a href="/references/status/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-plus mr-2"></i> Add New Status
+      </a>
+    </div>
+  </div>
+
+  <div>
+    <% if (statuses && statuses.length > 0) { %>
+      <div class="overflow-x-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+              <th class="px-4 py-3 text-left font-semibold">Status</th>
+              <th class="px-4 py-3 text-left font-semibold">Description</th>
+              <th class="px-4 py-3 text-left font-semibold">Color</th>
+              <th class="px-4 py-3 text-left font-semibold">Usage</th>
+              <th class="px-4 py-3 text-left font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% statuses.forEach(status => { %>
+              <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
+                <!-- Status name with icon -->
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <%
+                      // Get status color for RGB or named colors
+                      let statusColor = status.color || '#6B7280';
+                      let isRgbColor = statusColor.startsWith('#');
+
+                      // Convert hex to RGB for opacity calculations
+                      function hexToRgb(hex) {
+                        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                        return result ? {
+                          r: parseInt(result[1], 16),
+                          g: parseInt(result[2], 16),
+                          b: parseInt(result[3], 16)
+                        } : null;
+                      }
+
+                      let rgbColor = isRgbColor ? hexToRgb(statusColor) : null;
+                    %>
+
+                    <!-- Status Badge with Icon -->
+                    <%
+                      let badgeStyle = '';
+                      if (isRgbColor && rgbColor) {
+                        badgeStyle = `background-color: rgba(${rgbColor.r}, ${rgbColor.g}, ${rgbColor.b}, 0.1); border-color: rgba(${rgbColor.r}, ${rgbColor.g}, ${rgbColor.b}, 0.3); color: ${statusColor};`;
+                      } else {
+                        badgeStyle = 'background-color: #F3F4F6; border-color: #D1D5DB; color: #374151;';
+                      }
+                    %>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg border" style="<%= badgeStyle %>">
+                      <% if (status.icon) { %>
+                        <% if (status.icon.startsWith('fas fa-')) { %>
+                          <i class="<%= status.icon %> text-lg" style="color: <%= statusColor %>;"></i>
+                        <% } else { %>
+                          <span class="text-lg"><%= status.icon %></span>
+                        <% } %>
+                      <% } else { %>
+                        <i class="fas fa-tag text-lg" style="color: <%= statusColor %>;"></i>
+                      <% } %>
+                      <div class="flex flex-col">
+                        <span class="font-semibold text-base"><%= status.name %></span>
+                        <span class="text-xs opacity-75">
+                          <% if (status.status_order && status.status_order <= 5) { %>
+                            System Status
+                          <% } else { %>
+                            Custom Status
+                          <% } %>
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Status Type Indicators -->
+                    <div class="flex flex-col gap-1">
+                      <% if (status.is_active) { %>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700">
+                          <i class="fas fa-check-circle text-xs"></i>
+                          Active
+                        </span>
+                      <% } else { %>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                          <i class="fas fa-pause-circle text-xs"></i>
+                          Inactive
+                        </span>
+                      <% } %>
+
+                      <% if (status.name === 'New') { %>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
+                          <i class="fas fa-star text-xs"></i>
+                          Default
+                        </span>
+                      <% } %>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Description -->
+                <td class="px-4 py-3 max-w-xs">
+                  <% if (status.description) { %>
+                    <span class="block text-gray-700 dark:text-gray-200 break-words"><%= status.description %></span>
+                  <% } else { %>
+                    <span class="text-gray-400 italic">No description</span>
+                  <% } %>
+                </td>
+
+                <!-- Color indicator -->
+                <td class="px-4 py-3">
+                  <% if (status.color) { %>
+                    <%
+                      let displayColor = status.color;
+                      let isHex = displayColor.startsWith('#');
+                      let colorName = isHex ? displayColor : status.color;
+
+                      // For RGB colors, extract a readable name or use the hex value
+                      if (isHex) {
+                        const colorMap = {
+                          '#6B7280': 'Gray',
+                          '#10B981': 'Emerald Green',
+                          '#3B82F6': 'Blue',
+                          '#F59E0B': 'Amber',
+                          '#EF4444': 'Red',
+                          '#F97316': 'Orange',
+                          '#8B5CF6': 'Violet',
+                          '#6366F1': 'Indigo',
+                          '#EC4899': 'Pink',
+                          '#14B8A6': 'Teal',
+                          '#059669': 'Green',
+                          '#DC2626': 'Dark Red',
+                          '#2563EB': 'Royal Blue',
+                          '#7C3AED': 'Purple',
+                          '#0891B2': 'Cyan',
+                          '#374151': 'Dark Gray',
+                          '#B91C1C': 'Crimson',
+                          '#065F46': 'Dark Green'
+                        };
+                        colorName = colorMap[displayColor] || displayColor;
+                      }
+
+                      let badgeStyle = '';
+                      if (isHex && rgbColor) {
+                        badgeStyle = `background-color: rgba(${rgbColor.r}, ${rgbColor.g}, ${rgbColor.b}, 0.1); color: ${displayColor}; border: 1px solid rgba(${rgbColor.r}, ${rgbColor.g}, ${rgbColor.b}, 0.3);`;
+                      } else {
+                        badgeStyle = 'background-color: #F3F4F6; color: #374151; border: 1px solid #D1D5DB;';
+                      }
+                    %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold" style="<%= badgeStyle %>">
+                      <div class="w-2 h-2 rounded-full" style="background-color: <%= displayColor %>;"></div>
+                      <%= colorName %>
+                    </span>
+                  <% } else { %>
+                    <span class="text-gray-400 italic text-xs">No color</span>
+                  <% } %>
+                </td>
+
+                <!-- Usage -->
+                <td class="px-4 py-3">
+                  <% if (parseInt(status.item_count) > 0) { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 text-xs font-semibold">
+                      <i class="fas fa-check-circle"></i>
+                      <%= status.item_count %> items
+                    </span>
+                  <% } else { %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 text-xs font-semibold">
+                      <i class="fas fa-minus-circle"></i>
+                      Not used
+                    </span>
+                  <% } %>
+                </td>
+
+                <!-- Actions -->
+                <td class="px-4 py-3">
+                  <div class="flex gap-1">
+                    <a href="/references/status/<%= status.id %>/edit"
+                      class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition"
+                      title="Edit Status">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <% if (parseInt(status.item_count) === 0) { %>
+                      <form method="POST" action="/references/status/<%= status.id %>/delete"
+                            class="inline delete-form"
+                            data-status-name="<%= status.name %>">
+                        <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition" title="Delete Status">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <button class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-500 cursor-not-allowed" disabled
+                        title="Cannot delete: this status is in use by <%= status.item_count %> items">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <!-- Results Summary -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
+            <i class="fas fa-toggle-on"></i>
+            Showing <strong><%= statuses.length %></strong> status options
+          </div>
+          <div class="flex gap-6 text-xs text-gray-500 dark:text-gray-400 italic">
+            <%
+              const usedStatuses = statuses.filter(s => parseInt(s.item_count) > 0).length;
+              const unusedStatuses = statuses.length - usedStatuses;
+            %>
+            <span><span class="font-semibold"><%= usedStatuses %></span> In Use</span>
+            <span><span class="font-semibold"><%= unusedStatuses %></span> Unused</span>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div class="mb-4 text-4xl text-gray-400 dark:text-gray-600">
+          <i class="fas fa-toggle-on"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Status Options Found</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-4">Status options help categorize and organize your assets. Start by adding your first status option.</p>
+        <div class="flex gap-2">
+          <a href="/references/status/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+            <i class="fas fa-plus mr-2"></i> Add First Status
+          </a>
+          <a href="/references" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+            <i class="fas fa-cog mr-2"></i> Manage References
+          </a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" style="display: none;">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Confirm Delete</h4>
+      </div>
+      <div class="mb-4">
+        <p class="mb-2">Are you sure you want to delete the status "<span id="deleteStatusName"></span>"?</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">This action cannot be undone.</p>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button type="button" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition" onclick="closeDeleteModal()">
+          <i class="fas fa-times mr-2"></i> Cancel
+        </button>
+        <button type="button" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition" id="confirmDeleteBtn">
+          <i class="fas fa-trash mr-2"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentDeleteForm = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle delete form submissions
+  const deleteForms = document.querySelectorAll('.delete-form');
+
+  deleteForms.forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const statusName = this.dataset.statusName;
+      currentDeleteForm = this;
+
+      document.getElementById('deleteStatusName').textContent = statusName;
+      document.getElementById('deleteModal').style.display = 'flex';
+    });
+  });
+
+  // Handle confirm delete
+  document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (currentDeleteForm) {
+      currentDeleteForm.submit();
+    }
+  });
+});
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+  currentDeleteForm = null;
+}
+
+// Close modal when clicking outside
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeDeleteModal();
+  }
+});
+</script>

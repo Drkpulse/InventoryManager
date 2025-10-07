@@ -1,226 +1,689 @@
-<div class="broadcast-container">
-  <div class="card">
-    <div class="card-header">
-      <h2><i class="fas fa-bullhorn"></i> Send Notification to All Users</h2>
+<div class="max-w-3xl mx-auto my-8">
+  <!-- Header Section -->
+  <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-t-2xl p-1 shadow-lg">
+    <div class="bg-white dark:bg-gray-800 rounded-t-xl p-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full p-3">
+              <i class="fas fa-bullhorn text-white text-xl"></i>
+            </div>
+            Broadcast Center
+          </h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-3">Reach all users instantly with system-wide announcements and important updates.</p>
+        </div>
+        <div class="hidden md:flex items-center gap-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400" id="userCount">-</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Active Users</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="notificationCount">-</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">Today's Notifications</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="card-body">
+  </div>
+
+  <!-- Main Content -->
+  <div class="bg-white dark:bg-gray-800 rounded-b-2xl shadow-lg p-8 border-t border-gray-200 dark:border-gray-700">
+    <!-- Quick Stats for Mobile -->
+    <div class="md:hidden grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+      <div class="text-center">
+        <div class="text-xl font-bold text-indigo-600 dark:text-indigo-400" id="userCountMobile">-</div>
+        <div class="text-xs text-gray-500 dark:text-gray-400">Active Users</div>
+      </div>
+      <div class="text-center">
+        <div class="text-xl font-bold text-purple-600 dark:text-purple-400" id="notificationCountMobile">-</div>
+        <div class="text-xs text-gray-500 dark:text-gray-400">Today's Notifications</div>
+      </div>
+    </div>
+
+    <div>
+      <!-- Flash messages integration -->
+      <% if (messages && messages.error && messages.error.length > 0) { %>
+        <% messages.error.forEach(function(msg) { %>
+          <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700 animate-fadeOut">
+            <i class="fas fa-exclamation-triangle"></i> <%= msg %>
+          </div>
+        <% }) %>
+      <% } %>
+
+      <% if (messages && messages.success && messages.success.length > 0) { %>
+        <% messages.success.forEach(function(msg) { %>
+          <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700 animate-fadeOut">
+            <i class="fas fa-check-circle"></i> <%= msg %>
+          </div>
+        <% }) %>
+      <% } %>
+
+      <% if (messages && messages.info && messages.info.length > 0) { %>
+        <% messages.info.forEach(function(msg) { %>
+          <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700 animate-fadeOut">
+            <i class="fas fa-info-circle"></i> <%= msg %>
+          </div>
+        <% }) %>
+      <% } %>
+
+      <!-- Legacy flash message support -->
       <% if (typeof error !== 'undefined' && error) { %>
-        <div class="alert alert-danger">
+        <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700 animate-fadeOut">
           <i class="fas fa-exclamation-triangle"></i> <%= error %>
         </div>
       <% } %>
 
       <% if (typeof success !== 'undefined' && success) { %>
-        <div class="alert alert-success">
+        <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700 animate-fadeOut">
           <i class="fas fa-check-circle"></i> <%= success %>
         </div>
       <% } %>
 
-      <form method="POST" action="/notifications/broadcast" class="broadcast-form">
-        <div class="form-group">
-          <label for="title">
-            <i class="fas fa-heading"></i> Notification Title
+      <form method="POST" action="/notifications/broadcast" id="broadcastForm" class="space-y-6">
+        <!-- Notification Type Selection -->
+        <div class="mb-6">
+          <label class="block font-semibold mb-3 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+            <i class="fas fa-palette"></i> Notification Type
           </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            placeholder="Enter notification title..."
-            maxlength="255"
-            required
-          >
-          <small>Maximum 255 characters</small>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <button type="button" class="notification-type-btn active" data-type="info" data-icon="info-circle" data-color="blue">
+              <i class="fas fa-info-circle text-blue-500"></i>
+              <span>Info</span>
+            </button>
+            <button type="button" class="notification-type-btn" data-type="success" data-icon="check-circle" data-color="green">
+              <i class="fas fa-check-circle text-green-500"></i>
+              <span>Success</span>
+            </button>
+            <button type="button" class="notification-type-btn" data-type="warning" data-icon="exclamation-triangle" data-color="yellow">
+              <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+              <span>Warning</span>
+            </button>
+            <button type="button" class="notification-type-btn" data-type="error" data-icon="times-circle" data-color="red">
+              <i class="fas fa-times-circle text-red-500"></i>
+              <span>Error</span>
+            </button>
+          </div>
+          <input type="hidden" id="notificationType" name="type" value="info">
         </div>
 
-        <div class="form-group">
-          <label for="message">
-            <i class="fas fa-comment"></i> Message
-          </label>
-          <textarea
-            id="message"
-            name="message"
-            rows="5"
-            placeholder="Enter your message here..."
-            maxlength="1000"
-            required
-          ></textarea>
-          <small>Maximum 1000 characters</small>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label for="title" class="block font-semibold mb-2 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+              <i class="fas fa-heading text-indigo-500"></i> Title <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="title" name="title" maxlength="255" required placeholder="Enter a compelling title..."
+              class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-all duration-200">
+            <div class="flex justify-between items-center mt-2">
+              <div class="text-xs text-gray-500 dark:text-gray-400">Make it attention-grabbing</div>
+              <div class="text-xs" id="titleCounter"></div>
+            </div>
+          </div>
+
+          <div>
+            <label for="url" class="block font-semibold mb-2 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+              <i class="fas fa-link text-purple-500"></i> Action Link (optional)
+            </label>
+            <input type="url" id="url" name="url" placeholder="https://example.com/action"
+              class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-all duration-200">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">Add a call-to-action URL</div>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="url">
-            <i class="fas fa-link"></i> Link (Optional)
+        <div>
+          <label for="message" class="block font-semibold mb-2 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+            <i class="fas fa-comment-dots text-green-500"></i> Message <span class="text-red-500">*</span>
           </label>
-          <input
-            type="url"
-            id="url"
-            name="url"
-            placeholder="https://example.com/page"
-          >
-          <small>Optional: Add a link users can click on</small>
+          <textarea id="message" name="message" rows="4" maxlength="1000" required placeholder="Craft your message here. Be clear, concise, and actionable..."
+            class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-all duration-200 resize-none"></textarea>
+          <div class="flex justify-between items-center mt-2">
+            <div class="text-xs text-gray-500 dark:text-gray-400">Clear and concise messaging works best</div>
+            <div class="text-xs" id="messageCounter"></div>
+          </div>
         </div>
 
-        <div class="form-group preview-section">
-          <label>Preview:</label>
-          <div class="notification-preview" id="notificationPreview">
-            <div class="notification-item preview">
-              <div class="notification-icon">
-                <i class="fas fa-bullhorn"></i>
-              </div>
-              <div class="notification-content">
-                <p class="notification-text" id="previewText">Your message will appear here...</p>
-                <span class="notification-time">Just now</span>
+        <!-- Live Preview Section -->
+        <div class="mb-8">
+          <label class="block font-semibold mb-3 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+            <i class="fas fa-eye text-pink-500"></i> Live Preview
+          </label>
+          <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6">
+            <div class="notification-preview max-w-sm mx-auto" id="notificationPreview">
+              <div class="toast-notification bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 transform transition-all duration-300 hover:scale-105">
+                <div class="flex items-start gap-3">
+                  <div class="notification-icon flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                    <i class="fas fa-info-circle text-sm" id="previewIcon"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-medium text-gray-900 dark:text-gray-100 mb-1" id="previewTitle">
+                      Your title will appear here...
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400" id="previewMessage">
+                      Your message will appear here...
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-500 mt-2" id="previewTime">
+                      Just now
+                    </div>
+                  </div>
+                  <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times text-xs"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-danger">
-            <i class="fas fa-paper-plane"></i> Send to All Users
+        <!-- Advanced Options -->
+        <div class="mb-8">
+          <button type="button" class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium" id="toggleAdvanced">
+            <i class="fas fa-cog"></i> Advanced Options
+            <i class="fas fa-chevron-down transition-transform" id="advancedChevron"></i>
           </button>
-          <a href="/dashboard" class="btn">
+          <div class="hidden mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700" id="advancedOptions">
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="playSound" name="playSound" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Play notification sound</span>
+                </label>
+              </div>
+              <div>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="persistent" name="persistent" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Make persistent (won't auto-dismiss)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
+          <button type="submit" class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105" id="broadcastSubmit">
+            <span id="broadcastSpinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
+            <i class="fas fa-paper-plane" id="broadcastIcon"></i>
+            <span>Send to All Users</span>
+          </button>
+          <a href="/dashboard" class="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
             <i class="fas fa-times"></i> Cancel
           </a>
         </div>
       </form>
+
+    <!-- Testing Section -->
+    <div class="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+            <i class="fas fa-flask text-blue-500"></i> Testing Center
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Test your notifications before broadcasting to all users.</p>
+        </div>
+        <div class="hidden sm:block">
+          <div class="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+            <div class="text-xs text-gray-500 dark:text-gray-400">Last Test</div>
+            <div class="text-sm font-medium text-gray-700 dark:text-gray-300" id="lastTestTime">Never</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="testNotification" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105">
+          <i class="fas fa-paper-plane"></i>
+          <span>Send Test to Me</span>
+        </button>
+        <button id="previewToast" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105">
+          <i class="fas fa-eye"></i>
+          <span>Preview Toast</span>
+        </button>
+      </div>
+    </div>
     </div>
   </div>
 </div>
 
 <style>
-.broadcast-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
+@media (max-width: 640px) {
+  .max-w-3xl { padding: 0 1rem !important; }
+  .p-8 { padding: 1.25rem !important; }
 }
 
-.broadcast-form .form-group {
-  margin-bottom: 1.5rem;
+.animate-fadeOut {
+  animation: fadeOut 0.5s ease-out 4.5s forwards;
 }
 
-.broadcast-form label {
+@keyframes fadeOut {
+  to { opacity: 0; height: 0; margin: 0; padding: 0; }
+}
+
+/* Notification Type Buttons */
+.notification-type-btn {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #495057;
+  padding: 1rem;
+  border: 2px solid rgb(229 231 235);
+  border-radius: 0.75rem;
+  transition: all 0.2s;
+  cursor: pointer;
 }
 
-.broadcast-form label i {
-  color: var(--primary);
+.notification-type-btn:hover {
+  border-color: rgb(129 140 248);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.broadcast-form textarea {
-  resize: vertical;
-  min-height: 120px;
+.notification-type-btn.active {
+  border-color: rgb(99 102 241);
+  background-color: rgb(238 242 255);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.preview-section {
-  background-color: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
+.dark .notification-type-btn {
+  border-color: rgb(75 85 99);
 }
 
-.notification-preview {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-top: 1rem;
+.dark .notification-type-btn.active {
+  background-color: rgba(67, 56, 202, 0.3);
 }
 
-.notification-item.preview {
-  border-left: 3px solid #dc3545;
-  background-color: rgba(220, 53, 69, 0.05);
+.notification-type-btn span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(55 65 81);
 }
 
-.notification-item.preview .notification-icon {
-  background-color: #dc3545;
-  color: white;
+.dark .notification-type-btn span {
+  color: rgb(209 213 219);
 }
 
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  padding-top: 1rem;
-  border-top: 1px solid #dee2e6;
+.notification-type-btn.active span {
+  color: rgb(67 56 202);
 }
 
-.form-actions .btn-danger {
-  background-color: #dc3545;
-  border-color: #dc3545;
-  color: white;
+.dark .notification-type-btn.active span {
+  color: rgb(165 180 252);
 }
 
-.form-actions .btn-danger:hover {
-  background-color: #c82333;
-  border-color: #bd2130;
+/* Preview Toast Styling */
+.toast-notification {
+  animation: toastSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Character counters */
-small {
-  color: #6c757d;
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-  display: block;
+@keyframes toastSlideIn {
+  0% {
+    transform: translateX(100%) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
 }
 
-/* Dark mode support */
-body.dark-mode .preview-section {
-  background-color: #252525;
-  border-color: #444;
+.notification-icon {
+  transition: all 0.3s ease;
 }
 
-body.dark-mode .notification-preview {
-  background-color: #1a1a1a;
+.notification-icon.blue {
+  background-color: rgb(219 234 254);
+  color: rgb(37 99 235);
+}
+
+.dark .notification-icon.blue {
+  background-color: rgba(30, 64, 175, 0.3);
+  color: rgb(96 165 250);
+}
+
+.notification-icon.green {
+  background-color: rgb(220 252 231);
+  color: rgb(22 163 74);
+}
+
+.dark .notification-icon.green {
+  background-color: rgba(20, 83, 45, 0.3);
+  color: rgb(74 222 128);
+}
+
+.notification-icon.yellow {
+  background-color: rgb(254 249 195);
+  color: rgb(202 138 4);
+}
+
+.dark .notification-icon.yellow {
+  background-color: rgba(133, 77, 14, 0.3);
+  color: rgb(250 204 21);
+}
+
+.notification-icon.red {
+  background-color: rgb(254 226 226);
+  color: rgb(220 38 38);
+}
+
+.dark .notification-icon.red {
+  background-color: rgba(153, 27, 27, 0.3);
+  color: rgb(248 113 113);
+}
+
+/* Advanced Options Animation */
+#advancedOptions.show {
+  display: block !important;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    max-height: 200px;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced form inputs */
+input:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Button hover effects */
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* Loading states */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% { left: 100%; }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // DOM Elements
   const titleInput = document.getElementById('title');
   const messageInput = document.getElementById('message');
-  const previewText = document.getElementById('previewText');
+  const urlInput = document.getElementById('url');
+  const notificationTypeInput = document.getElementById('notificationType');
+  const previewTitle = document.getElementById('previewTitle');
+  const previewMessage = document.getElementById('previewMessage');
+  const previewIcon = document.getElementById('previewIcon');
+  const titleCounter = document.getElementById('titleCounter');
+  const messageCounter = document.getElementById('messageCounter');
+  const broadcastForm = document.getElementById('broadcastForm');
+  const broadcastSubmit = document.getElementById('broadcastSubmit');
+  const broadcastSpinner = document.getElementById('broadcastSpinner');
+  const broadcastIcon = document.getElementById('broadcastIcon');
+  const testNotificationBtn = document.getElementById('testNotification');
+  const previewToastBtn = document.getElementById('previewToast');
+  const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
+  const advancedOptions = document.getElementById('advancedOptions');
+  const advancedChevron = document.getElementById('advancedChevron');
+  const notificationPreview = document.getElementById('notificationPreview');
+
+  // Stats elements
+  const userCount = document.getElementById('userCount');
+  const userCountMobile = document.getElementById('userCountMobile');
+  const notificationCount = document.getElementById('notificationCount');
+  const notificationCountMobile = document.getElementById('notificationCountMobile');
+  const lastTestTime = document.getElementById('lastTestTime');
+
+  // Current notification settings
+  let currentType = 'info';
+  let currentIcon = 'info-circle';
+  let currentColor = 'blue';
+
+  // Icon mappings
+  const iconMap = {
+    'info': 'fa-info-circle',
+    'success': 'fa-check-circle',
+    'warning': 'fa-exclamation-triangle',
+    'error': 'fa-times-circle'
+  };
+
+  // Load stats
+  loadStats();
+
+  // Notification type selection
+  document.querySelectorAll('.notification-type-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.notification-type-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+
+      currentType = this.dataset.type;
+      currentIcon = this.dataset.icon;
+      currentColor = this.dataset.color;
+
+      notificationTypeInput.value = currentType;
+      updatePreview();
+    });
+  });
+
+  // Advanced options toggle
+  toggleAdvancedBtn.addEventListener('click', function() {
+    if (advancedOptions.classList.contains('hidden')) {
+      advancedOptions.classList.remove('hidden');
+      advancedOptions.classList.add('show');
+      advancedChevron.style.transform = 'rotate(180deg)';
+    } else {
+      advancedOptions.classList.add('hidden');
+      advancedOptions.classList.remove('show');
+      advancedChevron.style.transform = 'rotate(0deg)';
+    }
+  });
 
   function updatePreview() {
     const title = titleInput.value.trim();
     const message = messageInput.value.trim();
 
-    if (title && message) {
-      previewText.innerHTML = `<strong>${title}</strong><br>${message}`;
-    } else if (title) {
-      previewText.textContent = title;
-    } else if (message) {
-      previewText.textContent = message;
+    previewTitle.textContent = title || 'Your title will appear here...';
+    previewMessage.textContent = message || 'Your message will appear here...';
+
+    // Update icon
+    previewIcon.className = `fas ${iconMap[currentType]} text-sm`;
+
+    // Update icon container color
+    const iconContainer = previewIcon.parentElement;
+    iconContainer.className = `notification-icon ${currentColor} flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center`;
+  }
+
+  function updateCounter(input, counter, max) {
+    const remaining = max - input.value.length;
+    const percentage = (input.value.length / max) * 100;
+
+    counter.textContent = `${input.value.length}/${max}`;
+
+    if (remaining < 50) {
+      counter.className = "text-xs text-red-600 dark:text-red-400";
+    } else if (remaining < 100) {
+      counter.className = "text-xs text-yellow-600 dark:text-yellow-400";
     } else {
-      previewText.textContent = 'Your message will appear here...';
+      counter.className = "text-xs text-gray-500 dark:text-gray-400";
     }
   }
 
-  titleInput.addEventListener('input', updatePreview);
-  messageInput.addEventListener('input', updatePreview);
+  async function loadStats() {
+    try {
+      const response = await fetch('/api/notifications/stats');
+      const result = await response.json();
 
-  // Character counters
-  function addCharacterCounter(input, maxLength) {
-    const counter = document.createElement('div');
-    counter.className = 'character-counter';
-    counter.style.cssText = 'text-align: right; font-size: 0.8rem; color: #6c757d; margin-top: 0.25rem;';
+      if (result.success && result.stats) {
+        const stats = result.stats.overview;
 
-    function updateCounter() {
-      const remaining = maxLength - input.value.length;
-      counter.textContent = `${input.value.length}/${maxLength} characters`;
-      counter.style.color = remaining < 50 ? '#dc3545' : '#6c757d';
+        // Update user count (use total notifications as a proxy for active users)
+        if (userCount) userCount.textContent = stats.total || 0;
+        if (userCountMobile) userCountMobile.textContent = stats.total || 0;
+
+        // Update notification count (use unread count)
+        if (notificationCount) notificationCount.textContent = stats.unread || 0;
+        if (notificationCountMobile) notificationCountMobile.textContent = stats.unread || 0;
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
+      if (userCount) userCount.textContent = '-';
+      if (userCountMobile) userCountMobile.textContent = '-';
+      if (notificationCount) notificationCount.textContent = '-';
+      if (notificationCountMobile) notificationCountMobile.textContent = '-';
     }
-
-    updateCounter();
-    input.addEventListener('input', updateCounter);
-    input.parentNode.appendChild(counter);
   }
 
-  addCharacterCounter(titleInput, 255);
-  addCharacterCounter(messageInput, 1000);
+  function showToastPreview() {
+    const title = titleInput.value.trim() || 'Preview Title';
+    const message = messageInput.value.trim() || 'This is how your notification will appear to users.';
+
+    // Use the advanced notification system if available
+    if (typeof window.advancedNotificationSystem !== 'undefined') {
+      window.advancedNotificationSystem.showToast(currentType, title, message, {
+        url: urlInput.value.trim() || null,
+        persistent: document.getElementById('persistent')?.checked || false,
+        playSound: document.getElementById('playSound')?.checked || false
+      });
+    } else {
+      // Fallback toast
+      const toast = document.createElement('div');
+      toast.className = `fixed top-4 right-4 max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 z-50`;
+      toast.innerHTML = `
+        <div class="flex items-start gap-3">
+          <div class="notification-icon ${currentColor} flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center">
+            <i class="fas ${iconMap[currentType]} text-sm"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-medium text-gray-900 dark:text-gray-100">${title}</div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">${message}</div>
+          </div>
+          <button class="text-gray-400 hover:text-gray-600" onclick="this.parentElement.parentElement.remove()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+
+      document.body.appendChild(toast);
+
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        if (toast.parentElement) {
+          toast.remove();
+        }
+      }, 5000);
+    }
+  }
+
+  // Event listeners
+  titleInput.addEventListener('input', function() {
+    updatePreview();
+    updateCounter(titleInput, titleCounter, 255);
+  });
+
+  messageInput.addEventListener('input', function() {
+    updatePreview();
+    updateCounter(messageInput, messageCounter, 1000);
+  });
+
+  urlInput.addEventListener('input', updatePreview);
+
+  // Preview toast button
+  previewToastBtn.addEventListener('click', showToastPreview);
+
+  // Form submission
+  broadcastForm.addEventListener('submit', function() {
+    broadcastSubmit.disabled = true;
+    broadcastSpinner.style.display = 'inline-block';
+    broadcastIcon.style.display = 'none';
+    broadcastSubmit.classList.add('loading');
+  });
+
+  // Test notification
+  testNotificationBtn.addEventListener('click', async function() {
+    const originalText = testNotificationBtn.innerHTML;
+    testNotificationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Sending...</span>';
+    testNotificationBtn.disabled = true;
+
+    try {
+      const testData = {
+        title: titleInput.value.trim() || 'Test Notification',
+        message: messageInput.value.trim() || 'This is a test notification.',
+        type: currentType,
+        url: urlInput.value.trim() || null
+      };
+
+      const response = await fetch('/notifications/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(testData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        testNotificationBtn.innerHTML = '<i class="fas fa-check"></i> <span>Test Sent!</span>';
+        testNotificationBtn.className = testNotificationBtn.className.replace('bg-blue-600 hover:bg-blue-700', 'bg-green-600');
+
+        // Update last test time
+        lastTestTime.textContent = 'Just now';
+
+        setTimeout(() => {
+          testNotificationBtn.innerHTML = originalText;
+          testNotificationBtn.className = testNotificationBtn.className.replace('bg-green-600', 'bg-blue-600 hover:bg-blue-700');
+          testNotificationBtn.disabled = false;
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'Failed to send test notification');
+      }
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      testNotificationBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Error</span>';
+      testNotificationBtn.className = testNotificationBtn.className.replace('bg-blue-600 hover:bg-blue-700', 'bg-red-600');
+
+      setTimeout(() => {
+        testNotificationBtn.innerHTML = originalText;
+        testNotificationBtn.className = testNotificationBtn.className.replace('bg-red-600', 'bg-blue-600 hover:bg-blue-700');
+        testNotificationBtn.disabled = false;
+      }, 3000);
+    }
+  });
+
+  // Initialize
+  updatePreview();
+  updateCounter(titleInput, titleCounter, 255);
+  updateCounter(messageInput, messageCounter, 1000);
+
+  // Auto-dismiss flash messages
+  setTimeout(() => {
+    document.querySelectorAll('.animate-fadeOut').forEach(el => {
+      el.style.transition = 'all 0.5s ease-out';
+      el.style.opacity = '0';
+      el.style.height = '0';
+      el.style.margin = '0';
+      el.style.padding = '0';
+      setTimeout(() => el.remove(), 500);
+    });
+  }, 5000);
+
+  // Refresh stats every 30 seconds
+  setInterval(loadStats, 30000);
 });
 </script>

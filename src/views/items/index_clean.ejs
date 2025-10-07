@@ -1,0 +1,595 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100"><%= t('assets_management') %></h1>
+    </div>
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <a href="/items/new" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-plus mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('add_new_item') %>
+      </a>
+      <a href="/items/bulk-create" class="group px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg" style="background: linear-gradient(to right, rgb(249, 115, 22), rgb(234, 88, 12)); color: white;">
+        <i class="fas fa-layer-group mr-2 group-hover:scale-110 transition-transform duration-300"></i> Bulk Create Assets
+      </a>
+      <a href="/items/new-receipt" class="group px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-receipt mr-2 group-hover:rotate-12 transition-transform duration-300"></i> <%= t('add_new_receipt') %>
+      </a>
+      <button id="exportItemsBtn" type="button" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-download mr-2 group-hover:translate-y-1 transition-transform duration-300"></i> <%= t('export_asset_list') %>
+      </button>
+    </div>
+  </div>
+
+  <!-- Advanced Filters Panel -->
+  <div class="mb-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+    <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" id="filtersToggle">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-filter"></i>
+        <h3 class="font-semibold text-gray-700 dark:text-gray-200"><%= t('advanced_filters') %></h3>
+        <span class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold" id="filterBadge">0</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500 dark:text-gray-400" id="appliedFiltersPreview"><%= t('no_filters_applied') %></span>
+        <i class="fas fa-chevron-down toggle-icon"></i>
+      </div>
+    </div>
+    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 hidden" id="filtersContent">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+        <div>
+          <label for="typeFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('asset_type') %></label>
+          <select id="typeFilter" name="type"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <option value=""><%= t('all_types') %></option>
+            <% if (typeof types !== 'undefined') { %>
+              <% types.forEach(type => { %>
+                <option value="<%= type.id %>" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.type == type.id) ? 'selected' : '' %>>
+                  <%= type.name %>
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+        <div>
+          <label for="brandFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('brand') %></label>
+          <select id="brandFilter" name="brand"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <option value=""><%= t('all_brands') %></option>
+            <% if (typeof brands !== 'undefined') { %>
+              <% brands.forEach(brand => { %>
+                <option value="<%= brand.id %>" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.brand == brand.id) ? 'selected' : '' %>>
+                  <%= brand.name %>
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+        <div>
+          <label for="statusFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('status') %></label>
+          <select id="statusFilter" name="status"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <option value=""><%= t('all_statuses') %></option>
+            <% if (statuses && statuses.length > 0) { %>
+              <% statuses.forEach(status => { %>
+                <option value="<%= status.id %>" <%= req.query.status == status.id ? 'selected' : '' %>>
+                  <%= status.name %>
+                </option>
+              <% }); %>
+            <% } %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('price_range') %></label>
+          <div class="flex gap-2">
+            <input type="number" id="minPrice" name="minPrice" placeholder="Min €" min="0" step="0.01"
+              class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <span class="self-center text-gray-500 dark:text-gray-400">to</span>
+            <input type="number" id="maxPrice" name="maxPrice" placeholder="Max €" min="0" step="0.01"
+              class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('date_acquired') %></label>
+          <div class="flex gap-2">
+            <input type="date" id="startDate" name="startDate"
+              class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <span class="self-center text-gray-500 dark:text-gray-400">to</span>
+            <input type="date" id="endDate" name="endDate"
+              class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          </div>
+        </div>
+        <div>
+          <label for="departmentFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1"><%= t('department') %></label>
+          <select id="departmentFilter" name="department"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <option value=""><%= t('all_departments') %></option>
+            <% if (typeof departments !== 'undefined') { %>
+              <% departments.forEach(dept => { %>
+                <option value="<%= dept.id %>" <%= (typeof currentFilters !== 'undefined' && currentFilters && currentFilters.department == dept.id) ? 'selected' : '' %>>
+                  <%= dept.name %>
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap gap-2 text-xs" id="appliedFilters"></div>
+        <div class="flex gap-2">
+          <button type="button" id="applyFilters" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+            <i class="fas fa-search group-hover:scale-110 transition-transform duration-300"></i> <%= t('apply_filters') %>
+          </button>
+          <button type="button" id="resetFilters" class="group px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+            <i class="fas fa-times group-hover:-rotate-12 transition-transform duration-300"></i> <%= t('reset_all') %>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+        <i class="fas fa-search text-blue-600 dark:text-blue-300"></i>
+      </div>
+      <div>
+        <label class="block font-semibold text-gray-700 dark:text-gray-200">Search Assets</label>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Find assets by ID, name, or assigned employee</p>
+      </div>
+    </div>
+    <div class="relative">
+      <input type="text" id="itemSearch" placeholder="Search by Asset ID, Name, or Assigned Employee..." autocomplete="off"
+        class="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-blue-500 dark:text-blue-400"></i>
+    </div>
+  </div>
+
+  <!-- Table Container that will be updated via AJAX -->
+  <div id="tableContainer">
+    <%- include('_table') %>
+  </div>
+</div>
+
+<script>
+// Item search and filter functionality
+(function() {
+  'use strict';
+
+  function initializeItemSearch() {
+    console.log('🔧 Initializing item search and filters...');
+
+    const searchInput = document.getElementById('itemSearch');
+    if (!searchInput) return;
+
+    let searchTimeout;
+
+    // Remove existing listeners
+    const newSearchInput = searchInput.cloneNode(true);
+    searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+
+    newSearchInput.addEventListener('input', function(e) {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.trim();
+
+      if (query.length === 0) {
+        // Reset to show all items with current filters
+        loadItemsWithCurrentFilters();
+        return;
+      }
+
+      if (query.length < 2) {
+        return; // Wait for at least 2 characters
+      }
+
+      searchTimeout = setTimeout(() => {
+        performSearchWithAjax(query);
+      }, 300);
+    });
+
+    console.log('✅ Item search initialized');
+  }
+
+  function performSearchWithAjax(query) {
+    console.log('🔍 Performing AJAX search for:', query);
+
+    const tableContainer = document.getElementById('tableContainer');
+
+    // Show loading state
+    if (tableContainer) {
+      tableContainer.style.opacity = '0.6';
+      tableContainer.style.pointerEvents = 'none';
+    }
+
+    // Get current filter values to maintain them during search
+    const currentParams = getCurrentFilterParams();
+    currentParams.append('q', query);
+    currentParams.append('ajax', '1');
+
+    const url = window.location.pathname + '?' + currentParams.toString();
+
+    fetch(url, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'text/html'
+      }
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.text();
+    })
+    .then(html => {
+      // Update the entire table container with new content
+      if (tableContainer) {
+        tableContainer.innerHTML = html;
+      }
+    })
+    .catch(error => {
+      console.error('Error performing search:', error);
+    })
+    .finally(() => {
+      // Restore table state
+      if (tableContainer) {
+        tableContainer.style.opacity = '1';
+        tableContainer.style.pointerEvents = 'auto';
+      }
+    });
+  }
+
+  function loadItemsWithCurrentFilters() {
+    console.log('🔄 Loading items with current filters...');
+
+    const tableContainer = document.getElementById('tableContainer');
+
+    // Show loading state
+    if (tableContainer) {
+      tableContainer.style.opacity = '0.6';
+      tableContainer.style.pointerEvents = 'none';
+    }
+
+    // Get current filter values
+    const currentParams = getCurrentFilterParams();
+    currentParams.append('ajax', '1');
+
+    const url = window.location.pathname + '?' + currentParams.toString();
+
+    fetch(url, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'text/html'
+      }
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.text();
+    })
+    .then(html => {
+      // Update the entire table container with new content
+      if (tableContainer) {
+        tableContainer.innerHTML = html;
+      }
+    })
+    .catch(error => {
+      console.error('Error loading items:', error);
+    })
+    .finally(() => {
+      // Restore table state
+      if (tableContainer) {
+        tableContainer.style.opacity = '1';
+        tableContainer.style.pointerEvents = 'auto';
+      }
+    });
+  }
+
+  function getCurrentFilterParams() {
+    const params = new URLSearchParams();
+
+    const typeFilter = document.getElementById('typeFilter')?.value;
+    const brandFilter = document.getElementById('brandFilter')?.value;
+    const statusFilter = document.getElementById('statusFilter')?.value;
+    const departmentFilter = document.getElementById('departmentFilter')?.value;
+    const minPrice = document.getElementById('minPrice')?.value;
+    const maxPrice = document.getElementById('maxPrice')?.value;
+    const startDate = document.getElementById('startDate')?.value;
+    const endDate = document.getElementById('endDate')?.value;
+
+    if (typeFilter) params.append('type', typeFilter);
+    if (brandFilter) params.append('brand', brandFilter);
+    if (statusFilter) params.append('status', statusFilter);
+    if (departmentFilter) params.append('department', departmentFilter);
+    if (minPrice) params.append('minPrice', minPrice);
+    if (maxPrice) params.append('maxPrice', maxPrice);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+
+    return params;
+  }
+
+  // Advanced filter functionality
+  function initializeFilters() {
+    console.log('🔧 Initializing advanced filters...');
+
+    // Filter toggle functionality
+    const filtersToggle = document.getElementById('filtersToggle');
+    const filtersContent = document.getElementById('filtersContent');
+    const filterBadge = document.getElementById('filterBadge');
+    const appliedFiltersPreview = document.getElementById('appliedFiltersPreview');
+
+    if (filtersToggle && filtersContent) {
+      filtersToggle.addEventListener('click', function() {
+        filtersContent.classList.toggle('hidden');
+        const icon = this.querySelector('.toggle-icon');
+        if (icon) {
+          icon.classList.toggle('rotate-180');
+        }
+      });
+    }
+
+    // Set current filter values from URL parameters
+    setCurrentFilterValues();
+
+    // Update filter UI
+    updateFilterUI();
+
+    // Apply filters button
+    const applyFiltersBtn = document.getElementById('applyFilters');
+    if (applyFiltersBtn) {
+      applyFiltersBtn.addEventListener('click', applyItemFilters);
+    }
+
+    // Reset filters button
+    const resetFiltersBtn = document.getElementById('resetFilters');
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener('click', resetItemFilters);
+    }
+
+    console.log('✅ Advanced filters initialized');
+  }
+
+  // Set current filter values from URL parameters
+  function setCurrentFilterValues() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const typeFilter = document.getElementById('typeFilter');
+    const brandFilter = document.getElementById('brandFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const departmentFilter = document.getElementById('departmentFilter');
+    const minPrice = document.getElementById('minPrice');
+    const maxPrice = document.getElementById('maxPrice');
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+
+    if (typeFilter && urlParams.get('type')) typeFilter.value = urlParams.get('type');
+    if (brandFilter && urlParams.get('brand')) brandFilter.value = urlParams.get('brand');
+    if (statusFilter && urlParams.get('status')) statusFilter.value = urlParams.get('status');
+    if (departmentFilter && urlParams.get('department')) departmentFilter.value = urlParams.get('department');
+    if (minPrice && urlParams.get('minPrice')) minPrice.value = urlParams.get('minPrice');
+    if (maxPrice && urlParams.get('maxPrice')) maxPrice.value = urlParams.get('maxPrice');
+    if (startDate && urlParams.get('startDate')) startDate.value = urlParams.get('startDate');
+    if (endDate && urlParams.get('endDate')) endDate.value = urlParams.get('endDate');
+  }
+
+  // Update filter UI (badge count and preview text)
+  function updateFilterUI() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterBadge = document.getElementById('filterBadge');
+    const appliedFiltersPreview = document.getElementById('appliedFiltersPreview');
+
+    // Count active filters
+    let activeCount = 0;
+    const filterParams = ['type', 'brand', 'status', 'department', 'minPrice', 'maxPrice', 'startDate', 'endDate'];
+
+    filterParams.forEach(param => {
+      if (urlParams.get(param)) activeCount++;
+    });
+
+    // Update badge
+    if (filterBadge) {
+      filterBadge.textContent = activeCount;
+      filterBadge.style.display = activeCount > 0 ? 'inline-flex' : 'none';
+    }
+
+    // Update preview text
+    if (appliedFiltersPreview) {
+      if (activeCount === 0) {
+        appliedFiltersPreview.textContent = '<%= t("no_filters_applied") %>';
+      } else {
+        appliedFiltersPreview.textContent = `${activeCount} filter${activeCount > 1 ? 's' : ''} applied`;
+      }
+    }
+  }
+
+  // Apply filters function with AJAX
+  function applyItemFilters() {
+    console.log('🔍 Applying item filters...');
+
+    // Get filter values
+    const typeFilter = document.getElementById('typeFilter')?.value || '';
+    const brandFilter = document.getElementById('brandFilter')?.value || '';
+    const statusFilter = document.getElementById('statusFilter')?.value || '';
+    const departmentFilter = document.getElementById('departmentFilter')?.value || '';
+    const minPrice = document.getElementById('minPrice')?.value || '';
+    const maxPrice = document.getElementById('maxPrice')?.value || '';
+    const startDate = document.getElementById('startDate')?.value || '';
+    const endDate = document.getElementById('endDate')?.value || '';
+
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (typeFilter) params.append('type', typeFilter);
+    if (brandFilter) params.append('brand', brandFilter);
+    if (statusFilter) params.append('status', statusFilter);
+    if (departmentFilter) params.append('department', departmentFilter);
+    if (minPrice) params.append('minPrice', minPrice);
+    if (maxPrice) params.append('maxPrice', maxPrice);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+
+    // Add AJAX parameter to get partial response
+    params.append('ajax', '1');
+
+    // Add loading state
+    const applyBtn = document.getElementById('applyFilters');
+    const tableContainer = document.getElementById('tableContainer');
+
+    if (applyBtn) {
+      const originalText = applyBtn.innerHTML;
+      applyBtn.disabled = true;
+      applyBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Applying...';
+    }
+
+    // Show loading overlay on table
+    if (tableContainer) {
+      tableContainer.style.opacity = '0.6';
+      tableContainer.style.pointerEvents = 'none';
+    }
+
+    // Make AJAX request
+    const url = window.location.pathname + '?' + params.toString();
+
+    fetch(url, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'text/html'
+      }
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.text();
+    })
+    .then(html => {
+      // Update the entire table container with new content
+      if (tableContainer) {
+        tableContainer.innerHTML = html;
+      }
+
+      // Update URL without page reload
+      const newParams = new URLSearchParams(params);
+      newParams.delete('ajax');
+
+      const newUrl = window.location.pathname + (newParams.toString() ? '?' + newParams.toString() : '');
+      window.history.pushState(null, '', newUrl);
+
+      // Update filter UI
+      updateFilterUI();
+    })
+    .catch(error => {
+      console.error('Error applying filters:', error);
+      // Show error message
+      alert('Error applying filters. Please try again.');
+    })
+    .finally(() => {
+      // Restore button and table state
+      if (applyBtn) {
+        applyBtn.disabled = false;
+        applyBtn.innerHTML = '<i class="fas fa-search group-hover:scale-110 transition-transform duration-300"></i> <%= t("apply_filters") %>';
+      }
+
+      if (tableContainer) {
+        tableContainer.style.opacity = '1';
+        tableContainer.style.pointerEvents = 'auto';
+      }
+    });
+  }
+
+  // Reset filters function with AJAX
+  function resetItemFilters() {
+    console.log('🗑️ Resetting item filters...');
+
+    // Clear all filter inputs
+    const typeFilter = document.getElementById('typeFilter');
+    const brandFilter = document.getElementById('brandFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const departmentFilter = document.getElementById('departmentFilter');
+    const minPrice = document.getElementById('minPrice');
+    const maxPrice = document.getElementById('maxPrice');
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+
+    if (typeFilter) typeFilter.value = '';
+    if (brandFilter) brandFilter.value = '';
+    if (statusFilter) statusFilter.value = '';
+    if (departmentFilter) departmentFilter.value = '';
+    if (minPrice) minPrice.value = '';
+    if (maxPrice) maxPrice.value = '';
+    if (startDate) startDate.value = '';
+    if (endDate) endDate.value = '';
+
+    // Add loading state
+    const resetBtn = document.getElementById('resetFilters');
+    const tableContainer = document.getElementById('tableContainer');
+
+    if (resetBtn) {
+      const originalText = resetBtn.innerHTML;
+      resetBtn.disabled = true;
+      resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Resetting...';
+    }
+
+    // Show loading overlay on table
+    if (tableContainer) {
+      tableContainer.style.opacity = '0.6';
+      tableContainer.style.pointerEvents = 'none';
+    }
+
+    // Make AJAX request to base URL
+    const url = window.location.pathname + '?ajax=1';
+
+    fetch(url, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'text/html'
+      }
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.text();
+    })
+    .then(html => {
+      // Update the entire table container with new content
+      if (tableContainer) {
+        tableContainer.innerHTML = html;
+      }
+
+      // Update URL without page reload
+      const newUrl = window.location.pathname;
+      window.history.pushState(null, '', newUrl);
+
+      // Update filter UI
+      updateFilterUI();
+    })
+    .catch(error => {
+      console.error('Error resetting filters:', error);
+      // Show error message
+      alert('Error resetting filters. Please try again.');
+    })
+    .finally(() => {
+      // Restore button and table state
+      if (resetBtn) {
+        resetBtn.disabled = false;
+        resetBtn.innerHTML = '<i class="fas fa-times group-hover:-rotate-12 transition-transform duration-300"></i> <%= t("reset_all") %>';
+      }
+
+      if (tableContainer) {
+        tableContainer.style.opacity = '1';
+        tableContainer.style.pointerEvents = 'auto';
+      }
+    });
+  }
+
+  // Initialize both search and filters
+  function initializeItemsPage() {
+    initializeItemSearch();
+    initializeFilters();
+  }
+
+  // Expose functions globally
+  window.applyItemFilters = applyItemFilters;
+  window.resetItemFilters = resetItemFilters;
+  window.initializeItemsPage = initializeItemsPage;
+
+  // Auto-initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeItemsPage);
+  } else {
+    initializeItemsPage();
+  }
+})();
+</script>

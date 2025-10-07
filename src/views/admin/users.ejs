@@ -1,57 +1,179 @@
-<h1>User Management</h1>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8 flex items-center gap-2">
+    <i class="fas fa-users-cog"></i> User Management
+  </h1>
 
-<div class="admin-actions" style="margin-bottom: 1rem;">
-  <a href="/admin/users/new" class="btn">Add New User</a>
-</div>
-
-<% if (typeof users !== 'undefined' && users && users.length > 0) { %>
-  <div class="users-table-container">
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Status</th>
-          <th>Last Login</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% users.forEach(user => { %>
-          <tr>
-            <td><%= user.name %></td>
-            <td><%= user.email %></td>
-            <td>
-              <span class="role-badge <%= user.role === 'admin' ? 'role-admin' : 'role-user' %>">
-                <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
-              </span>
-            </td>
-            <td>
-              <span class="status-badge <%= user.active ? 'status-active' : 'status-inactive' %>">
-                <%= user.active ? 'Active' : 'Inactive' %>
-              </span>
-            </td>
-            <td>
-              <%= user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never' %>
-            </td>
-            <td class="actions-cell">
-              <a href="/admin/users/<%= user.id %>/edit" class="btn btn-small">Edit</a>
-              <% if (user.id !== currentUser.id) { %>
-                <form style="display: inline;" method="POST" action="/admin/users/<%= user.id %>/toggle-status">
-                  <button type="submit" class="btn btn-small <%= user.active ? 'btn-warning' : 'btn-success' %>">
-                    <%= user.active ? 'Deactivate' : 'Activate' %>
-                  </button>
-                </form>
-              <% } %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+  <div class="mb-6 flex justify-between items-center">
+    <% if (can('users.create')) { %>
+      <a href="/admin/users/add" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+        <i class="fas fa-user-plus mr-2"></i> Add New User
+      </a>
+    <% } else { %>
+      <button disabled class="inline-flex items-center px-4 py-2 bg-gray-400 text-gray-600 font-semibold rounded-md cursor-not-allowed opacity-60" title="You don't have permission to create users">
+        <i class="fas fa-user-plus mr-2"></i> Add New User
+      </button>
+    <% } %>
   </div>
-<% } else { %>
-  <p>No users found.</p>
-<% } %>
 
-<link rel="stylesheet" href="/css/styles.css">
+  <% if (typeof users !== 'undefined' && users && users.length > 0) { %>
+    <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-900">
+          <tr>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">CEP</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Name</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Email</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Roles</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Status</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Last Login</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <% users.forEach(user => { %>
+            <tr>
+              <td class="px-4 py-3 text-gray-800 dark:text-gray-100">
+                <% if (user.cep_id) { %>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">[<%= user.cep_id %>]</span>
+                <% } else { %>
+                  <span class="text-xs text-gray-400 dark:text-gray-600">-</span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3 text-gray-800 dark:text-gray-100">
+                <%= user.name %>
+              </td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-200"><%= user.email %></td>
+              <td class="px-4 py-3">
+                <div class="flex flex-wrap gap-1">
+                  <% if (user.roles && user.roles.length > 0) { %>
+                    <% user.roles.forEach(role => { %>
+                      <% if (role) { %>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold
+                          <%= role.toLowerCase().includes('admin') || role.toLowerCase().includes('super')
+                            ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700'
+                            : role.toLowerCase().includes('manager')
+                            ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-700'
+                            : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700' %>">
+                          <i class="fas <%= role.toLowerCase().includes('admin') ? 'fa-user-shield' : role.toLowerCase().includes('manager') ? 'fa-user-tie' : 'fa-user' %> mr-1"></i>
+                          <%= role %>
+                        </span>
+                      <% } %>
+                    <% }) %>
+                  <% } else { %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                      <i class="fas fa-user mr-1"></i>
+                      No roles assigned
+                    </span>
+                  <% } %>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-col gap-1">
+                  <% if (user.account_locked) { %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 border border-orange-200 dark:border-orange-700">
+                      <i class="fas fa-lock mr-1"></i>
+                      Locked
+                    </span>
+                    <% if (user.failed_login_attempts) { %>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">
+                        <%= user.failed_login_attempts %> failed attempts
+                      </span>
+                    <% } %>
+                    <% if (user.locked_until) { %>
+                      <span class="text-xs text-red-600 dark:text-red-400">
+                        Until: <%= new Date(user.locked_until).toLocaleString() %>
+                      </span>
+                    <% } %>
+                  <% } else { %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold
+                      <%= user.active
+                        ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700'
+                        : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700' %>">
+                      <i class="fas <%= user.active ? 'fa-check-circle' : 'fa-times-circle' %> mr-1"></i>
+                      <%= user.active ? 'Active' : 'Inactive' %>
+                    </span>
+                    <% if (user.failed_login_attempts > 0) { %>
+                      <span class="text-xs text-yellow-600 dark:text-yellow-400">
+                        <%= user.failed_login_attempts %> failed attempts
+                      </span>
+                    <% } %>
+                  <% } %>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
+                <%= user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never' %>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex gap-1">
+                  <!-- Edit Button -->
+                  <% if (can('users.edit')) { %>
+                    <a href="/admin/users/<%= user.id %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="Editar">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                  <% } else { %>
+                    <button disabled class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-500 cursor-not-allowed" title="You don't have permission to edit users">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                  <% } %>
+
+                  <!-- Unlock Button (only show if account is locked) -->
+                  <% if (user.account_locked && can('users.edit')) { %>
+                    <form style="display: inline;" method="POST" action="/admin/users/<%= user.id %>/unlock"
+                          data-confirm="Are you sure you want to unlock this user account? This will reset their failed login attempts.">
+                      <button type="submit"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-800 transition"
+                        title="Desbloquear Conta">
+                        <i class="fas fa-unlock"></i>
+                      </button>
+                    </form>
+                  <% } else if (user.account_locked && !can('users.edit')) { %>
+                    <button disabled class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-500 cursor-not-allowed" title="You don't have permission to unlock users">
+                      <i class="fas fa-unlock"></i>
+                    </button>
+                  <% } %>
+
+                  <!-- Delete Button -->
+                  <% if (can('users.delete') && user.id !== currentUser.id) { %>
+                    <form style="display: inline;" method="POST" action="/admin/users/<%= user.id %>/delete"
+                          data-confirm="Are you sure you want to delete this user? This action cannot be undone.">
+                      <button type="submit"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition"
+                        title="Deletar">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  <% } else if (!can('users.delete')) { %>
+                    <button disabled class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-500 cursor-not-allowed" title="You don't have permission to delete users">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  <% } else if (user.id === currentUser.id) { %>
+                    <button disabled class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-500 cursor-not-allowed" title="You cannot delete your own account">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950 mt-8">
+      <div class="text-4xl text-blue-500 mb-2">
+        <i class="fas fa-users"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No users found</h3>
+      <p class="text-gray-500 dark:text-gray-400">Start by adding your first user.</p>
+      <% if (can('users.create')) { %>
+        <a href="/admin/users/add" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2 mt-4">
+          <i class="fas fa-user-plus"></i> Add New User
+        </a>
+      <% } else { %>
+        <button disabled class="px-4 py-2 bg-gray-400 text-gray-600 font-semibold rounded-md cursor-not-allowed opacity-60 flex items-center gap-2 mt-4" title="You don't have permission to create users">
+          <i class="fas fa-user-plus"></i> Add New User
+        </button>
+      <% } %>
+    </div>
+  <% } %>
+</div>

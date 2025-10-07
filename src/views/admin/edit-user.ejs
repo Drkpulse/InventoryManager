@@ -1,52 +1,194 @@
-<h1>Edit User</h1>
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2">
+      <i class="fas fa-user-edit"></i> Edit User
+    </h1>
 
-<% if (typeof errors !== 'undefined' && errors.length > 0) { %>
-  <div class="alert alert-danger">
-    <ul>
-      <% errors.forEach(error => { %>
-        <li><%= error %></li>
-      <% }) %>
-    </ul>
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <div class="mb-6 flex flex-col gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>Please fix the following errors:</strong>
+        </div>
+        <ul class="list-disc pl-6">
+          <% errors.forEach(error => { %>
+            <li><%= error %></li>
+          <% }) %>
+        </ul>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/admin/users/<%= editUser.id %>/edit" class="space-y-6" autocomplete="off" data-no-ajax="true">
+      <div>
+        <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Name <span class="text-red-500">*</span></label>
+        <input type="text" id="name" name="name" value="<%= editUser.name %>" required
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          placeholder="Enter user name">
+      </div>
+
+      <div>
+        <label for="email" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Email <span class="text-red-500">*</span></label>
+        <input type="email" id="email" name="email" value="<%= editUser.email %>" required
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          placeholder="Enter email address">
+      </div>
+
+      <div>
+        <label for="cep_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">CEP ID <span class="text-red-500">*</span></label>
+        <% if (can('admin.settings')) { %>
+          <input type="text" id="cep_id" name="cep_id" value="<%= editUser.cep_id || '' %>" required
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            placeholder="Enter CEP ID">
+          <div id="cep-validation" class="text-xs mt-1"></div>
+        <% } else { %>
+          <input type="text" id="cep_id" name="cep_id" value="<%= editUser.cep_id || '' %>" readonly
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed">
+          <small class="text-gray-500 dark:text-gray-400">Only users with admin.settings permission can edit this field</small>
+        <% } %>
+      </div>
+
+      <div>
+        <label for="password" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">New Password</label>
+        <input type="password" id="password" name="password"
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          placeholder="Leave blank to keep current password">
+        <small class="text-gray-500 dark:text-gray-400">Only enter a password if you want to change it (min 6 chars)</small>
+      </div>
+
+      <div>
+        <label for="confirm_password" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Confirm New Password</label>
+        <input type="password" id="confirm_password" name="confirm_password"
+          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          placeholder="Re-enter new password">
+      </div>
+
+      <!-- Account Status Section -->
+      <div>
+        <label class="block font-semibold mb-3 text-gray-700 dark:text-gray-200">
+          Account Status
+        </label>
+        <div class="space-y-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-300 dark:border-gray-700">
+          <!-- Active Status -->
+          <div class="flex items-center space-x-3">
+            <input type="checkbox" id="active" name="active"
+                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                   <%= editUser.active ? 'checked' : '' %>>
+            <label for="active" class="text-sm font-medium text-gray-900 dark:text-gray-100">
+              Account Active
+            </label>
+            <small class="text-gray-500 dark:text-gray-400">User can log in and access the system</small>
+          </div>
+
+          <!-- Unlock Account -->
+          <% if (editUser.account_locked) { %>
+            <div class="flex items-center space-x-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-200 dark:border-orange-700">
+              <input type="checkbox" id="unlock_account" name="unlock_account"
+                     class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+              <div class="flex-1">
+                <label for="unlock_account" class="text-sm font-medium text-orange-900 dark:text-orange-200 flex items-center gap-2">
+                  <i class="fas fa-unlock"></i>
+                  Unlock Account
+                </label>
+                <div class="text-xs text-orange-700 dark:text-orange-300 mt-1">
+                  Account is currently locked due to <%= editUser.failed_login_attempts || 0 %> failed login attempts.
+                  <% if (editUser.locked_until) { %>
+                    Locked until: <%= new Date(editUser.locked_until).toLocaleString() %>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% } else { %>
+            <div class="flex items-center space-x-3 p-3 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-700">
+              <i class="fas fa-check-circle text-green-600"></i>
+              <div class="text-sm text-green-800 dark:text-green-200">
+                Account is not locked (<%= editUser.failed_login_attempts || 0 %> failed attempts)
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Role Management Section -->
+      <div>
+        <label class="block font-semibold mb-3 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+          Assign Roles
+          <% if (!can('users.manage_roles')) { %>
+            <i class="fas fa-lock text-gray-500 text-sm" title="You don't have permission to manage user roles"></i>
+          <% } %>
+        </label>
+
+        <% if (can('users.manage_roles')) { %>
+          <div class="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-md p-3 bg-gray-50 dark:bg-gray-900">
+            <% if (typeof roles !== 'undefined' && roles.length > 0) { %>
+              <% roles.forEach(role => { %>
+                <div class="flex items-start gap-2 mb-2">
+                  <input type="checkbox" id="role_<%= role.id %>" name="selectedRoles" value="<%= role.id %>"
+                    class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    <%= userRoleIds.includes(role.id) ? 'checked' : '' %>>
+                  <div class="flex-1">
+                    <label for="role_<%= role.id %>" class="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                      <%= role.display_name %>
+                      <% if (role.is_system_role) { %>
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 ml-1">
+                          System
+                        </span>
+                      <% } %>
+                    </label>
+                    <% if (role.description) { %>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= role.description %></p>
+                    <% } %>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p class="text-gray-500 dark:text-gray-400 text-sm">No roles available</p>
+            <% } %>
+          </div>
+          <small class="text-gray-500 dark:text-gray-400">Select one or more roles for this user.</small>
+        <% } else { %>
+          <!-- Display current roles as read-only when user doesn't have permission -->
+          <div class="max-h-48 overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-md p-3 bg-gray-100 dark:bg-gray-700 opacity-60">
+            <% if (typeof roles !== 'undefined' && roles.length > 0) { %>
+              <% roles.forEach(role => { %>
+                <% if (userRoleIds.includes(role.id)) { %>
+                  <div class="flex items-start gap-2 mb-2">
+                    <input type="checkbox" disabled checked
+                      class="mt-1 h-4 w-4 text-gray-400 border-gray-300 rounded cursor-not-allowed">
+                    <div class="flex-1">
+                      <label class="text-sm font-medium text-gray-600 dark:text-gray-400 cursor-not-allowed">
+                        <%= role.display_name %>
+                        <% if (role.is_system_role) { %>
+                          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400 ml-1">
+                            System
+                          </span>
+                        <% } %>
+                      </label>
+                      <% if (role.description) { %>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><%= role.description %></p>
+                      <% } %>
+                    </div>
+                  </div>
+                <% } %>
+              <% }) %>
+            <% } else { %>
+              <p class="text-gray-400 dark:text-gray-500 text-sm">No roles assigned</p>
+            <% } %>
+          </div>
+          <small class="text-gray-400 dark:text-gray-500">You don't have permission to modify user roles.</small>
+        <% } %>
+      </div>
+
+      <div class="flex gap-2 mt-4">
+        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-save"></i> Update User
+        </button>
+        <a href="/admin/users" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-times"></i> Cancel
+        </a>
+      </div>
+    </form>
   </div>
-<% } %>
-
-<form method="POST" action="/admin/users/<%= editUser.id %>/edit">
-  <div class="form-group">
-    <label for="name">Name</label>
-    <input type="text" id="name" name="name" value="<%= editUser.name %>" required>
-  </div>
-
-  <div class="form-group">
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" value="<%= editUser.email %>" required>
-  </div>
-
-  <div class="form-group">
-    <label for="role">Role</label>
-    <select id="role" name="role" required>
-      <option value="user" <%= editUser.role === 'user' ? 'selected' : '' %>>User</option>
-      <option value="admin" <%= editUser.role === 'admin' ? 'selected' : '' %>>Admin</option>
-    </select>
-  </div>
-
-  <div class="form-group">
-    <label for="password">New Password (leave blank to keep current)</label>
-    <input type="password" id="password" name="password">
-    <small>Only enter a password if you want to change it</small>
-  </div>
-
-  <div class="form-group">
-    <label for="confirm_password">Confirm New Password</label>
-    <input type="password" id="confirm_password" name="confirm_password">
-  </div>
-
-  <div class="form-group">
-    <button type="submit" class="btn">Update User</button>
-    <a href="/admin/users" class="btn">Cancel</a>
-  </div>
-</form>
-
-<link rel="stylesheet" href="/css/styles.css">
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -54,10 +196,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const confirmPasswordField = document.getElementById('confirm_password');
   const nameField = document.getElementById('name');
   const emailField = document.getElementById('email');
+  const cepIdField = document.getElementById('cep_id');
+  const cepValidation = document.getElementById('cep-validation');
   const form = document.querySelector('form');
+  let cepCheckTimeout;
 
   form.addEventListener('submit', function(e) {
-    // Reset any previous error styling
     clearErrorStyling();
 
     let hasErrors = false;
@@ -77,6 +221,13 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (!isValidEmail(emailField.value.trim())) {
       e.preventDefault();
       showFieldError(emailField, 'Please enter a valid email address');
+      hasErrors = true;
+    }
+
+    // Validate CEP ID
+    if (!cepIdField.value || cepIdField.value.trim() === '') {
+      e.preventDefault();
+      showFieldError(cepIdField, 'CEP ID is required');
       hasErrors = true;
     }
 
@@ -101,14 +252,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Clear confirm password when password is cleared
   passwordField.addEventListener('input', function() {
     if (!this.value) {
       confirmPasswordField.value = '';
     }
   });
 
-  // Real-time validation for name and email
   nameField.addEventListener('blur', function() {
     if (!this.value || this.value.trim() === '') {
       showFieldError(this, 'Name is required');
@@ -127,31 +276,107 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  function showFieldError(field, message) {
-    field.classList.add('error');
-    field.style.borderColor = '#dc3545';
+  // Real-time CEP ID validation
+  if (cepIdField && !cepIdField.readOnly) {
+    cepIdField.addEventListener('input', function() {
+      const newValue = this.value.trim();
+      const originalCepId = '<%= editUser.cep_id || "" %>';
 
+      // Clear existing timeout
+      if (cepCheckTimeout) {
+        clearTimeout(cepCheckTimeout);
+      }
+
+      // Clear validation message
+      if (cepValidation) {
+        cepValidation.innerHTML = '';
+        cepValidation.className = 'text-xs mt-1';
+      }
+
+      // Don't validate if empty or same as original
+      if (newValue.length === 0) {
+        return;
+      }
+
+      if (newValue === originalCepId) {
+        if (cepValidation) {
+          cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
+          cepValidation.innerHTML = '<i class="fas fa-check"></i> Current CEP ID';
+        }
+        return;
+      }
+
+      if (newValue.length < 3) {
+        if (cepValidation) {
+          cepValidation.className = 'text-xs mt-1 text-yellow-700 dark:text-yellow-300';
+          cepValidation.innerHTML = '<i class="fas fa-info-circle"></i> CEP ID should be at least 3 characters';
+        }
+        return;
+      }
+
+      // Show checking state
+      if (cepValidation) {
+        cepValidation.className = 'text-xs mt-1 text-blue-700 dark:text-blue-300';
+        cepValidation.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
+      }
+
+      // Check for availability after delay
+      cepCheckTimeout = setTimeout(() => {
+        checkCepIdAvailability(newValue);
+      }, 800);
+    });
+  }
+
+  function checkCepIdAvailability(cepId) {
+    fetch('/admin/check-cep-availability', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        cep_id: cepId,
+        exclude_user_id: '<%= editUser.id %>'
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (cepValidation) {
+        if (data.available) {
+          cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
+          cepValidation.innerHTML = '<i class="fas fa-check"></i> CEP ID is available';
+          clearFieldError(cepIdField);
+        } else {
+          cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-300';
+          cepValidation.innerHTML = '<i class="fas fa-times"></i> This CEP ID is already taken by another user';
+          showFieldError(cepIdField, 'This CEP ID is already taken');
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Error checking CEP ID availability:', error);
+      if (cepValidation) {
+        cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-300';
+        cepValidation.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Unable to verify CEP ID availability. Please try again.';
+      }
+    });
+  }
+
+  function showFieldError(field, message) {
+    field.classList.add('border-red-500', 'focus:ring-red-500');
     // Remove existing error message
     const existingError = field.parentNode.querySelector('.error-message');
     if (existingError) {
       existingError.remove();
     }
-
     // Add error message
     const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.style.color = '#dc3545';
-    errorDiv.style.fontSize = '0.875rem';
-    errorDiv.style.marginTop = '0.25rem';
+    errorDiv.className = 'error-message text-red-600 dark:text-red-400 text-xs mt-1';
     errorDiv.textContent = message;
     field.parentNode.appendChild(errorDiv);
-
-    field.focus();
   }
 
   function clearFieldError(field) {
-    field.classList.remove('error');
-    field.style.borderColor = '';
+    field.classList.remove('border-red-500', 'focus:ring-red-500');
     const errorMessage = field.parentNode.querySelector('.error-message');
     if (errorMessage) {
       errorMessage.remove();
@@ -159,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function clearErrorStyling() {
-    const errorFields = document.querySelectorAll('.error');
+    const errorFields = document.querySelectorAll('.border-red-500');
     errorFields.forEach(field => clearFieldError(field));
   }
 

@@ -1,0 +1,661 @@
+const db = require('../config/db');
+const { getRecentActivities } = require('../utils/historyLogger');
+const { translate } = require('../utils/translations');
+
+function getCategoryIcon(category) {
+  const icons = {
+    'Items': 'laptop',
+    'Employees': 'user', 
+    'Departments': 'building',
+    'Locations': 'map-marker-alt'
+  };
+  return icons[category] || 'folder';
+}
+
+exports.searchAssets = async (req, res) => {
+  try {
+    const { query, category, page = 1, limit = 15, format } = req.query;
+
+    // Handle empty query - for search page, show some recent/popular results
+    if (!query || query.trim().length === 0) {
+      if (format === 'html') {
+        // For the search results page, show some default content instead of empty
+        try {
+          let defaultResults = {};
+          
+          // Get some recent items if category is 'items' or 'all'
+          if (!category || category === 'all' || category === 'items') {
+            const recentItems = await db.query(`
+              SELECT i.id, i.cep_brc, i.name, i.price,
+                     t.name as type_name, b.name as brand_name,
+                     e.name as assigned_to_name, d.name as department_name,
+                     l.name as location_name, i.model, i.serial_cod,
+                     CASE WHEN i.assigned_to IS NULL THEN 'unassigned' ELSE 'assigned' END as status
+              FROM items i
+              LEFT JOIN types t ON i.type_id = t.id
+              LEFT JOIN brands b ON i.brand_id = b.id
+              LEFT JOIN employees e ON i.assigned_to = e.id
+              LEFT JOIN departments d ON e.dept_id = d.id
+              LEFT JOIN locations l ON i.location_id = l.id
+              ORDER BY i.created_at DESC
+              LIMIT 20
+            `);
+            
+            defaultResults.Items = recentItems.rows.map(item => ({
+              id: item.id,
+              title: item.name,
+              subtitle: `${item.type_name || 'Unknown Type'} • ${item.brand_name || 'Unknown Brand'}`,
+              identifier: item.cep_brc,
+              icon: 'laptop',
+              url: `/items/${item.id}`,
+              category: 'Items',
+              price: item.price,
+              assignedTo: item.assigned_to_name,
+              department: item.department_name,
+              location: item.location_name,
+              status: item.status,
+              model: item.model,
+              serial: item.serial_cod
+            }));
+          }
+          
+          return res.render('layout', {
+            title: 'Search Results',
+            body: 'dashboard/search-results',
+            searchQuery: '',
+            searchResults: { 
+              results: defaultResults, 
+              totalResults: Object.values(defaultResults).reduce((sum, arr) => sum + arr.length, 0), 
+              searchTime: 0 
+            },
+            user: req.session.user,
+            currentPage: 1,
+            totalPages: 1,
+            category: category || 'all',
+            getCategoryIcon,
+            t: req.t || ((key) => translate(key, req.language)),
+            currentLanguage: req.language
+          });
+        } catch (error) {
+          console.error('Error loading default search results:', error);
+          return res.render('layout', {
+            title: 'Search Results',
+            body: 'dashboard/search-results',
+            searchQuery: '',
+            searchResults: { results: {}, totalResults: 0, searchTime: 0 },
+            user: req.session.user,
+            currentPage: 1,
+            totalPages: 0,
+            category: category || 'all',
+            getCategoryIcon,
+            t: req.t || ((key) => translate(key, req.language)),
+            currentLanguage: req.language
+          });
+        }
+      }
+      return res.json({ results: [], totalResults: 0 });
+    }late } = require('../utils/translations');
+
+// Helper function to get category icons
+function getCategoryIcon(category) {
+  const iconMap = {
+    'Items': 'laptop',
+    'Employees': 'user',
+    'Departments': 'building',
+    'Locations': 'map-marker-alt'
+  };
+  return iconMap[category] || 'folder';
+}
+
+
+exports.getDashboard = async (req, res) => {
+  try {
+    // Get basic stats - ensure COUNT(*) has alias for easier access
+    const itemsResult = await db.query('SELECT COUNT(*) as count FROM items');
+    const employeesResult = await db.query('SELECT COUNT(*) as count FROM employees WHERE left_date IS NULL');
+    const departmentsResult = await db.query('SELECT COUNT(*) as count FROM departments');
+    const unassignedResult = await db.query('SELECT COUNT(*) as count FROM items WHERE assigned_to IS NULL');
+    const recentActivities = await getRecentActivities(10); // Limit to 10, or any number you prefer
+
+
+    // Ensure we get empty arrays if no data instead of null
+    // Get items by type for chart with fallback for empty results
+    const itemsByTypeResult = await db.query(`
+      SELECT t.name, COUNT(i.id) as count
+      FROM types t
+      LEFT JOIN items i ON t.id = i.type_id
+      GROUP BY t.id, t.name
+      ORDER BY count DESC
+    `);
+
+    // Get recent items
+    const recentItemsResult = await db.query(`
+      SELECT i.id, i.cep_brc, i.name, t.name as type_name,
+             e.name as assigned_to_name, i.assigned_to
+      FROM items i
+      LEFT JOIN types t ON i.type_id = t.id
+      LEFT JOIN employees e ON i.assigned_to = e.id
+      ORDER BY i.created_at DESC
+      LIMIT 5
+    `);
+
+    // Get recent purchases with proper handling of null sum
+    const recentPurchasesResult = await db.query(`
+      SELECT s.receipt, s.supplier, s.date_acquired,
+             COUNT(i.id) as item_count,
+             COALESCE(SUM(i.price), 0) as total_price
+      FROM sales s
+      LEFT JOIN items i ON s.receipt = i.receipt
+      GROUP BY s.receipt, s.supplier, s.date_acquired
+      ORDER BY s.date_acquired DESC
+      LIMIT 5
+    `);
+
+    // Get employees by department
+    const deptEmployeesResult = await db.query(`
+      SELECT d.name, COUNT(e.id) as count
+      FROM departments d
+      LEFT JOIN employees e ON d.id = e.dept_id AND e.left_date IS NULL
+      GROUP BY d.id, d.name
+      ORDER BY count DESC
+    `);
+
+    res.render('layout', {
+      title: 'Dashboard',
+      body: 'dashboard/index',
+      stats: {
+        itemCount: parseInt(itemsResult.rows[0]?.count || 0),
+        employeeCount: parseInt(employeesResult.rows[0]?.count || 0),
+        departmentCount: parseInt(departmentsResult.rows[0]?.count || 0),
+        unassignedCount: parseInt(unassignedResult.rows[0]?.count || 0)
+      },
+      itemsByType: itemsByTypeResult.rows || [],
+      recentItems: recentItemsResult.rows || [],
+      recentPurchases: recentPurchasesResult.rows || [],
+      deptEmployees: deptEmployeesResult.rows || [],
+      recentActivities,
+      user: req.session.user,
+      getCategoryIcon,
+      t: req.t || ((key) => translate(key, req.language)),
+      currentLanguage: req.language
+    });
+  } catch (error) {
+    console.error('Error loading dashboard:', error);
+    res.status(500).send('Server error: ' + error.message);
+  }
+};
+
+exports.searchAssets = async (req, res) => {
+  try {
+    const { query, category, page = 1, limit = 20, format = 'json' } = req.query;
+
+    // Validate query parameter
+    if (!query || query.length < 1) {
+      if (format === 'html') {
+        return res.render('layout', {
+          title: 'Search Results',
+          body: 'dashboard/search-results',
+          searchQuery: '',
+          searchResults: { results: {}, totalResults: 0, searchTime: 0 },
+          user: req.session.user,
+          currentPage: parseInt(page),
+          totalPages: 0,
+          category: category || 'all',
+          getCategoryIcon,
+          t: req.t || ((key) => translate(key, req.language)),
+          currentLanguage: req.language
+        });
+      }
+      return res.json({ results: [], totalResults: 0 });
+    }
+
+    const startTime = Date.now();
+
+    // Create search terms with different patterns for better matching
+    const searchTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 0);
+    const exactQuery = `%${query.replace(/[%_]/g, char => `\\${char}`)}%`;
+    const fuzzyQuery = searchTerms.map(term => `%${term.replace(/[%_]/g, char => `\\${char}`)}%`);
+
+    // Initialize results arrays
+    let searchResults = {};
+    let totalResults = 0;
+
+    const pageInt = parseInt(page);
+    const limitInt = parseInt(limit);
+    const offset = (pageInt - 1) * limitInt;
+
+    try {
+      // Enhanced Items Search with relevance scoring
+      if (!category || category === 'all' || category === 'items') {
+        const itemsResult = await db.query(`
+          WITH scored_items AS (
+            SELECT DISTINCT i.id, i.cep_brc, i.name, t.name as type_name, b.name as brand_name,
+                   e.name as assigned_to_name, d.name as department_name,
+                   l.name as location_name,
+                   i.price, s.date_acquired, COALESCE(i.serial_cod, '') as serial_number, i.model,
+                   i.created_at, i.updated_at,
+                   CASE WHEN i.assigned_to IS NULL THEN 'unassigned' ELSE 'assigned' END as status,
+                   -- Relevance scoring (higher score = more relevant)
+                   (
+                     CASE
+                       WHEN LOWER(i.cep_brc) = LOWER($1) THEN 100
+                       WHEN LOWER(i.name) = LOWER($1) THEN 95
+                       WHEN LOWER(COALESCE(i.serial_cod, '')) = LOWER($1) THEN 90
+                       WHEN i.cep_brc ILIKE $2 THEN 85
+                       WHEN i.name ILIKE $2 THEN 80
+                       WHEN COALESCE(i.serial_cod, '') ILIKE $2 THEN 75
+                       WHEN COALESCE(t.name, '') ILIKE $2 THEN 70
+                       WHEN COALESCE(b.name, '') ILIKE $2 THEN 65
+                       WHEN COALESCE(e.name, '') ILIKE $2 THEN 60
+                       WHEN COALESCE(d.name, '') ILIKE $2 THEN 55
+                       WHEN COALESCE(l.name, '') ILIKE $2 THEN 50
+                       ELSE 30
+                     END +
+                     -- Bonus points for multiple term matches
+                     ${searchTerms.map((_, index) => `
+                       CASE WHEN (i.name ILIKE $${3 + index} OR i.cep_brc ILIKE $${3 + index} OR
+                                  COALESCE(t.name, '') ILIKE $${3 + index} OR COALESCE(b.name, '') ILIKE $${3 + index}) THEN 10 ELSE 0 END
+                     `).join(' + ')}
+                   ) as relevance_score
+            FROM items i
+            LEFT JOIN types t ON i.type_id = t.id
+            LEFT JOIN brands b ON i.brand_id = b.id
+            LEFT JOIN employees e ON i.assigned_to = e.id
+            LEFT JOIN departments d ON e.dept_id = d.id
+            LEFT JOIN locations l ON i.location_id = l.id
+            LEFT JOIN sales s ON i.receipt = s.receipt
+            WHERE (
+              i.cep_brc ILIKE $2 OR i.name ILIKE $2 OR COALESCE(i.serial_cod, '') ILIKE $2 OR
+              COALESCE(i.model, '') ILIKE $2 OR COALESCE(t.name, '') ILIKE $2 OR
+              COALESCE(b.name, '') ILIKE $2 OR COALESCE(e.name, '') ILIKE $2 OR
+              COALESCE(d.name, '') ILIKE $2 OR COALESCE(l.name, '') ILIKE $2
+              ${searchTerms.length > 0 ? 'OR ' + searchTerms.map((_, index) => `
+                (i.name ILIKE $${3 + index} OR i.cep_brc ILIKE $${3 + index} OR
+                 COALESCE(t.name, '') ILIKE $${3 + index} OR COALESCE(b.name, '') ILIKE $${3 + index})
+              `).join(' OR ') : ''}
+            )
+          )
+          SELECT * FROM scored_items
+          ORDER BY relevance_score DESC, name ASC
+          LIMIT $${3 + searchTerms.length} OFFSET $${4 + searchTerms.length}
+        `, [query, exactQuery, ...fuzzyQuery, limitInt, offset]);
+
+        searchResults.Items = itemsResult.rows.map(item => ({
+          id: item.id,
+          title: item.name,
+          subtitle: `${item.type_name || 'Unknown Type'} • ${item.brand_name || 'No Brand'}`,
+          identifier: item.cep_brc,
+          icon: getItemIcon(item.type_name),
+          url: `/items/${item.id}/${item.cep_brc}`,
+          status: item.status,
+          category: 'Items',
+          price: item.price,
+          assignedTo: item.assigned_to_name,
+          department: item.department_name,
+          location: item.location_name,
+          serial: item.serial_number,
+          model: item.model,
+          dateAcquired: item.date_acquired,
+          relevance: item.relevance_score
+        }));
+        totalResults += itemsResult.rows.length;
+      }
+
+      // Enhanced Employees Search
+      if (!category || category === 'all' || category === 'employees') {
+        const employeesResult = await db.query(`
+          SELECT DISTINCT e.id, e.name, e.email, e.cep,
+                 d.name as department, l.name as location,
+                 COUNT(DISTINCT i.id) as item_count,
+                 COUNT(DISTINCT es.software_id) as software_count,
+                 -- Relevance scoring for employees
+                 (
+                   CASE
+                     WHEN LOWER(e.name) = LOWER($1) THEN 100
+                     WHEN e.name ILIKE $2 THEN 95
+                     WHEN LOWER(e.cep) = LOWER($1) THEN 90
+                     WHEN e.cep ILIKE $2 THEN 85
+                     WHEN LOWER(e.email) = LOWER($1) THEN 88
+                     WHEN e.email ILIKE $2 THEN 80
+                     WHEN COALESCE(d.name, '') ILIKE $2 THEN 65
+                     WHEN COALESCE(l.name, '') ILIKE $2 THEN 60
+                     ELSE 30
+                   END
+                 ) as relevance_score
+          FROM employees e
+          LEFT JOIN departments d ON e.dept_id = d.id
+          LEFT JOIN locations l ON e.location_id = l.id
+          LEFT JOIN items i ON e.id = i.assigned_to
+          LEFT JOIN employee_software es ON e.id = es.employee_id
+          WHERE e.left_date IS NULL
+          AND (e.name ILIKE $2 
+               OR e.cep ILIKE $2 
+               OR e.email ILIKE $2 
+               OR COALESCE(d.name, '') ILIKE $2
+               OR COALESCE(l.name, '') ILIKE $2)
+          GROUP BY e.id, e.name, e.email, e.cep, d.name, l.name
+          ORDER BY relevance_score DESC, e.name ASC
+          LIMIT $3 OFFSET $4
+        `, [query, exactQuery, limitInt, offset]);
+
+        searchResults.Employees = employeesResult.rows.map(emp => ({
+          id: emp.id,
+          title: emp.name,
+          subtitle: `${emp.position || 'Employee'} • ${emp.department_name || 'No Department'}`,
+          identifier: emp.cep || 'No CEP',
+          icon: 'user',
+          url: `/employees/${emp.id}`,
+          category: 'Employees',
+          email: emp.email,
+          phone: emp.phone,
+          department: emp.department_name,
+          location: emp.location_name,
+          hireDate: emp.hire_date,
+          status: emp.left_date ? 'Former Employee' : 'Active',
+          relevance: emp.relevance_score
+        }));
+        totalResults += employeesResult.rows.length;
+      }
+
+      // Enhanced Departments Search
+      if (!category || category === 'all' || category === 'departments') {
+        const departmentsResult = await db.query(`
+          SELECT DISTINCT d.id, d.name,
+                 COUNT(DISTINCT e.id) as employee_count,
+                 COUNT(DISTINCT i.id) as item_count,
+                 -- Relevance scoring for departments
+                 (
+                   CASE
+                     WHEN LOWER(d.name) = LOWER($1) THEN 100
+                     WHEN d.name ILIKE $2 THEN 85
+                     ELSE 30
+                   END
+                 ) as relevance_score
+          FROM departments d
+          LEFT JOIN employees e ON d.id = e.dept_id AND e.left_date IS NULL
+          LEFT JOIN items i ON e.id = i.assigned_to
+          WHERE d.name ILIKE $2
+          GROUP BY d.id, d.name
+          ORDER BY relevance_score DESC, d.name ASC
+          LIMIT $3 OFFSET $4
+        `, [query, exactQuery, limitInt, offset]);
+
+        searchResults.Departments = departmentsResult.rows.map(dept => ({
+          id: dept.id,
+          title: dept.name,
+          subtitle: `${dept.employee_count} employees • ${dept.item_count} items`,
+          identifier: `DEPT-${dept.id}`,
+          icon: 'building',
+          url: `/references/departments`,
+          category: 'Departments',
+          employeeCount: dept.employee_count,
+          itemCount: dept.item_count,
+          relevance: dept.relevance_score
+        }));
+        totalResults += departmentsResult.rows.length;
+      }
+
+      // Enhanced Locations Search
+      if (!category || category === 'all' || category === 'locations') {
+        const locationsResult = await db.query(`
+          SELECT DISTINCT l.id, l.name,
+                 COUNT(DISTINCT e.id) as employee_count,
+                 COUNT(DISTINCT i.id) as item_count,
+                 -- Relevance scoring for locations
+                 (
+                   CASE
+                     WHEN LOWER(l.name) = LOWER($1) THEN 100
+                     WHEN l.name ILIKE $2 THEN 85
+                     ELSE 30
+                   END
+                 ) as relevance_score
+          FROM locations l
+          LEFT JOIN employees e ON l.id = e.location_id AND e.left_date IS NULL
+          LEFT JOIN items i ON l.id = i.location_id
+          WHERE l.name ILIKE $2
+          GROUP BY l.id, l.name
+          ORDER BY relevance_score DESC, l.name ASC
+          LIMIT $3 OFFSET $4
+        `, [query, exactQuery, limitInt, offset]);
+
+        searchResults.Locations = locationsResult.rows.map(loc => ({
+          id: loc.id,
+          title: loc.name,
+          subtitle: `${loc.employee_count} employees • ${loc.item_count} items`,
+          identifier: `LOC-${loc.id}`,
+          icon: 'map-marker-alt',
+          url: `/references/locations`,
+          category: 'Locations',
+          description: loc.description,
+          employeeCount: loc.employee_count,
+          itemCount: loc.item_count,
+          relevance: loc.relevance_score
+        }));
+        totalResults += locationsResult.rows.length;
+      }
+
+    } catch (err) {
+      console.error('Enhanced search error:', err);
+      throw err;
+    }
+
+    const searchTime = Date.now() - startTime;
+    const totalPages = Math.ceil(totalResults / limitInt);
+
+    // Return HTML page for full search results
+    if (format === 'html') {
+      return res.render('layout', {
+        title: `Search Results for "${query}"`,
+        body: 'dashboard/search-results',
+        searchQuery: query,
+        searchResults: {
+          results: searchResults,
+          totalResults,
+          searchTime,
+          page: pageInt,
+          totalPages,
+          limit: limitInt
+        },
+        user: req.session.user,
+        currentPage: pageInt,
+        totalPages,
+        category: category || 'all',
+        getCategoryIcon,
+        t: req.t || ((key) => translate(key, req.language)),
+        currentLanguage: req.language
+      });
+    }
+
+    // Return JSON for AJAX requests (dashboard dropdown)
+    res.json({
+      results: searchResults,
+      totalResults,
+      searchTime,
+      page: pageInt,
+      totalPages,
+      limit: limitInt
+    });
+
+  } catch (error) {
+    console.error('Enhanced search error:', error);
+
+    if (req.query.format === 'html') {
+      return res.render('layout', {
+        title: 'Search Error',
+        body: 'dashboard/search-results',
+        searchQuery: req.query.query || '',
+        searchResults: { results: {}, totalResults: 0, searchTime: 0, error: error.message },
+        user: req.session.user,
+        currentPage: 1,
+        totalPages: 0,
+        category: req.query.category || 'all',
+        getCategoryIcon,
+        t: req.t || ((key) => translate(key, req.language)),
+        currentLanguage: req.language
+      });
+    }
+
+    res.status(500).json({ error: 'An error occurred during search', message: error.message });
+  }
+};
+
+// Helper function to get appropriate icon for item types
+function getItemIcon(typeName) {
+  if (!typeName) return 'laptop';
+
+  const typeMap = {
+    'laptop': 'laptop',
+    'desktop': 'desktop',
+    'monitor': 'tv',
+    'printer': 'print',
+    'phone': 'phone',
+    'tablet': 'tablet-alt',
+    'server': 'server',
+    'network': 'network-wired',
+    'camera': 'camera',
+    'projector': 'video',
+    'scanner': 'scanner',
+    'keyboard': 'keyboard',
+    'mouse': 'mouse'
+  };
+
+  const lowerType = typeName.toLowerCase();
+  return typeMap[lowerType] || 'laptop';
+}
+
+exports.getAssets = async (req, res) => {
+  try {
+    // Extract query parameters for filtering
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Extract filter parameters
+    const typeFilter = req.query.type;
+    const deptFilter = req.query.dept;
+    const statusFilter = req.query.status;
+    const locationFilter = req.query.location;
+    const minPrice = req.query.minPrice;
+    const maxPrice = req.query.maxPrice;
+    const startDate = req.query.startDate;
+    const endDate = req.query.endDate;
+
+    // Build WHERE clause dynamically
+    let whereConditions = [];
+    let queryParams = [];
+    let paramCount = 0;
+
+    if (typeFilter) {
+      paramCount++;
+      whereConditions.push(`t.name = $${paramCount}`);
+      queryParams.push(typeFilter);
+    }
+
+    if (deptFilter) {
+      paramCount++;
+      whereConditions.push(`d.name = $${paramCount}`);
+      queryParams.push(deptFilter);
+    }
+
+    if (statusFilter === 'assigned') {
+      whereConditions.push(`i.assigned_to IS NOT NULL`);
+    } else if (statusFilter === 'unassigned') {
+      whereConditions.push(`i.assigned_to IS NULL`);
+    }
+
+    if (locationFilter) {
+      paramCount++;
+      whereConditions.push(`l.name = $${paramCount}`);
+      queryParams.push(locationFilter);
+    }
+
+    if (minPrice) {
+      paramCount++;
+      whereConditions.push(`i.price >= $${paramCount}`);
+      queryParams.push(parseFloat(minPrice));
+    }
+
+    if (maxPrice) {
+      paramCount++;
+      whereConditions.push(`i.price <= $${paramCount}`);
+      queryParams.push(parseFloat(maxPrice));
+    }
+
+    if (startDate) {
+      paramCount++;
+      whereConditions.push(`s.date_acquired >= $${paramCount}`);
+      queryParams.push(startDate);
+    }
+
+    if (endDate) {
+      paramCount++;
+      whereConditions.push(`s.date_acquired <= $${paramCount}`);
+      queryParams.push(endDate);
+    }
+
+    const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
+
+    // Get total count for pagination
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM items i
+      LEFT JOIN types t ON i.type_id = t.id
+      LEFT JOIN brands b ON i.brand_id = b.id
+      LEFT JOIN employees e ON i.assigned_to = e.id
+      LEFT JOIN departments d ON e.dept_id = d.id
+      LEFT JOIN locations l ON i.location_id = l.id
+      LEFT JOIN sales s ON i.receipt = s.receipt
+      ${whereClause}
+    `;
+
+    const countResult = await db.query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+
+    // Get items with pagination
+    const itemsQuery = `
+      SELECT
+        i.id, i.cep_brc, i.name,
+        t.name as type_name,
+        b.name as brand_name,
+        e.name as assigned_to_name,
+        d.name as department_name,
+        l.name as location_name,
+        i.price,
+        s.date_acquired,
+        CASE WHEN i.assigned_to IS NULL THEN 'unassigned' ELSE 'assigned' END as status,
+        i.assigned_to
+      FROM items i
+      LEFT JOIN types t ON i.type_id = t.id
+      LEFT JOIN brands b ON i.brand_id = b.id
+      LEFT JOIN employees e ON i.assigned_to = e.id
+      LEFT JOIN departments d ON e.dept_id = d.id
+      LEFT JOIN locations l ON i.location_id = l.id
+      LEFT JOIN sales s ON i.receipt = s.receipt
+      ${whereClause}
+      ORDER BY i.created_at DESC
+      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
+    `;
+
+    // Add the limit and offset parameters
+    queryParams.push(limit);
+    queryParams.push(offset);
+
+    const itemsResult = await db.query(itemsQuery, queryParams);
+
+    // Send the response
+    res.json({
+      items: itemsResult.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
+
+  } catch (error) {
+    console.error('Error fetching assets:', error);
+    res.status(500).json({
+      error: 'Failed to fetch assets',
+      message: error.message
+    });
+  }
+};

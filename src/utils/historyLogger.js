@@ -6,19 +6,19 @@ const db = require('../config/db');
 /**
  * Log item history
  */
-async function logItemHistory(itemId, actionType, actionDetails, performedBy) {
+const logItemHistory = async (itemId, actionType, actionDetails, userId) => {
   try {
     await db.query(`
-      INSERT INTO item_history (item_id, action_type, action_details, performed_by)
-      VALUES ($1, $2, $3, $4)
-    `, [itemId, actionType, JSON.stringify(actionDetails), performedBy]);
+      INSERT INTO item_history (item_id, action_type, action_details, performed_by, created_at)
+      VALUES ($1, $2, $3, $4, NOW())
+    `, [itemId, actionType, JSON.stringify(actionDetails), userId]);
 
-    console.log(`Item history logged: ${actionType} for item ${itemId}`);
+    // Item history logged successfully
   } catch (error) {
     console.error('Error logging item history:', error);
     throw error;
   }
-}
+};
 
 /**
  * Log employee history
@@ -30,7 +30,7 @@ async function logEmployeeHistory(employeeId, actionType, actionDetails, perform
       VALUES ($1, $2, $3, $4)
     `, [employeeId, actionType, JSON.stringify(actionDetails), performedBy]);
 
-    console.log(`Employee history logged: ${actionType} for employee ${employeeId}`);
+    // Employee history logged successfully
   } catch (error) {
     console.error('Error logging employee history:', error);
     throw error;
@@ -235,7 +235,7 @@ async function logActivity(userId, action, entityType, entityId, details, ipAddr
       VALUES ($1, $2, $3, $4, $5, $6)
     `, [userId, action, entityType, entityId, JSON.stringify(details), ipAddress]);
 
-    console.log(`Activity logged: ${action} on ${entityType} ${entityId}`);
+    // Activity logged successfully
   } catch (error) {
     console.error('Error logging activity:', error);
     // Don't throw error for activity logging to prevent breaking main functionality
@@ -244,23 +244,59 @@ async function logActivity(userId, action, entityType, entityId, details, ipAddr
 
 /**
  * Get recent activities for dashboard or admin view
+ * Includes moves/changes on items, employees, and software
  */
 async function getRecentActivities(limit = 50) {
   try {
-    const result = await db.query(`
-      SELECT al.*, u.name as user_name
+    // Get recent activity logs
+    const activityLogs = await db.query(`
+      SELECT 'activity' AS source, al.id, al.action, al.entity_type, al.entity_id, al.details, al.created_at, u.name as user_name
       FROM activity_logs al
       LEFT JOIN users u ON al.user_id = u.id
       ORDER BY al.created_at DESC
       LIMIT $1
     `, [limit]);
 
-    return result.rows.map(row => ({
-      ...row,
-      details: typeof row.details === 'string'
-        ? JSON.parse(row.details)
-        : row.details
-    }));
+    // Get recent item history
+    const itemHistory = await db.query(`
+      SELECT 'item' AS source, ih.id, ih.action_type AS action, 'item' AS entity_type, ih.item_id AS entity_id,
+            ih.action_details AS details, ih.created_at, u.name as user_name, i.name as item_name, i.cep_brc
+      FROM item_history ih
+      LEFT JOIN users u ON ih.performed_by = u.id
+      LEFT JOIN items i ON ih.item_id = i.id
+      ORDER BY ih.created_at DESC
+      LIMIT $1
+    `, [limit]);
+
+    // Get recent employee history
+    const employeeHistory = await db.query(`
+      SELECT 'employee' AS source, eh.id, eh.action_type AS action, 'employee' AS entity_type, eh.employee_id AS entity_id, eh.action_details AS details, eh.created_at, u.name as user_name
+      FROM employee_history eh
+      LEFT JOIN users u ON eh.performed_by = u.id
+      ORDER BY eh.created_at DESC
+      LIMIT $1
+    `, [limit]);
+
+    // Combine all activities
+    const allActivities = [
+      ...activityLogs.rows,
+      ...itemHistory.rows.map(row => {
+        let details = typeof row.details === 'string' ? JSON.parse(row.details) : row.details;
+        // Ensure item name and cep_brc are present in details for item activities
+        if (row.entity_type === 'item') {
+          details = { ...details, name: row.item_name, cep_brc: row.cep_brc };
+        }
+        return { ...row, details };
+      }),
+      ...employeeHistory.rows.map(row => ({
+        ...row,
+        details: typeof row.details === 'string' ? JSON.parse(row.details) : row.details
+      }))
+    ]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, limit);
+
+    return allActivities;
   } catch (error) {
     console.error('Error getting recent activities:', error);
     throw error;
@@ -290,7 +326,7 @@ async function cleanOldHistory(daysToKeep = 365) {
       WHERE created_at < $1
     `, [cutoffDate]);
 
-    console.log(`Cleaned old history: ${itemHistoryResult.rowCount} item entries, ${employeeHistoryResult.rowCount} employee entries, ${activityResult.rowCount} activity entries`);
+    // Old history entries cleaned up successfully
 
     return {
       itemHistory: itemHistoryResult.rowCount,

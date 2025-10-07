@@ -1,83 +1,41 @@
 const express = require('express');
 const router = express.Router();
+const authController = require('../controllers/authController'); // Add this import
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
+const multer = require('multer');
+const upload = multer(); // Use memory storage for form-data parsing
 
 // Login form
-router.get('/login', (req, res) => {
-  res.render('layout', {
-    title: 'Login',
-    body: 'auth/login',
-    user: null
-  });
-});
+router.get('/login', authController.loginForm);
+
+// Login process - Use the controller method
+router.post('/login', authController.login);
 
 // Register form
 router.get('/register', (req, res) => {
   res.render('layout', {
     title: 'Register',
     body: 'auth/register',
-    user: null
+    user: null,
+    error: null
   });
-});
-
-// Login process
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    console.log('Login attempt:', email);
-
-    const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-
-    console.log('User found:', result.rows.length > 0);
-
-    if (result.rows.length === 0) {
-      return res.render('layout', {
-        title: 'Login',
-        body: 'auth/login',
-        error: 'Invalid email or password',
-        user: null
-      });
-    }
-
-    const user = result.rows[0];
-    console.log('Comparing passwords for user:', user.name);
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match:', isMatch);
-
-    if (!isMatch) {
-      return res.render('layout', {
-        title: 'Login',
-        body: 'auth/login',
-        error: 'Invalid email or password',
-        user: null
-      });
-    }
-
-    // Save user to session
-    req.session.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role
-    };
-
-    console.log('Login successful. User role:', user.role);
-
-    res.redirect('/');
-
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).send('Server error');
-  }
 });
 
 // Register process
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, confirm_password } = req.body;
+
+    // Validate input
+    if (!name || !email || !password || !confirm_password) {
+      return res.render('layout', {
+        title: 'Register',
+        body: 'auth/register',
+        error: 'All fields are required',
+        user: null
+      });
+    }
 
     if (password !== confirm_password) {
       return res.render('layout', {
@@ -110,26 +68,72 @@ router.post('/register', async (req, res) => {
       [name, email, hashedPassword, 'user']
     );
 
-    // Log user in
+    const newUser = result.rows[0];
+
+    // Log user in automatically
     req.session.user = {
-      id: result.rows[0].id,
-      name: result.rows[0].name,
-      email: result.rows[0].email,
-      role: result.rows[0].role
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role
     };
 
-    res.redirect('/');
+    // Save session explicitly
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error after registration:', err);
+        return res.render('layout', {
+          title: 'Register',
+          body: 'auth/register',
+          error: 'Registration successful but login failed. Please try logging in.',
+          user: null
+        });
+      }
+
+      // Registration and login successful
+      return res.redirect('/');
+    });
 
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).send('Server error');
+    res.render('layout', {
+      title: 'Register',
+      body: 'auth/register',
+      error: 'An error occurred during registration. Please try again.',
+      user: null
+    });
   }
 });
 
 // Logout
 router.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/');
+  const userName = req.session?.user?.name || 'Unknown';
+
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Logout error:', err);
+
+      if (req.isAjax) {
+        return res.status(500).json({
+          success: false,
+          message: 'Error logging out'
+        });
+      }
+      req.flash('error', 'Error logging out');
+      return res.redirect('/');
+    }
+
+    // User logout completed
+
+    if (req.isAjax) {
+      return res.json({
+        success: true,
+        message: 'Logged out successfully',
+        redirect: '/auth/login'
+      });
+    }
+
+    res.redirect('/auth/login');
   });
 });
 

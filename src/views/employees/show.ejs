@@ -1,1097 +1,1746 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <div class="header-title-section">
-      <div class="breadcrumb-nav">
-        <a href="/employees" class="breadcrumb-link">
-          <i class="fas fa-users"></i> Employees
+<div class="container mx-auto px-4 py-8">
+  <!-- Header & Breadcrumb -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+        <a href="/employees" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
+          <i class="fas fa-users"></i> <%= t('employees') %>
         </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-current"><%= employee.name %></span>
-      </div>
-      <h1><%= employee.name %></h1>
-      <div class="employee-meta">
-        <span class="employee-id-display">ID: <%= employee.cep %></span>
+        <i class="fas fa-chevron-right mx-2"></i>
+        <span class="text-gray-700 dark:text-gray-200"><%= employee.name %></span>
+      </nav>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2"><%= employee.name %></h1>
+      <div class="flex items-center gap-3 mt-2">
+        <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">ID: <%= employee.cep %></span>
         <%
-          let statusClass = 'status-active';
+          let statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700';
           let statusIcon = 'fas fa-check-circle';
           let statusText = 'Active';
-
           if (employee.left_date) {
-            statusClass = 'status-inactive';
+            statusClass = 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700';
             statusIcon = 'fas fa-user-times';
             statusText = 'Former Employee';
           }
         %>
-        <span class="employee-status <%= statusClass %>">
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full border text-xs font-semibold <%= statusClass %>">
           <i class="<%= statusIcon %>"></i> <%= statusText %>
         </span>
       </div>
     </div>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/employees" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Employees
-        </a>
-        <a href="/employees/<%= employee.id %>/edit" class="btn btn-warning">
-          <i class="fas fa-edit"></i> Edit
-        </a>
-        <a href="/employees/<%= employee.id %>/history" class="btn btn-info">
-          <i class="fas fa-history"></i> History
-        </a>
-        <button onclick="printEmployeeCard()" class="btn btn-success">
-          <i class="fas fa-print"></i> Print Card
-        </button>
-        <button type="button" class="btn btn-danger" id="deleteEmployeeBtn">
-          <i class="fas fa-trash"></i> Delete
-        </button>
-      </div>
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <a href="/employees" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> <%= t('back_to_employees') %>
+      </a>
+      <a href="/employees/<%= employee.id %>/edit" class="group px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform duration-300"></i> <%= t('edit') %>
+      </a>
+      <a href="/employees/<%= employee.id %>/history" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-history mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('history') %>
+      </a>
+      <button onclick="generateFullAssetReport()" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-file-pdf mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('assets_report') %> (PDF)
+      </button>
+      <button type="button" class="group px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg" id="deleteEmployeeBtn">
+        <i class="fas fa-trash mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('delete') %>
+      </button>
     </div>
   </div>
 
-  <div class="content-section">
-    <div class="employee-details-layout">
-      <!-- Main Information Panel -->
-      <div class="main-info-panel">
-        <div class="info-section">
-          <h2 class="section-title">
-            <i class="fas fa-user"></i>
-            Employee Information
-          </h2>
-
-          <div class="info-grid">
-            <div class="info-item">
-              <dt>Employee ID</dt>
-              <dd>
-                <span class="info-value code"><%= employee.cep %></span>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Email Address</dt>
-              <dd>
-                <span class="info-value">
-                  <i class="fas fa-envelope"></i>
-                  <a href="mailto:<%= employee.email %>"><%= employee.email %></a>
-                </span>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Department</dt>
-              <dd>
-                <% if (employee.department_name) { %>
-                  <span class="info-value primary">
-                    <i class="fas fa-building"></i> <%= employee.department_name %>
-                  </span>
-                <% } else { %>
-                  <span class="info-value muted">Not assigned</span>
-                <% } %>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Location</dt>
-              <dd>
-                <% if (employee.location_name) { %>
-                  <span class="info-value">
-                    <i class="fas fa-map-marker-alt"></i> <%= employee.location_name %>
-                  </span>
-                <% } else { %>
-                  <span class="info-value muted">Not assigned</span>
-                <% } %>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Start Date</dt>
-              <dd>
-                <span class="info-value">
-                  <i class="fas fa-calendar-plus"></i>
-                  <%= new Date(employee.joined_date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  }) %>
-                </span>
-              </dd>
-            </div>
-
-            <% if (employee.left_date) { %>
-            <div class="info-item">
-              <dt>End Date</dt>
-              <dd>
-                <span class="info-value">
-                  <i class="fas fa-calendar-times"></i>
-                  <%= new Date(employee.left_date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  }) %>
-                </span>
-              </dd>
-            </div>
-            <% } %>
-
-            <% if (employee.job_title) { %>
-            <div class="info-item">
-              <dt>Job Title</dt>
-              <dd>
-                <span class="info-value">
-                  <i class="fas fa-user-tie"></i> <%= employee.job_title %>
-                </span>
-              </dd>
-            </div>
-            <% } %>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Panel: Employee Info first, then Assets -->
+    <div class="lg:col-span-2 flex flex-col gap-8">
+      <!-- Employee Information (now first) -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-6">
+          <i class="fas fa-user"></i> <%= t('employee_information') %>
+        </h2>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('employee_id') %></dt>
+            <dd class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-1 rounded text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 inline-block"><%= employee.cep %></dd>
           </div>
-        </div>
-
-        <!-- Software Assignments Section -->
-        <div class="info-section">
-          <h2 class="section-title">
-            <i class="fas fa-laptop-code"></i>
-            Software Assignments
-          </h2>
-
-          <% if (software && software.length > 0) { %>
-            <div class="software-assignments-grid">
-              <% software.forEach(sw => { %>
-                <div class="software-assignment-card">
-                  <div class="software-header">
-                    <div class="software-name"><%= sw.name %></div>
-                    <% if (sw.version) { %>
-                      <span class="version">v<%= sw.version %></span>
-                    <% } %>
-                  </div>
-
-                  <div class="software-details">
-                    <% if (sw.vendor) { %>
-                      <span class="vendor">
-                        <i class="fas fa-building"></i> <%= sw.vendor %>
-                      </span>
-                    <% } %>
-                    <% if (sw.license_type) { %>
-                      <span class="license-type">
-                        <i class="fas fa-certificate"></i> <%= sw.license_type %>
-                      </span>
-                    <% } %>
-                  </div>
-
-                  <% if (sw.assigned_date) { %>
-                    <div class="assignment-date">
-                      <i class="fas fa-calendar-check"></i>
-                      Assigned <%= new Date(sw.assigned_date).toLocaleDateString() %>
-                    </div>
-                  <% } %>
-
-                  <% if (sw.license_key) { %>
-                    <div class="license-key">
-                      <i class="fas fa-key"></i>
-                      <span class="key-value"><%= sw.license_key %></span>
-                    </div>
-                  <% } %>
-                </div>
-              <% }) %>
-            </div>
-          <% } else { %>
-            <div class="empty-state-inline">
-              <div class="empty-icon">
-                <i class="fas fa-laptop-code"></i>
-              </div>
-              <div class="empty-text">
-                <h4>No Software Assigned</h4>
-                <p>This employee doesn't have any software licenses assigned yet.</p>
-              </div>
-            </div>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('email_address') %></dt>
+            <dd>
+              <a href="mailto:<%= employee.email %>" class="text-gray-700 dark:text-gray-200 hover:underline flex items-center gap-1">
+                <i class="fas fa-envelope"></i> <%= employee.email %>
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('department') %></dt>
+            <dd>
+              <% if (employee.department_name) { %>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
+                  <i class="fas fa-building"></i> <%= employee.department_name %>
+                </span>
+              <% } else { %>
+                <span class="text-gray-400 dark:text-gray-500 text-xs"><%= t('not_assigned') %></span>
+              <% } %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('location') %></dt>
+            <dd>
+              <% if (employee.location_name) { %>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-semibold">
+                  <i class="fas fa-map-marker-alt"></i> <%= employee.location_name %>
+                </span>
+              <% } else { %>
+                <span class="text-gray-400 dark:text-gray-500 text-xs"><%= t('not_assigned') %></span>
+              <% } %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('start_date') %></dt>
+            <dd class="flex items-center gap-1">
+              <i class="fas fa-calendar-plus"></i>
+              <span>
+                <%= new Date(employee.joined_date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                }) %>
+              </span>
+            </dd>
+          </div>
+          <% if (employee.left_date) { %>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('end_date') %></dt>
+            <dd class="flex items-center gap-1">
+              <i class="fas fa-calendar-times"></i>
+              <span>
+                <%= new Date(employee.left_date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                }) %>
+              </span>
+            </dd>
+          </div>
           <% } %>
-        </div>
+          <% if (employee.job_title) { %>
+          <div>
+            <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400"><%= t('job_title') %></dt>
+            <dd class="flex items-center gap-1">
+              <i class="fas fa-user-tie"></i> <span><%= employee.job_title %></span>
+            </dd>
+          </div>
+          <% } %>
+        </dl>
       </div>
 
-      <!-- Assets Panel -->
-      <div class="assets-panel">
-        <div class="assets-section">
-          <h2 class="section-title">
-            <i class="fas fa-boxes"></i>
-            Assigned Assets
+      <!-- Assigned Assets (now second) -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+            <i class="fas fa-boxes"></i> <%= t('assigned_assets') %>
             <% if (items && items.length > 0) { %>
-              <span class="count-badge"><%= items.length %></span>
+              <span class="ml-2 bg-blue-600 text-white px-2 py-0.5 rounded text-xs font-semibold"><%= items.length %></span>
             <% } %>
           </h2>
-
-          <div class="assets-info">
-            <% if (items && items.length > 0) { %>
-              <div class="assets-list">
-                <% items.forEach(item => { %>
-                  <div class="asset-item-card">
-                    <div class="asset-header">
-                      <div class="asset-id">
-                        <span class="asset-id-badge"><%= item.cep_brc %></span>
-                      </div>
-                      <div class="asset-actions">
-                        <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="btn-view" title="View Asset">
-                          <i class="fas fa-eye"></i>
-                        </a>
-                      </div>
-                    </div>
-
-                    <div class="asset-content">
-                      <h4 class="asset-name">
-                        <a href="/items/<%= item.id %>/<%= item.cep_brc %>"><%= item.name %></a>
-                      </h4>
-
-                      <div class="asset-details">
-                        <div class="asset-detail">
-                          <span class="detail-label">Type:</span>
-                          <span class="detail-value"><%= item.type_name || 'N/A' %></span>
-                        </div>
-                        <% if (item.brand_name) { %>
-                          <div class="asset-detail">
-                            <span class="detail-label">Brand:</span>
-                            <span class="detail-value"><%= item.brand_name %></span>
-                          </div>
-                        <% } %>
-                        <% if (item.model) { %>
-                          <div class="asset-detail">
-                            <span class="detail-label">Model:</span>
-                            <span class="detail-value"><%= item.model %></span>
-                          </div>
-                        <% } %>
-                        <% if (item.date_assigned) { %>
-                          <div class="asset-detail">
-                            <span class="detail-label">Assigned:</span>
-                            <span class="detail-value">
-                              <i class="fas fa-calendar"></i>
-                              <%= new Date(item.date_assigned).toLocaleDateString() %>
-                            </span>
-                          </div>
-                        <% } %>
-                      </div>
-                    </div>
+          <!-- Add Assign Asset Button -->
+          <button type="button" id="openAssignAssetModal" class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition">
+            <i class="fas fa-plus mr-1"></i> <%= t('assign_asset') %>
+          </button>
+          <!-- Total Assets Price -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400"><%= t('total_value') %>:</span>
+            <span class="font-bold text-green-700 dark:text-green-300 text-base">
+              <%
+                let totalAssetsPrice = 0;
+                if (items && items.length > 0) {
+                  totalAssetsPrice = items.reduce((sum, item) => {
+  const price = parseFloat(item.price);
+  return sum + (isNaN(price) ? 0 : price);
+}, 0);
+                }
+              %>
+              $<%= totalAssetsPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %>
+            </span>
+          </div>
+        </div>
+        <!-- Asset Search Field -->
+        <% if (items && items.length > 0) { %>
+        <div class="mb-4">
+          <input type="text" id="assetSearchInput" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100" placeholder="Search assigned assets...">
+        </div>
+        <% } %>
+        <% if (items && items.length > 0) { %>
+          <div class="flex flex-col gap-4 max-h-96 overflow-y-auto" id="assignedAssetsContainer">
+            <% items.forEach(item => { %>
+              <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2 asset-row" data-name="<%= item.name %>" data-id="<%= item.cep_brc %>" data-type="<%= item.type_name %>" data-brand="<%= item.brand_name %>">
+                <div class="flex items-center justify-between">
+                  <span class="font-mono bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-semibold"><%= item.cep_brc %></span>
+                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="group inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg" title="View Asset">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-800 dark:text-gray-100"><a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="hover:underline"><%= item.name %></a></h4>
+                  <div class="grid grid-cols-1 gap-1 text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    <div><span class="font-semibold"><%= t('type') %>:</span> <%= item.type_name || 'N/A' %></div>
+                    <% if (item.brand_name) { %>
+                      <div><span class="font-semibold"><%= t('brand') %>:</span> <%= item.brand_name %></div>
+                    <% } %>
+                    <% if (item.model) { %>
+                      <div><span class="font-semibold"><%= t('model') %>:</span> <%= item.model %></div>
+                    <% } %>
+                    <% if (item.date_assigned) { %>
+                      <div><span class="font-semibold"><%= t('assigned') %>:</span> <i class="fas fa-calendar"></i> <%= new Date(item.date_assigned).toLocaleDateString() %></div>
+                    <% } %>
+                    <% if (item.price && !isNaN(parseFloat(item.price))) { %>
+                      <div><span class="font-semibold"><%= t('price') %>:</span> $<%= parseFloat(item.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></div>
+                    <% } %>
                   </div>
-                <% }) %>
+                </div>
               </div>
+            <% }) %>
+          </div>
+          <div class="mt-6 flex gap-8">
+            <div>
+              <span class="block text-2xl font-bold text-blue-700 dark:text-blue-300"><%= items.length %></span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400"><%= t('total_assets') %></span>
+            </div>
+            <div>
+              <span class="block text-2xl font-bold text-blue-700 dark:text-blue-300"><%= [...new Set(items.map(item => item.type_name).filter(Boolean))].length %></span>
+              <span class="block text-xs text-gray-500 dark:text-gray-400"><%= t('asset_types') %></span>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+            <div class="text-4xl text-blue-500 mb-2">
+              <i class="fas fa-box-open"></i>
+            </div>
+            <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1"><%= t('no_assets_assigned') %></h4>
+            <p class="text-gray-500 dark:text-gray-400"><%= t('no_assets_assigned_description') %></p>
+          </div>
+        <% } %>
+      </div>
+    </div>
 
-              <div class="assets-summary">
-                <div class="summary-stats">
-                  <div class="stat-item">
-                    <span class="stat-number"><%= items.length %></span>
-                    <span class="stat-label">Total Assets</span>
+    <!-- Right Column: Software Assignments and Totals -->
+    <div class="flex flex-col gap-8">
+      <!-- Software Assignments (right column) -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+            <i class="fas fa-laptop-code"></i> <%= t('software_assignments') %>
+          </h2>
+          <button type="button" id="openAssignSoftwareModal" class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded transition">
+            <i class="fas fa-plus mr-1"></i> <%= t('assign_software') %>
+          </button>
+          <div>
+            <form id="softwarePriceForm">
+              <select id="softwarePriceType" name="softwarePriceType" class="text-xs rounded border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-2 py-1">
+                <option value="monthly"><%= t('monthly') %></option>
+                <option value="annual"><%= t('annual') %></option>
+              </select>
+            </form>
+            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2"><%= t('total') %>:</span>
+            <span id="totalSoftwarePrice" class="font-bold text-blue-700 dark:text-blue-300 text-base"></span>
+          </div>
+        </div>
+        <% if (software && software.length > 0) { %>
+          <div class="grid grid-cols-1 gap-4">
+            <% software.forEach(sw => { %>
+              <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="font-semibold text-gray-800 dark:text-gray-100"><%= sw.name %></span>
+                  <% if (sw.version) { %>
+                    <span class="bg-gray-200 dark:bg-gray-700 text-xs rounded px-2 py-0.5">v<%= sw.version %></span>
+                  <% } %>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <% if (sw.vendor) { %>
+                    <span><i class="fas fa-building"></i> <%= sw.vendor %></span>
+                  <% } %>
+                  <% if (sw.license_type) { %>
+                    <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded px-2 py-0.5"><i class="fas fa-certificate"></i> <%= sw.license_type %></span>
+                  <% } %>
+                </div>
+                <% if (sw.assigned_date) { %>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    <i class="fas fa-calendar-check"></i>
+                    Assigned <%= new Date(sw.assigned_date).toLocaleDateString() %>
                   </div>
-                  <div class="stat-item">
-                    <span class="stat-number">
-                      <%= [...new Set(items.map(item => item.type_name).filter(Boolean))].length %>
+                <% } %>
+                <% if (sw.license_key) { %>
+                  <div class="text-xs text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                    <i class="fas fa-key"></i>
+                    <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded"><%= sw.license_key %></span>
+                  </div>
+                <% } %>
+                <% if (sw.price_monthly || sw.price_annual) { %>
+                  <div class="text-xs text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span>
+                      $<%= (sw.price_monthly || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %>/mo
+                      <% if (sw.price_annual) { %>
+                        | $<%= (sw.price_annual || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %>/yr
+                      <% } %>
                     </span>
-                    <span class="stat-label">Asset Types</span>
                   </div>
-                </div>
+                <% } %>
               </div>
-            <% } else { %>
-              <div class="unassigned-assets">
-                <div class="unassigned-icon">
-                  <i class="fas fa-box-open"></i>
-                </div>
-                <div class="unassigned-text">
-                  <h4>No Assets Assigned</h4>
-                  <p>This employee doesn't have any assets assigned currently.</p>
-                </div>
-              </div>
-            <% } %>
+            <% }) %>
           </div>
-        </div>
+        <% } else { %>
+          <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
+            <div class="text-4xl text-blue-500 mb-2">
+              <i class="fas fa-laptop-code"></i>
+            </div>
+            <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1"><%= t('no_software_assigned') %></h4>
+            <p class="text-gray-500 dark:text-gray-400"><%= t('no_software_assigned_description') %></p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
 
-        <!-- Quick Actions -->
-        <div class="quick-actions-section">
-          <h3 class="actions-title">Quick Actions</h3>
-          <div class="actions-list">
-            <a href="/employees/<%= employee.id %>/edit" class="action-item">
-              <i class="fas fa-edit"></i>
-              <span>Edit Employee</span>
-            </a>
-            <a href="/employees/<%= employee.id %>/history" class="action-item">
-              <i class="fas fa-history"></i>
-              <span>View History</span>
-            </a>
-            <button onclick="printEmployeeCard()" class="action-item action-button">
-              <i class="fas fa-print"></i>
-              <span>Print Card</span>
+  <!-- Employee Delete Confirmation Modal -->
+  <div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div id="modalContent" class="p-6">
+        <!-- Content will be populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Asset Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm" id="assignAssetModal" style="display:none;">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden modal-content">
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="bg-white/20 p-2 rounded-lg">
+              <i class="fas fa-box-open text-white text-xl"></i>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold text-white">Assign Asset</h4>
+              <p class="text-blue-100 text-sm">to <%= employee.name %></p>
+            </div>
+          </div>
+          <button type="button" id="closeAssignAssetModal" class="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6">
+        <!-- Enhanced Search with Filters -->
+        <div class="mb-6">
+          <div class="relative mb-4">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input
+              type="text"
+              id="assignAssetSearchInput"
+              class="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              placeholder="Search by name, ID, type, brand, or model..."
+            >
+          </div>
+
+          <!-- Filter buttons -->
+          <div class="flex flex-wrap gap-2 mb-4" id="assetFilters">
+            <button class="filter-btn active px-3 py-1.5 text-sm font-medium rounded-lg transition-all" data-filter="all">
+              <i class="fas fa-list mr-1"></i> All Assets
             </button>
-            <% if (items && items.length > 0) { %>
-              <button onclick="generateAssetReport()" class="action-item action-button">
-                <i class="fas fa-file-alt"></i>
-                <span>Asset Report</span>
-              </button>
-            <% } %>
+            <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all" data-filter="laptop">
+              <i class="fas fa-laptop mr-1"></i> Laptops
+            </button>
+            <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all" data-filter="desktop">
+              <i class="fas fa-desktop mr-1"></i> Desktops
+            </button>
+            <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all" data-filter="monitor">
+              <i class="fas fa-tv mr-1"></i> Monitors
+            </button>
+            <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all" data-filter="phone">
+              <i class="fas fa-mobile-alt mr-1"></i> Phones
+            </button>
           </div>
         </div>
+
+        <!-- Asset List -->
+        <div id="assignAssetList" class="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+            <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p>Loading available assets...</p>
+          </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div id="assetResultsSummary" class="mt-4 text-sm text-gray-600 dark:text-gray-400 hidden">
+          <i class="fas fa-info-circle mr-2"></i>
+          <span id="assetsFoundCount">0</span> assets found
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            <i class="fas fa-lightbulb mr-2"></i>
+            Click on any asset to assign it to <%= employee.name %>
+          </div>
+          <button type="button" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-all duration-200 flex items-center gap-2" id="closeAssignAssetModalFooter">
+            <i class="fas fa-times"></i> Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Software Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm" id="assignSoftwareModal" style="display:none;">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden modal-content">
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="bg-white/20 p-2 rounded-lg">
+              <i class="fas fa-laptop-code text-white text-xl"></i>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold text-white">Assign Software</h4>
+              <p class="text-purple-100 text-sm">to <%= employee.name %></p>
+            </div>
+          </div>
+          <button type="button" id="closeAssignSoftwareModal" class="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6">
+        <!-- Enhanced Search with Filters -->
+        <div class="mb-6">
+          <div class="relative mb-4">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input
+              type="text"
+              id="assignSoftwareSearchInput"
+              class="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+              placeholder="Search by name, vendor, version, or license type..."
+            >
+          </div>
+
+          <!-- Filter buttons -->
+          <div class="flex flex-wrap gap-2 mb-4" id="softwareFilters">
+            <button class="filter-btn active px-3 py-1.5 text-sm font-medium rounded-lg transition-all" data-filter="all">
+              <i class="fas fa-list mr-1"></i> All Software
+            </button>
+            <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all" data-filter="perpetual">
+              <i class="fas fa-certificate mr-1"></i> Perpetual
+            </button>
+            <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all" data-filter="subscription">
+              <i class="fas fa-sync-alt mr-1"></i> Subscription
+            </button>
+            <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all" data-filter="office">
+              <i class="fas fa-briefcase mr-1"></i> Office Suite
+            </button>
+            <button class="filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all" data-filter="development">
+              <i class="fas fa-code mr-1"></i> Development
+            </button>
+          </div>
+        </div>
+
+        <!-- Software List -->
+        <div id="assignSoftwareList" class="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+            <div class="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p>Loading available software...</p>
+          </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div id="softwareResultsSummary" class="mt-4 text-sm text-gray-600 dark:text-gray-400 hidden">
+          <i class="fas fa-info-circle mr-2"></i>
+          <span id="softwareFoundCount">0</span> software packages found
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            <i class="fas fa-lightbulb mr-2"></i>
+            Click on any software to assign it to <%= employee.name %>
+          </div>
+          <button type="button" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-all duration-200 flex items-center gap-2" id="closeAssignSoftwareModalFooter">
+            <i class="fas fa-times"></i> Close
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal-overlay" id="deleteEmployeeModal">
-  <div class="modal-content warning-modal">
-    <div class="modal-header">
-      <i class="fas fa-exclamation-triangle modal-icon warning"></i>
-      <h4>Confirm Employee Deletion</h4>
-    </div>
+<!-- Inline data for JavaScript -->
+<!-- Additional CSS for improved modals -->
+<style>
+  /* Enhanced modal animations */
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
 
-    <div class="modal-body">
-      <div id="noAssignedItems" style="display: none;">
-        <p>Are you sure you want to delete <strong><%= employee.name %></strong>?</p>
-        <p>This action cannot be undone.</p>
-      </div>
+  .modal-content {
+    animation: modalSlideIn 0.2s ease-out;
+  }
 
-      <div id="hasAssignedItems" style="display: none;">
-        <p>This employee has assigned assets that will be unassigned:</p>
-        <div class="modal-assets-container">
-          <div class="assets-preview" id="assignedAssetsList"></div>
-        </div>
-        <div class="warning-message">
-          <i class="fas fa-exclamation-triangle"></i>
-          <span>All these assets will be unassigned and the employee will be deleted. This cannot be undone.</span>
-        </div>
-      </div>
-    </div>
+  /* Backdrop blur effect */
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+  }
 
-    <div class="modal-actions">
-      <button type="button" class="btn btn-danger" id="confirmDelete">
-        <i class="fas fa-trash"></i> Delete Employee
-      </button>
-      <button type="button" class="btn btn-secondary" id="cancelDelete">
-        <i class="fas fa-times"></i> Cancel
-      </button>
-    </div>
-  </div>
-</div>
+  /* Filter button styles */
+  .filter-btn {
+    border: 1px solid transparent;
+    user-select: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .filter-btn:hover:not(.active) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  .filter-btn.active {
+    position: relative;
+  }
+
+  /* Asset and software item hover effects */
+  .asset-item,
+  .software-item {
+    border-radius: 8px;
+    margin: 0;
+  }
+
+  .asset-item:hover,
+  .software-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 8px;
+  }
+
+  /* Loading spinner */
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  /* Smooth transitions for all interactive elements */
+  .asset-item,
+  .software-item,
+  .filter-btn,
+  button {
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Search input focus styles */
+  .focus\:ring-2:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Modal scrollbar styles */
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-track {
+    background: rgb(243 244 246);
+    border-radius: 4px;
+  }
+
+  .dark .overflow-y-auto::-webkit-scrollbar-track {
+    background: rgb(55 65 81);
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgb(156 163 175);
+    border-radius: 4px;
+  }
+
+  .dark .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgb(107 114 128);
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: rgb(107 114 128);
+  }
+
+  .dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: rgb(156 163 175);
+  }
+</style>
+
+<script type="application/json" id="employee-data">
+{
+  "employeeId": <%= employee.id %>,
+  "employeeName": "<%= employee.name %>",
+  "employeeCep": "<%= employee.cep %>",
+  "softwarePrices": <%- JSON.stringify(software ? software.map(sw => ({
+    monthly: sw.price_monthly || 0,
+    annual: sw.price_annual || 0
+  })) : []) %>
+}
+</script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const deleteButton = document.getElementById('deleteEmployeeBtn');
-  const modal = document.getElementById('deleteEmployeeModal');
-  const cancelButton = document.getElementById('cancelDelete');
-  const confirmButton = document.getElementById('confirmDelete');
-  const noAssignedItems = document.getElementById('noAssignedItems');
-  const hasAssignedItems = document.getElementById('hasAssignedItems');
-  const assignedAssetsList = document.getElementById('assignedAssetsList');
+// Load data from JSON script tag
+window.employeePageData = JSON.parse(document.getElementById('employee-data').textContent);
+</script>
 
-  // When the delete button is clicked, check for assigned items
-  deleteButton.addEventListener('click', function() {
-    fetchAssignedItems();
-  });
+<script>
+// CSRF Helper Function - Prevents token duplication
+function createCSRFHeaders(additionalHeaders = {}) {
+  const csrfToken = document.querySelector('meta[name="csrf-token"]');
 
-  // Close the modal when Cancel is clicked
-  cancelButton.addEventListener('click', function() {
-    modal.style.display = 'none';
-  });
+  // Start with clean headers object - avoid spreading existing headers that might contain duplicates
+  const headers = {};
 
-  // Handle the confirmation of deletion
-  confirmButton.addEventListener('click', function() {
-    unassignAndDeleteEmployee();
-  });
-
-  // Close when clicking outside the modal
-  modal.addEventListener('click', function(event) {
-    if (event.target === modal) {
-      modal.style.display = 'none';
+  // Add additional headers first (but not x-csrf-token)
+  Object.keys(additionalHeaders).forEach(key => {
+    if (key.toLowerCase() !== 'x-csrf-token') {
+      headers[key] = additionalHeaders[key];
     }
   });
 
-  // Fetch assigned items
-  function fetchAssignedItems() {
-    fetch('/employees/<%= employee.id %>/delete', {
-      method: 'POST',
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.hasAssignedItems) {
-        // Display the assigned items in the modal
-        hasAssignedItems.style.display = 'block';
-        noAssignedItems.style.display = 'none';
+  // Ensure X-Requested-With is always present
+  if (!headers['X-Requested-With']) {
+    headers['X-Requested-With'] = 'XMLHttpRequest';
+  }
 
-        // Clear and populate the items list
-        assignedAssetsList.innerHTML = '';
-        data.items.forEach(item => {
-          const assetCard = document.createElement('div');
-          assetCard.className = 'modal-asset-card';
-          assetCard.innerHTML = `
-            <div class="modal-asset-header">
-              <span class="modal-asset-id">${item.cep_brc}</span>
-              <span class="modal-asset-name">${item.name}</span>
-            </div>
-            <div class="modal-asset-details">
-              <span class="modal-asset-type">${item.type_name || 'N/A'}</span>
-            </div>
-          `;
-          assignedAssetsList.appendChild(assetCard);
-        });
-      } else {
-        // No assigned items, show simple confirmation
-        hasAssignedItems.style.display = 'none';
-        noAssignedItems.style.display = 'block';
-      }
+  // Add CSRF token - force overwrite to absolutely prevent duplication
+  if (csrfToken && csrfToken.getAttribute('content')) {
+    const tokenValue = csrfToken.getAttribute('content').trim();
+    if (tokenValue && !tokenValue.includes(',')) {  // Extra safety check
+      headers['x-csrf-token'] = tokenValue;
+    }
+  }
 
-      // Show the modal
-      modal.style.display = 'flex';
-    })
-    .catch(error => {
-      console.error('Error fetching assigned items:', error);
+  return headers;
+}
 
-      // Show error alert
-      const errorAlert = document.createElement('div');
-      errorAlert.className = 'alert alert-danger';
-      errorAlert.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <div>
-          <strong>Error checking assigned items</strong>
-          <p>Please try again or contact support if the problem persists.</p>
-        </div>
-      `;
+document.addEventListener('DOMContentLoaded', function() {
+  // Employee delete functionality
+  const deleteButton = document.getElementById('deleteEmployeeBtn');
 
-      document.querySelector('.content-section').insertBefore(errorAlert, document.querySelector('.employee-details-layout'));
+  deleteButton.addEventListener('click', function() {
+    confirmEmployeeDelete(window.employeePageData.employeeId, window.employeePageData.employeeName, window.employeePageData.employeeCep);
+  });
 
-      setTimeout(() => {
-        if (errorAlert.parentNode) {
-          errorAlert.remove();
-        }
-      }, 5000);
+  // Assign Asset Modal logic
+  const assignAssetModal = document.getElementById('assignAssetModal');
+  const openAssignAssetModalBtn = document.getElementById('openAssignAssetModal');
+  const closeAssignAssetModalBtn = document.getElementById('closeAssignAssetModal');
+  const assignAssetList = document.getElementById('assignAssetList');
+
+  if (openAssignAssetModalBtn) {
+    openAssignAssetModalBtn.addEventListener('click', function() {
+      assignAssetModal.style.display = 'flex';
+      loadAvailableAssets();
     });
   }
 
-  // Unassign all items and delete the employee
-  function unassignAndDeleteEmployee() {
-    confirmButton.disabled = true;
-    confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+  if (closeAssignAssetModalBtn) {
+    closeAssignAssetModalBtn.addEventListener('click', function() {
+      assignAssetModal.style.display = 'none';
+    });
+  }
 
-    fetch('/employees/<%= employee.id %>/unassign-and-delete', {
-      method: 'POST',
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'Content-Type': 'application/json'
+  // Also handle footer close button
+  const closeAssignAssetModalFooterBtn = document.getElementById('closeAssignAssetModalFooter');
+  if (closeAssignAssetModalFooterBtn) {
+    closeAssignAssetModalFooterBtn.addEventListener('click', function() {
+      assignAssetModal.style.display = 'none';
+    });
+  }
+
+  if (assignAssetModal) {
+    assignAssetModal.addEventListener('click', function(event) {
+      if (event.target === assignAssetModal) {
+        assignAssetModal.style.display = 'none';
       }
+    });
+  }
+
+function loadAvailableAssets() {
+  const assignAssetList = document.getElementById('assignAssetList');
+  const assignAssetSearchInput = document.getElementById('assignAssetSearchInput');
+  const assetResultsSummary = document.getElementById('assetResultsSummary');
+  const assetsFoundCount = document.getElementById('assetsFoundCount');
+
+  assignAssetList.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 py-12"><div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div><p>Loading available assets...</p></div>';
+
+  let allAssets = []; // Store all assets for filtering
+
+  fetch('/items/api/unassigned')
+    .then(res => res.json())
+    .then(data => {
+      if (!data.items || data.items.length === 0) {
+        assignAssetList.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 py-12"><i class="fas fa-inbox text-4xl mb-4"></i><p>No available assets found.</p><p class="text-sm">All assets are currently assigned.</p></div>';
+        return;
+      }
+
+      allAssets = data.items;
+      renderAssetList(allAssets);
+      setupAssetFilters(allAssets);
+      setupAssetSearch();
+
+      // Update results summary
+      assetResultsSummary.classList.remove('hidden');
+      assetsFoundCount.textContent = allAssets.length;
+    })
+    .catch(() => {
+      assignAssetList.innerHTML = '<div class="text-center text-red-500 py-12"><i class="fas fa-exclamation-triangle text-4xl mb-4"></i><p>Error loading assets.</p><p class="text-sm">Please try again later.</p></div>';
+    });
+}
+
+function renderAssetList(assets) {
+  const assignAssetList = document.getElementById('assignAssetList');
+
+  if (assets.length === 0) {
+    assignAssetList.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 py-12"><i class="fas fa-search text-4xl mb-4"></i><p>No assets match your search.</p><p class="text-sm">Try adjusting your filters or search terms.</p></div>';
+    return;
+  }
+
+  assignAssetList.innerHTML = '';
+
+  assets.forEach(item => {
+    const today = new Date().toISOString().split('T')[0];
+    const assetDiv = document.createElement('div');
+    assetDiv.className = 'asset-item border-b border-gray-200 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer';
+    assetDiv.dataset.name = (item.name || '').toLowerCase();
+    assetDiv.dataset.id = (item.cep_brc || '').toLowerCase();
+    assetDiv.dataset.type = (item.type_name || '').toLowerCase();
+    assetDiv.dataset.brand = (item.brand_name || '').toLowerCase();
+
+    assetDiv.innerHTML = `
+      <form method="POST" action="/items/${item.id}/${item.cep_brc}/assign" class="assign-asset-form p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4 flex-1">
+            <!-- Asset Icon -->
+            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+              <i class="fas ${getAssetIcon(item.type_name)} text-blue-600 dark:text-blue-400 text-lg"></i>
+            </div>
+
+            <!-- Asset Info -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <span class="font-mono bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md text-xs font-semibold">${item.cep_brc}</span>
+                <h4 class="font-semibold text-gray-800 dark:text-gray-100 truncate">${item.name}</h4>
+              </div>
+              <div class="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <span class="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">${item.type_name || 'N/A'}</span>
+                ${item.brand_name ? `<span class="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">${item.brand_name}</span>` : ''}
+                ${item.model ? `<span class="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">${item.model}</span>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Assign Button -->
+          <div class="flex-shrink-0 ml-4">
+            <input type="hidden" name="assigned_to" value="<%= employee.id %>">
+            <input type="hidden" name="date_assigned" value="${today}">
+            <button type="submit" class="assign-btn px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 hover:scale-105">
+              <i class="fas fa-plus"></i> Assign
+            </button>
+          </div>
+        </div>
+      </form>
+    `;
+
+    assignAssetList.appendChild(assetDiv);
+  });
+
+  // Add event listeners for form submission
+  assignAssetList.querySelectorAll('form.assign-asset-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+
+      // Create headers with CSRF token
+      const headers = createCSRFHeaders({
+        'Content-Type': 'application/json'
+      });
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({
+          assigned_to: formData.get('assigned_to'),
+          date_assigned: formData.get('date_assigned'),
+          assignment_notes: formData.get('comment') || ''
+        })
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Server did not return JSON response');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data.success) {
+          // Show success animation
+          submitBtn.innerHTML = '<i class="fas fa-check"></i> Assigned!';
+          submitBtn.className = submitBtn.className.replace('bg-green-600 hover:bg-green-700', 'bg-green-500');
+
+          setTimeout(() => {
+            document.getElementById('assignAssetModal').style.display = 'none';
+            window.location.reload();
+          }, 1000);
+        } else {
+          throw new Error(data.error || 'Assignment failed');
+        }
+      })
+      .catch(err => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+        alert('Failed to assign asset: ' + err.message);
+      });
+    });
+  });
+}
+
+function getAssetIcon(type) {
+  if (!type) return 'fa-box';
+  const typeLower = type.toLowerCase();
+
+  if (typeLower.includes('laptop')) return 'fa-laptop';
+  if (typeLower.includes('desktop') || typeLower.includes('computer')) return 'fa-desktop';
+  if (typeLower.includes('monitor') || typeLower.includes('screen')) return 'fa-tv';
+  if (typeLower.includes('phone') || typeLower.includes('mobile')) return 'fa-mobile-alt';
+  if (typeLower.includes('tablet') || typeLower.includes('ipad')) return 'fa-tablet-alt';
+  if (typeLower.includes('printer')) return 'fa-print';
+  if (typeLower.includes('server')) return 'fa-server';
+  if (typeLower.includes('camera')) return 'fa-camera';
+  if (typeLower.includes('headset') || typeLower.includes('headphone')) return 'fa-headphones';
+  if (typeLower.includes('keyboard')) return 'fa-keyboard';
+  if (typeLower.includes('mouse')) return 'fa-mouse';
+
+  return 'fa-box';
+}
+
+// Debounce function to improve performance
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+function setupAssetSearch() {
+  const assignAssetSearchInput = document.getElementById('assignAssetSearchInput');
+  if (assignAssetSearchInput) {
+    // Remove any existing event listeners
+    assignAssetSearchInput.replaceWith(assignAssetSearchInput.cloneNode(true));
+    const newInput = document.getElementById('assignAssetSearchInput');
+
+    newInput.value = '';
+    const debouncedFilter = debounce(filterAssets, 300);
+    newInput.addEventListener('input', debouncedFilter);
+  }
+}
+
+function setupAssetFilters(assets) {
+  const filterButtons = document.querySelectorAll('#assetFilters .filter-btn');
+
+  // Set up filter button styles
+  filterButtons.forEach(btn => {
+    if (btn.classList.contains('active')) {
+      btn.className = 'filter-btn active px-3 py-1.5 text-sm font-medium rounded-lg transition-all bg-blue-500 text-white';
+    } else {
+      btn.className = 'filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900';
+    }
+  });
+
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Update active state
+      filterButtons.forEach(b => {
+        b.className = 'filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900';
+      });
+      this.className = 'filter-btn active px-3 py-1.5 text-sm font-medium rounded-lg transition-all bg-blue-500 text-white';
+
+      filterAssets();
+    });
+  });
+}
+
+function filterAssets() {
+  const searchInput = document.getElementById('assignAssetSearchInput');
+  const activeFilter = document.querySelector('#assetFilters .filter-btn.active');
+  const assetsFoundCount = document.getElementById('assetsFoundCount');
+
+  if (!searchInput || !assetsFoundCount) return;
+
+  const searchQuery = searchInput.value.trim().toLowerCase();
+  const filterType = activeFilter ? activeFilter.dataset.filter : 'all';
+
+  const assetItems = document.querySelectorAll('.asset-item');
+  let visibleCount = 0;
+
+  // Remove any existing no-results message
+  const existingNoResults = document.querySelector('.no-results');
+  if (existingNoResults) existingNoResults.remove();
+
+  assetItems.forEach(item => {
+    const name = (item.dataset.name || '').toLowerCase();
+    const id = (item.dataset.id || '').toLowerCase();
+    const type = (item.dataset.type || '').toLowerCase();
+    const brand = (item.dataset.brand || '').toLowerCase();
+
+    // Get text content as fallback
+    const itemText = item.textContent.toLowerCase();
+
+    // Check search query - check both dataset and text content
+    const matchesSearch = !searchQuery ||
+      name.includes(searchQuery) ||
+      id.includes(searchQuery) ||
+      type.includes(searchQuery) ||
+      brand.includes(searchQuery) ||
+      itemText.includes(searchQuery);
+
+    // Check filter
+    let matchesFilter = filterType === 'all';
+    if (filterType !== 'all') {
+      matchesFilter = type.includes(filterType.toLowerCase()) ||
+                    itemText.includes(filterType.toLowerCase());
+    }
+
+    if (matchesSearch && matchesFilter) {
+      item.style.display = '';
+      visibleCount++;
+    } else {
+      item.style.display = 'none';
+    }
+  });
+
+  // Update count
+  assetsFoundCount.textContent = visibleCount;
+
+  // Show no results message if needed
+  if (visibleCount === 0 && assetItems.length > 0) {
+    const assignAssetList = document.getElementById('assignAssetList');
+    const noResults = document.createElement('div');
+    noResults.className = 'no-results text-center text-gray-500 dark:text-gray-400 py-12';
+    noResults.innerHTML = '<i class="fas fa-search text-4xl mb-4"></i><p>No assets match your search.</p><p class="text-sm">Try adjusting your filters or search terms.</p>';
+    assignAssetList.appendChild(noResults);
+  }
+}
+
+  function assignAssetToEmployee(assetId, cepBrc) {
+    const btn = assignAssetList.querySelector(`button[data-id="${assetId}"][data-cep_brc="${cepBrc}"]`);
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+    }
+    // Create headers with CSRF token
+    const headers = createCSRFHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    fetch(`/items/${assetId}/${cepBrc}/assign`, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        assigned_to: window.employeePageData.employeeId,
+        date_assigned: new Date().toISOString().split('T')[0]
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        assignAssetModal.style.display = 'none';
+        window.location.reload();
+      } else {
+        throw new Error(data.error || 'Assignment failed');
+      }
+    })
+    .catch(err => {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Assign';
+      }
+      alert('Failed to assign asset: ' + err.message);
+    });
+  }
+
+    // Software price calculation
+  function updateSoftwareTotal() {
+    const priceType = document.getElementById('softwarePriceType').value;
+    let total = 0;
+
+    // Use pre-defined software prices data
+    const softwarePrices = window.employeePageData.softwarePrices || [];
+
+    // Calculate total based on selected price type
+    softwarePrices.forEach(prices => {
+      if (priceType === 'monthly') {
+        total += prices.monthly;
+      } else {
+        total += prices.annual;
+      }
+    });
+
+    document.getElementById('totalSoftwarePrice').textContent = '$' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+  const priceTypeSelect = document.getElementById('softwarePriceType');
+  if (priceTypeSelect) {
+    priceTypeSelect.addEventListener('change', updateSoftwareTotal);
+    updateSoftwareTotal();
+  }
+
+  // Asset search filter
+  const assetSearchInput = document.getElementById('assetSearchInput');
+  const assignedAssetsContainer = document.getElementById('assignedAssetsContainer');
+  if (assetSearchInput && assignedAssetsContainer) {
+    assetSearchInput.addEventListener('input', function() {
+      const query = this.value.trim().toLowerCase();
+      assignedAssetsContainer.querySelectorAll('.asset-row').forEach(row => {
+        const name = row.dataset.name?.toLowerCase() || '';
+        const id = row.dataset.id?.toLowerCase() || '';
+        const type = row.dataset.type?.toLowerCase() || '';
+        const brand = row.dataset.brand?.toLowerCase() || '';
+        if (
+          name.includes(query) ||
+          id.includes(query) ||
+          type.includes(query) ||
+          brand.includes(query)
+        ) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Assign Software Modal logic
+  const assignSoftwareModal = document.getElementById('assignSoftwareModal');
+  const openAssignSoftwareModalBtn = document.getElementById('openAssignSoftwareModal');
+  const closeAssignSoftwareModalBtn = document.getElementById('closeAssignSoftwareModal');
+  const assignSoftwareList = document.getElementById('assignSoftwareList');
+  const assignSoftwareSearchInput = document.getElementById('assignSoftwareSearchInput');
+
+  if (openAssignSoftwareModalBtn) {
+    openAssignSoftwareModalBtn.addEventListener('click', function() {
+      assignSoftwareModal.style.display = 'flex';
+      loadAvailableSoftware();
+    });
+  }
+
+  if (closeAssignSoftwareModalBtn) {
+    closeAssignSoftwareModalBtn.addEventListener('click', function() {
+      assignSoftwareModal.style.display = 'none';
+    });
+  }
+
+  // Also handle footer close button
+  const closeAssignSoftwareModalFooterBtn = document.getElementById('closeAssignSoftwareModalFooter');
+  if (closeAssignSoftwareModalFooterBtn) {
+    closeAssignSoftwareModalFooterBtn.addEventListener('click', function() {
+      assignSoftwareModal.style.display = 'none';
+    });
+  }
+
+  if (assignSoftwareModal) {
+    assignSoftwareModal.addEventListener('click', function(event) {
+      if (event.target === assignSoftwareModal) {
+        assignSoftwareModal.style.display = 'none';
+      }
+    });
+  }
+
+  function loadAvailableSoftware() {
+    const assignSoftwareList = document.getElementById('assignSoftwareList');
+    const assignSoftwareSearchInput = document.getElementById('assignSoftwareSearchInput');
+    const softwareResultsSummary = document.getElementById('softwareResultsSummary');
+    const softwareFoundCount = document.getElementById('softwareFoundCount');
+
+    assignSoftwareList.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 py-12"><div class="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div><p>Loading available software...</p></div>';
+
+    let allSoftware = []; // Store all software for filtering
+
+    fetch('/software/api/available?employee_id=' + window.employeePageData.employeeId)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.software || data.software.length === 0) {
+          assignSoftwareList.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 py-12"><i class="fas fa-laptop-code text-4xl mb-4"></i><p>No available software found.</p><p class="text-sm">All software licenses are currently assigned or no software is available.</p></div>';
+          return;
+        }
+
+        allSoftware = data.software;
+        renderSoftwareList(allSoftware);
+        setupSoftwareFilters(allSoftware);
+        setupSoftwareSearch();
+
+        // Update results summary
+        softwareResultsSummary.classList.remove('hidden');
+        softwareFoundCount.textContent = allSoftware.length;
+      })
+      .catch(() => {
+        assignSoftwareList.innerHTML = '<div class="text-center text-red-500 py-12"><i class="fas fa-exclamation-triangle text-4xl mb-4"></i><p>Error loading software.</p><p class="text-sm">Please try again later.</p></div>';
+      });
+  }
+
+  function renderSoftwareList(software) {
+    const assignSoftwareList = document.getElementById('assignSoftwareList');
+
+    if (software.length === 0) {
+      assignSoftwareList.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 py-12"><i class="fas fa-search text-4xl mb-4"></i><p>No software matches your search.</p><p class="text-sm">Try adjusting your filters or search terms.</p></div>';
+      return;
+    }
+
+    assignSoftwareList.innerHTML = '';
+
+    software.forEach(sw => {
+      const swDiv = document.createElement('div');
+      swDiv.className = 'software-item border-b border-gray-200 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer';
+      swDiv.dataset.name = (sw.name || '').toLowerCase();
+      swDiv.dataset.vendor = (sw.vendor || '').toLowerCase();
+      swDiv.dataset.version = (sw.version || '').toLowerCase();
+      swDiv.dataset.license = (sw.license_type || '').toLowerCase();
+
+      const availableLicenses = (sw.max_licenses || 1) - (sw.current_assignments || 0);
+
+      swDiv.innerHTML = `
+        <form method="POST" action="/software/${sw.id}/assign" class="assign-software-form p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4 flex-1">
+              <!-- Software Icon -->
+              <div class="flex-shrink-0 w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                <i class="fas ${getSoftwareIcon(sw.name)} text-purple-600 dark:text-purple-400 text-lg"></i>
+              </div>
+
+              <!-- Software Info -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-3 mb-1">
+                  <h4 class="font-semibold text-gray-800 dark:text-gray-100 truncate">${sw.name}</h4>
+                  ${sw.version ? `<span class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded text-xs">v${sw.version}</span>` : ''}
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  ${sw.vendor ? `<span class="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded"><i class="fas fa-building mr-1"></i>${sw.vendor}</span>` : ''}
+                  ${sw.license_type ? `<span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded"><i class="fas fa-certificate mr-1"></i>${sw.license_type}</span>` : ''}
+                </div>
+                <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                  <span class="flex items-center gap-1">
+                    <i class="fas fa-users"></i>
+                    ${availableLicenses} of ${sw.max_licenses || 1} licenses available
+                  </span>
+                  ${sw.cost_per_license ? `<span class="flex items-center gap-1"><i class="fas fa-dollar-sign"></i>$${parseFloat(sw.cost_per_license).toFixed(2)}/license</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <!-- Assign Button -->
+            <div class="flex-shrink-0 ml-4">
+              <input type="hidden" name="employee_id" value="${window.employeePageData.employeeId}">
+              <button type="submit" class="assign-btn px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 hover:scale-105">
+                <i class="fas fa-plus"></i> Assign
+              </button>
+            </div>
+          </div>
+        </form>
+      `;
+
+      assignSoftwareList.appendChild(swDiv);
+    });
+
+    // Add event listeners for form submission
+    assignSoftwareList.querySelectorAll('form.assign-software-form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+
+        // Create headers with CSRF token
+        const headers = createCSRFHeaders({
+          'Content-Type': 'application/json'
+        });
+
+        fetch(form.action, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({
+            employee_id: formData.get('employee_id'),
+            notes: formData.get('notes') || ''
+          })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          return res.json();
+        })
+        .then(data => {
+          if (data.success) {
+            // Show success animation
+            submitBtn.innerHTML = '<i class="fas fa-check"></i> Assigned!';
+            submitBtn.className = submitBtn.className.replace('bg-purple-600 hover:bg-purple-700', 'bg-green-500');
+
+            setTimeout(() => {
+              document.getElementById('assignSoftwareModal').style.display = 'none';
+              window.location.reload();
+            }, 1000);
+          } else {
+            throw new Error(data.error || 'Assignment failed');
+          }
+        })
+        .catch(err => {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+          alert('Failed to assign software: ' + err.message);
+        });
+      });
+    });
+  }
+
+  function getSoftwareIcon(name) {
+    if (!name) return 'fa-laptop-code';
+    const nameLower = name.toLowerCase();
+
+    if (nameLower.includes('office') || nameLower.includes('word') || nameLower.includes('excel') || nameLower.includes('powerpoint')) return 'fa-briefcase';
+    if (nameLower.includes('adobe') || nameLower.includes('photoshop') || nameLower.includes('illustrator')) return 'fa-palette';
+    if (nameLower.includes('chrome') || nameLower.includes('firefox') || nameLower.includes('safari') || nameLower.includes('edge')) return 'fa-globe';
+    if (nameLower.includes('visual studio') || nameLower.includes('vscode') || nameLower.includes('intellij')) return 'fa-code';
+    if (nameLower.includes('slack') || nameLower.includes('teams') || nameLower.includes('zoom')) return 'fa-comments';
+    if (nameLower.includes('antivirus') || nameLower.includes('security') || nameLower.includes('defender')) return 'fa-shield-alt';
+    if (nameLower.includes('autocad') || nameLower.includes('solidworks') || nameLower.includes('revit')) return 'fa-drafting-compass';
+    if (nameLower.includes('windows') || nameLower.includes('macos') || nameLower.includes('linux')) return 'fa-desktop';
+
+    return 'fa-laptop-code';
+  }
+
+  function setupSoftwareSearch() {
+    const assignSoftwareSearchInput = document.getElementById('assignSoftwareSearchInput');
+    if (assignSoftwareSearchInput) {
+      // Remove any existing event listeners
+      assignSoftwareSearchInput.replaceWith(assignSoftwareSearchInput.cloneNode(true));
+      const newInput = document.getElementById('assignSoftwareSearchInput');
+
+      newInput.value = '';
+      const debouncedFilter = debounce(filterSoftware, 300);
+      newInput.addEventListener('input', debouncedFilter);
+    }
+  }
+
+  function setupSoftwareFilters(software) {
+    const filterButtons = document.querySelectorAll('#softwareFilters .filter-btn');
+
+    // Set up filter button styles
+    filterButtons.forEach(btn => {
+      if (btn.classList.contains('active')) {
+        btn.className = 'filter-btn active px-3 py-1.5 text-sm font-medium rounded-lg transition-all bg-purple-500 text-white';
+      } else {
+        btn.className = 'filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900';
+      }
+    });
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Update active state
+        filterButtons.forEach(b => {
+          b.className = 'filter-btn px-3 py-1.5 text-sm font-medium rounded-lg transition-all bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900';
+        });
+        this.className = 'filter-btn active px-3 py-1.5 text-sm font-medium rounded-lg transition-all bg-purple-500 text-white';
+
+        filterSoftware();
+      });
+    });
+  }
+
+  function filterSoftware() {
+    const searchInput = document.getElementById('assignSoftwareSearchInput');
+    const activeFilter = document.querySelector('#softwareFilters .filter-btn.active');
+    const softwareFoundCount = document.getElementById('softwareFoundCount');
+
+    if (!searchInput || !softwareFoundCount) return;
+
+    const searchQuery = searchInput.value.trim().toLowerCase();
+    const filterType = activeFilter ? activeFilter.dataset.filter : 'all';
+
+    const softwareItems = document.querySelectorAll('.software-item');
+    let visibleCount = 0;
+
+    // Remove any existing no-results message
+    const existingNoResults = document.querySelector('.no-results');
+    if (existingNoResults) existingNoResults.remove();
+
+    softwareItems.forEach(item => {
+      const name = (item.dataset.name || '').toLowerCase();
+      const vendor = (item.dataset.vendor || '').toLowerCase();
+      const version = (item.dataset.version || '').toLowerCase();
+      const license = (item.dataset.license || '').toLowerCase();
+
+      // Get text content as fallback
+      const itemText = item.textContent.toLowerCase();
+
+      // Check search query - check both dataset and text content
+      const matchesSearch = !searchQuery ||
+        name.includes(searchQuery) ||
+        vendor.includes(searchQuery) ||
+        version.includes(searchQuery) ||
+        license.includes(searchQuery) ||
+        itemText.includes(searchQuery);
+
+      // Check filter
+      let matchesFilter = filterType === 'all';
+      if (filterType !== 'all') {
+        if (filterType === 'perpetual') matchesFilter = license.includes('perpetual') || itemText.includes('perpetual');
+        else if (filterType === 'subscription') matchesFilter = license.includes('subscription') || itemText.includes('subscription');
+        else if (filterType === 'office') matchesFilter = name.includes('office') || name.includes('word') || name.includes('excel') || itemText.includes('office');
+        else if (filterType === 'development') matchesFilter = name.includes('visual') || name.includes('code') || name.includes('studio') || itemText.includes('development');
+      }
+
+      if (matchesSearch && matchesFilter) {
+        item.style.display = '';
+        visibleCount++;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    // Update count
+    softwareFoundCount.textContent = visibleCount;
+
+    // Show no results message if needed
+    if (visibleCount === 0 && softwareItems.length > 0) {
+      const assignSoftwareList = document.getElementById('assignSoftwareList');
+      const noResults = document.createElement('div');
+      noResults.className = 'no-results text-center text-gray-500 dark:text-gray-400 py-12';
+      noResults.innerHTML = '<i class="fas fa-search text-4xl mb-4"></i><p>No software matches your search.</p><p class="text-sm">Try adjusting your filters or search terms.</p>';
+      assignSoftwareList.appendChild(noResults);
+    }
+  }
+});
+
+
+function generateFullAssetReport() {
+  window.open('/reports/employee-full-assets/' + window.employeePageData.employeeId + '?format=pdf', '_blank');
+}
+
+// Employee delete confirmation function (same as in employees index)
+function confirmEmployeeDelete(employeeId, employeeName, employeeCep) {
+  // Show loading state
+  document.getElementById('deleteModal').style.display = 'flex';
+  document.getElementById('modalContent').innerHTML = `
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-blue-500 text-2xl mb-4"></i>
+      <p class="text-gray-600 dark:text-gray-300">Checking employee assignments...</p>
+    </div>
+  `;
+
+  // Create headers with CSRF token
+  const headers = createCSRFHeaders({
+    'Content-Type': 'application/json'
+  });
+
+  // Fetch employee deletion info
+  fetch(`/employees/${employeeId}/delete`, {
+    method: 'POST',
+    headers: headers
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    const modalContent = document.getElementById('modalContent');
+
+    // Store the employee CEP in the modal for later use
+    modalContent.setAttribute('data-employee-cep', employeeCep);
+
+    if (data.hasAssignedItems) {
+      // Employee has assigned items - show items and prevent deletion
+      modalContent.innerHTML = `
+        <div class="text-center mb-6">
+          <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Cannot Delete Employee</h3>
+          <p class="text-gray-600 dark:text-gray-300">
+            <strong>${employeeName}</strong> (ID: ${employeeCep}) has <strong>${data.itemCount}</strong> assigned item(s).
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <h4 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">Assigned Items:</h4>
+          <div class="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md">
+            ${data.items.map(item => `
+              <div class="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0" id="item-row-${item.id}">
+                <div class="flex-1">
+                  <div class="font-medium text-gray-800 dark:text-gray-100">${item.name}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">${item.cep_brc} • ${item.type_name || 'N/A'}</div>
+                </div>
+                <div class="ml-3">
+                  <button type="button"
+                    class="unassign-item-btn px-3 py-1 text-xs bg-yellow-100 dark:bg-yellow-900 hover:bg-yellow-200 dark:hover:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-md transition border border-yellow-300 dark:border-yellow-700"
+                    data-item-id="${item.id}"
+                    data-item-name="${item.name}"
+                    data-employee-id="${employeeId}"
+                    data-employee-name="${employeeName}">
+                    <i class="fas fa-unlink mr-1"></i> Unassign
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-4 mb-6">
+          <div class="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+            <i class="fas fa-info-circle"></i>
+            <span class="text-sm">You can unassign items individually using the buttons above, or go to the employee profile to manage all assignments.</span>
+          </div>
+        </div>
+
+        <div class="flex gap-3 justify-end">
+          <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+            Close
+          </button>
+        </div>
+      `;
+
+      // Add event handlers for unassign buttons
+      document.querySelectorAll('.unassign-item-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const itemId = this.dataset.itemId;
+          const itemName = this.dataset.itemName;
+          const employeeId = this.dataset.employeeId;
+          const employeeName = this.dataset.employeeName;
+
+          confirmUnassignItem(employeeId, itemId, itemName, employeeName);
+        });
+      });
+    } else {
+      // Employee has no assigned items - show CEP confirmation
+      modalContent.innerHTML = `
+        <div class="text-center mb-6">
+          <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Confirm Employee Deletion</h3>
+          <p class="text-gray-600 dark:text-gray-300">
+            You are about to permanently delete <strong>${employeeName}</strong>.
+          </p>
+        </div>
+
+        <div class="mb-6">
+          <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md p-4 mb-4">
+            <div class="flex items-center gap-2 text-green-800 dark:text-green-200">
+              <i class="fas fa-check-circle"></i>
+              <span class="text-sm">This employee has <strong>0 assigned items</strong>.</span>
+            </div>
+          </div>
+
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-4 mb-4">
+            <div class="flex items-center gap-2 text-red-800 dark:text-red-200">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span class="text-sm">This action cannot be undone. All employee data will be permanently deleted.</span>
+            </div>
+          </div>
+
+          <form id="deleteEmployeeForm" method="POST" action="/employees/${employeeId}/delete">
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              To confirm deletion, enter the employee CEP ID: <strong>${employeeCep}</strong>
+            </label>
+            <input type="text" name="cepConfirmation" id="cepConfirmation"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Enter CEP ID to confirm" required>
+            <div id="cepValidation" class="text-xs mt-1"></div>
+          </form>
+        </div>
+
+        <div class="flex gap-3 justify-end">
+          <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+            Cancel
+          </button>
+          <button type="button" id="confirmDeleteBtn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition" disabled>
+            Delete Employee
+          </button>
+        </div>
+      `;
+
+      // Add CEP validation
+      const cepInput = document.getElementById('cepConfirmation');
+      const confirmBtn = document.getElementById('confirmDeleteBtn');
+      const validation = document.getElementById('cepValidation');
+
+      cepInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value === employeeCep) {
+          confirmBtn.disabled = false;
+          confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          validation.className = 'text-xs mt-1 text-green-600';
+          validation.innerHTML = '<i class="fas fa-check"></i> CEP ID confirmed';
+        } else if (value.length > 0) {
+          confirmBtn.disabled = true;
+          confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          validation.className = 'text-xs mt-1 text-red-600';
+          validation.innerHTML = '<i class="fas fa-times"></i> CEP ID does not match';
+        } else {
+          confirmBtn.disabled = true;
+          confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          validation.className = 'text-xs mt-1';
+          validation.innerHTML = '';
+        }
+      });
+
+      confirmBtn.addEventListener('click', function() {
+        if (cepInput.value.trim() === employeeCep) {
+          document.getElementById('deleteEmployeeForm').submit();
+        }
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error checking employee assignments:', error);
+
+    // Determine error message
+    let errorMessage = 'Unable to check employee assignments. Please try again.';
+    if (error.message.includes('403')) {
+      errorMessage = 'Permission denied. Please refresh the page and try again.';
+    } else if (error.message.includes('500')) {
+      errorMessage = 'Server error occurred. Please try again later.';
+    } else if (error.message.includes('CSRF')) {
+      errorMessage = 'Security token expired. Please refresh the page and try again.';
+    }
+
+    document.getElementById('modalContent').innerHTML = `
+      <div class="text-center">
+        <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-4"></i>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Error</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-2">${errorMessage}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Error details: ${error.message}</p>
+        <div class="flex gap-3 justify-end">
+          <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+            Close
+          </button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function confirmUnassignItem(employeeId, itemId, itemName, employeeName) {
+  if (confirm(`Are you sure you want to unassign "${itemName}" from ${employeeName}?\n\nThis action cannot be undone.`)) {
+    // Find the item row to show loading state
+    const itemRow = document.getElementById(`item-row-${itemId}`);
+    const unassignBtn = itemRow.querySelector('.unassign-item-btn');
+
+    // Show loading state
+    unassignBtn.disabled = true;
+    unassignBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Unassigning...';
+    unassignBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+    // Create headers with CSRF token
+    const headers = createCSRFHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    // Send unassign request
+    fetch(`/employees/${employeeId}/unassign-item/${itemId}`, {
+      method: 'POST',
+      headers: headers
     })
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        window.location.href = '/employees?deleted=true';
+        // Remove the item row with animation
+        itemRow.style.transition = 'opacity 0.3s ease-out';
+        itemRow.style.opacity = '0';
+
+        setTimeout(() => {
+          itemRow.remove();
+
+          // Check if there are any items left
+          const remainingItems = document.querySelectorAll('[id^="item-row-"]');
+          if (remainingItems.length === 0) {
+            // No more items - show CEP confirmation form
+            const employeeCep = document.getElementById('modalContent').getAttribute('data-employee-cep');
+
+            document.getElementById('modalContent').innerHTML = `
+              <div class="text-center mb-6">
+                <i class="fas fa-check-circle text-green-500 text-3xl mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">All Items Unassigned!</h3>
+                <p class="text-gray-600 dark:text-gray-300">
+                  All items have been successfully unassigned from <strong>${employeeName}</strong>.
+                  You can now proceed with deleting the employee.
+                </p>
+              </div>
+
+              <div class="mb-6">
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-4 mb-4">
+                  <div class="flex items-center gap-2 text-red-800 dark:text-red-200">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span class="text-sm">This action cannot be undone. All employee data will be permanently deleted.</span>
+                  </div>
+                </div>
+
+                <form id="deleteEmployeeFormFinal" method="POST" action="/employees/${employeeId}/delete">
+                  <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    To confirm deletion, enter the employee CEP ID: <strong>${employeeCep}</strong>
+                  </label>
+                  <input type="text" name="cepConfirmation" id="cepConfirmationFinal"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="Enter CEP ID to confirm" required>
+                  <div id="cepValidationFinal" class="text-xs mt-1"></div>
+                </form>
+              </div>
+
+              <div class="flex gap-3 justify-end">
+                <button type="button" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" onclick="closeDeleteModal()">
+                  Cancel
+                </button>
+                <button type="button" id="confirmDeleteBtnFinal" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition" disabled>
+                  Delete Employee
+                </button>
+              </div>
+            `;
+
+            // Add CEP validation for the final confirmation
+            const cepInputFinal = document.getElementById('cepConfirmationFinal');
+            const confirmBtnFinal = document.getElementById('confirmDeleteBtnFinal');
+            const validationFinal = document.getElementById('cepValidationFinal');
+
+            cepInputFinal.addEventListener('input', function() {
+              const value = this.value.trim();
+              if (value === employeeCep) {
+                confirmBtnFinal.disabled = false;
+                confirmBtnFinal.classList.remove('opacity-50', 'cursor-not-allowed');
+                validationFinal.className = 'text-xs mt-1 text-green-600';
+                validationFinal.innerHTML = '<i class="fas fa-check"></i> CEP ID confirmed';
+              } else if (value.length > 0) {
+                confirmBtnFinal.disabled = true;
+                confirmBtnFinal.classList.add('opacity-50', 'cursor-not-allowed');
+                validationFinal.className = 'text-xs mt-1 text-red-600';
+                validationFinal.innerHTML = '<i class="fas fa-times"></i> CEP ID does not match';
+              } else {
+                confirmBtnFinal.disabled = true;
+                confirmBtnFinal.classList.add('opacity-50', 'cursor-not-allowed');
+                validationFinal.className = 'text-xs mt-1';
+                validationFinal.innerHTML = '';
+              }
+            });
+
+            confirmBtnFinal.addEventListener('click', function() {
+              if (cepInputFinal.value.trim() === employeeCep) {
+                document.getElementById('deleteEmployeeFormFinal').submit();
+              }
+            });
+          } else {
+            // Update the count in the modal header
+            const countElement = document.querySelector('.text-gray-600.dark\\:text-gray-300');
+            if (countElement) {
+              const newCount = remainingItems.length;
+              countElement.innerHTML = `<strong>${employeeName}</strong> (ID: ${document.getElementById('modalContent').getAttribute('data-employee-cep')}) has <strong>${newCount}</strong> assigned item(s).`;
+            }
+          }
+        }, 300);
+
+        // Show success notification
+        showNotification(data.message, 'success');
+
+        // Reload the page to refresh the assigned items list
+        setTimeout(() => {
+          location.reload();
+        }, 1500);
       } else {
-        throw new Error(data.error || 'Unknown error occurred');
+        throw new Error(data.error || 'Failed to unassign item');
       }
     })
     .catch(error => {
-      console.error('Error deleting employee:', error);
+      console.error('Error unassigning item:', error);
 
-      // Show error in modal
-      const errorDiv = document.createElement('div');
-      errorDiv.className = 'alert alert-danger';
-      errorDiv.style.marginTop = '1rem';
-      errorDiv.innerHTML = `
-        <i class="fas fa-exclamation-triangle"></i>
-        <div>
-          <strong>Error deleting employee</strong>
-          <p>${error.message}</p>
-        </div>
-      `;
+      // Reset button state
+      unassignBtn.disabled = false;
+      unassignBtn.innerHTML = '<i class="fas fa-unlink mr-1"></i> Unassign';
+      unassignBtn.classList.remove('opacity-50', 'cursor-not-allowed');
 
-      document.querySelector('.modal-body').appendChild(errorDiv);
-
-      confirmButton.disabled = false;
-      confirmButton.innerHTML = '<i class="fas fa-trash"></i> Delete Employee';
-
-      setTimeout(() => {
-        if (errorDiv.parentNode) {
-          errorDiv.remove();
-        }
-      }, 5000);
+      // Show error notification
+      showNotification('Failed to unassign item: ' + error.message, 'error');
     });
   }
-});
-
-// Print employee card function
-function printEmployeeCard() {
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>Employee Card - <%= employee.name %></title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            margin: 0;
-            background: white;
-          }
-          .employee-card {
-            border: 2px solid #333;
-            padding: 20px;
-            width: 400px;
-            background: white;
-            border-radius: 8px;
-          }
-          .employee-header {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-          }
-          .employee-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 8px;
-          }
-          .employee-id {
-            font-size: 18px;
-            font-family: 'Courier New', monospace;
-            color: #666;
-          }
-          .employee-details {
-            font-size: 14px;
-            line-height: 1.8;
-          }
-          .detail-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-          }
-          .detail-label {
-            font-weight: bold;
-            color: #333;
-          }
-          .detail-value {
-            color: #666;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="employee-card">
-          <div class="employee-header">
-            <div class="employee-name"><%= employee.name %></div>
-            <div class="employee-id"><%= employee.cep %></div>
-          </div>
-          <div class="employee-details">
-            <div class="detail-row">
-              <span class="detail-label">Email:</span>
-              <span class="detail-value"><%= employee.email %></span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Department:</span>
-              <span class="detail-value"><%= employee.department_name || 'N/A' %></span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Location:</span>
-              <span class="detail-value"><%= employee.location_name || 'N/A' %></span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">Start Date:</span>
-              <span class="detail-value"><%= new Date(employee.joined_date).toLocaleDateString() %></span>
-            </div>
-            <% if (employee.job_title) { %>
-            <div class="detail-row">
-              <span class="detail-label">Job Title:</span>
-              <span class="detail-value"><%= employee.job_title %></span>
-            </div>
-            <% } %>
-          </div>
-        </div>
-      </body>
-    </html>
-  `);
-  printWindow.document.close();
-  printWindow.print();
-  printWindow.close();
 }
 
-// Generate asset report function
-function generateAssetReport() {
-  const params = new URLSearchParams();
-  params.append('employee_id', '<%= employee.id %>');
-  params.append('report_type', 'employee_assets');
-  params.append('export_timestamp', new Date().toISOString());
+function showNotification(message, type = 'info') {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
 
-  // Create hidden iframe for download
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  iframe.src = `/reports/employee-assets?${params.toString()}`;
-  document.body.appendChild(iframe);
+  if (type === 'success') {
+    notification.classList.add('bg-green-500', 'text-white');
+    notification.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${message}`;
+  } else if (type === 'error') {
+    notification.classList.add('bg-red-500', 'text-white');
+    notification.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>${message}`;
+  } else {
+    notification.classList.add('bg-blue-500', 'text-white');
+    notification.innerHTML = `<i class="fas fa-info-circle mr-2"></i>${message}`;
+  }
 
+  document.body.appendChild(notification);
+
+  // Show notification
   setTimeout(() => {
-    document.body.removeChild(iframe);
-  }, 2000);
+    notification.classList.remove('translate-x-full');
+  }, 100);
+
+  // Hide notification after 4 seconds
+  setTimeout(() => {
+    notification.classList.add('translate-x-full');
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 4000);
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
 }
 </script>
-
-<style>
-/* Employee Show Page Specific Styles */
-.employee-meta {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.employee-id-display {
-  font-family: 'Courier New', monospace;
-  background: #f8f9fa;
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #495057;
-  border: 1px solid #e9ecef;
-}
-
-.employee-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.employee-status.status-active {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.employee-status.status-inactive {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-/* Main Content Layout */
-.employee-details-layout {
-  display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem 2rem;
-}
-
-/* Software Assignments Styling */
-.software-assignments-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.software-assignment-card {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 1rem;
-  transition: all 0.2s ease;
-}
-
-.software-assignment-card:hover {
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.software-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.software-name {
-  font-weight: 600;
-  color: var(--primary);
-  font-size: 1rem;
-}
-
-.version {
-  background: #e9ecef;
-  color: #495057;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.software-details {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.vendor, .license-type {
-  font-size: 0.8rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.vendor {
-  background: #f8f9fa;
-  color: #495057;
-  border: 1px solid #e9ecef;
-}
-
-.license-type {
-  background: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
-}
-
-.assignment-date, .license-key {
-  font-size: 0.8rem;
-  color: #666;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin-top: 0.5rem;
-}
-
-.key-value {
-  font-family: 'Courier New', monospace;
-  background: #f8f9fa;
-  padding: 0.2rem 0.4rem;
-  border-radius: 3px;
-  font-weight: 600;
-}
-
-/* Assets Panel Styling */
-.assets-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.assets-section {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  padding: 1.5rem;
-}
-
-.count-badge {
-  background: var(--primary);
-  color: white;
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-left: 0.5rem;
-}
-
-.assets-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.asset-item-card {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 1rem;
-  transition: all 0.2s ease;
-}
-
-.asset-item-card:hover {
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
-}
-
-.asset-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.asset-id-badge {
-  background: var(--primary);
-  color: white;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  font-family: 'Courier New', monospace;
-}
-
-.asset-name {
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.asset-name a {
-  color: var(--primary);
-  text-decoration: none;
-}
-
-.asset-name a:hover {
-  text-decoration: underline;
-}
-
-.asset-details {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-}
-
-.asset-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.detail-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.detail-value {
-  font-size: 0.85rem;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.assets-summary {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f1f3f4;
-}
-
-.summary-stats {
-  display: flex;
-  gap: 2rem;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-number {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary);
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  color: #666;
-  font-weight: 500;
-}
-
-/* Empty States */
-.empty-state-inline, .unassigned-assets {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 2rem;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  text-align: left;
-}
-
-.empty-icon, .unassigned-icon {
-  width: 48px;
-  height: 48px;
-  background: #e9ecef;
-  color: #6c757d;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.empty-text, .unassigned-text {
-  flex: 1;
-}
-
-.empty-text h4, .unassigned-text h4 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1rem;
-  color: #333;
-}
-
-.empty-text p, .unassigned-text p {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #666;
-}
-
-/* Modal Styling */
-.modal-assets-container {
-  max-height: 300px;
-  overflow-y: auto;
-  margin: 1rem 0;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  background: #f8f9fa;
-}
-
-.assets-preview {
-  padding: 1rem;
-}
-
-.modal-asset-card {
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  padding: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.modal-asset-card:last-child {
-  margin-bottom: 0;
-}
-
-.modal-asset-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.modal-asset-id {
-  background: var(--primary);
-  color: white;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  font-family: 'Courier New', monospace;
-}
-
-.modal-asset-name {
-  font-weight: 600;
-  color: #333;
-}
-
-.modal-asset-details {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-.warning-message {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 6px;
-  color: #856404;
-  font-weight: 500;
-  margin-top: 1rem;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .employee-details-layout {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding: 0 1rem 1rem;
-  }
-
-  .assets-panel {
-    order: -1;
-  }
-
-  .employee-meta {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .asset-details {
-    grid-template-columns: 1fr;
-  }
-
-  .summary-stats {
-    justify-content: center;
-  }
-
-  .header-actions .action-buttons {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .header-actions .action-buttons {
-    grid-template-columns: 1fr;
-  }
-
-  .employee-details-layout {
-    padding: 0 0.5rem 0.5rem;
-  }
-
-  .info-section, .assets-section {
-    padding: 1rem;
-  }
-
-  .empty-state-inline, .unassigned-assets {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.75rem;
-  }
-}
-
-/* Print Styles */
-@media print {
-  .header-actions,
-  .quick-actions-section {
-    display: none !important;
-  }
-
-  .employee-details-layout {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .info-section, .assets-section {
-    border: 1px solid #333 !important;
-    box-shadow: none !important;
-  }
-
-  .section-title {
-    color: #333 !important;
-  }
-
-  .employee-status {
-    border: 1px solid #333 !important;
-    background: white !important;
-    color: #333 !important;
-  }
-}
-
-/* High Contrast Mode */
-@media (prefers-contrast: high) {
-  .employee-id-display,
-  .asset-id-badge,
-  .key-value {
-    border: 2px solid #333;
-  }
-
-  .software-assignment-card,
-  .asset-item-card {
-    border: 2px solid #333;
-  }
-}
-</style>

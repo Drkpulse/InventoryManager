@@ -1,21 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const departmentController = require('../controllers/departmentController');
+const { hasPermission } = require('../middleware/permissions');
 
-// Middleware to check if user is logged in
-const isAuthenticated = (req, res, next) => {
-  if (req.session.user) {
-    return next();
-  }
-  res.redirect('/auth/login');
-};
+// Department Management Permissions:
+// departments.view, departments.create, departments.edit, departments.delete
 
-router.get('/', isAuthenticated, departmentController.getAllDepartments);
-router.get('/new', isAuthenticated, departmentController.createDepartmentForm);
-router.post('/', isAuthenticated, departmentController.createDepartment);
-router.get('/:id', isAuthenticated, departmentController.getDepartmentById);
-router.get('/:id/edit', isAuthenticated, departmentController.updateDepartmentForm);
-router.post('/:id', isAuthenticated, departmentController.updateDepartment);
-router.post('/:id/delete', isAuthenticated, departmentController.deleteDepartment);
+router.get('/', hasPermission('departments.view'), departmentController.getAllDepartments);
+router.get('/new', hasPermission('departments.create'), departmentController.createDepartmentForm);
+router.post('/', hasPermission('departments.create'), departmentController.createDepartment);
+router.get('/:id', hasPermission('departments.view'), departmentController.getDepartmentById);
+router.get('/:id/edit', hasPermission('departments.edit'), departmentController.updateDepartmentForm);
+router.post('/:id', hasPermission('departments.edit'), departmentController.updateDepartment);
+router.post('/:id/delete', hasPermission('departments.delete'), departmentController.deleteDepartment);
 
 module.exports = router;

@@ -1,30 +1,44 @@
-<h1>Assets by Department</h1>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2">
+    <i class="fas fa-sitemap"></i> Assets by Department
+  </h1>
 
-<div class="report-actions">
-  <a href="/reports/export-assets" class="btn">Export to CSV</a>
+  <div class="mb-6 flex justify-end">
+    <a href="/reports/export-assets" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+      <i class="fas fa-file-csv mr-2"></i> Export to CSV
+    </a>
+  </div>
+
+  <% if (departments && departments.length > 0) { %>
+    <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-900">
+          <tr>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Department</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Total Items</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Total Value</th>
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Asset Types</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <% departments.forEach(dept => { %>
+            <tr>
+              <td class="px-4 py-3 text-gray-800 dark:text-gray-100"><%= dept.department %></td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-200"><%= dept.total_items || 0 %></td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-200">$<%= dept.total_value ? parseFloat(dept.total_value).toFixed(2) : '0.00' %></td>
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-200"><%= dept.asset_types || 'N/A' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950 mt-8">
+      <div class="text-4xl text-blue-500 mb-2">
+        <i class="fas fa-sitemap"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No department data available</h3>
+      <p class="text-gray-500 dark:text-gray-400">There are no assets to display for any department.</p>
+    </div>
+  <% } %>
 </div>
-
-<% if (departments && departments.length > 0) { %>
-  <table>
-    <thead>
-      <tr>
-        <th>Department</th>
-        <th>Total Items</th>
-        <th>Total Value</th>
-        <th>Asset Types</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% departments.forEach(dept => { %>
-        <tr>
-          <td><%= dept.department %></td>
-          <td><%= dept.total_items || 0 %></td>
-          <td>$<%= dept.total_value ? parseFloat(dept.total_value).toFixed(2) : '0.00' %></td>
-          <td><%= dept.asset_types || 'N/A' %></td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
-<% } else { %>
-  <p>No department data available.</p>
-<% } %>

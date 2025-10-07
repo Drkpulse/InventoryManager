@@ -2,6 +2,15 @@ const db = require('../config/db');
 
 exports.index = async (req, res) => {
   try {
+    const perPage = parseInt(req.query.perPage, 10) || 10;
+    const currentPage = parseInt(req.query.page, 10) || 1;
+    const offset = (currentPage - 1) * perPage;
+
+    // Get total count
+    const totalResult = await db.query('SELECT COUNT(*) FROM software');
+    const totalSoftware = parseInt(totalResult.rows[0].count, 10);
+
+    // Get paginated software
     const software = await db.query(`
       SELECT
         s.id,
@@ -17,13 +26,21 @@ exports.index = async (req, res) => {
       LEFT JOIN employee_software es ON s.id = es.software_id
       GROUP BY s.id, s.name, s.version, s.license_type, s.cost_per_license, s.vendor, s.description, s.max_licenses
       ORDER BY s.name
-    `);
+      LIMIT $1 OFFSET $2
+    `, [perPage, offset]);
+
+    const totalPages = Math.ceil(totalSoftware / perPage);
 
     res.render('layout', {
       title: 'Software Management',
       body: 'software/index',
       user: req.session.user,
       software: software.rows,
+      totalSoftware,
+      currentPage,
+      totalPages,
+      perPage,
+      req,
       isSoftwarePage: true
     });
   } catch (error) {
@@ -37,13 +54,33 @@ exports.index = async (req, res) => {
   }
 };
 
-exports.showAddForm = (req, res) => {
-  res.render('layout', {
-    title: 'Add Software',
-    body: 'software/add',
-    user: req.session.user,
-    isSoftwarePage: true
-  });
+exports.showAddForm = async (req, res) => {
+  try {
+    // Fetch unique vendors and license types for dropdowns
+    const vendorsResult = await db.query(
+      "SELECT DISTINCT vendor FROM software WHERE vendor IS NOT NULL AND vendor <> '' ORDER BY vendor"
+    );
+    const licenseTypesResult = await db.query(
+      "SELECT DISTINCT license_type FROM software WHERE license_type IS NOT NULL AND license_type <> '' ORDER BY license_type"
+    );
+
+    res.render('layout', {
+      title: 'Add Software',
+      body: 'software/add',
+      user: req.session.user,
+      isSoftwarePage: true,
+      vendors: vendorsResult.rows.map(v => v.vendor),
+      licenseTypes: licenseTypesResult.rows.map(l => l.license_type)
+    });
+  } catch (error) {
+    console.error('Error loading add software form:', error);
+    res.status(500).render('layout', {
+      title: 'Error',
+      body: 'error',
+      message: 'Could not load add software form',
+      user: req.session.user
+    });
+  }
 };
 
 exports.create = async (req, res) => {
@@ -68,6 +105,7 @@ exports.showEditForm = async (req, res) => {
   try {
     const softwareId = req.params.id;
 
+    // Fetch software info
     const software = await db.query(`
       SELECT
         s.id,
@@ -90,11 +128,28 @@ exports.showEditForm = async (req, res) => {
       return res.redirect('/software');
     }
 
+    // Fetch assignments
+    const assignments = await db.query(`
+      SELECT
+        es.employee_id,
+        es.assigned_date,
+        es.notes,
+        e.name as employee_name,
+        e.cep as employee_cep,
+        d.name as department_name
+      FROM employee_software es
+      JOIN employees e ON es.employee_id = e.id
+      LEFT JOIN departments d ON e.dept_id = d.id
+      WHERE es.software_id = $1
+      ORDER BY es.assigned_date DESC
+    `, [softwareId]);
+
     res.render('layout', {
       title: 'Edit Software',
       body: 'software/edit',
       user: req.session.user,
       software: software.rows[0],
+      assignments: assignments.rows,
       isSoftwarePage: true
     });
   } catch (error) {
@@ -337,5 +392,41 @@ exports.export = async (req, res) => {
   } catch (error) {
     console.error('Error exporting software:', error);
     res.status(500).send('Error exporting software list');
+  }
+};
+
+exports.getAvailableSoftware = async (req, res) => {
+  try {
+    const employeeId = req.query.employee_id;
+    if (!employeeId) {
+      return res.status(400).json({ error: 'employee_id is required' });
+    }
+
+    // Get software not assigned to this employee and with available licenses
+    const result = await db.query(`
+      SELECT
+        s.id,
+        s.name,
+        s.version,
+        s.vendor,
+        s.license_type,
+        s.cost_per_license,
+        s.max_licenses,
+        COALESCE(s.description, '') as description,
+        COUNT(es.employee_id) as current_assignments
+      FROM software s
+      LEFT JOIN employee_software es ON s.id = es.software_id
+      WHERE s.id NOT IN (
+        SELECT software_id FROM employee_software WHERE employee_id = $1
+      )
+      GROUP BY s.id, s.name, s.version, s.vendor, s.license_type, s.cost_per_license, s.max_licenses, s.description
+      HAVING (COALESCE(s.max_licenses, 1) > COUNT(es.employee_id))
+      ORDER BY s.name
+    `, [employeeId]);
+
+    res.json({ software: result.rows });
+  } catch (error) {
+    console.error('Error fetching available software:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 };

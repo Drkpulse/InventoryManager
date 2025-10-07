@@ -1,4 +1,9 @@
 const db = require('../config/db');
+const ejs = require('ejs');
+const path = require('path');
+const puppeteer = require('puppeteer');
+
+
 
 // Report on asset allocation by department
 exports.assetsByDepartment = async (req, res) => {
@@ -274,12 +279,10 @@ exports.employeeAssetDetails = async (req, res) => {
 
     // Get employee details
     const employeeResult = await db.query(`
-      SELECT e.*, d.name as department_name,
-             p.name as platform_name, o.name as office_name
+      SELECT e.*, d.name as department_name, l.name as location_name
       FROM employees e
       LEFT JOIN departments d ON e.dept_id = d.id
-      LEFT JOIN platforms p ON e.platform_id = p.id
-      LEFT JOIN offices o ON e.office_id = o.id
+      LEFT JOIN locations l ON e.location_id = l.id
       WHERE e.id = $1
     `, [id]);
 
@@ -365,31 +368,10 @@ exports.purchaseHistory = async (req, res) => {
   }
 };
 
-// Report on assets assigned to each employee (general)
-exports.assetsByEmployee = async (req, res) => {
-  try {
-    res.render('layout', {
-      title: 'Assets by Employee',
-      body: 'reports/assets-by-employee',
-      user: req.session.user,
-      isReportPage: true,
-      data: { /* Your report data would go here */ }
-    });
-  } catch (error) {
-    console.error('Error generating assets by employee report:', error);
-    res.status(500).render('layout', {
-      title: 'Error',
-      body: 'error',
-      message: 'Could not generate assets by employee report',
-      user: req.session.user
-    });
-  }
-};
 
-// Add this method to your report controller (or update the existing one)
+
 exports.assetsReport = async (req, res) => {
   try {
-    // Fetch all items with related data for the analytics
     const itemsResult = await db.query(`
       SELECT
         i.*,
@@ -397,37 +379,182 @@ exports.assetsReport = async (req, res) => {
         b.name as brand_name,
         e.name as assigned_to_name,
         e.id as assigned_to,
-        e.cep as employee_cep,
         d.name as department_name,
-        l.name as location_name,
-        s.date_acquired,
-        s.supplier
+        s.date_acquired
       FROM items i
       LEFT JOIN types t ON i.type_id = t.id
       LEFT JOIN brands b ON i.brand_id = b.id
       LEFT JOIN employees e ON i.assigned_to = e.id
       LEFT JOIN departments d ON e.dept_id = d.id
-      LEFT JOIN locations l ON e.location_id = l.id
       LEFT JOIN sales s ON i.receipt = s.receipt
       ORDER BY i.created_at DESC
     `);
 
-    console.log(`Fetched ${itemsResult.rows.length} items for assets report`);
+    const items = itemsResult.rows;
+    const totalAssets = items.length;
+    const totalValue = items.reduce((sum, a) => sum + (parseFloat(a.price) || 0), 0);
+    const avgValue = totalAssets ? totalValue / totalAssets : 0;
+    const assignedAssets = items.filter(a => a.assigned_to).length;
+    const utilizationRate = totalAssets ? (assignedAssets / totalAssets) * 100 : 0;
+    const unassignedAssets = totalAssets - assignedAssets;
+    const itemsNeedingAttention = items.filter(a => a.condition === 'maintenance' || a.condition === 'damaged').length;
+    const highValueAssets = items.filter(a => parseFloat(a.price) > 5000).length;
+    const unassignedValue = items.filter(a => !a.assigned_to).reduce((sum, a) => sum + (parseFloat(a.price) || 0), 0);
+    const allConditions = Array.from(new Set(items.map(i => i.condition || 'active')));
+    const typesResult = await db.query('SELECT name FROM types ORDER BY name');
+    const statusesResult = await db.query('SELECT name FROM statuses ORDER BY status_order, name');
+    const allTypes = typesResult.rows;
+    const allStatuses = statusesResult.rows;
+
+    // Breakdown calculations
+    const typeCounts = {};
+    const valueRanges = { 'under_500': 0, '500-2000': 0, '2000-5000': 0, 'over_5000': 0 };
+    const ageBreakdown = { '0-1': 0, '1-3': 0, '3-5': 0, '5+': 0 };
+    const deptCounts = {};
+    const conditionBreakdown = {};
+
+    items.forEach(item => {
+      // Types
+      if (item.type_name) typeCounts[item.type_name] = (typeCounts[item.type_name] || 0) + 1;
+      // Value ranges
+      const price = parseFloat(item.price) || 0;
+      if (price < 500) valueRanges['under_500']++;
+      else if (price < 2000) valueRanges['500-2000']++;
+      else if (price < 5000) valueRanges['2000-5000']++;
+      else valueRanges['over_5000']++;
+      // Age
+      if (item.date_acquired) {
+        const years = (new Date() - new Date(item.date_acquired)) / (1000 * 60 * 60 * 24 * 365);
+        if (years < 1) ageBreakdown['0-1']++;
+        else if (years < 3) ageBreakdown['1-3']++;
+        else if (years < 5) ageBreakdown['3-5']++;
+        else ageBreakdown['5+']++;
+      }
+      // Departments
+      if (item.department_name && item.assigned_to) deptCounts[item.department_name] = (deptCounts[item.department_name] || 0) + 1;
+      // Condition
+      const cond = item.condition || 'active';
+      conditionBreakdown[cond] = (conditionBreakdown[cond] || 0) + 1;
+    });
+
+    const topTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const topDepartments = Object.entries(deptCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const maintenanceRate = totalAssets ? ((conditionBreakdown['maintenance'] || 0) / totalAssets) * 100 : 0;
+
+    // Sanitize items for table
+    const safeItems = items.map(a => ({
+      id: a.id,
+      cep_brc: a.cep_brc,
+      name: a.name,
+      type_name: a.type_name,
+      brand_name: a.brand_name,
+      price: a.price,
+      assigned_to: a.assigned_to,
+      assigned_to_name: a.assigned_to_name,
+      department_name: a.department_name,
+      date_acquired: a.date_acquired,
+      condition: a.condition
+    }));
 
     res.render('layout', {
       title: 'Asset Analytics Report',
       body: 'reports/assets',
-      items: itemsResult.rows, // This is the critical data that was missing!
+      totalAssets,
+      totalValue,
+      avgValue,
+      utilizationRate,
+      assignedAssets,
+      unassignedAssets,
+      itemsNeedingAttention,
+      highValueAssets,
+      unassignedValue,
+      topTypes,
+      valueRanges,
+      ageBreakdown,
+      topDepartments,
+      conditionBreakdown,
+      maintenanceRate,
+      safeItems,
       user: req.session.user,
+      allTypes,
+      allStatuses,
+      allConditions,
       isReportPage: true
     });
   } catch (error) {
-    console.error('Error loading assets report:', error);
     res.status(500).render('layout', {
       title: 'Error',
       body: 'error',
       message: 'Could not load assets report: ' + error.message,
       user: req.session.user
     });
+  }
+};
+
+// Employee full assets report (detailed view with PDF export)
+exports.employeeFullAssetsPDF = async (req, res) => {
+  const employeeId = req.params.id;
+  try {
+    // Fetch employee details
+    const employeeResult = await db.query(`
+      SELECT e.*, d.name as department_name, l.name as location_name
+      FROM employees e
+      LEFT JOIN departments d ON e.dept_id = d.id
+      LEFT JOIN locations l ON e.location_id = l.id
+      WHERE e.id = $1
+    `, [employeeId]);
+
+    if (employeeResult.rows.length === 0) {
+      return res.status(404).send('Employee not found');
+    }
+
+    const employee = employeeResult.rows[0];
+
+    // Fetch assigned items
+    const itemsResult = await db.query(`
+      SELECT i.*, t.name as type_name, b.name as brand_name
+      FROM items i
+      LEFT JOIN types t ON i.type_id = t.id
+      LEFT JOIN brands b ON i.brand_id = b.id
+      WHERE i.assigned_to = $1
+      ORDER BY i.name
+    `, [employeeId]);
+
+    const items = itemsResult.rows;
+
+    // Calculate stats
+    const stats = {
+      total_items: items.length,
+      total_value: items.reduce((sum, i) => sum + (parseFloat(i.price) || 0), 0),
+      asset_types: [...new Set(items.map(i => i.type_name).filter(Boolean))].join(', ')
+    };
+
+    // Check if this is a PDF print request
+    if (req.query.format === 'pdf') {
+      console.log('📄 Generating print-friendly PDF page for employee:', employee.name);
+
+      // Render the print-friendly PDF page (no layout wrapper for clean printing)
+      return res.render('reports/print-pdf', {
+        title: `Asset Report - ${employee.name}`,
+        employee,
+        items,
+        stats,
+        layout: false
+      });
+    }
+
+    // For regular HTML report, render the standard template
+    console.log('📊 Generating standard HTML report for employee:', employee.name);
+
+    const html = await ejs.renderFile(
+      path.join(__dirname, '../views/reports/employee-full-assets.ejs'),
+      { employee, items, stats }
+    );
+
+    res.send(html);
+
+  } catch (error) {
+    console.error('Error generating employee full assets report:', error);
+    res.status(500).send('Server error');
   }
 };

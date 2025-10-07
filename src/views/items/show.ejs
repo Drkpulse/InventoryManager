@@ -1,379 +1,525 @@
-<div class="page-container">
-  <div class="page-header-simple">
-    <div class="header-title-section">
-      <div class="breadcrumb-nav">
-        <a href="/items" class="breadcrumb-link">
-          <i class="fas fa-boxes"></i> Assets
+<div class="container mx-auto px-4 py-8">
+  <!-- Breadcrumb & Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+        <a href="/items" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
+          <i class="fas fa-boxes"></i> <%= t('assets') %>
         </a>
-        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-current"><%= item.cep_brc %></span>
-      </div>
-      <h1><%= item.name %></h1>
-      <div class="asset-meta">
-        <span class="asset-id-display">ID: <%= item.cep_brc %></span>
+        <i class="fas fa-chevron-right mx-2"></i>
+        <span class="text-gray-700 dark:text-gray-200"><%= item.cep_brc %></span>
+      </nav>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100"><%= item.name %></h1>
+      <div class="flex items-center gap-4 mt-2 text-gray-700 dark:text-gray-300 text-sm">
+        <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-xs text-gray-600 dark:text-gray-400">ID: <%= item.cep_brc %></span>
         <%
-          let statusClass = 'status-available';
-          let statusIcon = 'fas fa-clock';
-          let statusText = 'Available';
+          // Get status information from database if available
+          let statusClass = 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300';
+          let statusIcon = 'fas fa-question-circle';
+          let statusText = 'Unknown';
+          let statusStyle = '';
 
-          if (item.assigned_to) {
-            if (item.condition === 'maintenance') {
-              statusClass = 'status-maintenance';
-              statusIcon = 'fas fa-wrench';
-              statusText = 'Under Maintenance';
-            } else if (item.condition === 'retired') {
-              statusClass = 'status-retired';
-              statusIcon = 'fas fa-archive';
-              statusText = 'Retired';
+          if (item.status_name) {
+            statusText = item.status_name;
+
+            // Check if we have status data with color/icon information
+            if (typeof item.status_color !== 'undefined' && item.status_color) {
+              // Handle RGB colors
+              if (item.status_color.startsWith('#')) {
+                // Convert hex to RGB for opacity calculations
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(item.status_color);
+                if (result) {
+                  const r = parseInt(result[1], 16);
+                  const g = parseInt(result[2], 16);
+                  const b = parseInt(result[3], 16);
+                  statusStyle = `background-color: rgba(${r}, ${g}, ${b}, 0.1); color: ${item.status_color}; border: 1px solid rgba(${r}, ${g}, ${b}, 0.3);`;
+                  statusClass = ''; // Clear default classes when using custom style
+                }
+              } else {
+                // Fallback to named colors
+                switch(item.status_color) {
+                  case 'green':
+                    statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700';
+                    break;
+                  case 'yellow':
+                    statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700';
+                    break;
+                  case 'red':
+                    statusClass = 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700';
+                    break;
+                  case 'blue':
+                    statusClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700';
+                    break;
+                  case 'gray':
+                    statusClass = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600';
+                    break;
+                  default:
+                    statusClass = 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700';
+                }
+              }
             } else {
-              statusClass = 'status-active';
-              statusIcon = 'fas fa-check-circle';
-              statusText = 'Active';
+              // Fallback to pattern matching if no color is available
+              const statusName = item.status_name.toLowerCase();
+              if (statusName.includes('active') || statusName.includes('operational') || statusName.includes('working')) {
+                statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700';
+                statusIcon = 'fas fa-check-circle';
+              } else if (statusName.includes('maintenance') || statusName.includes('repair') || statusName.includes('service')) {
+                statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700';
+                statusIcon = 'fas fa-wrench';
+              } else if (statusName.includes('retired') || statusName.includes('disposed') || statusName.includes('end')) {
+                statusClass = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600';
+                statusIcon = 'fas fa-archive';
+              } else if (statusName.includes('lost') || statusName.includes('missing') || statusName.includes('stolen')) {
+                statusClass = 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700';
+                statusIcon = 'fas fa-times-circle';
+              } else if (statusName.includes('storage') || statusName.includes('available') || statusName.includes('stock')) {
+                statusClass = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700';
+                statusIcon = 'fas fa-box';
+              }
+            }
+
+            // Use database icon if available
+            if (typeof item.status_icon !== 'undefined' && item.status_icon) {
+              statusIcon = item.status_icon;
             }
           }
         %>
-        <span class="asset-status <%= statusClass %>">
-          <i class="<%= statusIcon %>"></i> <%= statusText %>
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg font-medium text-sm shadow <%= statusClass %>" <% if (statusStyle) { %>style="<%= statusStyle %>"<% } %>>
+          <% if (statusIcon.startsWith('fas fa-')) { %>
+            <i class="<%= statusIcon %>"></i>
+          <% } else { %>
+            <span class="text-base"><%= statusIcon %></span>
+          <% } %>
+          <%= statusText %>
         </span>
       </div>
     </div>
-    <div class="header-actions">
-      <div class="action-buttons">
-        <a href="/items" class="btn btn-secondary">
-          <i class="fas fa-arrow-left"></i> Back to Assets
-        </a>
-        <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="btn btn-warning">
-          <i class="fas fa-edit"></i> Edit
-        </a>
-        <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="btn btn-info">
-          <i class="fas fa-history"></i> History
-        </a>
-        <button onclick="printAssetLabel()" class="btn btn-success">
-          <i class="fas fa-print"></i> Print Label
-        </button>
-        <form style="display: inline;" method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/delete" class="inline-form" onsubmit="return confirmDelete('<%= item.name %>');">
-          <button type="submit" class="btn btn-danger">
-            <i class="fas fa-trash"></i> Delete
-          </button>
-        </form>
-      </div>
+    <!-- Modern action buttons -->
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <a href="/items" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> <%= t('back_to_assets') %>
+      </a>
+      <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="group px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform duration-300"></i> <%= t('edit_asset') %>
+      </a>
+      <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-history mr-2 group-hover:scale-110 transition-transform duration-300"></i> <%= t('history') %>
+      </a>
+      </form>
     </div>
   </div>
 
-  <div class="content-section">
-    <div class="asset-details-layout">
-      <!-- Main Information Panel -->
-      <div class="main-info-panel">
-        <div class="info-section">
-          <h2 class="section-title">
-            <i class="fas fa-info-circle"></i>
-            Asset Information
-          </h2>
-          <div class="info-grid">
-            <div class="info-item">
-              <dt>Type</dt>
-              <dd>
-                <% if (item.type_name) { %>
-                  <span class="info-value primary">
-                    <i class="fas fa-tag"></i> <%= item.type_name %>
-                  </span>
-                <% } else { %>
-                  <span class="info-value muted">Not specified</span>
-                <% } %>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Brand</dt>
-              <dd>
-                <% if (item.brand_name) { %>
-                  <span class="info-value">
-                    <i class="fas fa-building"></i> <%= item.brand_name %>
-                  </span>
-                <% } else { %>
-                  <span class="info-value muted">Not specified</span>
-                <% } %>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Model</dt>
-              <dd>
-                <span class="info-value"><%= item.model || 'Not specified' %></span>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Serial Number</dt>
-              <dd>
-                <% if (item.serial_cod) { %>
-                  <span class="info-value code"><%= item.serial_cod %></span>
-                <% } else { %>
-                  <span class="info-value muted">Not specified</span>
-                <% } %>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Purchase Price</dt>
-              <dd>
-                <% if (item.price) { %>
-                  <span class="info-value price">€<%= parseFloat(item.price).toFixed(2) %></span>
-                <% } else { %>
-                  <span class="info-value muted">Not specified</span>
-                <% } %>
-              </dd>
-            </div>
-
-            <div class="info-item">
-              <dt>Date Acquired</dt>
-              <dd>
-                <% if (item.date_acquired) { %>
-                  <span class="info-value">
-                    <i class="fas fa-calendar"></i>
-                    <%= new Date(item.date_acquired).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
-                  </span>
-                <% } else { %>
-                  <span class="info-value muted">Not specified</span>
-                <% } %>
-              </dd>
-            </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Information Panel -->
+    <div class="lg:col-span-2 space-y-8">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-info-circle"></i> <%= t('asset_information') %>
+        </h2>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+          <div>
+            <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('type') %></dt>
+            <dd>
+              <% if (item.type_name) { %>
+                <span class="inline-flex items-center gap-1 text-blue-700 dark:text-blue-300 font-medium">
+                  <i class="fas fa-tag"></i> <%= item.type_name %>
+                </span>
+              <% } else { %>
+                <span class="text-gray-400 italic"><%= t('not_specified') %></span>
+              <% } %>
+            </dd>
           </div>
+          <div>
+            <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('brand') %></dt>
+            <dd>
+              <% if (item.brand_name) { %>
+                <span class="inline-flex items-center gap-1 text-gray-700 dark:text-gray-200">
+                  <i class="fas fa-building"></i> <%= item.brand_name %>
+                </span>
+              <% } else { %>
+                <span class="text-gray-400 italic"><%= t('not_specified') %></span>
+              <% } %>
+            </dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('model') %></dt>
+            <dd>
+              <span class="text-gray-700 dark:text-gray-200"><%= item.model || t('not_specified') %></span>
+            </dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('serial_number') %></dt>
+            <dd>
+              <% if (item.serial_cod) { %>
+                <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-gray-800 dark:text-gray-100"><%= item.serial_cod %></span>
+              <% } else { %>
+                <span class="text-gray-400 italic"><%= t('not_specified') %></span>
+              <% } %>
+            </dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('purchase_price') %></dt>
+            <dd>
+              <% if (item.price) { %>
+                <span class="text-green-700 dark:text-green-300 font-semibold">€<%= parseFloat(item.price).toFixed(2) %></span>
+              <% } else { %>
+                <span class="text-gray-400 italic"><%= t('not_specified') %></span>
+              <% } %>
+            </dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('date_acquired') %></dt>
+            <dd>
+              <% if (item.date_acquired) { %>
+                <span class="inline-flex items-center gap-1 text-gray-700 dark:text-gray-200">
+                  <i class="fas fa-calendar"></i>
+                  <%= new Date(item.date_acquired).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                </span>
+              <% } else { %>
+                <span class="text-gray-400 italic"><%= t('not_specified') %></span>
+              <% } %>
+            </dd>
+          </div>
+        </dl>
+        <% if (item.description) { %>
+        <div class="mt-8 bg-gray-50 dark:bg-gray-900 border-l-4 border-blue-600 dark:border-blue-400 rounded p-4">
+          <h4 class="font-semibold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+            <i class="fas fa-align-left"></i> <%= t('description') %>
+          </h4>
+          <p class="text-gray-600 dark:text-gray-300 whitespace-pre-line"><%= item.description %></p>
         </div>
-
-                  <!-- Description Section -->
-          <% if (item.description) { %>
-          <div class="description-section">
-            <div class="description-content">
-              <h4 class="description-title">
-                <i class="fas fa-align-left"></i> Description
-              </h4>
-              <p class="description-text"><%= item.description %></p>
-            </div>
-          </div>
-          <% } %>
-
+        <% } %>
         <% if (item.receipt || item.supplier) { %>
-        <div class="info-section">
-          <h2 class="section-title">
-            <i class="fas fa-receipt"></i>
-            Purchase Details
+        <div class="mt-8">
+          <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <i class="fas fa-receipt"></i> <%= t('purchase_details') %>
           </h2>
-
-          <div class="info-grid">
+          <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             <% if (item.receipt) { %>
-            <div class="info-item">
-              <dt>Receipt Number</dt>
+            <div>
+              <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('receipt_number') %></dt>
               <dd>
-                <span class="info-value code"><%= item.receipt %></span>
+                <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-gray-800 dark:text-gray-100"><%= item.receipt %></span>
               </dd>
             </div>
             <% } %>
-
             <% if (item.supplier) { %>
-            <div class="info-item">
-              <dt>Supplier</dt>
+            <div>
+              <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('supplier') %></dt>
               <dd>
-                <span class="info-value"><%= item.supplier %></span>
+                <span class="text-gray-700 dark:text-gray-200"><%= item.supplier %></span>
               </dd>
             </div>
             <% } %>
-          </div>
+          </dl>
         </div>
         <% } %>
       </div>
+      <!-- Add this after the Product Details section in show.ejs -->
 
-      <!-- Assignment Panel -->
-      <div class="assignment-panel">
-        <div class="assignment-section">
-          <h2 class="section-title">
-            <i class="fas fa-user"></i>
-            Assignment
-          </h2>
+<% if (item.warranty_start_date || item.warranty_end_date) { %>
+<div class="mt-8">
+  <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+    <i class="fas fa-shield-alt"></i> <%= t('warranty_information') %>
+  </h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <% if (item.warranty_start_date) { %>
+    <div>
+      <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('warranty_start') %></dt>
+      <dd>
+        <span class="inline-flex items-center gap-1 text-gray-700 dark:text-gray-200">
+          <i class="fas fa-calendar-plus"></i>
+          <%= new Date(item.warranty_start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+        </span>
+      </dd>
+    </div>
+    <% } %>
+    <% if (item.warranty_months) { %>
+    <div>
+      <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('warranty_period') %></dt>
+      <dd>
+        <span class="inline-flex items-center gap-1 text-gray-700 dark:text-gray-200">
+          <i class="fas fa-clock"></i>
+          <%= item.warranty_months %> <%= t('months') %>
+        </span>
+      </dd>
+    </div>
+    <% } %>
+    <% if (item.warranty_end_date) { %>
+    <div>
+      <dt class="font-semibold text-gray-700 dark:text-gray-200"><%= t('warranty_end') %></dt>
+      <dd>
+        <span class="inline-flex items-center gap-1 text-gray-700 dark:text-gray-200">
+          <i class="fas fa-calendar-times"></i>
+          <%= new Date(item.warranty_end_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+        </span>
+      </dd>
+    </div>
+    <% } %>
+  </div>
 
-          <div class="assignment-info">
-            <% if (item.assigned_to_name) { %>
-              <div class="assigned-to">
-                <div class="employee-info">
-                  <a href="/employees/<%= item.assigned_to %>" class="employee-link">
-                    <div class="employee-avatar">
-                      <i class="fas fa-user"></i>
-                    </div>
-                    <div class="employee-details">
-                      <span class="employee-name"><%= item.assigned_to_name %></span>
-                      <% if (item.department_name) { %>
-                        <span class="employee-dept"><%= item.department_name %></span>
-                      <% } %>
-                    </div>
-                  </a>
+  <% if (item.warranty_end_date) { %>
+  <div class="mt-4">
+    <%
+      const warrantyEndDate = new Date(item.warranty_end_date);
+      const now = new Date();
+      const diffTime = warrantyEndDate - now;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      let statusClass, statusText, statusIcon;
+
+      if (diffDays < 0) {
+        // Expired
+        statusClass = 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700';
+        statusIcon = 'fas fa-exclamation-circle text-red-600 dark:text-red-400';
+        statusText = `Warranty expired ${Math.abs(diffDays)} days ago`;
+      } else if (diffDays <= 30) {
+        // Expiring soon
+        statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700';
+        statusIcon = 'fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400';
+        statusText = `Warranty expires in ${diffDays} days`;
+      } else {
+        // Active
+        statusClass = 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700';
+        statusIcon = 'fas fa-shield-alt text-green-600 dark:text-green-400';
+        statusText = `Warranty active for ${diffDays} more days`;
+      }
+    %>
+    <div class="flex items-center gap-2 px-4 py-3 rounded-lg <%= statusClass %>">
+      <i class="<%= statusIcon %>"></i>
+      <span class="font-medium"><%= statusText %></span>
+    </div>
+  </div>
+  <% } %>
+</div>
+<% } %>
+      <!-- End of Warranty Information -->
+    </div>
+
+
+    <!-- Assignment Panel -->
+    <div class="space-y-8">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-user"></i> <%= t('assignment') %>
+        </h2>
+        <div>
+          <% if (item.assigned_to_name) { %>
+            <div class="flex items-center gap-4 mb-4">
+              <a href="/employees/<%= item.assigned_to %>" class="flex items-center gap-3 hover:underline">
+                <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-700 dark:text-blue-300 text-2xl">
+                  <i class="fas fa-user"></i>
                 </div>
-
-                <% if (item.date_assigned) { %>
-                  <div class="assignment-date">
-                    <i class="fas fa-calendar-check"></i>
-                    Assigned on <%= new Date(item.date_assigned).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
-                  </div>
-                <% } %>
-              </div>
-
-              <div class="assignment-actions">
-                <form method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/unassign" class="inline-form">
-                  <button type="submit" class="btn btn-warning btn-block">
-                    <i class="fas fa-user-minus"></i> Unassign Asset
-                  </button>
-                </form>
-              </div>
-            <% } else { %>
-              <div class="unassigned-state">
-                <div class="unassigned-icon">
-                  <i class="fas fa-user-slash"></i>
+                <div>
+                  <div class="font-semibold text-gray-800 dark:text-gray-100"><%= item.assigned_to_name %></div>
+                  <% if (item.department_name) { %>
+                    <div class="text-xs text-gray-500 dark:text-gray-400"><%= item.department_name %></div>
+                  <% } %>
                 </div>
-                <div class="unassigned-text">
-                  <h3>Not Assigned</h3>
-                  <p>This asset is currently available for assignment</p>
-                </div>
-              </div>
-
-              <div class="assignment-actions">
-                <a href="/items/<%= item.id %>/<%= item.cep_brc %>/assign" class="btn btn-primary btn-block">
-                  <i class="fas fa-user-plus"></i> Assign Asset
-                </a>
-              </div>
-            <% } %>
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="quick-actions-section">
-          <h3 class="actions-title">Quick Actions</h3>
-          <div class="actions-list">
-            <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="action-item">
-              <i class="fas fa-edit"></i>
-              <span>Edit Details</span>
-            </a>
-            <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="action-item">
-              <i class="fas fa-history"></i>
-              <span>View History</span>
-            </a>
-            <button onclick="printAssetLabel()" class="action-item action-button">
-              <i class="fas fa-print"></i>
-              <span>Print Label</span>
-            </button>
-            <% if (item.assigned_to) { %>
-              <form method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/unassign" class="inline-form">
-                <button type="submit" class="action-item action-button">
-                  <i class="fas fa-user-minus"></i>
-                  <span>Unassign</span>
-                </button>
-              </form>
-            <% } else { %>
-              <a href="/items/<%= item.id %>/<%= item.cep_brc %>/assign" class="action-item">
-                <i class="fas fa-user-plus"></i>
-                <span>Assign</span>
               </a>
+            </div>
+            <% if (item.date_assigned) { %>
+              <div class="mb-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                <i class="fas fa-calendar-check"></i>
+                Assigned on <%= new Date(item.date_assigned).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+              </div>
             <% } %>
-          </div>
+            <button type="button" id="unassignBtn" class="w-full px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition flex items-center justify-center gap-2">
+              <i class="fas fa-user-minus"></i> <%= t('unassign_asset') %>
+            </button>
+          <% } else { %>
+            <div class="flex flex-col items-center justify-center mb-4">
+              <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-400 text-2xl mb-2">
+                <i class="fas fa-user-slash"></i>
+              </div>
+              <div class="text-center">
+                <h3 class="font-semibold text-gray-700 dark:text-gray-200"><%= t('not_assigned') %></h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm"><%= t('available_for_assignment') %></p>
+              </div>
+            </div>
+            <a href="/items/<%= item.id %>/<%= item.cep_brc %>/assign" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center justify-center gap-2">
+              <i class="fas fa-user-plus"></i> <%= t('assign_asset') %>
+            </a>
+          <% } %>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<style>
-/* Additional styles for description section */
-.description-section {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-left: 4px solid #007bff;
-  border-radius: 0 4px 4px 0;
-}
+<!-- Unassign Confirmation Modal -->
+<% if (item.assigned_to_name) { %>
+<div id="unassignModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+    <div class="p-6">
+      <div class="text-center mb-6">
+        <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mb-4"></i>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Confirm Asset Unassignment</h3>
+        <p class="text-gray-600 dark:text-gray-300">
+          Are you sure you want to unassign <strong>"<%= item.name %>"</strong> from <strong><%= item.assigned_to_name %></strong>?
+        </p>
+      </div>
 
-.description-title {
-  margin: 0 0 0.75rem 0;
-  color: #495057;
-  font-size: 1rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-}
-
-.description-title i {
-  margin-right: 0.5rem;
-  color: #007bff;
-}
-
-.description-text {
-  margin: 0;
-  color: #6c757d;
-  line-height: 1.5;
-  font-size: 0.95rem;
-  white-space: pre-wrap;
-}
-</style>
-
-<script>
-function confirmDelete(assetName) {
-  return confirm(`Are you sure you want to delete "${assetName}"? This action cannot be undone and will remove all history associated with this asset.`);
-}
-
-function printAssetLabel() {
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>Asset Label - <%= item.cep_brc %></title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            margin: 0;
-            background: white;
-          }
-          .label {
-            border: 2px solid #000;
-            padding: 20px;
-            width: 300px;
-            text-align: center;
-            background: white;
-          }
-          .asset-id {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            font-family: 'Courier New', monospace;
-          }
-          .asset-name {
-            font-size: 16px;
-            margin-bottom: 12px;
-            font-weight: 600;
-          }
-          .details {
-            font-size: 12px;
-            line-height: 1.6;
-            text-align: left;
-          }
-          .details div {
-            margin-bottom: 4px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="label">
-          <div class="asset-id"><%= item.cep_brc %></div>
-          <div class="asset-name"><%= item.name %></div>
-          <div class="details">
-            <div><strong>Type:</strong> <%= item.type_name || 'N/A' %></div>
-            <div><strong>Brand:</strong> <%= item.brand_name || 'N/A' %></div>
-            <% if (item.serial_cod) { %><div><strong>S/N:</strong> <%= item.serial_cod %></div><% } %>
-            <% if (item.assigned_to_name) { %><div><strong>Assigned:</strong> <%= item.assigned_to_name %></div><% } %>
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md p-4 mb-6">
+        <div class="flex items-start gap-3">
+          <i class="fas fa-info-circle text-yellow-600 dark:text-yellow-400 mt-0.5"></i>
+          <div class="text-sm text-yellow-800 dark:text-yellow-200">
+            <p class="font-medium mb-1">What happens when you unassign:</p>
+            <ul class="list-disc list-inside space-y-1">
+              <li>The asset will be marked as "Available"</li>
+              <li>Assignment date will be cleared</li>
+              <li>This action will be logged in both asset and employee history</li>
+            </ul>
           </div>
         </div>
-      </body>
-    </html>
-  `);
-  printWindow.document.close();
-  printWindow.print();
-  printWindow.close();
+      </div>
+
+      <div class="mb-6">
+        <label for="unassignReason" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+          Reason for unassignment (optional)
+        </label>
+        <textarea
+          id="unassignReason"
+          rows="3"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Enter reason for unassignment..."
+        ></textarea>
+      </div>
+
+      <div class="flex gap-3 justify-end">
+        <button type="button" id="cancelUnassignBtn" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition">
+          Cancel
+        </button>
+        <button type="button" id="confirmUnassignBtn" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-user-minus"></i> Unassign Asset
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<script>
+function confirmDelete(itemName, itemId) {
+  return confirm(`Are you sure you want to delete "${itemName}" (${itemId})? This action cannot be undone and will remove all history associated with this asset.`);
+}
+
+// Unassign modal functions
+function openUnassignModal() {
+  const modal = document.getElementById('unassignModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  } else {
+    alert('Error: Unassign modal not found. Please refresh the page and try again.');
+  }
+}
+
+function closeUnassignModal() {
+  const modal = document.getElementById('unassignModal');
+  if (modal) {
+    modal.style.display = 'none';
+    // Clear the reason field
+    const reasonField = document.getElementById('unassignReason');
+    if (reasonField) {
+      reasonField.value = '';
+    }
+  }
+}
+
+function confirmUnassign() {
+  const reasonField = document.getElementById('unassignReason');
+  const reason = reasonField ? reasonField.value.trim() : '';
+  const confirmBtn = document.getElementById('confirmUnassignBtn');
+
+  if (!confirmBtn) {
+    alert('Error: Could not find button element');
+    return;
+  }
+
+  // Show loading state
+  confirmBtn.disabled = true;
+  confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+
+  // Create form data
+  const formData = new FormData();
+  if (reason) {
+    formData.append('reason', reason);
+  }
+
+  // Submit the unassign request
+  // Get CSRF token
+  const csrfToken = document.querySelector('meta[name="csrf-token"]');
+  const headers = {
+    'X-Requested-With': 'XMLHttpRequest'
+  };
+
+  // Add CSRF token to headers
+  if (csrfToken) {
+    headers['x-csrf-token'] = csrfToken.getAttribute('content');
+  }
+
+  fetch('/items/<%= item.id %>/<%= item.cep_brc %>/unassign', {
+    method: 'POST',
+    headers: headers,
+    body: formData
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      // Show success message and reload page
+      alert('Asset successfully unassigned!');
+      window.location.reload();
+    } else {
+      throw new Error(data.error || 'Unknown error occurred');
+    }
+  })
+  .catch(error => {
+    console.error('Error unassigning asset:', error);
+    alert('Failed to unassign asset: ' + error.message);
+
+    // Reset button state
+    confirmBtn.disabled = false;
+    confirmBtn.innerHTML = '<i class="fas fa-user-minus"></i> Unassign Asset';
+  });
+}
+
+// Setup modal event listeners when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Unassign button event listener
+  const unassignBtn = document.getElementById('unassignBtn');
+  if (unassignBtn) {
+    unassignBtn.addEventListener('click', openUnassignModal);
+  }
+
+  // Cancel button event listener
+  const cancelBtn = document.getElementById('cancelUnassignBtn');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', closeUnassignModal);
+  }
+
+  // Confirm button event listener
+  const confirmBtn = document.getElementById('confirmUnassignBtn');
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', confirmUnassign);
+  }
+
+  // Modal background click to close
+  const unassignModal = document.getElementById('unassignModal');
+  if (unassignModal) {
+    unassignModal.addEventListener('click', function(event) {
+      if (event.target === this) {
+        closeUnassignModal();
+      }
+    });
+  }
+});
+
+function printAssetLabel() {
+  window.open('/items/<%= item.id %>/<%= item.cep_brc %>/label', '_blank');
 }
 </script>

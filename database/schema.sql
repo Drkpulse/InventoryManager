@@ -26,9 +26,26 @@ CREATE TABLE IF NOT EXISTS license_config (
   features JSONB DEFAULT '{}',
   status VARCHAR(50) DEFAULT 'active',
   last_checked TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  validation_attempts INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Insert the bypass/development license
+-- Add unique constraint for license_key
+ALTER TABLE license_config ADD CONSTRAINT license_config_license_key_unique UNIQUE (license_key);
+
+-- Insert the bypass/development license
+INSERT INTO license_config (license_key, company, valid_until, status, features, last_checked)
+VALUES (
+  'iambeirao',
+  'Development/Testing',
+  CURRENT_TIMESTAMP + INTERVAL '10 years',
+  'active',
+  '{"bypass": true, "testing": true, "development": true}'::jsonb,
+  CURRENT_TIMESTAMP
+)
+ON CONFLICT (license_key) DO NOTHING;
 
 -- Create users table
 CREATE TABLE users (
@@ -48,6 +65,7 @@ CREATE TABLE users (
   }'::jsonb,
   active BOOLEAN DEFAULT TRUE,
   last_login TIMESTAMP,
+  login_attempts INTEGER DEFAULT 0,
   failed_login_attempts INTEGER DEFAULT 0,
   account_locked BOOLEAN DEFAULT FALSE,
   locked_at TIMESTAMP,
@@ -60,6 +78,7 @@ CREATE TABLE users (
 CREATE TABLE departments (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) UNIQUE NOT NULL,
+  description TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -323,6 +342,26 @@ CREATE INDEX IF NOT EXISTS idx_users_settings ON users USING GIN (settings);
 CREATE INDEX IF NOT EXISTS idx_users_cep_id ON users(cep_id);
 CREATE INDEX IF NOT EXISTS idx_users_active ON users(active);
 
+-- Analytics tables indexes
+CREATE INDEX IF NOT EXISTS idx_analytics_events_session ON user_analytics_events (session_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_user ON user_analytics_events (user_id, timestamp);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON user_analytics_events (event_type, timestamp);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_page ON user_analytics_events (page_url, timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_performance_metrics_session ON page_performance_metrics (session_id);
+CREATE INDEX IF NOT EXISTS idx_performance_metrics_user ON page_performance_metrics (user_id, timestamp);
+CREATE INDEX IF NOT EXISTS idx_performance_metrics_page ON page_performance_metrics (page_url, timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_session_summary_session ON user_session_summary (session_id);
+CREATE INDEX IF NOT EXISTS idx_session_summary_user ON user_session_summary (user_id, start_time);
+CREATE INDEX IF NOT EXISTS idx_session_summary_time ON user_session_summary (start_time, end_time);
+
+CREATE INDEX IF NOT EXISTS idx_cookie_consent_session ON cookie_consent_analytics (session_id);
+CREATE INDEX IF NOT EXISTS idx_cookie_consent_user ON cookie_consent_analytics (user_id, timestamp);
+CREATE INDEX IF NOT EXISTS idx_cookie_consent_type ON cookie_consent_analytics (consent_type, timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_performance_aggregates_date ON performance_aggregates (date_period, period_type);
+
 -- Create an admin user (password: admin)
 INSERT INTO users (name, email, password, role, cep_id, settings, active, last_login)
 VALUES ('Admin User', 'admin@example.com', '$2a$10$rVTD1ySZN5OtNkQ5C62yA.gutjwPM0h.i5.WDG7XyDpnSOGUK3PgW', 'admin', 'ADMIN001', '{
@@ -426,34 +465,22 @@ INSERT INTO employees (name, cep, email, location_id, dept_id, joined_date) VALU
   ('Carlos Santos', 'EMP005', 'carlos.santos@example.com', 6, 1, '2022-08-15');
 
 -- Insert sample employee software assignments
-INSERT INTO employee_software (employee_id, software_id, assigned_date, license_key, notes) VALUES
-  (1, 1, '2022-01-15', 'MSO365-ABC123', 'Full Office suite for IT manager'),
-  (1, 7, '2022-01-15', 'WIN11-XYZ789', 'Windows 11 Pro license'),
-  (1, 8, '2022-01-15', 'AV-DEF456', 'Enterprise antivirus'),
-  (2, 1, '2022-03-20', 'MSO365-GHI789', 'Office suite for marketing'),
-  (2, 3, '2022-03-20', 'CC-JKL012', 'Creative Cloud for design work'),
-  (2, 6, '2022-03-20', 'SLACK-MNO345', 'Team communication'),
-  (3, 1, '2022-05-25', 'MSO365-PQR678', 'Office suite for finance'),
-  (3, 9, '2022-05-25', 'PM-STU901', 'Project management access'),
-  (4, 2, '2022-07-05', 'GWS-VWX234', 'Google Workspace for HR'),
-  (4, 6, '2022-07-05', 'SLACK-YZA567', 'HR team communication'),
-  (5, 1, '2022-08-20', 'MSO365-BCD890', 'Remote work Office suite'),
-  (5, 7, '2022-08-20', 'WIN11-EFG123', 'Remote work Windows license');
+INSERT INTO employee_software (employee_id, software_id, assigned_date, notes) VALUES
+  (1, 1, '2022-01-15', 'Full Office suite for IT manager'),
+  (1, 7, '2022-01-15', 'Windows 11 Pro license'),
+  (1, 8, '2022-01-15', 'Enterprise antivirus'),
+  (2, 1, '2022-03-20', 'Office suite for marketing'),
+  (2, 3, '2022-03-20', 'Creative Cloud for design work'),
+  (2, 6, '2022-03-20', 'Team communication'),
+  (3, 1, '2022-05-25', 'Office suite for finance'),
+  (3, 9, '2022-05-25', 'Project management access'),
+  (4, 2, '2022-07-05', 'Google Workspace for HR'),
+  (4, 6, '2022-07-05', 'HR team communication'),
+  (5, 1, '2022-08-20', 'Remote work Office suite'),
+  (5, 7, '2022-08-20', 'Remote work Windows license');
 
--- Insert default notification types
-INSERT INTO notification_types (name, description, icon, color) VALUES
-('system_welcome', 'Welcome Messages', 'fas fa-hand-wave', '#4a6fa5'),
-('item_assignment', 'Item Assignment Notifications', 'fas fa-check-circle', '#2a9d8f'),
-('item_unassignment', 'Item Unassignment Notifications', 'fas fa-minus-circle', '#e63946'),
-('new_employee', 'New Employee Added', 'fas fa-user-plus', '#2a9d8f'),
-('new_purchase', 'New Purchase Receipt', 'fas fa-shopping-cart', '#4a6fa5'),
-('unassigned_items', 'Unassigned Items Alert', 'fas fa-exclamation-triangle', '#f6c23e'),
-('low_stock', 'Low Stock Alert', 'fas fa-box-open', '#f6c23e'),
-('system_update', 'System Updates', 'fas fa-cog', '#36b9cc'),
-('password_expiry', 'Password Expiration Warning', 'fas fa-key', '#e63946'),
-('maintenance_mode', 'Maintenance Mode Notifications', 'fas fa-tools', '#f6c23e'),
-('software_assignment', 'Software License Assignment', 'fas fa-download', '#4a6fa5'),
-('software_expiry', 'Software License Expiry Warning', 'fas fa-exclamation-circle', '#f6c23e');
+-- Notification system has been removed as per migration 009
+-- No notification types or settings are inserted
 
 -- Insert sample system settings
 INSERT INTO system_settings (setting_key, setting_value, description) VALUES
@@ -498,43 +525,8 @@ INSERT INTO sim_cards (sim_number, carrier, client_id, pda_id, monthly_cost, sta
   ('SIM001234573', 'NOS', 5, NULL, 30.00, 1),
   ('SIM001234574', 'MEO', 6, NULL, 20.00, 1);
 
--- Create default notification settings for all users and notification types
-INSERT INTO notification_settings (user_id, type_id, enabled, email_enabled, browser_enabled)
-SELECT
-  u.id as user_id,
-  nt.id as type_id,
-  TRUE as enabled,
-  FALSE as email_enabled,
-  TRUE as browser_enabled
-FROM users u
-CROSS JOIN notification_types nt;
-
--- Insert sample notifications
-INSERT INTO notifications (type_id, user_id, title, message, url, data) VALUES
-(
-  (SELECT id FROM notification_types WHERE name = 'system_welcome'),
-  1,
-  'Welcome to the Inventory System!',
-  'We are glad to have you on board. Explore the system to manage your inventory effectively.',
-  NULL,
-  '{"welcome_type": "admin"}'
-),
-(
-  (SELECT id FROM notification_types WHERE name = 'software_assignment'),
-  2,
-  'New Software License Assigned',
-  'Microsoft Office 365 has been assigned to your account. Please check your email for activation instructions.',
-  '/employees/2',
-  '{"software_id": 1, "license_key": "MSO365-GHI789"}'
-),
-(
-  (SELECT id FROM notification_types WHERE name = 'item_assignment'),
-  3,
-  'New Hardware Assignment',
-  'A new laptop has been assigned to you. Please contact IT to arrange pickup.',
-  '/items',
-  '{"item_id": 1, "action": "assigned"}'
-);
+-- Notification system has been removed as per migration 009
+-- No default notification settings or sample notifications are inserted
 
 -- Insert sample data for item history
 INSERT INTO item_history (item_id, action_type, action_details, performed_by) VALUES
@@ -553,48 +545,122 @@ INSERT INTO activity_logs (user_id, action, entity_type, entity_id, details, ip_
   (2, 'view', 'items', 1, NULL, '192.168.1.2'),
   (1, 'update', 'employees', 1, '{"changed": ["software_assignments"]}', '192.168.1.1');
 
--- Create functions and triggers for automatic notification settings
-CREATE OR REPLACE FUNCTION create_default_notification_settings()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO notification_settings (user_id, type_id, enabled, email_enabled, browser_enabled)
-  SELECT
-    NEW.id as user_id,
-    nt.id as type_id,
-    TRUE as enabled,
-    FALSE as email_enabled,
-    TRUE as browser_enabled
-  FROM notification_types nt;
+-- User Analytics Tables for Performance Tracking
+-- User Analytics Events table for detailed user behavior tracking
+CREATE TABLE IF NOT EXISTS user_analytics_events (
+  id SERIAL PRIMARY KEY,
+  session_id VARCHAR(255),
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  event_type VARCHAR(50) NOT NULL, -- 'page_view', 'click', 'form_submit', 'search', 'download', etc.
+  page_url VARCHAR(500),
+  page_title VARCHAR(200),
+  element_id VARCHAR(100),
+  element_class VARCHAR(100),
+  element_text TEXT,
+  time_spent_seconds INTEGER, -- Time spent on page or element
+  scroll_depth FLOAT, -- Percentage of page scrolled
+  click_x INTEGER, -- Mouse click coordinates
+  click_y INTEGER,
+  viewport_width INTEGER,
+  viewport_height INTEGER,
+  ip_address INET,
+  user_agent TEXT,
+  referrer VARCHAR(500),
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  metadata JSONB -- For storing additional custom data
+);
 
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- Page Performance Metrics table
+CREATE TABLE IF NOT EXISTS page_performance_metrics (
+  id SERIAL PRIMARY KEY,
+  session_id VARCHAR(255),
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  page_url VARCHAR(500) NOT NULL,
+  page_title VARCHAR(200),
+  load_time_ms INTEGER, -- Page load time in milliseconds
+  dom_ready_time_ms INTEGER,
+  first_contentful_paint_ms INTEGER,
+  largest_contentful_paint_ms INTEGER,
+  cumulative_layout_shift FLOAT,
+  first_input_delay_ms INTEGER,
+  interaction_to_next_paint_ms INTEGER,
+  memory_used_mb FLOAT,
+  connection_type VARCHAR(50),
+  device_type VARCHAR(50), -- 'desktop', 'mobile', 'tablet'
+  browser VARCHAR(100),
+  browser_version VARCHAR(50),
+  os VARCHAR(100),
+  screen_resolution VARCHAR(20),
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-CREATE TRIGGER trigger_create_notification_settings
-  AFTER INSERT ON users
-  FOR EACH ROW
-  EXECUTE FUNCTION create_default_notification_settings();
+-- User Session Summary table for aggregated session data
+CREATE TABLE IF NOT EXISTS user_session_summary (
+  id SERIAL PRIMARY KEY,
+  session_id VARCHAR(255) UNIQUE NOT NULL,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  end_time TIMESTAMP,
+  total_duration_seconds INTEGER,
+  pages_visited INTEGER DEFAULT 0,
+  total_clicks INTEGER DEFAULT 0,
+  total_scroll_depth FLOAT DEFAULT 0,
+  bounce_rate BOOLEAN DEFAULT FALSE, -- True if single page visit < 30 seconds
+  conversion_events INTEGER DEFAULT 0, -- Forms submitted, downloads, etc.
+  ip_address INET,
+  user_agent TEXT,
+  referrer VARCHAR(500),
+  exit_page VARCHAR(500),
+  device_type VARCHAR(50),
+  browser VARCHAR(100),
+  is_mobile BOOLEAN DEFAULT FALSE,
+  country_code VARCHAR(5),
+  city VARCHAR(100),
+  last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-CREATE OR REPLACE FUNCTION create_notification_settings_for_new_type()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO notification_settings (user_id, type_id, enabled, email_enabled, browser_enabled)
-  SELECT
-    u.id as user_id,
-    NEW.id as type_id,
-    TRUE as enabled,
-    FALSE as email_enabled,
-    TRUE as browser_enabled
-  FROM users u;
+-- Cookie Consent Analytics table
+CREATE TABLE IF NOT EXISTS cookie_consent_analytics (
+  id SERIAL PRIMARY KEY,
+  session_id VARCHAR(255),
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  consent_type VARCHAR(50) NOT NULL, -- 'accepted_all', 'rejected_all', 'customized', 'dismissed'
+  performance_cookies BOOLEAN DEFAULT FALSE,
+  preference_cookies BOOLEAN DEFAULT FALSE,
+  analytics_cookies BOOLEAN DEFAULT FALSE,
+  marketing_cookies BOOLEAN DEFAULT FALSE,
+  consent_method VARCHAR(50), -- 'popup', 'banner', 'settings_page'
+  time_to_consent_seconds INTEGER, -- How long user took to make decision
+  ip_address INET,
+  user_agent TEXT,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- Website Performance Aggregates table for quick dashboard queries
+CREATE TABLE IF NOT EXISTS performance_aggregates (
+  id SERIAL PRIMARY KEY,
+  date_period DATE NOT NULL,
+  period_type VARCHAR(20) DEFAULT 'daily', -- 'hourly', 'daily', 'weekly', 'monthly'
+  unique_visitors INTEGER DEFAULT 0,
+  total_page_views INTEGER DEFAULT 0,
+  total_sessions INTEGER DEFAULT 0,
+  avg_session_duration_seconds FLOAT DEFAULT 0,
+  avg_pages_per_session FLOAT DEFAULT 0,
+  avg_load_time_ms FLOAT DEFAULT 0,
+  bounce_rate FLOAT DEFAULT 0,
+  conversion_rate FLOAT DEFAULT 0,
+  cookie_consent_rate FLOAT DEFAULT 0,
+  mobile_visitors_percentage FLOAT DEFAULT 0,
+  top_pages JSONB,
+  top_browsers JSONB,
+  top_devices JSONB,
+  performance_score FLOAT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT unique_daily_aggregate UNIQUE (date_period, period_type)
+);
 
-CREATE TRIGGER trigger_create_settings_for_new_type
-  AFTER INSERT ON notification_types
-  FOR EACH ROW
-  EXECUTE FUNCTION create_notification_settings_for_new_type();
+-- Notification system functions and triggers have been removed as per migration 009
 
 -- Create warranty status view
 CREATE OR REPLACE VIEW warranty_status_view AS

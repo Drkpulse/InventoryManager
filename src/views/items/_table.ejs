@@ -206,55 +206,73 @@
       </table>
     </div>
 
-    <!-- Pagination -->
-    <% if (totalPages > 1) { %>
-      <%
-        // Build query string with current filters
-        const queryParams = new URLSearchParams();
-        if (req.query.q) queryParams.set('q', req.query.q);
-        if (req.query.type) queryParams.set('type', req.query.type);
-        if (req.query.brand) queryParams.set('brand', req.query.brand);
-        if (req.query.status) queryParams.set('status', req.query.status);
-        if (req.query.department) queryParams.set('department', req.query.department);
-        if (req.query.minPrice) queryParams.set('minPrice', req.query.minPrice);
-        if (req.query.maxPrice) queryParams.set('maxPrice', req.query.maxPrice);
-        if (req.query.startDate) queryParams.set('startDate', req.query.startDate);
-        if (req.query.endDate) queryParams.set('endDate', req.query.endDate);
+    <!-- Results Summary & Pagination -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8">
+      <div class="flex flex-col gap-2">
+        <span class="text-sm text-gray-700 dark:text-gray-200">
+          <i class="fas fa-boxes"></i>
+          <%= t('showing') %> <strong id="itemCount"><%= items.length %></strong> <%= t('of') %> <%= typeof totalItems !== 'undefined' ? totalItems : items.length %> <%= t('assets') %>
+        </span>
+      </div>
+      <div class="flex items-center gap-4">
+        <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
+          <div class="flex items-center gap-2">
+            <% if (totalPages > 1) { %>
+              <%
+                // Build query string with current filters for pagination
+                const queryParams = new URLSearchParams();
+                if (req.query.q) queryParams.set('q', req.query.q);
+                if (req.query.type) queryParams.set('type', req.query.type);
+                if (req.query.brand) queryParams.set('brand', req.query.brand);
+                if (req.query.status) queryParams.set('status', req.query.status);
+                if (req.query.department) queryParams.set('department', req.query.department);
+                if (req.query.minPrice) queryParams.set('minPrice', req.query.minPrice);
+                if (req.query.maxPrice) queryParams.set('maxPrice', req.query.maxPrice);
+                if (req.query.startDate) queryParams.set('startDate', req.query.startDate);
+                if (req.query.endDate) queryParams.set('endDate', req.query.endDate);
+                if (req.query.perPage) queryParams.set('perPage', req.query.perPage);
 
-        function buildPageUrl(pageNum) {
-          const params = new URLSearchParams(queryParams);
-          params.set('page', pageNum);
-          return '?' + params.toString();
-        }
-      %>
-      <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-t border-gray-200 dark:border-gray-700">
-        <div class="text-sm text-gray-600 dark:text-gray-300 font-medium flex items-center gap-2">
-          <i class="fas fa-list text-blue-500 dark:text-blue-400"></i>
-          Showing <span class="font-bold text-blue-600 dark:text-blue-400"><%= startIndex + 1 %>-<%= endIndex %></span> of <span class="font-bold text-blue-600 dark:text-blue-400"><%= totalItems %></span> items
-        </div>
-        <div class="flex items-center space-x-2">
-          <% if (currentPage > 1) { %>
-            <a href="<%= buildPageUrl(currentPage - 1) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm">
-              <i class="fas fa-chevron-left mr-1"></i> Previous
-            </a>
-          <% } %>
+                function buildPageUrl(pageNum) {
+                  const params = new URLSearchParams(queryParams);
+                  params.set('page', pageNum);
+                  return '?' + params.toString();
+                }
+              %>
+              <div class="flex items-center space-x-2">
+                <% if (currentPage > 1) { %>
+                  <a href="<%= buildPageUrl(currentPage - 1) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm">
+                    <i class="fas fa-chevron-left mr-1"></i> Previous
+                  </a>
+                <% } %>
 
-          <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
-            <% if (i === currentPage) { %>
-              <span class="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold shadow-lg border border-blue-500"><%= i %></span>
-            <% } else { %>
-              <a href="<%= buildPageUrl(i) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm"><%= i %></a>
+                <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+                  <% if (i === currentPage) { %>
+                    <span class="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold shadow-lg border border-blue-500"><%= i %></span>
+                  <% } else { %>
+                    <a href="<%= buildPageUrl(i) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm"><%= i %></a>
+                  <% } %>
+                <% } %>
+
+                <% if (currentPage < totalPages) { %>
+                  <a href="<%= buildPageUrl(currentPage + 1) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm">
+                    Next <i class="fas fa-chevron-right ml-1"></i>
+                  </a>
+                <% } %>
+              </div>
             <% } %>
-          <% } %>
-
-          <% if (currentPage < totalPages) { %>
-            <a href="<%= buildPageUrl(currentPage + 1) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm">
-              Next <i class="fas fa-chevron-right ml-1"></i>
-            </a>
-          <% } %>
+          </div>
+        <% } %>
+        <div>
+          <select id="itemsPerPage" class="ml-2 px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-xs">
+            <option value="10" <%= perPage === 10 ? 'selected' : '' %>>10</option>
+            <option value="20" <%= perPage === 20 ? 'selected' : '' %>>20</option>
+            <option value="50" <%= perPage === 50 ? 'selected' : '' %>>50</option>
+            <option value="100" <%= perPage === 100 ? 'selected' : '' %>>100</option>
+          </select>
+          <span class="text-xs text-gray-500 dark:text-gray-400"><%= t('per_page') %></span>
         </div>
       </div>
-    <% } %>
+    </div>
   </div>
 <% } else { %>
   <!-- No Items Message -->

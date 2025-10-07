@@ -1,0 +1,228 @@
+<!-- Employees Table Block -->
+<% if (employees && employees.length > 0) { %>
+  <div id="employeesTableBlock">
+    <div id="employeesTableContainer" class="overflow-x-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 text-gray-700 dark:text-gray-200 border-b-2 border-gray-300 dark:border-gray-600">
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-user text-blue-500 dark:text-blue-400"></i>
+                <%= t('name') %>
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-id-card text-green-500 dark:text-green-400"></i>
+                <%= t('employee_id') %>
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-envelope text-purple-500 dark:text-purple-400"></i>
+                <%= t('email') %>
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-building text-orange-500 dark:text-orange-400"></i>
+                <%= t('department') %>
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-map-marker-alt text-cyan-500 dark:text-cyan-400"></i>
+                <%= t('location') %>
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-info-circle text-indigo-500 dark:text-indigo-400"></i>
+                <%= t('status') %>
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-cogs text-gray-500 dark:text-gray-400"></i>
+                <%= t('actions') %>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <%
+          // Sort employees to show active first
+          const sortedEmployees = employees.sort((a, b) => {
+            if (!a.left_date && b.left_date) return -1;
+            if (a.left_date && !b.left_date) return 1;
+            return a.name.localeCompare(b.name);
+          });
+          %>
+          <% sortedEmployees.forEach(employee => { %>
+            <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition<%= employee.left_date ? ' bg-gray-50 dark:bg-gray-900' : '' %>">
+              <td class="px-4 py-3">
+                <a href="/employees/<%= employee.id %>" class="font-semibold text-blue-700 dark:text-blue-300 hover:underline">
+                  <%= employee.name %>
+                </a>
+                <% if (employee.left_date) { %>
+                  <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded bg-gray-300 dark:bg-gray-700 text-xs text-gray-700 dark:text-gray-200">Former</span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3 font-mono text-gray-800 dark:text-gray-100"><%= employee.cep %></td>
+              <td class="px-4 py-3">
+                <a href="mailto:<%= employee.email %>" class="text-gray-700 dark:text-gray-200 hover:underline"><%= employee.email %></a>
+              </td>
+              <td class="px-4 py-3">
+                <% if (employee.department_name) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
+                    <i class="fas fa-building"></i> <%= employee.department_name %>
+                  </span>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs">
+                    <i class="fas fa-minus"></i> <%= t('not_assigned') %>
+                  </span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <% if (employee.location_name) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-semibold">
+                    <i class="fas fa-map-marker-alt"></i> <%= employee.location_name %>
+                  </span>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs">
+                    <i class="fas fa-minus"></i> <%= t('not_assigned') %>
+                  </span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <%
+                  let statusClass = 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300';
+                  let statusIcon = 'fas fa-check-circle';
+                  let statusText = 'Active';
+
+                  if (employee.left_date) {
+                    statusClass = 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+                    statusIcon = 'fas fa-user-times';
+                    statusText = 'Former Employee';
+                  }
+                %>
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg font-medium text-sm shadow <%= statusClass %>">
+                  <i class="<%= statusIcon %>"></i>
+                  <%= statusText %>
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex gap-1">
+                  <a href="/employees/<%= employee.id %>" class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition" title="<%= t('view_details') %>">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="/employees/<%= employee.id %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="<%= t('edit') %>">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <button type="button" class="delete-employee-btn inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition" title="<%= t('delete') %>" data-employee-id="<%= employee.id %>" data-employee-name="<%= employee.name %>" data-employee-cep="<%= employee.cep %>">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Results Summary & Pagination -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8">
+      <div class="flex flex-col gap-2">
+        <span class="text-sm text-gray-700 dark:text-gray-200">
+          <i class="fas fa-users"></i>
+          <%= t('showing') %> <strong id="employeeCount"><%= employees.length %></strong> <%= t('of') %> <%= typeof totalEmployees !== 'undefined' ? totalEmployees : employees.length %> <%= t('employees') %>
+        </span>
+        <div class="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
+          <span>
+            <i class="fas fa-check-circle text-green-500"></i>
+            <%= employees.filter(emp => !emp.left_date).length %> <%= t('active') %>
+          </span>
+          <% if (employees.filter(emp => emp.left_date).length > 0) { %>
+            <span>
+              <i class="fas fa-user-times text-gray-500"></i>
+              <%= employees.filter(emp => emp.left_date).length %> <%= t('former') %>
+            </span>
+          <% } %>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined') { %>
+          <div class="flex items-center gap-2">
+            <% if (totalPages > 1) { %>
+              <%
+                // Build query string with current filters for pagination
+                const queryParams = new URLSearchParams();
+                if (req.query.search) queryParams.set('search', req.query.search);
+                if (req.query.department) queryParams.set('department', req.query.department);
+                if (req.query.location) queryParams.set('location', req.query.location);
+                if (req.query.status) queryParams.set('status', req.query.status);
+                if (req.query.perPage) queryParams.set('perPage', req.query.perPage);
+
+                function buildPageUrl(pageNum) {
+                  const params = new URLSearchParams(queryParams);
+                  params.set('page', pageNum);
+                  return '?' + params.toString();
+                }
+              %>
+              <div class="flex items-center space-x-2">
+                <% if (currentPage > 1) { %>
+                  <a href="<%= buildPageUrl(currentPage - 1) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm">
+                    <i class="fas fa-chevron-left mr-1"></i> Previous
+                  </a>
+                <% } %>
+
+                <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+                  <% if (i === currentPage) { %>
+                    <span class="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold shadow-lg border border-blue-500"><%= i %></span>
+                  <% } else { %>
+                    <a href="<%= buildPageUrl(i) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm"><%= i %></a>
+                  <% } %>
+                <% } %>
+
+                <% if (currentPage < totalPages) { %>
+                  <a href="<%= buildPageUrl(currentPage + 1) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm">
+                    Next <i class="fas fa-chevron-right ml-1"></i>
+                  </a>
+                <% } %>
+              </div>
+            <% } %>
+          </div>
+        <% } %>
+        <div>
+          <select id="employeesPerPage" class="ml-2 px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-xs">
+            <option value="10" <%= typeof perPage !== 'undefined' && perPage == 10 ? 'selected' : '' %>>10</option>
+            <option value="25" <%= typeof perPage !== 'undefined' && perPage == 25 ? 'selected' : '' %>>25</option>
+            <option value="50" <%= typeof perPage !== 'undefined' && perPage == 50 ? 'selected' : '' %>>50</option>
+            <option value="100" <%= typeof perPage !== 'undefined' && perPage == 100 ? 'selected' : '' %>>100</option>
+          </select>
+          <span class="text-xs text-gray-500 dark:text-gray-400"><%= t('per_page') %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+<% } else { %>
+  <!-- No Employees Message -->
+  <div class="no-employees-message text-center py-20 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg">
+    <div class="mb-6 text-6xl">
+      <span class="inline-block animate-bounce">👥</span>
+    </div>
+    <div class="mb-4 text-4xl text-gray-400 dark:text-gray-500">
+      <i class="fas fa-users"></i>
+    </div>
+    <h3 class="text-xl font-bold text-gray-700 dark:text-gray-200 mb-2"><%= t('no_employees_found') %></h3>
+    <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto"><%= t('no_employees_match') %></p>
+    <div class="flex gap-3 justify-center">
+      <button id="clearFiltersBtn" class="px-6 py-3 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-600 hover:from-gray-400 hover:to-gray-500 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg" style="display: none;">
+        <i class="fas fa-times"></i> <%= t('clear_all_filters') %>
+      </button>
+      <a href="/employees/new" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg transform hover:scale-105">
+        <i class="fas fa-user-plus"></i> <%= t('add_first_employee') %>
+      </a>
+    </div>
+  </div>
+<% } %>

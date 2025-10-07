@@ -1694,61 +1694,105 @@ exports.reindexDatabase = async (req, res) => {
 
 exports.getUserAnalytics = async (req, res) => {
   try {
-    // Get active sessions count
-    const activeSessionsQuery = await db.query(`
-      SELECT COUNT(DISTINCT u.id) as active_users
-      FROM users u
-      WHERE u.last_login > NOW() - INTERVAL '24 hours'
-        AND u.active = true
-    `);
+    // Enhanced analytics with new tables
+    const [
+      activeSessionsQuery,
+      cookieConsentQuery,
+      sessionDurationQuery,
+      recentActivityQuery
+    ] = await Promise.all([
+      // Active sessions from analytics data
+      db.query(`
+        SELECT COUNT(DISTINCT session_id) as active_sessions
+        FROM user_session_summary 
+        WHERE last_activity > NOW() - INTERVAL '30 minutes'
+      `),
+      
+      // Cookie consent rate from analytics
+      db.query(`
+        SELECT 
+          COUNT(CASE WHEN consent_type = 'accepted_all' THEN 1 END)::FLOAT / 
+          NULLIF(COUNT(*), 0) * 100 as consent_rate
+        FROM cookie_consent_analytics 
+        WHERE timestamp > NOW() - INTERVAL '7 days'
+      `),
+      
+      // Average session duration from analytics
+      db.query(`
+        SELECT AVG(total_duration_seconds) as avg_duration
+        FROM user_session_summary 
+        WHERE start_time > NOW() - INTERVAL '24 hours' 
+          AND end_time IS NOT NULL
+      `),
 
-    // Get cookie consent rate from session data
-    const totalUsersQuery = await db.query('SELECT COUNT(*) as total FROM users WHERE active = true');
-    const consentedUsersQuery = await db.query(`
-      SELECT COUNT(DISTINCT u.id) as consented
-      FROM users u
-      WHERE u.last_login > NOW() - INTERVAL '7 days'
-        AND u.active = true
-    `);
+      // Recent activity from page views
+      db.query(`
+        SELECT COUNT(DISTINCT session_id) as recent_visitors
+        FROM user_analytics_events 
+        WHERE event_type = 'page_view' 
+          AND timestamp > NOW() - INTERVAL '1 hour'
+      `)
+    ]);
 
-    // Calculate average session duration (estimated based on login frequency)
-    const sessionDurationQuery = await db.query(`
-      SELECT
-        AVG(EXTRACT(EPOCH FROM (NOW() - u.last_login))/60)::int as avg_minutes
-      FROM users u
-      WHERE u.last_login > NOW() - INTERVAL '24 hours'
-        AND u.active = true
-    `);
+    // Fallback to user table for sessions if no analytics data
+    let activeSessions = activeSessionsQuery.rows[0]?.active_sessions || 0;
+    if (activeSessions === 0) {
+      const fallbackQuery = await db.query(`
+        SELECT COUNT(DISTINCT u.id) as active_users
+        FROM users u
+        WHERE u.last_login > NOW() - INTERVAL '24 hours'
+          AND u.active = true
+      `);
+      activeSessions = fallbackQuery.rows[0]?.active_users || 0;
+    }
 
-    // Performance score calculation (composite metric)
-    const performanceQuery = await db.query(`
-      SELECT
-        CASE
-          WHEN COUNT(*) > 0 THEN
-            LEAST(100,
-              50 +
-              (COUNT(CASE WHEN last_login > NOW() - INTERVAL '1 hour' THEN 1 END) * 10) +
-              (COUNT(CASE WHEN active = true THEN 1 END) * 5)
-            )
-          ELSE 70
-        END as performance_score
-      FROM users
-      WHERE created_at > NOW() - INTERVAL '30 days'
-    `);
+    // Cookie consent rate with fallback
+    let cookieConsentRate = Math.round(cookieConsentQuery.rows[0]?.consent_rate || 0);
+    if (cookieConsentRate === 0) {
+      // Fallback to user-based calculation
+      const totalUsersQuery = await db.query('SELECT COUNT(*) as total FROM users WHERE active = true');
+      const consentedUsersQuery = await db.query(`
+        SELECT COUNT(DISTINCT u.id) as consented
+        FROM users u
+        WHERE u.last_login > NOW() - INTERVAL '7 days'
+          AND u.active = true
+      `);
+      const totalUsers = totalUsersQuery.rows[0]?.total || 1;
+      const consentedUsers = consentedUsersQuery.rows[0]?.consented || 0;
+      cookieConsentRate = Math.round((consentedUsers / totalUsers) * 100);
+    }
 
-    const activeSessions = activeSessionsQuery.rows[0]?.active_users || 0;
-    const totalUsers = totalUsersQuery.rows[0]?.total || 1;
-    const consentedUsers = consentedUsersQuery.rows[0]?.consented || 0;
-    const cookieConsentRate = Math.round((consentedUsers / totalUsers) * 100);
-    const avgSessionMinutes = sessionDurationQuery.rows[0]?.avg_minutes || 15;
-    const performanceScore = performanceQuery.rows[0]?.performance_score || 75;
+    // Session duration with fallback
+    let avgSessionSeconds = sessionDurationQuery.rows[0]?.avg_duration || 0;
+    if (avgSessionSeconds === 0) {
+      const fallbackDuration = await db.query(`
+        SELECT AVG(EXTRACT(EPOCH FROM (NOW() - u.last_login))/60)::int as avg_minutes
+        FROM users u
+        WHERE u.last_login > NOW() - INTERVAL '24 hours'
+          AND u.active = true
+      `);
+      avgSessionSeconds = (fallbackDuration.rows[0]?.avg_minutes || 15) * 60;
+    }
+
+    // Performance score calculation
+    const recentActivity = recentActivityQuery.rows[0]?.recent_visitors || 0;
+    const performanceScore = Math.min(100, 
+      40 + // Base score
+      Math.min(30, activeSessions * 5) + // Session activity (max 30 points)
+      Math.min(20, recentActivity * 2) + // Recent activity (max 20 points)
+      Math.min(10, cookieConsentRate / 10) // Consent rate (max 10 points)
+    );
+
+    // Format session duration
+    const minutes = Math.floor(avgSessionSeconds / 60);
+    const seconds = Math.round(avgSessionSeconds % 60);
 
     res.json({
       success: true,
       analytics: {
         activeSessions: activeSessions,
         cookieConsentRate: `${cookieConsentRate}%`,
-        avgSessionDuration: `${Math.floor(avgSessionMinutes)}m ${(avgSessionMinutes % 1 * 60).toFixed(0)}s`,
+        avgSessionDuration: `${minutes}m ${seconds}s`,
         performanceScore: `${Math.round(performanceScore)}/100`
       }
     });

@@ -680,6 +680,7 @@ const startApplication = async () => {
 	// Routes setup with enhanced security
 	app.use('/auth', loginRateLimit, accountLockout.createMiddleware(), authRoutes);
 	app.use('/api', apiRateLimit, csrfProtection, apiRoutes);
+	app.use('/api/analytics', require('./routes/analytics')); // Analytics routes (no CSRF for tracking)
 	app.use('/admin', adminRoutes);
 
 	// Register main asset routes before license validation

@@ -145,6 +145,21 @@ async function runSingleMigration(migration) {
   }
 }
 
+async function runMigration010() {
+  const migrationName = '010_add_user_analytics';
+  if (await isMigrationExecuted(migrationName)) {
+    console.log(`⏭️  Skipping ${migrationName} (already executed)`);
+    return true;
+  }
+
+  const sqlPath = path.join(__dirname, 'migrations', '010_add_user_analytics.sql');
+  const success = await executeSQLFile(sqlPath, migrationName);
+  if (success) {
+    await markMigrationExecuted(migrationName, 'Added comprehensive user analytics and performance tracking tables');
+  }
+  return success;
+}
+
 // Verify critical tables and columns exist
 async function verifyDatabaseStructure() {
   console.log('\n🔍 Verifying database structure...');
@@ -184,6 +199,26 @@ async function verifyDatabaseStructure() {
       name: 'bypass license exists',
       query: `SELECT license_key FROM license_config
               WHERE license_key = 'iambeirao' LIMIT 1`
+    },
+    {
+      name: 'user_analytics_events table',
+      query: `SELECT table_name FROM information_schema.tables
+              WHERE table_name = 'user_analytics_events'`
+    },
+    {
+      name: 'page_performance_metrics table',
+      query: `SELECT table_name FROM information_schema.tables
+              WHERE table_name = 'page_performance_metrics'`
+    },
+    {
+      name: 'user_session_summary table',
+      query: `SELECT table_name FROM information_schema.tables
+              WHERE table_name = 'user_session_summary'`
+    },
+    {
+      name: 'cookie_consent_analytics table',
+      query: `SELECT table_name FROM information_schema.tables
+              WHERE table_name = 'cookie_consent_analytics'`
     }
   ];
 

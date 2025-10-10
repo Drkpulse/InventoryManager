@@ -1,139 +1,352 @@
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
-  <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-          <i class="fas fa-edit"></i> Edit Printer
-        </h1>
-        <p class="text-gray-600 dark:text-gray-300 mt-1">
-          Update printer information for: <strong>Printer #<%= printer.id %></strong>
-        </p>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+        <i class="fas fa-edit"></i> Edit Printer Asset
+      </h1>
+      <!-- Asset badges with modern styling -->
+      <div class="flex items-center gap-3 mt-2">
+        <span class="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-semibold shadow-lg">
+          <%= printer.cep_brc %>
+        </span>
+        <span class="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full text-sm font-semibold shadow-lg">
+          <%= printer.name %>
+        </span>
       </div>
-      <a href="/printers/<%= printer.id %>" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md font-semibold transition">
-        <i class="fas fa-arrow-left mr-2"></i> Back to Printer
+    </div>
+    <!-- Action buttons with modern hover effects -->
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <a href="/printers/<%= printer.id %>" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> Back to Printer
       </a>
     </div>
+  </div>
 
-    <% if (locals.errors && errors.length > 0) { %>
-      <div class="mb-6 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 rounded-lg p-4">
-        <div class="flex items-center gap-2 mb-2">
-          <i class="fas fa-exclamation-triangle"></i>
-          <span class="font-semibold">Please fix the following errors:</span>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>Please fix the following errors:</strong>
+          <ul class="list-disc ml-6">
+            <% errors.forEach(error => { %>
+              <li><%= error %></li>
+            <% }) %>
+          </ul>
         </div>
-        <ul class="list-disc pl-6 space-y-1">
-          <% errors.forEach(error => { %>
-            <li><%= error %></li>
-          <% }); %>
-        </ul>
       </div>
     <% } %>
 
-    <form method="POST" action="/printers/<%= printer.id %>" class="space-y-8" novalidate>
+    <form method="POST" action="/printers/<%= printer.id %>" id="editPrinterForm" class="space-y-10">
+      <input type="hidden" name="_method" value="PUT">
+      <!-- Asset Identification Section -->
       <div>
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
-          <i class="fas fa-info-circle"></i> Printer Information
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-tag"></i> Asset Identification
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="col-span-1 md:col-span-2">
+            <label for="cep_brc" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset ID (CEP/BRC) <span class="text-red-500">*</span></label>
+            <div>
+              <% if (user && user.role === 'admin') { %>
+                <input type="text" id="cep_brc" name="cep_brc" value="<%= printer.cep_brc %>"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition admin-editable"
+                  data-original="<%= printer.cep_brc %>" required>
+                <div class="text-xs mt-1" id="cepValidation"></div>
+                <div class="text-xs mt-2 text-yellow-800 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded px-3 py-2">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  Warning: Changing the Asset ID will affect all references to this printer.
+                </div>
+              <% } else { %>
+                <input type="text" id="cep_brc" value="<%= printer.cep_brc %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100" disabled>
+                <div class="text-xs mt-1 text-gray-500 dark:text-gray-400">Asset ID cannot be changed by your role.</div>
+                <input type="hidden" name="cep_brc" value="<%= printer.cep_brc %>">
+              <% } %>
+            </div>
+          </div>
+          <div class="col-span-1 md:col-span-2">
+            <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Printer Name <span class="text-red-500">*</span></label>
+            <input type="text" id="name" name="name" value="<%= printer.name %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" required placeholder="Enter descriptive name for this printer">
+          </div>
+          <div class="col-span-1 md:col-span-2">
+            <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Description</label>
+            <textarea id="description" name="description" rows="3"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-vertical"
+              placeholder="Enter detailed description about this printer"><%= printer.description || '' %></textarea>
+            <div class="text-xs mt-1 text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <i class="fas fa-info-circle"></i>
+              Provide additional details about the printer's capabilities or location.
+            </div>
+          </div>
+          <!-- Hidden field to fix type to Printer -->
+          <input type="hidden" name="type_id" value="6">
+        </div>
+      </div>
+
+      <!-- Product Details Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-print"></i> Product Details
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="supplier" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 required">Supplier</label>
-            <input
-              type="text"
-              id="supplier"
-              name="supplier"
-              value="<%= printer.supplier %>"
-              required
+            <label for="brand" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Brand</label>
+            <input type="text" id="brand" name="brand"
+              value="<%= printer.brand || '' %>"
+              list="brandsList"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-            <div class="text-xs text-red-600 mt-1 hidden">Please provide a supplier name.</div>
+              placeholder="Enter or select brand name">
+            <datalist id="brandsList">
+              <% if (brands) { %>
+                <% brands.forEach(brand => { %>
+                  <option value="<%= brand.name %>"><%= brand.name %></option>
+                <% }) %>
+              <% } %>
+            </datalist>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-info-circle"></i>
+              You can type a new brand name or select from existing ones
+            </small>
           </div>
           <div>
             <label for="model" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Model</label>
-            <input
-              type="text"
-              id="model"
-              name="model"
-              value="<%= printer.model || '' %>"
-              placeholder="e.g., LaserJet Pro 4000"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-          </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <div>
-            <label for="client_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 required">Client</label>
-            <select
-              id="client_id"
-              name="client_id"
-              required
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-              <option value="">Select a client...</option>
-              <% clients.forEach(client => { %>
-                <option value="<%= client.id %>" <%= printer.client_id == client.id ? 'selected' : '' %>>
-                  <%= client.name %> (<%= client.client_id %>)
-                </option>
-              <% }); %>
-            </select>
-            <div class="text-xs text-red-600 mt-1 hidden">Please select a client.</div>
+            <input type="text" id="model" name="model" value="<%= printer.model || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Enter printer model">
           </div>
           <div>
-            <label for="status_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 required">Status</label>
-            <select
-              id="status_id"
-              name="status_id"
-              required
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-              <option value="">Select a status...</option>
-              <% statuses.forEach(status => { %>
-                <option value="<%= status.id %>" <%= printer.status_id == status.id ? 'selected' : '' %>>
-                  <%= status.name %>
-                </option>
-              <% }); %>
-            </select>
-            <div class="text-xs text-red-600 mt-1 hidden">Please select a status.</div>
+            <label for="serial_cod" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Serial Number</label>
+            <input type="text" id="serial_cod" name="serial_cod" value="<%= printer.serial_cod || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Enter serial number">
           </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
-            <label for="cost" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Cost (€)</label>
-            <input
-              type="number"
-              step="0.01"
-              id="cost"
-              name="cost"
-              value="<%= printer.cost || '' %>"
-              placeholder="e.g., 299.99"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
+            <label for="cost" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Purchase Price (€)</label>
+            <div class="flex">
+              <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400">€</span>
+              <input type="number" id="cost" name="cost" min="0" step="0.01" value="<%= printer.price || printer.cost || '' %>"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-r-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="0.00">
+            </div>
           </div>
-        </div>
-        <div class="mt-6">
-          <label for="employee_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assigned Employee (Optional)</label>
-          <select
-            id="employee_id"
-            name="employee_id"
-            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          >
-            <option value="">No employee assigned</option>
-            <% employees.forEach(employee => { %>
-              <option value="<%= employee.id %>" <%= printer.employee_id == employee.id ? 'selected' : '' %>>
-                <%= employee.name %>
-              </option>
-            <% }); %>
-          </select>
-          <small class="text-gray-500 dark:text-gray-400">Optional: Select an employee who will be responsible for this printer</small>
         </div>
       </div>
-      <div class="flex items-center gap-4 mt-8">
-        <button type="submit" class="inline-flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
-          <i class="fas fa-save mr-2"></i> Update Printer
+
+      <!-- Status Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-info-circle"></i> Status Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="status_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status</label>
+            <select id="status_id" name="status_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value="">Select Status</option>
+              <% if (statuses) { %>
+                <% statuses.forEach(status => { %>
+                  <option value="<%= status.id %>" <%= printer.status_id == status.id ? 'selected' : '' %>>
+                    <%= status.name %>
+                  </option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Client Assignment Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-building"></i> Client Assignment
+        </h3>
+        <div>
+          <label for="client_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assign to Client (Optional)</label>
+          <select id="client_id" name="client_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <option value="">No client assignment</option>
+            <% if (clients && clients.length > 0) { %>
+              <% clients.forEach(client => { %>
+                <option value="<%= client.id %>" <%= printer.client_id == client.id ? 'selected' : '' %>>
+                  <%= client.name %> (<%= client.pnumber %>)
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+          <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+            <i class="fas fa-info-circle"></i>
+            You can assign this printer to a client or leave it unassigned
+          </small>
+        </div>
+      </div>
+
+      <!-- Purchase Information Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-receipt"></i> Purchase Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="receipt" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Purchase Receipt</label>
+            <select id="receipt" name="receipt" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value="">Select Receipt</option>
+              <% if (sales) { %>
+                <% sales.forEach(sale => { %>
+                  <option value="<%= sale.receipt %>" <%= printer.receipt === sale.receipt ? 'selected' : '' %>>
+                    <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
+                  </option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+          <div>
+            <label for="supplier" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Supplier</label>
+            <input type="text" id="supplier" name="supplier" value="<%= printer.supplier || '' %>" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Enter supplier name">
+          </div>
+        </div>
+      </div>
+
+      <!-- Warranty Information Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-shield-alt"></i> Warranty Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label for="warranty_start_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty Start Date</label>
+            <input type="date" id="warranty_start_date" name="warranty_start_date"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              value="<%= printer.warranty_start_date ? new Date(printer.warranty_start_date).toISOString().split('T')[0] : '' %>">
+          </div>
+          <div>
+            <label for="warranty_months" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty Period (months)</label>
+            <select id="warranty_months" name="warranty_months" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value="">No warranty</option>
+              <option value="6" <%= printer.warranty_months == 6 ? 'selected' : '' %>>6 months</option>
+              <option value="12" <%= printer.warranty_months == 12 ? 'selected' : '' %>>12 months</option>
+              <option value="24" <%= printer.warranty_months == 24 ? 'selected' : '' %>>24 months</option>
+              <option value="36" <%= printer.warranty_months == 36 ? 'selected' : '' %>>36 months</option>
+              <option value="48" <%= printer.warranty_months == 48 ? 'selected' : '' %>>48 months</option>
+              <option value="60" <%= printer.warranty_months == 60 ? 'selected' : '' %>>60 months</option>
+            </select>
+          </div>
+          <div>
+            <label for="warranty_end_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty End Date</label>
+            <input type="date" id="warranty_end_date" name="warranty_end_date" readonly
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+              value="<%= printer.warranty_end_date ? new Date(printer.warranty_end_date).toISOString().split('T')[0] : '' %>">
+          </div>
+        </div>
+        <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-2">
+          <i class="fas fa-info-circle"></i>
+          The warranty end date will be calculated automatically based on the start date and period.
+        </small>
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <button type="submit" class="group px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-save mr-2 group-hover:scale-110 transition-transform duration-300"></i> Save Changes
         </button>
-        <a href="/printers/<%= printer.id %>" class="inline-flex items-center px-6 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-          <i class="fas fa-times mr-2"></i> Cancel
-        </a>
+        <button type="button" onclick="window.location.href='/printers/<%= printer.id %>'" class="group px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-times mr-2 group-hover:rotate-90 transition-transform duration-300"></i> Cancel
+        </button>
       </div>
     </form>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('editPrinterForm');
+  const warrantyStartDate = document.getElementById('warranty_start_date');
+  const warrantyMonths = document.getElementById('warranty_months');
+  const warrantyEndDate = document.getElementById('warranty_end_date');
+  const idInput = document.getElementById('cep_brc');
+  const cepValidation = document.getElementById('cepValidation');
+  let originalId = idInput ? idInput.dataset.original : '';
+
+  // Auto-calculate warranty end date
+  function calculateWarrantyEndDate() {
+    if (warrantyStartDate.value && warrantyMonths.value) {
+      const startDate = new Date(warrantyStartDate.value);
+      const months = parseInt(warrantyMonths.value);
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + months);
+      warrantyEndDate.value = endDate.toISOString().split('T')[0];
+    } else {
+      warrantyEndDate.value = '';
+    }
+  }
+
+  // Event listeners for warranty calculation
+  if (warrantyStartDate) warrantyStartDate.addEventListener('change', calculateWarrantyEndDate);
+  if (warrantyMonths) warrantyMonths.addEventListener('change', calculateWarrantyEndDate);
+
+  // Asset ID validation for admins
+  if (idInput && idInput.classList.contains('admin-editable')) {
+    idInput.addEventListener('input', async function() {
+      const newId = this.value.trim();
+      if (!newId) {
+        cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
+        cepValidation.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Asset ID is required';
+        return;
+      }
+
+      if (newId === originalId) {
+        cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
+        cepValidation.innerHTML = '<i class="fas fa-check"></i> Current Asset ID';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/check-asset-id/${encodeURIComponent(newId)}`);
+        const data = await response.json();
+
+        if (data.exists) {
+          cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
+          cepValidation.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Asset ID already exists';
+        } else {
+          cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
+          cepValidation.innerHTML = '<i class="fas fa-check"></i> Asset ID available';
+        }
+      } catch (error) {
+        console.error('Error checking duplicate:', error);
+        cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
+        cepValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error checking availability';
+      }
+    });
+  }
+
+  // Form validation
+  form.addEventListener('submit', function(event) {
+    const requiredFieldNames = ['cep_brc', 'name'];
+    let valid = true;
+    let firstInvalidField = null;
+
+    requiredFieldNames.forEach(fieldName => {
+      let field = form.querySelector(`[name="${fieldName}"]:not([disabled])`);
+      if (!field) {
+        field = form.querySelector(`input[type="hidden"][name="${fieldName}"]`);
+      }
+      if (!field || !field.value || !field.value.trim()) {
+        valid = false;
+        const visibleField = form.querySelector(`[name="${fieldName}"]:not([type="hidden"])`);
+        if (visibleField) visibleField.classList.add('border-red-500');
+        if (!firstInvalidField && visibleField) firstInvalidField = visibleField;
+      } else {
+        const visibleField = form.querySelector(`[name="${fieldName}"]:not([type="hidden"])`);
+        if (visibleField) visibleField.classList.remove('border-red-500');
+      }
+    });
+
+    if (!valid) {
+      event.preventDefault();
+      if (firstInvalidField) firstInvalidField.focus();
+      return;
+    }
+
+    // Check for validation errors
+    if (cepValidation && cepValidation.className.includes('text-red-700')) {
+      event.preventDefault();
+      alert('Please fix the Asset ID validation error before submitting.');
+      return;
+    }
+  });
+
+  // Calculate warranty end date on page load if values exist
+  calculateWarrantyEndDate();
+});
+</script>

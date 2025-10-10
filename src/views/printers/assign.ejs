@@ -1,0 +1,413 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Breadcrumb & Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+        <a href="/printers" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
+          <i class="fas fa-print"></i> Printers
+        </a>
+        <i class="fas fa-chevron-right mx-2"></i>
+        <a href="/printers/<%= printer.id %>" class="hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1">
+          <%= printer.asset_id || printer.cep_brc %>
+        </a>
+        <i class="fas fa-chevron-right mx-2"></i>
+        <span class="text-gray-700 dark:text-gray-200">Assign</span>
+      </nav>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+        <i class="fas fa-user-plus"></i> Assign Printer to Client
+      </h1>
+    </div>
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <a href="/printers/<%= printer.id %>" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> Back to Printer
+      </a>
+      <a href="/printers" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-list mr-2 group-hover:scale-110 transition-transform duration-300"></i> All Printers
+      </a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Printer Summary Panel -->
+    <div class="md:col-span-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow p-6">
+      <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-4">
+        <i class="fas fa-info-circle"></i> Printer Details
+      </h2>
+      <div>
+        <div class="mb-2">
+          <span class="font-mono bg-gray-100 dark:bg-gray-900 px-2 py-0.5 rounded text-xs text-gray-600 dark:text-gray-400"><%= printer.asset_id || printer.cep_brc %></span>
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mt-1"><%= printer.name %></h3>
+        </div>
+        <dl class="divide-y divide-gray-200 dark:divide-gray-700">
+          <div class="py-2 flex items-center justify-between">
+            <dt class="text-gray-500 dark:text-gray-400">Type</dt>
+            <dd>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold">
+                <i class="fas fa-print"></i> Printer
+              </span>
+            </dd>
+          </div>
+          <div class="py-2 flex items-center justify-between">
+            <dt class="text-gray-500 dark:text-gray-400">Brand</dt>
+            <dd>
+              <% if (printer.brand) { %>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 text-xs font-semibold">
+                  <i class="fas fa-building"></i> <%= printer.brand %>
+                </span>
+              <% } else { %>
+                <span class="text-gray-400 dark:text-gray-500 text-xs">Not specified</span>
+              <% } %>
+            </dd>
+          </div>
+          <div class="py-2 flex items-center justify-between">
+            <dt class="text-gray-500 dark:text-gray-400">Model</dt>
+            <dd class="text-gray-700 dark:text-gray-200 text-xs"><%= printer.model || 'Not specified' %></dd>
+          </div>
+          <% if (printer.serial_cod) { %>
+          <div class="py-2 flex items-center justify-between">
+            <dt class="text-gray-500 dark:text-gray-400">Serial Number</dt>
+            <dd class="font-mono text-xs text-gray-700 dark:text-gray-200"><%= printer.serial_cod %></dd>
+          </div>
+          <% } %>
+          <% if (printer.price) { %>
+          <div class="py-2 flex items-center justify-between">
+            <dt class="text-gray-500 dark:text-gray-400">Value</dt>
+            <dd class="text-green-700 dark:text-green-300 font-semibold text-xs">€<%= parseFloat(printer.price).toFixed(2) %></dd>
+          </div>
+          <% } %>
+        </dl>
+        <div class="mt-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300 text-sm">
+          <i class="fas fa-user-slash"></i>
+          <span><% if (printer.client_id) { %>Currently assigned to <%= printer.client_name %><% } else { %>Currently unassigned<% } %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assignment Form Panel -->
+    <div class="md:col-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow p-6">
+      <form method="POST" action="/printers/<%= printer.id %>/assign" id="assignForm" class="space-y-8" data-no-ajax="true">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <i class="fas fa-user-plus"></i> Assignment Details
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="client_search" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assign To Client <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="client_search"
+                  name="client_search"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  placeholder="Search client by name or P-number..."
+                  autocomplete="off"
+                  required>
+                <input type="hidden" id="client_id" name="client_id" required>
+
+                <!-- Search results dropdown -->
+                <div id="client_search_results" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
+                  <!-- Results will be populated here -->
+                </div>
+
+                <!-- Selected client display -->
+                <div id="selected_client" class="hidden mt-2 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-md">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center">
+                        <i class="fas fa-building text-blue-600 dark:text-blue-300"></i>
+                      </div>
+                      <div>
+                        <div class="font-semibold text-blue-800 dark:text-blue-200" id="selected_client_name"></div>
+                        <div class="text-sm text-blue-600 dark:text-blue-400" id="selected_client_details"></div>
+                      </div>
+                    </div>
+                    <button type="button" id="clear_selection" class="text-gray-400 hover:text-red-500 transition-colors">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                <i class="fas fa-search"></i>
+                Type client name or P-number to search
+              </small>
+            </div>
+            <div>
+              <label for="date_assigned" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assignment Date <span class="text-red-500">*</span></label>
+              <input type="date" id="date_assigned" name="date_assigned"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                value="<%= new Date().toISOString().split('T')[0] %>" required>
+              <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                <i class="fas fa-calendar"></i>
+                Date when this assignment takes effect
+              </small>
+            </div>
+            <div class="md:col-span-2">
+              <label for="notes" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assignment Notes</label>
+              <textarea id="notes" name="notes"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-vertical"
+                rows="3" placeholder="Any additional notes about this assignment..."></textarea>
+              <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                <i class="fas fa-sticky-note"></i>
+                Optional notes for this assignment
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment Preview -->
+        <div id="assignmentPreview" class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mt-4 hidden">
+          <h4 class="font-semibold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+            <i class="fas fa-eye"></i> Assignment Preview
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div><strong>Printer:</strong> <span><%= printer.name %> (<%= printer.asset_id || printer.cep_brc %>)</span></div>
+            <div><strong>Client:</strong> <span id="previewClient">-</span></div>
+            <div><strong>P-Number:</strong> <span id="previewPNumber">-</span></div>
+            <div><strong>Assignment Date:</strong> <span id="previewDate">-</span></div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex flex-wrap gap-2 mt-8">
+          <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2" id="assignButton">
+            <i class="fas fa-user-plus"></i> Assign Printer
+          </button>
+          <a href="/printers/<%= printer.id %>" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+            <i class="fas fa-times"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Success Preview Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" id="confirmModal" style="display:none;">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-2xl"></i>
+        <h4 class="text-lg font-bold text-gray-800 dark:text-gray-100">Confirm Assignment</h4>
+      </div>
+      <div class="mb-4">
+        <p class="mb-2">You are about to assign this printer to a client.</p>
+        <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-3 mb-2">
+          <div class="mb-1"><strong>Printer:</strong> <%= printer.name %> (<%= printer.asset_id || printer.cep_brc %>)</div>
+          <div class="mb-1"><strong>Client:</strong> <span id="confirmClient">-</span></div>
+          <div class="mb-1"><strong>P-Number:</strong> <span id="confirmPNumber">-</span></div>
+          <div class="mb-1"><strong>Assignment Date:</strong> <span id="confirmDate">-</span></div>
+        </div>
+        <p>Are you sure you want to proceed?</p>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button id="confirmAssign" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
+          <i class="fas fa-check mr-2"></i> Confirm Assignment
+        </button>
+        <button id="cancelConfirm" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
+          <i class="fas fa-times mr-2"></i> Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('assignForm');
+  const clientSearch = document.getElementById('client_search');
+  const clientIdHidden = document.getElementById('client_id');
+  const searchResults = document.getElementById('client_search_results');
+  const selectedClientDiv = document.getElementById('selected_client');
+  const selectedClientName = document.getElementById('selected_client_name');
+  const selectedClientDetails = document.getElementById('selected_client_details');
+  const clearSelectionBtn = document.getElementById('clear_selection');
+  const dateAssignedInput = document.getElementById('date_assigned');
+  const assignmentPreview = document.getElementById('assignmentPreview');
+  const confirmModal = document.getElementById('confirmModal');
+  const assignButton = document.getElementById('assignButton');
+
+  let searchTimeout;
+  let selectedClient = null;
+
+  // Pre-populate if existing assignment
+  <% if (printer.client_id) { %>
+    selectedClient = {
+      id: '<%= printer.client_id %>',
+      name: '<%= printer.client_name %>',
+      pnumber: '<%= printer.client_pnumber || "" %>'
+    };
+    selectClient(selectedClient);
+  <% } %>
+
+  // Client search functionality
+  clientSearch.addEventListener('input', function() {
+    const query = this.value.trim();
+
+    clearTimeout(searchTimeout);
+
+    if (query.length < 2) {
+      searchResults.classList.add('hidden');
+      return;
+    }
+
+    searchTimeout = setTimeout(() => {
+      searchClients(query);
+    }, 300);
+  });
+
+  function searchClients(query) {
+    // Use the existing clients data passed from controller
+    const clients = <%- JSON.stringify(clients) %>;
+    const filteredClients = clients.filter(client =>
+      client.name.toLowerCase().includes(query.toLowerCase()) ||
+      (client.pnumber && client.pnumber.toLowerCase().includes(query.toLowerCase()))
+    );
+    displaySearchResults(filteredClients);
+  }
+
+  function displaySearchResults(clients) {
+    if (clients.length === 0) {
+      searchResults.innerHTML = '<div class="p-3 text-gray-500 dark:text-gray-400">No clients found</div>';
+      searchResults.classList.remove('hidden');
+      return;
+    }
+
+    searchResults.innerHTML = clients.map(client => `
+      <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0 client-result"
+           data-id="${client.id}"
+           data-name="${client.name}"
+           data-pnumber="${client.pnumber || ''}">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+            <i class="fas fa-building text-blue-600 dark:text-blue-300 text-sm"></i>
+          </div>
+          <div>
+            <div class="font-semibold text-gray-800 dark:text-gray-100">${client.name}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">${client.pnumber ? 'P#: ' + client.pnumber : 'No P-number'}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Add click handlers to results
+    searchResults.querySelectorAll('.client-result').forEach(result => {
+      result.addEventListener('click', function() {
+        selectClient({
+          id: this.dataset.id,
+          name: this.dataset.name,
+          pnumber: this.dataset.pnumber
+        });
+      });
+    });
+
+    searchResults.classList.remove('hidden');
+  }
+
+  function selectClient(client) {
+    selectedClient = client;
+    clientIdHidden.value = client.id;
+
+    selectedClientName.textContent = client.name;
+    selectedClientDetails.textContent = client.pnumber ? `P#: ${client.pnumber}` : 'No P-number';
+
+    clientSearch.style.display = 'none';
+    selectedClientDiv.classList.remove('hidden');
+    searchResults.classList.add('hidden');
+
+    updatePreview();
+  }
+
+  // Clear selection
+  clearSelectionBtn.addEventListener('click', function() {
+    selectedClient = null;
+    clientIdHidden.value = '';
+    clientSearch.value = '';
+    clientSearch.style.display = 'block';
+    selectedClientDiv.classList.add('hidden');
+    searchResults.classList.add('hidden');
+    updatePreview();
+    clientSearch.focus();
+  });
+
+  // Hide search results when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!clientSearch.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.classList.add('hidden');
+    }
+  });
+
+  // Update preview when form values change
+  function updatePreview() {
+    const selectedDate = dateAssignedInput.value;
+
+    if (clientIdHidden.value && selectedDate && selectedClient) {
+      assignmentPreview.style.display = 'block';
+      document.getElementById('previewClient').textContent = selectedClient.name;
+      document.getElementById('previewPNumber').textContent = selectedClient.pnumber || 'Not specified';
+      document.getElementById('previewDate').textContent = new Date(selectedDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      assignButton.disabled = false;
+      assignButton.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+      assignmentPreview.style.display = 'none';
+      assignButton.disabled = true;
+      assignButton.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+  }
+
+  dateAssignedInput.addEventListener('change', updatePreview);
+
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    const clientId = clientIdHidden.value;
+    const dateAssigned = dateAssignedInput.value;
+
+    if (!clientId || !dateAssigned || !selectedClient) {
+      return false;
+    }
+
+    document.getElementById('confirmClient').textContent = selectedClient.name;
+    document.getElementById('confirmPNumber').textContent = selectedClient.pnumber || 'Not specified';
+    document.getElementById('confirmDate').textContent = new Date(dateAssigned).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    confirmModal.style.display = 'flex';
+  });
+
+  document.getElementById('confirmAssign').addEventListener('click', function() {
+    confirmModal.style.display = 'none';
+    assignButton.disabled = true;
+    assignButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+    form.submit();
+  });
+
+  document.getElementById('cancelConfirm').addEventListener('click', function() {
+    confirmModal.style.display = 'none';
+  });
+
+  confirmModal.addEventListener('click', function(e) {
+    if (e.target === confirmModal) {
+      confirmModal.style.display = 'none';
+    }
+  });
+
+  updatePreview();
+  clientSearch.focus();
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      confirmModal.style.display = 'none';
+      searchResults.classList.add('hidden');
+    }
+    if (e.ctrlKey && e.key === 'Enter') {
+      if (clientIdHidden.value && dateAssignedInput.value) {
+        form.dispatchEvent(new Event('submit'));
+      }
+    }
+  });
+});
+</script>

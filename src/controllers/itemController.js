@@ -21,14 +21,7 @@ const validateItemData = (data) => {
     errors.push('Price must be a valid number');
   }
 
-  // Check for consistent assignment data
-  if (data.assigned_to && !data.date_assigned) {
-    errors.push('Date assigned is required when assigning to an employee');
-  }
 
-  if (data.date_assigned && !data.assigned_to) {
-    errors.push('Employee assignment is required when setting assignment date');
-  }
 
   return errors;
 };
@@ -137,7 +130,7 @@ exports.getAllItems = async (req, res) => {
 
     // Count total matching items for pagination
     const countQuery = `
-      SELECT COUNT(*)
+      SELECT COUNT(DISTINCT i.id)
       FROM items i
       LEFT JOIN types t ON i.type_id = t.id
       LEFT JOIN brands b ON i.brand_id = b.id
@@ -145,6 +138,8 @@ exports.getAllItems = async (req, res) => {
       LEFT JOIN departments d ON e.dept_id = d.id
       LEFT JOIN statuses st ON i.status_id = st.id
       LEFT JOIN sales s ON i.receipt = s.receipt
+      LEFT JOIN client_assets ca ON ca.item_id = i.id
+      LEFT JOIN clients c ON ca.client_id = c.id
       ${whereClause}
     `;
 
@@ -156,7 +151,9 @@ exports.getAllItems = async (req, res) => {
     const itemsQuery = `
       SELECT i.*, t.name as type_name, b.name as brand_name,
              e.name as assigned_to_name, e.id as assigned_to_id, d.name as department_name,
-             st.name as status_name, st.color as status_color, st.icon as status_icon, s.date_acquired
+             st.name as status_name, st.color as status_color, st.icon as status_icon, s.date_acquired,
+             ca.client_id, c.name as client_name, c.pnumber as client_pnumber,
+             ca.client_id as assigned_to_client_id, c.name as assigned_to_client_name
       FROM items i
       LEFT JOIN types t ON i.type_id = t.id
       LEFT JOIN brands b ON i.brand_id = b.id
@@ -164,6 +161,8 @@ exports.getAllItems = async (req, res) => {
       LEFT JOIN departments d ON e.dept_id = d.id
       LEFT JOIN statuses st ON i.status_id = st.id
       LEFT JOIN sales s ON i.receipt = s.receipt
+      LEFT JOIN client_assets ca ON ca.item_id = i.id
+      LEFT JOIN clients c ON ca.client_id = c.id
       ${whereClause}
       ORDER BY i.created_at DESC
       LIMIT ${perPage} OFFSET ${offset}
@@ -344,7 +343,7 @@ exports.createItem = async (req, res) => {
   try {
     const {
       cep_brc, name, type_id, price, brand_id,
-      model, serial_cod, receipt, date_assigned, assigned_to, description
+      model, serial_cod, receipt, description
     } = req.body;
 
     // Force "New" status for all new items
@@ -358,7 +357,7 @@ exports.createItem = async (req, res) => {
 
     console.log('Creating new item with data:', {
       cep_brc, name, type_id, price, brand_id,
-      model, serial_cod, receipt, date_assigned, assigned_to, status_id
+      model, serial_cod, receipt, status_id
     });
 
     // Validate input data
@@ -371,7 +370,6 @@ exports.createItem = async (req, res) => {
       const types = await db.query('SELECT * FROM types ORDER BY name');
       const brands = await db.query('SELECT * FROM brands ORDER BY name');
       const sales = await db.query('SELECT * FROM sales ORDER BY date_acquired DESC');
-      const employees = await db.query('SELECT * FROM employees WHERE left_date IS NULL ORDER BY name');
 
       return res.render('layout', {
         title: 'Add New Item',
@@ -379,7 +377,6 @@ exports.createItem = async (req, res) => {
         types: types.rows,
         brands: brands.rows,
         sales: sales.rows,
-        employees: employees.rows,
         errors: validationErrors,
         formData: req.body,
         user: req.session.user
@@ -391,16 +388,15 @@ exports.createItem = async (req, res) => {
       const result = await db.query(`
         INSERT INTO items (
           cep_brc, name, type_id, price, brand_id, model, serial_cod,
-          receipt, date_assigned, assigned_to, description, status_id,
+          receipt, description, status_id,
           created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
         RETURNING id, cep_brc
       `, [
         cep_brc, name, type_id,
         price ? parseFloat(price) : null,
         brand_id || null, model || null, serial_cod || null,
-        receipt || null,
-        date_assigned || null, assigned_to || null, description || null,
+        receipt || null, description || null,
         status_id  // Always "New" status
       ]);
 

@@ -54,11 +54,50 @@
             // Use the same status handling logic as the detail view
           %>
           <% items.forEach(item => { %>
+            <%
+              // Determine item type and setup routing/assignment info ONCE for the entire row
+              const isPrinter = item.type_name === 'Printer';
+              const baseUrl = isPrinter ? '/printers' : '/items';
+              const itemPath = isPrinter ? `/${item.id}` : `/${item.id}/${item.cep_brc}`;
+
+              // Handle assignment info
+              let assignmentInfo = null;
+              let isAssigned = false;
+              let assignedToName = '';
+
+              if (isPrinter) {
+                // For printers, show client assignment
+                if (item.client_id || item.assigned_to_client_id) {
+                  assignmentInfo = {
+                    id: item.client_id || item.assigned_to_client_id,
+                    name: item.client_name || item.assigned_to_client_name,
+                    detail: item.client_pnumber ? `P#: ${item.client_pnumber}` : null,
+                    url: '/clients',
+                    icon: 'fas fa-building'
+                  };
+                  isAssigned = true;
+                  assignedToName = item.client_name || item.assigned_to_client_name;
+                }
+              } else {
+                // For other items, show employee assignment
+                if (item.assigned_to_name) {
+                  assignmentInfo = {
+                    id: item.assigned_to_id,
+                    name: item.assigned_to_name,
+                    detail: item.department_name,
+                    url: '/employees',
+                    icon: 'fas fa-user'
+                  };
+                  isAssigned = true;
+                  assignedToName = item.assigned_to_name;
+                }
+              }
+            %>
             <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
               <td class="px-4 py-3 font-mono text-gray-800 dark:text-gray-100"><%= item.cep_brc %></td>
               <td class="px-4 py-3">
                 <div>
-                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="font-semibold text-blue-700 dark:text-blue-300 hover:underline"><%= item.name %></a>
+                  <a href="<%= baseUrl %><%= itemPath %>" class="font-semibold text-blue-700 dark:text-blue-300 hover:underline"><%= item.name %></a>
                   <% if (item.model) { %>
                     <div class="text-xs text-gray-500 dark:text-gray-400"><%= item.model %></div>
                   <% } %>
@@ -79,13 +118,13 @@
                 <% } %>
               </td>
               <td class="px-4 py-3">
-                <% if (item.assigned_to_name) { %>
+                <% if (assignmentInfo) { %>
                   <div>
-                    <a href="/employees/<%= item.assigned_to_id %>" class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-100 hover:underline">
-                      <i class="fas fa-user"></i> <%= item.assigned_to_name %>
+                    <a href="<%= assignmentInfo.url %>/<%= assignmentInfo.id %>" class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-100 hover:underline">
+                      <i class="<%= assignmentInfo.icon %>"></i> <%= assignmentInfo.name %>
                     </a>
-                    <% if (item.department_name) { %>
-                      <div class="text-xs text-gray-500 dark:text-gray-400"><%= item.department_name %></div>
+                    <% if (assignmentInfo.detail) { %>
+                      <div class="text-xs text-gray-500 dark:text-gray-400"><%= assignmentInfo.detail %></div>
                     <% } %>
                   </div>
                 <% } else { %>
@@ -178,24 +217,24 @@
               </td>
               <td class="px-4 py-3">
                 <div class="flex gap-1">
-                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>" class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition" title="Ver Detalhes">
+                  <a href="<%= baseUrl %><%= itemPath %>" class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition" title="Ver Detalhes">
                     <i class="fas fa-eye"></i>
                   </a>
-                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="Editar">
+                  <a href="<%= baseUrl %><%= itemPath %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="Editar">
                     <i class="fas fa-edit"></i>
                   </a>
-                  <% if (!item.assigned_to_name) { %>
-                    <a href="/items/<%= item.id %>/<%= item.cep_brc %>/assign" class="inline-flex items-center justify-center w-8 h-8 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition" title="Atribuir">
+                  <% if (!isAssigned) { %>
+                    <a href="<%= baseUrl %><%= itemPath %>/assign" class="inline-flex items-center justify-center w-8 h-8 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition" title="Atribuir">
                       <i class="fas fa-user-plus"></i>
                     </a>
                   <% } else { %>
-                    <form style="display: inline;" method="POST" action="/items/<%= item.id %>/<%= item.cep_brc %>/unassign" class="inline-form" onsubmit="return confirm('Are you sure you want to unassign &quot;<%= item.name %>&quot; from <%= item.assigned_to_name %>?\n\nThis action cannot be undone.')">
+                    <form style="display: inline;" method="POST" action="<%= baseUrl %><%= itemPath %>/unassign" class="inline-form" onsubmit="return confirm('Are you sure you want to unassign &quot;<%= item.name %>&quot; from <%= assignedToName %>?\n\nThis action cannot be undone.')">
                       <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition" title="Remover Atribuição">
                         <i class="fas fa-user-minus"></i>
                       </button>
                     </form>
                   <% } %>
-                  <a href="/items/<%= item.id %>/<%= item.cep_brc %>/history" class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 transition" title="Ver Histórico">
+                  <a href="<%= baseUrl %><%= itemPath %>/history" class="inline-flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-800 transition" title="Ver Histórico">
                     <i class="fas fa-history"></i>
                   </a>
                 </div>

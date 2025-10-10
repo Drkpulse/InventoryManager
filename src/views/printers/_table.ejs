@@ -1,0 +1,289 @@
+<!-- Printers Table Block -->
+<% if (printers && printers.length > 0) { %>
+  <div id="printersTableBlock">
+    <div id="printersTableContainer" class="overflow-x-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 text-gray-700 dark:text-gray-200 border-b-2 border-gray-300 dark:border-gray-600">
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-barcode text-blue-500 dark:text-blue-400"></i>
+                Asset ID
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-print text-green-500 dark:text-green-400"></i>
+                Printer
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-users text-purple-500 dark:text-purple-400"></i>
+                Client
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-euro-sign text-orange-500 dark:text-orange-400"></i>
+                Cost
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-info-circle text-indigo-500 dark:text-indigo-400"></i>
+                Status
+              </div>
+            </th>
+            <th class="px-4 py-4 text-left font-bold">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-cogs text-gray-500 dark:text-gray-400"></i>
+                Actions
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <% printers.forEach(printer => { %>
+            <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
+              <td class="px-4 py-3 font-mono text-gray-800 dark:text-gray-100"><%= printer.cep_brc %></td>
+              <td class="px-4 py-3">
+                <div>
+                  <a href="/printers/<%= printer.id %>" class="font-semibold text-blue-700 dark:text-blue-300 hover:underline"><%= printer.name %></a>
+                  <% if (printer.brand || printer.model) { %>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                      <%= printer.brand ? printer.brand + ' ' : '' %><%= printer.model || '' %>
+                    </div>
+                  <% } %>
+                  <% if (printer.serial_cod) { %>
+                    <div class="text-xs text-gray-400 dark:text-gray-500">SN: <%= printer.serial_cod %></div>
+                  <% } %>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <% if (printer.client_name) { %>
+                  <div>
+                    <span class="inline-flex items-center gap-1 text-gray-800 dark:text-gray-100">
+                      <i class="fas fa-building"></i> <%= printer.client_name %>
+                    </span>
+                    <% if (printer.client_pnumber) { %>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">#<%= printer.client_pnumber %></div>
+                    <% } %>
+                  </div>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs font-semibold">
+                    <i class="fas fa-minus-circle"></i> Unassigned
+                  </span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <% if (printer.cost || printer.price) { %>
+                  <span class="text-gray-800 dark:text-gray-100 font-medium">
+                    €<%= parseFloat(printer.cost || printer.price).toFixed(2) %>
+                  </span>
+                <% } else { %>
+                  <span class="text-gray-500 dark:text-gray-400 text-xs">N/A</span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <% if (printer.status_name) { %>
+                  <%
+                    // Use status color and icon from database
+                    let statusStyle = '';
+                    let statusIcon = printer.status_icon || 'fas fa-question-circle';
+                    const statusColor = printer.status_color || '#6B7280';
+
+                    // Convert hex color to rgba for background with opacity
+                    if (statusColor.startsWith('#') && statusColor.length === 7) {
+                      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(statusColor);
+                      if (result) {
+                        const r = parseInt(result[1], 16);
+                        const g = parseInt(result[2], 16);
+                        const b = parseInt(result[3], 16);
+                        statusStyle = `background-color: rgba(${r}, ${g}, ${b}, 0.1); color: ${statusColor}; border: 1px solid rgba(${r}, ${g}, ${b}, 0.3);`;
+                      } else {
+                        statusStyle = `background-color: rgba(107, 114, 128, 0.1); color: #6B7280; border: 1px solid rgba(107, 114, 128, 0.3);`;
+                      }
+                    } else {
+                      statusStyle = `background-color: rgba(107, 114, 128, 0.1); color: #6B7280; border: 1px solid rgba(107, 114, 128, 0.3);`;
+                    }
+                  %>
+                  <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg font-medium text-sm shadow" style="<%= statusStyle %>">
+                    <% if (statusIcon.startsWith('fas ') || statusIcon.startsWith('far ') || statusIcon.startsWith('fab ')) { %>
+                      <i class="<%= statusIcon %>"></i>
+                    <% } else { %>
+                      <span class="text-sm"><%= statusIcon %></span>
+                    <% } %>
+                    <%= printer.status_name %>
+                  </span>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg font-medium text-sm shadow bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300">
+                    <i class="fas fa-question-circle"></i>
+                    Unknown
+                  </span>
+                <% } %>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex gap-1">
+                  <a href="/printers/<%= printer.id %>" class="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="/printers/<%= printer.id %>/edit" class="inline-flex items-center justify-center w-8 h-8 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <button type="button" class="delete-printer-btn inline-flex items-center justify-center w-8 h-8 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 transition" title="Delete" data-printer-id="<%= printer.id %>" data-printer-name="<%= printer.name || '' %>">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Results Summary & Pagination -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8">
+      <div class="flex flex-col gap-2">
+        <span class="text-sm text-gray-700 dark:text-gray-200">
+          <i class="fas fa-print"></i>
+          Showing <strong id="printerCount"><%= printers.length %></strong> of <%= pagination ? pagination.totalRecords : printers.length %> printer assets
+        </span>
+      </div>
+      <div class="flex items-center gap-4">
+        <% if (pagination && pagination.totalPages > 1) { %>
+          <div class="flex items-center gap-2">
+            <%
+              // Build query string with current filters for pagination
+              const queryParams = new URLSearchParams();
+              if (currentFilters.q) queryParams.set('q', currentFilters.q);
+              if (currentFilters.client_id) queryParams.set('client_id', currentFilters.client_id);
+              if (currentFilters.status_id) queryParams.set('status_id', currentFilters.status_id);
+              if (currentFilters.minPrice) queryParams.set('minPrice', currentFilters.minPrice);
+              if (currentFilters.maxPrice) queryParams.set('maxPrice', currentFilters.maxPrice);
+              if (currentFilters.perPage) queryParams.set('perPage', currentFilters.perPage);
+
+              function buildPageUrl(pageNum) {
+                const params = new URLSearchParams(queryParams);
+                params.set('page', pageNum);
+                return '?' + params.toString();
+              }
+            %>
+            <div class="flex items-center space-x-2">
+              <% if (pagination.hasPrev) { %>
+                <a href="<%= buildPageUrl(pagination.currentPage - 1) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm">
+                  <i class="fas fa-chevron-left mr-1"></i> Previous
+                </a>
+              <% } %>
+
+              <% for (let i = Math.max(1, pagination.currentPage - 2); i <= Math.min(pagination.totalPages, pagination.currentPage + 2); i++) { %>
+                <% if (i === pagination.currentPage) { %>
+                  <span class="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold shadow-lg border border-blue-500"><%= i %></span>
+                <% } else { %>
+                  <a href="<%= buildPageUrl(i) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm"><%= i %></a>
+                <% } %>
+              <% } %>
+
+              <% if (pagination.hasNext) { %>
+                <a href="<%= buildPageUrl(pagination.currentPage + 1) %>" class="px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 font-medium text-gray-700 dark:text-gray-200 shadow-sm">
+                  Next <i class="fas fa-chevron-right ml-1"></i>
+                </a>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+        <div>
+          <select id="printersPerPage" class="ml-2 px-2 py-1 border border-gray-300 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-xs">
+            <option value="10" <%= currentFilters && currentFilters.perPage == 10 ? 'selected' : '' %>>10</option>
+            <option value="20" <%= !currentFilters || currentFilters.perPage == 20 ? 'selected' : '' %>>20</option>
+            <option value="50" <%= currentFilters && currentFilters.perPage == 50 ? 'selected' : '' %>>50</option>
+            <option value="100" <%= currentFilters && currentFilters.perPage == 100 ? 'selected' : '' %>>100</option>
+          </select>
+          <span class="text-xs text-gray-500 dark:text-gray-400">per page</span>
+        </div>
+      </div>
+    </div>
+  </div>
+<% } else { %>
+  <!-- No Printers Message -->
+  <div class="no-printers-message text-center py-20 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg">
+    <div class="mb-6 text-6xl">
+      <span class="inline-block animate-bounce">🖨️</span>
+    </div>
+    <div class="mb-4 text-4xl text-gray-400 dark:text-gray-500">
+      <i class="fas fa-print"></i>
+    </div>
+    <h3 class="text-xl font-bold text-gray-700 dark:text-gray-200 mb-2">No printer assets found</h3>
+    <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+      <% if (currentFilters && (currentFilters.q || currentFilters.client_id || currentFilters.status_id)) { %>
+        No printer assets match your current search criteria.
+      <% } else { %>
+        Get started by adding your first printer asset to the inventory.
+      <% } %>
+    </p>
+    <div class="flex gap-3 justify-center">
+      <% if (currentFilters && (currentFilters.q || currentFilters.client_id || currentFilters.status_id)) { %>
+        <button id="clearFiltersBtn" class="px-6 py-3 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-600 hover:from-gray-400 hover:to-gray-500 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg">
+          <i class="fas fa-times"></i> Clear all filters
+        </button>
+      <% } %>
+      <a href="/printers/new" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg transform hover:scale-105">
+        <i class="fas fa-plus"></i> Add first printer
+      </a>
+    </div>
+  </div>
+<% } %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Delete button functionality
+  document.querySelectorAll('.delete-printer-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const printerId = this.dataset.printerId;
+      const printerName = this.dataset.printerName;
+      confirmPrinterDelete(printerId, printerName);
+    });
+  });
+
+  // Clear filters functionality
+  const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', function() {
+      window.location.href = '/printers';
+    });
+  }
+
+  // Per page functionality
+  const perPageSelect = document.getElementById('printersPerPage');
+  if (perPageSelect) {
+    perPageSelect.addEventListener('change', function(e) {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('perPage', e.target.value);
+      currentUrl.searchParams.set('page', '1');
+      window.location.href = currentUrl.toString();
+    });
+  }
+});
+
+function confirmPrinterDelete(printerId, printerName) {
+  if (confirm(`Are you sure you want to delete "${printerName}"?\n\nThis action cannot be undone.`)) {
+    // Create a form and submit it
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/printers/${printerId}?_method=DELETE`;
+
+    // Add CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (csrfToken) {
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = '_token';
+      csrfInput.value = csrfToken.getAttribute('content');
+      form.appendChild(csrfInput);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+</script>

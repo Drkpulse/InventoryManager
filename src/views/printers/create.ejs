@@ -1,139 +1,256 @@
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
-  <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-          <i class="fas fa-plus"></i> Add New Printer
-        </h1>
-        <p class="text-gray-600 dark:text-gray-300 mt-1">Create a new printer record</p>
-      </div>
-      <a href="/printers" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md font-semibold transition">
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+        <i class="fas fa-plus"></i> Add New Printer Asset
+      </h1>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+      <a href="/printers" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
         <i class="fas fa-arrow-left mr-2"></i> Back to Printers
       </a>
     </div>
+  </div>
 
-    <% if (locals.errors && errors.length > 0) { %>
-      <div class="mb-6 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 rounded-lg p-4">
-        <div class="flex items-center gap-2 mb-2">
-          <i class="fas fa-exclamation-triangle"></i>
-          <span class="font-semibold">Please fix the following errors:</span>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>Please fix the following errors:</strong>
+          <ul class="list-disc ml-6">
+            <% errors.forEach(error => { %>
+              <li><%= error %></li>
+            <% }) %>
+          </ul>
         </div>
-        <ul class="list-disc pl-6 space-y-1">
-          <% errors.forEach(error => { %>
-            <li><%= error %></li>
-          <% }); %>
-        </ul>
       </div>
     <% } %>
 
-    <form method="POST" action="/printers" class="space-y-8" novalidate>
+    <form method="POST" action="/printers" id="createPrinterForm" class="space-y-10" data-no-ajax="true">
+      <!-- Asset Identification Section -->
       <div>
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
-          <i class="fas fa-info-circle"></i> Printer Information
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-tag"></i> Asset Identification
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="col-span-1 md:col-span-2">
+            <label for="cep_brc" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Asset ID (CEP/BRC) <span class="text-red-500">*</span></label>
+            <div>
+              <input type="text" id="cep_brc" name="cep_brc"
+                value="<%= typeof formData !== 'undefined' ? formData.cep_brc : 'CEXPT' %>"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                required placeholder="Enter unique asset identifier">
+              <div class="text-xs mt-1" id="cepValidation"></div>
+              <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                <i class="fas fa-info-circle"></i>
+                Unique identifier for this printer asset
+              </small>
+            </div>
+          </div>
+          <div class="col-span-1 md:col-span-2">
+            <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Printer Name <span class="text-red-500">*</span></label>
+            <input type="text" id="name" name="name"
+              value="<%= typeof formData !== 'undefined' ? formData.name : '' %>"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              required placeholder="Enter descriptive name for this printer">
+          </div>
+          <div class="col-span-1 md:col-span-2">
+            <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Description</label>
+            <textarea id="description" name="description" rows="3"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-vertical"
+              placeholder="Enter detailed description of the printer (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-info-circle"></i>
+              Provide additional details about the printer's capabilities or location
+            </small>
+          </div>
+          <!-- Hidden field to fix type to Printer -->
+          <input type="hidden" name="type_id" value="6">
+          <div>
+            <label for="status_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Status</label>
+            <!-- Hidden input to force "New" status -->
+            <input type="hidden" id="status_id" name="status_id" value="1">
+
+            <!-- Display the forced status with enhanced styling -->
+            <div class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <!-- Enhanced status badge -->
+                  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium"
+                       style="background-color: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #3B82F6;">
+                    <span class="text-base">⭐</span>
+                    <span>New</span>
+                  </div>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                    Default for new assets
+                  </span>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                  Auto-assigned
+                </div>
+              </div>
+            </div>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-info-circle"></i>
+              New printer assets are automatically assigned this status
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Details Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-print"></i> Product Details
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="supplier" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 required">Supplier</label>
-            <input
-              type="text"
-              id="supplier"
-              name="supplier"
-              value="<%= locals.formData ? formData.supplier : '' %>"
-              placeholder="e.g., HP, Canon, Epson"
-              required
+            <label for="brand" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Brand</label>
+            <input type="text" id="brand" name="brand"
+              value="<%= typeof formData !== 'undefined' ? formData.brand : '' %>"
+              list="brandsList"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-            <div class="text-xs text-red-600 mt-1 hidden">Please provide a supplier name.</div>
+              placeholder="Enter or select brand name">
+            <datalist id="brandsList">
+              <% if (brands) { %>
+                <% brands.forEach(brand => { %>
+                  <option value="<%= brand.name %>"><%= brand.name %></option>
+                <% }) %>
+              <% } %>
+            </datalist>
+            <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+              <i class="fas fa-info-circle"></i>
+              You can type a new brand name or select from existing ones
+            </small>
           </div>
           <div>
             <label for="model" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Model</label>
-            <input
-              type="text"
-              id="model"
-              name="model"
-              value="<%= locals.formData ? formData.model : '' %>"
-              placeholder="e.g., LaserJet Pro 4000"
+            <input type="text" id="model" name="model"
+              value="<%= typeof formData !== 'undefined' ? formData.model : '' %>"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-          </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <div>
-            <label for="client_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 required">Client</label>
-            <select
-              id="client_id"
-              name="client_id"
-              required
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-              <option value="">Select a client...</option>
-              <% clients.forEach(client => { %>
-                <option value="<%= client.id %>"
-                  <%= (locals.formData && formData.client_id == client.id) || (req.query.client_id == client.id) ? 'selected' : '' %>>
-                  <%= client.name %> (<%= client.client_id %>)
-                </option>
-              <% }); %>
-            </select>
-            <div class="text-xs text-red-600 mt-1 hidden">Please select a client.</div>
+              placeholder="Enter printer model">
           </div>
           <div>
-            <label for="status_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200 required">Status</label>
-            <select
-              id="status_id"
-              name="status_id"
-              required
+            <label for="serial_cod" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Serial Number <span class="text-red-500">*</span></label>
+            <input type="text" id="serial_cod" name="serial_cod"
+              value="<%= typeof formData !== 'undefined' ? formData.serial_cod : '' %>"
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-              <option value="">Select a status...</option>
-              <% statuses.forEach(status => { %>
-                <option value="<%= status.id %>"
-                  <%= locals.formData && formData.status_id == status.id ? 'selected' : '' %>>
-                  <%= status.name %>
-                </option>
-              <% }); %>
-            </select>
-            <div class="text-xs text-red-600 mt-1 hidden">Please select a status.</div>
+              required placeholder="Enter unique serial number">
           </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
-            <label for="cost" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Cost (€)</label>
-            <input
-              type="number"
-              step="0.01"
-              id="cost"
-              name="cost"
-              value="<%= locals.formData ? formData.cost : '' %>"
-              placeholder="e.g., 299.99"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
+            <label for="cost" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Purchase Price (€)</label>
+            <div class="flex">
+              <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400">€</span>
+              <input type="number" id="cost" name="cost" min="0" step="0.01"
+                value="<%= typeof formData !== 'undefined' ? formData.cost : '' %>"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-r-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                placeholder="0.00">
+            </div>
           </div>
-        </div>
-        <div class="mt-6">
-          <label for="employee_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assigned Employee (Optional)</label>
-          <select
-            id="employee_id"
-            name="employee_id"
-            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          >
-            <option value="">No employee assigned</option>
-            <% employees.forEach(employee => { %>
-              <option value="<%= employee.id %>"
-                <%= locals.formData && formData.employee_id == employee.id ? 'selected' : '' %>>
-                <%= employee.name %>
-              </option>
-            <% }); %>
-          </select>
-          <small class="text-gray-500 dark:text-gray-400">Optional: Select an employee who will be responsible for this printer</small>
         </div>
       </div>
-      <div class="flex items-center gap-4 mt-8">
-        <button type="submit" class="inline-flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition">
-          <i class="fas fa-save mr-2"></i> Create Printer
+
+      <!-- Purchase Information Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-receipt"></i> Purchase Information
+        </h3>
+        <div>
+          <label for="receipt" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Purchase Receipt</label>
+          <select id="receipt" name="receipt" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <option value="">Select Receipt (Optional)</option>
+            <% if (sales) { %>
+              <% sales.forEach(sale => { %>
+                <option value="<%= sale.receipt %>" <%= typeof formData !== 'undefined' && formData.receipt === sale.receipt ? 'selected' : '' %>>
+                  <%= sale.receipt %> - <%= sale.supplier %> (<%= new Date(sale.date_acquired).toLocaleDateString() %>)
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+          <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+            <i class="fas fa-info-circle"></i>
+            Link this printer to an existing purchase receipt
+          </small>
+        </div>
+      </div>
+
+      <!-- Warranty Information Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-shield-alt"></i> Warranty Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label for="warranty_start_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty Start Date</label>
+            <input type="date" id="warranty_start_date" name="warranty_start_date"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              value="<%= typeof formData !== 'undefined' && formData.warranty_start_date ? formData.warranty_start_date : '' %>">
+          </div>
+          <div>
+            <label for="warranty_months" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty Period (months)</label>
+            <select id="warranty_months" name="warranty_months" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value="">No warranty</option>
+              <option value="6" <%= (typeof formData !== 'undefined' && formData.warranty_months == 6) ? 'selected' : '' %>>6 months</option>
+              <option value="12"
+                <%= (typeof formData !== 'undefined' && formData.warranty_months == 12)
+                    || (typeof formData === 'undefined') ? 'selected' : '' %>
+              >12 months</option>
+              <option value="24" <%= (typeof formData !== 'undefined' && formData.warranty_months == 24) ? 'selected' : '' %>>24 months</option>
+              <option value="36" <%= (typeof formData !== 'undefined' && formData.warranty_months == 36) ? 'selected' : '' %>>36 months</option>
+              <option value="48" <%= (typeof formData !== 'undefined' && formData.warranty_months == 48) ? 'selected' : '' %>>48 months</option>
+              <option value="60" <%= (typeof formData !== 'undefined' && formData.warranty_months == 60) ? 'selected' : '' %>>60 months</option>
+            </select>
+          </div>
+          <div>
+            <label for="warranty_end_date" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Warranty End Date</label>
+            <input type="date" id="warranty_end_date" name="warranty_end_date" readonly
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+              value="<%= typeof formData !== 'undefined' && formData.warranty_end_date ? formData.warranty_end_date : '' %>">
+          </div>
+        </div>
+        <div class="mt-4" id="warrantyStatus" style="display: none;">
+          <div class="flex items-center gap-2 px-4 py-3 rounded-lg" id="warrantyStatusContent">
+            <!-- Dynamic warranty status will be shown here -->
+          </div>
+        </div>
+        <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-2">
+          <i class="fas fa-info-circle"></i>
+          The warranty end date will be calculated automatically based on the start date and period
+        </small>
+      </div>
+
+      <!-- Client Assignment Section -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-building"></i> Client Assignment
+        </h3>
+        <div>
+          <label for="client_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Assign to Client (Optional)</label>
+          <select id="client_id" name="client_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <option value="">No client assignment</option>
+            <% if (clients && clients.length > 0) { %>
+              <% clients.forEach(client => { %>
+                <option value="<%= client.id %>" <%= typeof formData !== 'undefined' && formData.client_id == client.id ? 'selected' : '' %>>
+                  <%= client.name %> (<%= client.pnumber %>)
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+          <small class="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+            <i class="fas fa-info-circle"></i>
+            You can assign this printer to a client now or leave it unassigned for later
+          </small>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex flex-wrap gap-2 mt-8">
+        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-plus"></i> Create Printer Asset
         </button>
-        <a href="/printers" class="inline-flex items-center px-6 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-          <i class="fas fa-times mr-2"></i> Cancel
+        <a href="/printers" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
+          <i class="fas fa-times"></i> Cancel
         </a>
       </div>
     </form>
@@ -141,10 +258,202 @@
 </div>
 
 <script>
-// Pre-select client if coming from client page
-const urlParams = new URLSearchParams(window.location.search);
-const clientId = urlParams.get('client_id');
-if (clientId) {
-  document.getElementById('client_id').value = clientId;
-}
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('createPrinterForm');
+  const idInput = document.getElementById('cep_brc');
+  const cepValidation = document.getElementById('cepValidation');
+
+  let duplicateCheckTimeout;
+
+  // Asset ID validation and duplicate checking
+  if (idInput) {
+    idInput.addEventListener('input', function() {
+      const newValue = this.value.trim();
+
+      // Clear previous timeout
+      clearTimeout(duplicateCheckTimeout);
+
+      // Reset validation state
+      cepValidation.className = 'text-xs mt-1';
+      cepValidation.innerHTML = '';
+
+      if (newValue.length === 0) {
+        return;
+      }
+
+      if (newValue.length < 3) {
+        cepValidation.className = 'text-xs mt-1 text-yellow-700 dark:text-yellow-300';
+        cepValidation.innerHTML = '<i class="fas fa-info-circle"></i> Asset ID should be at least 3 characters';
+        return;
+      }
+
+      // Show checking state
+      cepValidation.className = 'text-xs mt-1 text-blue-700 dark:text-blue-300';
+      cepValidation.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
+
+      // Check for duplicates after delay
+      duplicateCheckTimeout = setTimeout(() => {
+        checkDuplicateAssetId(newValue);
+      }, 800);
+    });
+  }
+
+  // Check for duplicate Asset ID
+  async function checkDuplicateAssetId(assetId) {
+    try {
+      const response = await fetch(`/api/items/check-duplicate/${encodeURIComponent(assetId)}`);
+      const data = await response.json();
+
+      if (data.exists) {
+        cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
+        cepValidation.innerHTML = `
+          <i class="fas fa-exclamation-triangle"></i>
+          Asset ID already exists - Please choose a different ID
+        `;
+      } else {
+        cepValidation.className = 'text-xs mt-1 text-green-700 dark:text-green-300';
+        cepValidation.innerHTML = '<i class="fas fa-check"></i> Asset ID available';
+      }
+    } catch (error) {
+      console.error('Error checking duplicate:', error);
+      cepValidation.className = 'text-xs mt-1 text-red-700 dark:text-red-400';
+      cepValidation.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error checking availability';
+    }
+  }
+
+  // Form submission handling
+  form.addEventListener('submit', function(event) {
+    // Check for validation errors
+    if (cepValidation.className.includes('text-red-700')) {
+      event.preventDefault();
+      alert('Please fix the Asset ID validation error before submitting.');
+      return;
+    }
+
+    // Check required fields are filled
+    const requiredFields = form.querySelectorAll('[required]');
+    let valid = true;
+    let firstInvalidField = null;
+
+    requiredFields.forEach(field => {
+      field.classList.remove('border-red-500');
+      if (!field.value.trim()) {
+        valid = false;
+        field.classList.add('border-red-500');
+        if (!firstInvalidField) {
+          firstInvalidField = field;
+        }
+      }
+    });
+
+    if (!valid) {
+      event.preventDefault();
+      if (firstInvalidField) {
+        firstInvalidField.focus();
+        firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  });
+
+  // Auto-focus first input
+  const firstInput = form.querySelector('input[type="text"]');
+  if (firstInput) {
+    firstInput.focus();
+  }
+});
+
+// Warranty calculation logic
+document.addEventListener('DOMContentLoaded', function() {
+  const warrantyStartDate = document.getElementById('warranty_start_date');
+  const warrantyMonths = document.getElementById('warranty_months');
+  const warrantyEndDate = document.getElementById('warranty_end_date');
+  const warrantyStatus = document.getElementById('warrantyStatus');
+  const warrantyStatusContent = document.getElementById('warrantyStatusContent');
+
+  function calculateWarrantyEndDate() {
+    const startDate = warrantyStartDate.value;
+    const months = parseInt(warrantyMonths.value);
+
+    if (startDate && months) {
+      const start = new Date(startDate);
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + months);
+
+      warrantyEndDate.value = end.toISOString().split('T')[0];
+      updateWarrantyStatus(end);
+    } else {
+      warrantyEndDate.value = '';
+      warrantyStatus.style.display = 'none';
+    }
+  }
+
+  function updateWarrantyStatus(endDate) {
+    if (!endDate) {
+      warrantyStatus.style.display = 'none';
+      return;
+    }
+
+    const now = new Date();
+    const diffTime = endDate - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    let statusClass, statusText, statusIcon;
+
+    if (diffDays < 0) {
+      // Expired
+      statusClass = 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700';
+      statusIcon = 'fas fa-exclamation-circle text-red-600 dark:text-red-400';
+      statusText = `Warranty expired ${Math.abs(diffDays)} days ago`;
+    } else if (diffDays <= 30) {
+      // Expiring soon
+      statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700';
+      statusIcon = 'fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400';
+      statusText = `Warranty expires in ${diffDays} days`;
+    } else {
+      // Active
+      statusClass = 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700';
+      statusIcon = 'fas fa-shield-alt text-green-600 dark:text-green-400';
+      statusText = `Warranty active for ${diffDays} more days`;
+    }
+
+    warrantyStatusContent.className = statusClass;
+    warrantyStatusContent.innerHTML = `
+      <i class="${statusIcon}"></i>
+      <span class="font-medium">${statusText}</span>
+    `;
+    warrantyStatus.style.display = 'block';
+  }
+
+  // Event listeners
+  warrantyStartDate.addEventListener('change', calculateWarrantyEndDate);
+  warrantyMonths.addEventListener('change', calculateWarrantyEndDate);
+
+  // Auto-fill warranty start date with purchase date if available
+  const receiptSelect = document.getElementById('receipt');
+  if (receiptSelect) {
+    receiptSelect.addEventListener('change', function() {
+      if (this.value && !warrantyStartDate.value) {
+        // Extract date from receipt option text (format: "RECEIPT - SUPPLIER (DATE)")
+        const optionText = this.options[this.selectedIndex].text;
+        const dateMatch = optionText.match(/\(([^)]+)\)$/);
+        if (dateMatch) {
+          const dateStr = dateMatch[1];
+          const purchaseDate = new Date(dateStr);
+          if (!isNaN(purchaseDate.getTime())) {
+            warrantyStartDate.value = purchaseDate.toISOString().split('T')[0];
+            calculateWarrantyEndDate();
+          }
+        }
+      }
+    });
+  }
+
+  // Calculate warranty end date on page load if values exist
+  if (warrantyStartDate.value && warrantyMonths.value) {
+    calculateWarrantyEndDate();
+  } else if (warrantyEndDate.value) {
+    // Show status for existing warranty end date
+    updateWarrantyStatus(new Date(warrantyEndDate.value));
+  }
+});
 </script>

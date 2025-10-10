@@ -64,7 +64,7 @@ exports.getAllPDAs = async (req, res) => {
     // Get the filtered PDAs with pagination
     const pdasQuery = `
       SELECT p.*,
-             c.name as client_name, c.client_id as client_code,
+             c.name as client_name, c.pnumber as client_code,
              s.name as status_name,
              (SELECT COUNT(*) FROM sim_cards WHERE pda_id = p.id) as sim_count
       FROM pdas p
@@ -78,7 +78,7 @@ exports.getAllPDAs = async (req, res) => {
     const pdasResult = await db.query(pdasQuery, params);
 
     // Get all clients and statuses for filter dropdown
-    const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
     const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
 
     res.render('layout', {
@@ -114,7 +114,7 @@ exports.getPDAById = async (req, res) => {
 
     const pdaResult = await db.query(`
       SELECT p.*,
-             c.name as client_name, c.client_id as client_code,
+             c.name as client_name, c.pnumber as client_code,
              s.name as status_name,
              (SELECT COUNT(*) FROM sim_cards WHERE pda_id = p.id) as sim_count
       FROM pdas p
@@ -156,7 +156,7 @@ exports.getPDAById = async (req, res) => {
 exports.createPDAForm = async (req, res) => {
   try {
     // Get all clients and statuses for dropdown
-    const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
     const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
 
     res.render('layout', {
@@ -186,7 +186,7 @@ exports.createPDA = async (req, res) => {
 
     const validationErrors = validatePDAData({ serial_number, client_id, status_id, cost });
     if (validationErrors.length > 0) {
-      const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+      const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
 
       return res.status(400).render('layout', {
@@ -207,7 +207,7 @@ exports.createPDA = async (req, res) => {
     );
 
     if (existingPDA.rows.length > 0) {
-      const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+      const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
 
       return res.status(400).render('layout', {
@@ -242,7 +242,7 @@ exports.createPDA = async (req, res) => {
     res.redirect(`/pdas/${newPDA.id}`);
   } catch (error) {
     console.error('Error creating PDA:', error);
-    const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
 
     res.status(500).render('layout', {
       title: 'Add New PDA',
@@ -272,7 +272,7 @@ exports.updatePDAForm = async (req, res) => {
     }
 
     // Get all clients for dropdown
-    const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
 
     res.render('layout', {
       title: `Edit PDA: ${pdaResult.rows[0].serial_number}`,
@@ -303,7 +303,7 @@ exports.updatePDA = async (req, res) => {
     const validationErrors = validatePDAData({ serial_number, client_id });
     if (validationErrors.length > 0) {
       const pdaResult = await db.query('SELECT * FROM pdas WHERE id = $1', [id]);
-      const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+      const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
 
       return res.status(400).render('layout', {
         title: `Edit PDA: ${pdaResult.rows[0].serial_number}`,
@@ -336,7 +336,7 @@ exports.updatePDA = async (req, res) => {
     );
 
     if (existingPDA.rows.length > 0) {
-      const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+      const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
 
       return res.status(400).render('layout', {
         title: `Edit PDA: ${currentPDA.serial_number}`,
@@ -371,7 +371,7 @@ exports.updatePDA = async (req, res) => {
   } catch (error) {
     console.error('Error updating PDA:', error);
     const pdaResult = await db.query('SELECT * FROM pdas WHERE id = $1', [req.params.id]);
-    const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
 
     res.status(500).render('layout', {
       title: `Edit PDA: ${pdaResult.rows[0]?.serial_number || 'Unknown'}`,
@@ -418,7 +418,7 @@ exports.getPDAHistory = async (req, res) => {
 
     const pdaResult = await db.query(`
       SELECT p.*,
-             c.name as client_name, c.client_id as client_code
+             c.name as client_name, c.pnumber as client_code
       FROM pdas p
       LEFT JOIN clients c ON p.client_id = c.id
       WHERE p.id = $1

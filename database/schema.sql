@@ -15,6 +15,14 @@ DROP TABLE IF EXISTS system_settings CASCADE;
 DROP TABLE IF EXISTS statuses CASCADE;
 DROP TABLE IF EXISTS locations CASCADE;
 DROP TABLE IF EXISTS employee_software CASCADE;
+DROP TABLE IF EXISTS client_history CASCADE;
+DROP TABLE IF EXISTS printer_history CASCADE;
+DROP TABLE IF EXISTS pda_history CASCADE;
+DROP TABLE IF EXISTS sim_card_history CASCADE;
+DROP TABLE IF EXISTS sim_cards CASCADE;
+DROP TABLE IF EXISTS pdas CASCADE;
+DROP TABLE IF EXISTS printers CASCADE;
+DROP TABLE IF EXISTS clients CASCADE;
 
 -- Create license_config table
 CREATE TABLE IF NOT EXISTS license_config (
@@ -224,7 +232,7 @@ CREATE TABLE system_settings (
 -- Create clients table
 CREATE TABLE clients (
   id SERIAL PRIMARY KEY,
-  client_id VARCHAR(255) UNIQUE NOT NULL,
+  pnumber VARCHAR(255) UNIQUE NOT NULL,
   name VARCHAR(255) NOT NULL,
   description TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -236,7 +244,6 @@ CREATE TABLE printers (
   id SERIAL PRIMARY KEY,
   supplier VARCHAR(255),
   model VARCHAR(255),
-  employee_id INTEGER REFERENCES employees(id),
   client_id INTEGER REFERENCES clients(id),
   cost DECIMAL(10, 2),
   status_id INTEGER REFERENCES statuses(id),
@@ -424,7 +431,6 @@ CREATE INDEX idx_activity_logs_user ON activity_logs(user_id);
 CREATE INDEX idx_activity_logs_entity ON activity_logs(entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_employee_software_software_id ON employee_software(software_id);
 CREATE INDEX IF NOT EXISTS idx_employee_software_employee_id ON employee_software(employee_id);
-CREATE INDEX IF NOT EXISTS idx_printers_employee ON printers(employee_id);
 CREATE INDEX IF NOT EXISTS idx_users_lockout ON users(account_locked, locked_until);
 CREATE INDEX IF NOT EXISTS idx_users_failed_attempts ON users(failed_login_attempts);
 
@@ -615,7 +621,7 @@ INSERT INTO system_settings (setting_key, setting_value, description) VALUES
   ('default_language', 'en', 'Default language for the application');
 
 -- Insert sample clients
-INSERT INTO clients (client_id, name, description) VALUES
+INSERT INTO clients (pnumber, name, description) VALUES
   ('CLI001', 'TechCorp Solutions', 'Main technology partner'),
   ('CLI002', 'Digital Services Ltd', 'Digital transformation services'),
   ('CLI003', 'Innovation Hub', 'Innovation and development center'),
@@ -623,12 +629,12 @@ INSERT INTO clients (client_id, name, description) VALUES
   ('CLI005', 'DataLogistics Inc', 'Data collection and logistics'),
   ('CLI006', 'Mobile Solutions SA', 'Mobile device management');
 
--- Insert sample printers (assigned to different clients than PDAs)
-INSERT INTO printers (supplier, model, employee_id, client_id, cost, status_id) VALUES
-  ('HP Inc.', 'LaserJet Pro 4000', 1, 4, 299.99, 1),
-  ('Canon', 'PIXMA MG3620', 2, 4, 79.99, 1),
-  ('Epson', 'EcoTank ET-2720', NULL, 5, 199.99, 1),
-  ('Brother', 'HL-L2350DW', 3, 6, 149.99, 2);
+-- Insert sample printers (assigned only to clients)
+INSERT INTO printers (supplier, model, client_id, cost, status_id) VALUES
+  ('HP Inc.', 'LaserJet Pro 4000', 4, 299.99, 1),
+  ('Canon', 'PIXMA MG3620', 4, 79.99, 1),
+  ('Epson', 'EcoTank ET-2720', 5, 199.99, 1),
+  ('Brother', 'HL-L2350DW', 6, 149.99, 2);
 
 -- Insert sample PDAs (assigned to different clients than printers)
 INSERT INTO pdas (serial_number, model, client_id, cost, status_id) VALUES

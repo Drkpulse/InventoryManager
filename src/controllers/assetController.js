@@ -1,9 +1,9 @@
 const db = require('../config/db');
 const logger = require('../utils/logger');
 
-const printerController = {
-  // GET /printers - List all printer assets
-  async index(req, res) {
+const assetController = {
+  // GET /assets/printers - List all printer assets
+  async listPrinters(req, res) {
     try {
       const page = parseInt(req.query.page) || 1;
       const perPage = parseInt(req.query.perPage) || 20;
@@ -14,7 +14,7 @@ const printerController = {
       const minPrice = req.query.minPrice || '';
       const maxPrice = req.query.maxPrice || '';
 
-      // Build WHERE conditions for asset-based queries
+      // Build WHERE conditions
       let whereConditions = [`t.name = 'Printer'`];
       let queryParams = [];
       let paramIndex = 1;
@@ -75,15 +75,12 @@ const printerController = {
           i.name,
           b.name as brand,
           i.model,
-          i.serial_cod,
           ca.client_id,
           c.name as client_name,
           c.pnumber as client_pnumber,
           i.price as cost,
           i.status_id,
           s.name as status_name,
-          s.color as status_color,
-          s.icon as status_icon,
           i.created_at,
           i.updated_at
         FROM items i
@@ -107,7 +104,7 @@ const printerController = {
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
 
       res.render('layout', {
-        title: 'Printers',
+        title: 'Printer Assets',
         body: 'printers/index',
         printers: result.rows,
         clients: clientsResult.rows,
@@ -142,10 +139,10 @@ const printerController = {
     }
   },
 
-  // GET /printers/new - Show create printer asset form
-  async new(req, res) {
+  // GET /assets/printers/new - Show create printer asset form
+  async newPrinter(req, res) {
     try {
-      // Get clients for dropdown - only clients, no employees for printers
+      // Get clients for dropdown
       const clientsResult = await db.query('SELECT id, pnumber, name FROM clients ORDER BY name');
 
       // Get statuses for dropdown
@@ -154,17 +151,13 @@ const printerController = {
       // Get brands for dropdown
       const brandsResult = await db.query('SELECT id, name FROM brands ORDER BY name');
 
-      // Get sales receipts for dropdown
-      const sales = await db.query('SELECT * FROM sales ORDER BY date_acquired DESC');
-
       res.render('layout', {
-        title: 'Add New Printer',
+        title: 'Add New Printer Asset',
         body: 'printers/create',
         printer: {},
         clients: clientsResult.rows,
         statuses: statusesResult.rows,
         brands: brandsResult.rows,
-        sales: sales.rows,
         errors: {},
         query: req.query
       });
@@ -179,7 +172,7 @@ const printerController = {
     }
   },
 
-  // POST /printers - Create new printer asset (only client assignment)
+  // POST /assets/printers - Create new printer asset
   async create(req, res) {
     const client = await db.getClient();
 
@@ -191,22 +184,21 @@ const printerController = {
       if (!name?.trim()) errors.name = 'Printer name is required';
       if (!model?.trim()) errors.model = 'Model is required';
       if (!status_id) errors.status_id = 'Status is required';
-      // Note: client_id is optional for printers
+      // Note: client_id is now optional for assets
 
       if (Object.keys(errors).length > 0) {
+        // Get data for form repopulation
         const clientsResult = await db.query('SELECT id, pnumber, name FROM clients ORDER BY name');
         const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
         const brandsResult = await db.query('SELECT id, name FROM brands ORDER BY name');
-        const sales = await db.query('SELECT * FROM sales ORDER BY date_acquired DESC');
 
         return res.status(400).render('layout', {
-          title: 'Add New Printer',
+          title: 'Add New Printer Asset',
           body: 'printers/create',
           printer: req.body,
           clients: clientsResult.rows,
           statuses: statusesResult.rows,
           brands: brandsResult.rows,
-          sales: sales.rows,
           errors: errors,
           query: req.query
         });
@@ -236,7 +228,7 @@ const printerController = {
         }
       }
 
-      // Generate unique CEP_BRC for printers
+      // Generate unique CEP_BRC
       const cepResult = await client.query(`
         SELECT 'PRT-' || LPAD((COALESCE(MAX(CAST(SUBSTRING(cep_brc FROM 5) AS INTEGER)), 0) + 1)::text, 6, '0') as next_cep
         FROM items
@@ -265,7 +257,7 @@ const printerController = {
 
       const printerId = result.rows[0].id;
 
-      // Assign to client if specified (printers are client-only assignments)
+      // Assign to client if specified
       if (client_id && parseInt(client_id) > 0) {
         await client.query(`
           INSERT INTO client_assets (client_id, item_id, assigned_date, notes)
@@ -278,9 +270,9 @@ const printerController = {
         INSERT INTO activity_logs (user_id, action, entity_type, entity_id, details, ip_address)
         VALUES ($1, $2, $3, $4, $5, $6)
       `, [
-        req.user?.id || null,
+        req.user.id,
         'create',
-        'printers',
+        'printer_assets',
         printerId,
         JSON.stringify({
           name: name.trim(),
@@ -295,9 +287,9 @@ const printerController = {
         req.ip
       ]);
 
-      // Log item history (using correct table name)
+      // Log asset history
       await client.query(`
-        INSERT INTO item_history (item_id, action_type, action_details, performed_by)
+        INSERT INTO asset_history (item_id, action_type, action_details, performed_by)
         VALUES ($1, $2, $3, $4)
       `, [
         printerId,
@@ -309,48 +301,31 @@ const printerController = {
           serial_cod: serial_cod ? serial_cod.trim() : null,
           client_assigned: client_id ? parseInt(client_id) : null
         }),
-        req.user?.id || null
+        req.user.id
       ]);
-
-      // Log initial assignment if client was assigned during creation
-      if (client_id && parseInt(client_id) > 0) {
-        await client.query(`
-          INSERT INTO item_history (item_id, action_type, action_details, performed_by)
-          VALUES ($1, $2, $3, $4)
-        `, [
-          printerId,
-          'assigned',
-          JSON.stringify({
-            to_client_id: parseInt(client_id),
-            notes: 'Assigned during creation'
-          }),
-          req.user?.id || null
-        ]);
-      }
 
       await client.query('COMMIT');
 
-      req.flash('success', 'Printer created successfully');
+      req.flash('success', 'Printer asset created successfully');
       res.redirect('/printers');
 
     } catch (error) {
       await client.query('ROLLBACK');
-      logger.error('Error creating printer:', error);
+      logger.error('Error creating printer asset:', error);
 
+      // Get data for form repopulation
       const clientsResult = await db.query('SELECT id, pnumber, name FROM clients ORDER BY name');
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
       const brandsResult = await db.query('SELECT id, name FROM brands ORDER BY name');
-      const sales = await db.query('SELECT * FROM sales ORDER BY date_acquired DESC');
 
       res.status(500).render('layout', {
-        title: 'Add New Printer',
+        title: 'Add New Printer Asset',
         body: 'printers/create',
         printer: req.body,
         clients: clientsResult.rows,
         statuses: statusesResult.rows,
         brands: brandsResult.rows,
-        sales: sales.rows,
-        errors: { general: 'Failed to create printer. Please try again.' },
+        errors: { general: 'Failed to create printer asset. Please try again.' },
         query: req.query
       });
     } finally {
@@ -358,15 +333,15 @@ const printerController = {
     }
   },
 
-  // GET /printers/:id - Show printer details
+  // GET /assets/printers/:id - Show printer asset details
   async show(req, res) {
     try {
       const printerId = parseInt(req.params.id);
 
       if (isNaN(printerId)) {
         return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'Invalid printer ID',
+          title: 'Printer Asset Not Found',
+          message: 'Invalid printer asset ID',
           error: {}
         });
       }
@@ -377,8 +352,6 @@ const printerController = {
           b.name as brand,
           t.name as type_name,
           s.name as status_name,
-          s.color as status_color,
-          s.icon as status_icon,
           ca.client_id,
           c.name as client_name,
           c.pnumber as client_pnumber
@@ -395,38 +368,38 @@ const printerController = {
 
       if (result.rows.length === 0) {
         return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'The requested printer could not be found',
+          title: 'Printer Asset Not Found',
+          message: 'The requested printer asset could not be found',
           error: {}
         });
       }
 
       res.render('layout', {
-        title: 'Printer Details',
+        title: 'Printer Asset Details',
         body: 'printers/show',
         printer: result.rows[0],
         query: req.query
       });
 
     } catch (error) {
-      logger.error('Error fetching printer details:', error);
+      logger.error('Error fetching printer asset details:', error);
       res.status(500).render('error', {
         title: 'Error',
-        message: 'Failed to load printer details',
+        message: 'Failed to load printer asset details',
         error: process.env.NODE_ENV === 'development' ? error : {}
       });
     }
   },
 
-  // GET /printers/:id/edit - Show edit printer form
+  // GET /assets/printers/:id/edit - Show edit printer asset form
   async edit(req, res) {
     try {
       const printerId = parseInt(req.params.id);
 
       if (isNaN(printerId)) {
         return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'Invalid printer ID',
+          title: 'Printer Asset Not Found',
+          message: 'Invalid printer asset ID',
           error: {}
         });
       }
@@ -448,13 +421,13 @@ const printerController = {
 
       if (printerResult.rows.length === 0) {
         return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'The requested printer could not be found',
+          title: 'Printer Asset Not Found',
+          message: 'The requested printer asset could not be found',
           error: {}
         });
       }
 
-      // Get clients for dropdown (printers are client-only assignments)
+      // Get clients for dropdown
       const clientsResult = await db.query('SELECT id, pnumber, name FROM clients ORDER BY name');
 
       // Get statuses for dropdown
@@ -463,17 +436,13 @@ const printerController = {
       // Get brands for dropdown
       const brandsResult = await db.query('SELECT id, name FROM brands ORDER BY name');
 
-      // Get sales receipts for dropdown
-      const sales = await db.query('SELECT * FROM sales ORDER BY date_acquired DESC');
-
       res.render('layout', {
-        title: 'Edit Printer',
+        title: 'Edit Printer Asset',
         body: 'printers/edit',
         printer: printerResult.rows[0],
         clients: clientsResult.rows,
         statuses: statusesResult.rows,
         brands: brandsResult.rows,
-        sales: sales.rows,
         errors: {},
         query: req.query
       });
@@ -488,7 +457,7 @@ const printerController = {
     }
   },
 
-  // PUT /printers/:id - Update printer
+  // PUT /assets/printers/:id - Update printer asset
   async update(req, res) {
     const client = await db.getClient();
 
@@ -499,8 +468,8 @@ const printerController = {
 
       if (isNaN(printerId)) {
         return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'Invalid printer ID',
+          title: 'Printer Asset Not Found',
+          message: 'Invalid printer asset ID',
           error: {}
         });
       }
@@ -509,23 +478,21 @@ const printerController = {
       if (!name?.trim()) errors.name = 'Printer name is required';
       if (!model?.trim()) errors.model = 'Model is required';
       if (!status_id) errors.status_id = 'Status is required';
-      // Note: client_id is optional for printers
+      // Note: client_id is now optional for assets
 
       if (Object.keys(errors).length > 0) {
         // Get data for form repopulation
         const clientsResult = await db.query('SELECT id, pnumber, name FROM clients ORDER BY name');
         const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
         const brandsResult = await db.query('SELECT id, name FROM brands ORDER BY name');
-        const sales = await db.query('SELECT * FROM sales ORDER BY date_acquired DESC');
 
         return res.status(400).render('layout', {
-          title: 'Edit Printer',
+          title: 'Edit Printer Asset',
           body: 'printers/edit',
           printer: req.body,
           clients: clientsResult.rows,
           statuses: statusesResult.rows,
           brands: brandsResult.rows,
-          sales: sales.rows,
           errors: errors,
           query: req.query
         });
@@ -545,8 +512,8 @@ const printerController = {
       if (originalResult.rows.length === 0) {
         await client.query('ROLLBACK');
         return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'The requested printer could not be found',
+          title: 'Printer Asset Not Found',
+          message: 'The requested printer asset could not be found',
           error: {}
         });
       }
@@ -587,13 +554,13 @@ const printerController = {
       if (updateResult.rows.length === 0) {
         await client.query('ROLLBACK');
         return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'The requested printer could not be found',
+          title: 'Printer Asset Not Found',
+          message: 'The requested printer asset could not be found',
           error: {}
         });
       }
 
-      // Handle client assignment (printers are client-only assignments)
+      // Handle client assignment
       const newClientId = client_id && parseInt(client_id) > 0 ? parseInt(client_id) : null;
       const currentClientId = original.current_client_id;
 
@@ -617,9 +584,9 @@ const printerController = {
         INSERT INTO activity_logs (user_id, action, entity_type, entity_id, details, ip_address)
         VALUES ($1, $2, $3, $4, $5, $6)
       `, [
-        req.user?.id || null,
+        req.user.id,
         'update',
-        'printers',
+        'printer_assets',
         printerId,
         JSON.stringify({
           changes: {
@@ -635,9 +602,9 @@ const printerController = {
         req.ip
       ]);
 
-      // Log item history (using correct table name)
+      // Log asset history
       await client.query(`
-        INSERT INTO item_history (item_id, action_type, action_details, performed_by)
+        INSERT INTO asset_history (item_id, action_type, action_details, performed_by)
         VALUES ($1, $2, $3, $4)
       `, [
         printerId,
@@ -653,68 +620,22 @@ const printerController = {
             status_id: { from: original.status_id, to: parseInt(status_id) }
           }
         }),
-        req.user?.id || null
+        req.user.id
       ]);
-
-      // Log assignment changes if client changed
-      if (newClientId !== currentClientId) {
-        if (currentClientId && newClientId) {
-          // Client reassigned
-          await client.query(`
-            INSERT INTO item_history (item_id, action_type, action_details, performed_by)
-            VALUES ($1, $2, $3, $4)
-          `, [
-            printerId,
-            'reassigned',
-            JSON.stringify({
-              from_client_id: currentClientId,
-              to_client_id: newClientId
-            }),
-            req.user?.id || null
-          ]);
-        } else if (currentClientId && !newClientId) {
-          // Client unassigned
-          await client.query(`
-            INSERT INTO item_history (item_id, action_type, action_details, performed_by)
-            VALUES ($1, $2, $3, $4)
-          `, [
-            printerId,
-            'unassigned',
-            JSON.stringify({
-              from_client_id: currentClientId
-            }),
-            req.user?.id || null
-          ]);
-        } else if (!currentClientId && newClientId) {
-          // Client assigned
-          await client.query(`
-            INSERT INTO item_history (item_id, action_type, action_details, performed_by)
-            VALUES ($1, $2, $3, $4)
-          `, [
-            printerId,
-            'assigned',
-            JSON.stringify({
-              to_client_id: newClientId
-            }),
-            req.user?.id || null
-          ]);
-        }
-      }
 
       await client.query('COMMIT');
 
-      req.flash('success', 'Printer updated successfully');
+      req.flash('success', 'Printer asset updated successfully');
       res.redirect('/printers');
 
     } catch (error) {
       await client.query('ROLLBACK');
-      logger.error('Error updating printer:', error);
+      logger.error('Error updating printer asset:', error);
 
       // Get data for form repopulation
       const clientsResult = await db.query('SELECT id, pnumber, name FROM clients ORDER BY name');
       const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
       const brandsResult = await db.query('SELECT id, name FROM brands ORDER BY name');
-      const sales = await db.query('SELECT * FROM sales ORDER BY date_acquired DESC');
 
       const printerResult = await db.query(`
         SELECT i.*, ca.client_id FROM items i
@@ -724,14 +645,13 @@ const printerController = {
       `, [printerId]);
 
       res.status(500).render('layout', {
-        title: 'Edit Printer',
+        title: 'Edit Printer Asset',
         body: 'printers/edit',
         printer: printerResult.rows[0] || req.body,
         clients: clientsResult.rows,
         statuses: statusesResult.rows,
         brands: brandsResult.rows,
-        sales: sales.rows,
-        errors: { general: 'Failed to update printer. Please try again.' },
+        errors: { general: 'Failed to update printer asset. Please try again.' },
         query: req.query
       });
     } finally {
@@ -739,7 +659,7 @@ const printerController = {
     }
   },
 
-  // DELETE /printers/:id - Delete printer
+  // DELETE /assets/printers/:id - Delete printer asset
   async delete(req, res) {
     const client = await db.getClient();
 
@@ -747,7 +667,7 @@ const printerController = {
       const printerId = parseInt(req.params.id);
 
       if (isNaN(printerId)) {
-        return res.status(404).json({ error: 'Invalid printer ID' });
+        return res.status(404).json({ error: 'Invalid printer asset ID' });
       }
 
       await client.query('BEGIN');
@@ -764,7 +684,7 @@ const printerController = {
 
       if (printerResult.rows.length === 0) {
         await client.query('ROLLBACK');
-        return res.status(404).json({ error: 'Printer not found' });
+        return res.status(404).json({ error: 'Printer asset not found' });
       }
 
       const printer = printerResult.rows[0];
@@ -780,9 +700,9 @@ const printerController = {
         INSERT INTO activity_logs (user_id, action, entity_type, entity_id, details, ip_address)
         VALUES ($1, $2, $3, $4, $5, $6)
       `, [
-        req.user?.id || null,
+        req.user.id,
         'delete',
-        'printers',
+        'printer_assets',
         printerId,
         JSON.stringify({
           deleted_printer: {
@@ -799,378 +719,26 @@ const printerController = {
       await client.query('COMMIT');
 
       if (req.headers.accept && req.headers.accept.includes('application/json')) {
-        res.json({ success: true, message: 'Printer deleted successfully' });
+        res.json({ success: true, message: 'Printer asset deleted successfully' });
       } else {
-        req.flash('success', 'Printer deleted successfully');
+        req.flash('success', 'Printer asset deleted successfully');
         res.redirect('/printers');
       }
 
     } catch (error) {
       await client.query('ROLLBACK');
-      logger.error('Error deleting printer:', error);
+      logger.error('Error deleting printer asset:', error);
 
       if (req.headers.accept && req.headers.accept.includes('application/json')) {
-        res.status(500).json({ error: 'Failed to delete printer' });
+        res.status(500).json({ error: 'Failed to delete printer asset' });
       } else {
-        req.flash('error', 'Failed to delete printer');
+        req.flash('error', 'Failed to delete printer asset');
         res.redirect('/printers');
       }
     } finally {
       client.release();
-    }
-  },
-
-  // GET /printers/:id/assign - Show client assignment form
-  async showAssign(req, res) {
-    try {
-      const printerId = parseInt(req.params.id);
-
-      if (isNaN(printerId)) {
-        return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'Invalid printer ID',
-          error: {}
-        });
-      }
-
-      // Get printer details
-      const printerQuery = `
-        SELECT
-          i.*,
-          t.name as type_name,
-          ca.client_id,
-          c.name as client_name,
-          c.pnumber as client_pnumber
-        FROM items i
-        JOIN types t ON i.type_id = t.id
-        LEFT JOIN client_assets ca ON ca.item_id = i.id
-        LEFT JOIN clients c ON ca.client_id = c.id
-        WHERE i.id = $1 AND t.name = 'Printer'
-      `;
-
-      const printerResult = await db.query(printerQuery, [printerId]);
-
-      if (printerResult.rows.length === 0) {
-        return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'The requested printer could not be found',
-          error: {}
-        });
-      }
-
-      // Get available clients
-      const clientsResult = await db.query('SELECT id, pnumber, name FROM clients ORDER BY name');
-
-      res.render('layout', {
-        title: 'Assign Printer to Client',
-        body: 'printers/assign',
-        printer: printerResult.rows[0],
-        clients: clientsResult.rows
-      });
-
-    } catch (error) {
-      logger.error('Error loading printer assignment form:', error);
-      res.status(500).render('error', {
-        title: 'Error',
-        message: 'Failed to load assignment form',
-        error: process.env.NODE_ENV === 'development' ? error : {}
-      });
-    }
-  },
-
-  // POST /printers/:id/assign - Assign printer to client
-  async assign(req, res) {
-    const client = await db.getClient();
-
-    try {
-      const printerId = parseInt(req.params.id);
-      const { client_id, notes } = req.body;
-
-      if (isNaN(printerId)) {
-        return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'Invalid printer ID',
-          error: {}
-        });
-      }
-
-      if (!client_id) {
-        return res.status(400).json({
-          success: false,
-          error: 'Client ID is required'
-        });
-      }
-
-      await client.query('BEGIN');
-
-      // Get current assignment for history logging
-      const currentAssignmentResult = await client.query(
-        'SELECT client_id FROM client_assets WHERE item_id = $1',
-        [printerId]
-      );
-      const currentClientId = currentAssignmentResult.rows.length > 0 ? currentAssignmentResult.rows[0].client_id : null;
-
-      // Remove existing assignment
-      await client.query('DELETE FROM client_assets WHERE item_id = $1', [printerId]);
-
-      // Add new assignment
-      await client.query(`
-        INSERT INTO client_assets (client_id, item_id, assigned_date, notes)
-        VALUES ($1, $2, CURRENT_DATE, $3)
-      `, [client_id, printerId, notes || 'Assigned via assignment form']);
-
-      // Log the assignment history
-      if (currentClientId && currentClientId !== parseInt(client_id)) {
-        // Reassignment
-        await client.query(`
-          INSERT INTO item_history (item_id, action_type, action_details, performed_by)
-          VALUES ($1, $2, $3, $4)
-        `, [
-          printerId,
-          'reassigned',
-          JSON.stringify({
-            from_client_id: currentClientId,
-            to_client_id: parseInt(client_id),
-            notes: notes || 'Assigned via assignment form'
-          }),
-          req.user?.id || null
-        ]);
-      } else if (!currentClientId) {
-        // New assignment
-        await client.query(`
-          INSERT INTO item_history (item_id, action_type, action_details, performed_by)
-          VALUES ($1, $2, $3, $4)
-        `, [
-          printerId,
-          'assigned',
-          JSON.stringify({
-            to_client_id: parseInt(client_id),
-            notes: notes || 'Assigned via assignment form'
-          }),
-          req.user?.id || null
-        ]);
-      }
-
-      await client.query('COMMIT');
-
-      if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
-        res.json({ success: true, message: 'Printer assigned successfully' });
-      } else {
-        res.redirect(`/printers/${printerId}`);
-      }
-
-    } catch (error) {
-      await client.query('ROLLBACK');
-      logger.error('Error assigning printer:', error);
-
-      if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
-        res.status(500).json({
-          success: false,
-          error: 'Failed to assign printer'
-        });
-      } else {
-        res.status(500).render('error', {
-          title: 'Error',
-          message: 'Failed to assign printer',
-          error: process.env.NODE_ENV === 'development' ? error : {}
-        });
-      }
-    } finally {
-      client.release();
-    }
-  },
-
-  // POST /printers/:id/unassign - Unassign printer from client
-  async unassign(req, res) {
-    const client = await db.getClient();
-
-    try {
-      const printerId = parseInt(req.params.id);
-      const { reason } = req.body;
-
-      if (isNaN(printerId)) {
-        return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'Invalid printer ID',
-          error: {}
-        });
-      }
-
-      await client.query('BEGIN');
-
-      // Get current assignment for history logging
-      const currentAssignmentResult = await client.query(
-        'SELECT client_id FROM client_assets WHERE item_id = $1',
-        [printerId]
-      );
-      const currentClientId = currentAssignmentResult.rows.length > 0 ? currentAssignmentResult.rows[0].client_id : null;
-
-      // Remove client assignment
-      await client.query('DELETE FROM client_assets WHERE item_id = $1', [printerId]);
-
-      // Update status to "Available" if needed
-      const availableStatusResult = await client.query(
-        "SELECT id FROM statuses WHERE name ILIKE '%available%' OR name ILIKE '%storage%' LIMIT 1"
-      );
-
-      if (availableStatusResult.rows.length > 0) {
-        await client.query(
-          'UPDATE items SET status_id = $1 WHERE id = $2',
-          [availableStatusResult.rows[0].id, printerId]
-        );
-      }
-
-      // Log the unassignment history
-      if (currentClientId) {
-        await client.query(`
-          INSERT INTO item_history (item_id, action_type, action_details, performed_by)
-          VALUES ($1, $2, $3, $4)
-        `, [
-          printerId,
-          'unassigned',
-          JSON.stringify({
-            from_client_id: currentClientId,
-            reason: reason || 'Unassigned via form'
-          }),
-          req.user?.id || null
-        ]);
-      }
-
-      await client.query('COMMIT');
-
-      if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
-        res.json({ success: true, message: 'Printer unassigned successfully' });
-      } else {
-        res.redirect(`/printers/${printerId}`);
-      }
-
-    } catch (error) {
-      await client.query('ROLLBACK');
-      logger.error('Error unassigning printer:', error);
-
-      if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
-        res.status(500).json({
-          success: false,
-          error: 'Failed to unassign printer'
-        });
-      } else {
-        res.status(500).render('error', {
-          title: 'Error',
-          message: 'Failed to unassign printer',
-          error: process.env.NODE_ENV === 'development' ? error : {}
-        });
-      }
-    } finally {
-      client.release();
-    }
-  },
-
-  // GET /printers/:id/history - Show printer history
-  async history(req, res) {
-    try {
-      const printerId = parseInt(req.params.id);
-      const page = parseInt(req.query.page) || 1;
-      const perPage = parseInt(req.query.perPage) || 20;
-
-      if (isNaN(printerId)) {
-        return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'Invalid printer ID',
-          error: {}
-        });
-      }
-
-      // Get the printer details
-      const printerResult = await db.query(`
-        SELECT i.*, t.name as type_name, b.name as brand_name,
-               ca.client_id, c.name as client_name, c.pnumber as client_pnumber
-        FROM items i
-        JOIN types t ON i.type_id = t.id
-        LEFT JOIN brands b ON i.brand_id = b.id
-        LEFT JOIN client_assets ca ON ca.item_id = i.id
-        LEFT JOIN clients c ON ca.client_id = c.id
-        WHERE i.id = $1 AND t.name = 'Printer'
-      `, [printerId]);
-
-      if (printerResult.rows.length === 0) {
-        if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
-          return res.status(404).json({
-            success: false,
-            error: 'Printer not found'
-          });
-        }
-        return res.status(404).render('error', {
-          title: 'Printer Not Found',
-          message: 'The requested printer could not be found',
-          error: {}
-        });
-      }
-
-      const item = printerResult.rows[0];
-
-      // Get all history entries for this printer
-      const allHistoryResult = await db.query(`
-        SELECT ih.*, u.name as performed_by_name, u.name as user_name
-        FROM item_history ih
-        LEFT JOIN users u ON ih.performed_by = u.id
-        WHERE ih.item_id = $1
-        ORDER BY ih.created_at DESC
-      `, [printerId]);
-
-      // Process all history data
-      const processedAllHistory = allHistoryResult.rows.map(entry => ({
-        ...entry,
-        action_details: typeof entry.action_details === 'string'
-          ? JSON.parse(entry.action_details)
-          : entry.action_details
-      }));
-
-      const totalItems = processedAllHistory.length;
-      const totalPages = Math.ceil(totalItems / perPage);
-      const startIndex = (page - 1) * perPage;
-      const endIndex = Math.min(startIndex + perPage, totalItems);
-
-      // Paginate in-memory
-      const paginatedHistory = processedAllHistory.slice(startIndex, endIndex);
-
-      // Get all users for the filter dropdown
-      const usersResult = await db.query('SELECT id, name FROM users ORDER BY name');
-      const users = usersResult.rows;
-
-      res.cookie('historyPerPage', perPage, { maxAge: 3600000 }); // 1 hour
-
-      res.render('layout', {
-        title: `Printer History - ${item.name}`,
-        body: 'printers/history',
-        item,
-        history: processedAllHistory,
-        paginatedHistory,
-        users,
-        currentPage: page,
-        totalPages,
-        itemsPerPage: perPage,
-        totalItems,
-        startIndex,
-        endIndex,
-        messages: req.flash(),
-        user: req.session.user
-      });
-
-    } catch (error) {
-      logger.error('Error fetching printer history:', error);
-      if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
-        return res.status(500).json({
-          success: false,
-          error: 'Failed to load printer history'
-        });
-      }
-      res.status(500).render('error', {
-        title: 'Error',
-        message: 'Failed to load printer history',
-        error: process.env.NODE_ENV === 'development' ? error : {}
-      });
     }
   }
 };
 
-module.exports = printerController;
+module.exports = assetController;

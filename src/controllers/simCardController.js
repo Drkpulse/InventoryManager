@@ -67,9 +67,9 @@ exports.getAllSIMCards = async (req, res) => {
     // Get the filtered SIM cards with pagination
     const simCardsQuery = `
       SELECT s.*,
-             c.name as client_name, c.client_id as client_code,
-             p.serial_number as pda_serial,
-             st.name as status_name
+             c.name as client_name, c.pnumber as client_code,
+             st.name as status_name,
+             p.serial_number as pda_serial
       FROM sim_cards s
       LEFT JOIN clients c ON s.client_id = c.id
       LEFT JOIN pdas p ON s.pda_id = p.id
@@ -82,7 +82,7 @@ exports.getAllSIMCards = async (req, res) => {
     const simCardsResult = await db.query(simCardsQuery, params);
 
     // Get all clients and statuses for filter dropdowns
-    const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
     const statusesResult = await db.query('SELECT id, name FROM statuses ORDER BY name');
 
     res.render('layout', {
@@ -119,7 +119,7 @@ exports.getSIMCardById = async (req, res) => {
 
     const simCardResult = await db.query(`
       SELECT s.*,
-             c.name as client_name, c.client_id as client_code,
+             c.name as client_name, c.pnumber as client_code,
              p.serial_number as pda_serial, p.model as pda_model,
              st.name as status_name
       FROM sim_cards s
@@ -162,7 +162,7 @@ exports.getSIMCardById = async (req, res) => {
 exports.createSIMCardForm = async (req, res) => {
   try {
     // Get all clients, PDAs, and statuses for dropdowns
-    const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
     const pdasResult = await db.query(`
       SELECT p.id, p.serial_number, p.model, c.name as client_name
       FROM pdas p
@@ -196,7 +196,7 @@ exports.createSIMCard = async (req, res) => {
 
     const validationErrors = validateSIMCardData({ sim_number, carrier, client_id });
     if (validationErrors.length > 0) {
-      const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+      const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
       const pdasResult = await db.query(`
         SELECT p.id, p.serial_number, p.model, c.name as client_name
         FROM pdas p
@@ -224,7 +224,7 @@ exports.createSIMCard = async (req, res) => {
     );
 
     if (existingSIM.rows.length > 0) {
-      const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+      const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
       const pdasResult = await db.query(`
         SELECT p.id, p.serial_number, p.model, c.name as client_name
         FROM pdas p
@@ -267,7 +267,7 @@ exports.createSIMCard = async (req, res) => {
     res.redirect(`/simcards/${newSIMCard.id}`);
   } catch (error) {
     console.error('Error creating SIM card:', error);
-    const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
     const pdasResult = await db.query(`
       SELECT p.id, p.serial_number, p.model, c.name as client_name
       FROM pdas p
@@ -310,7 +310,7 @@ exports.updateSIMCardForm = async (req, res) => {
 
     const simCardResult = await db.query(`
       SELECT s.*,
-             c.name as client_name, c.client_id as client_code,
+             c.name as client_name, c.pnumber as client_code,
              p.serial_number as pda_serial, p.model as pda_model,
              st.name as status_name
       FROM sim_cards s
@@ -331,7 +331,7 @@ exports.updateSIMCardForm = async (req, res) => {
     }
 
     // Get all clients, PDAs, and statuses for dropdowns
-    const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+    const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
     const pdasResult = await db.query(`
       SELECT p.id, p.serial_number, p.model, c.name as client_name
       FROM pdas p
@@ -371,7 +371,7 @@ exports.updateSIMCard = async (req, res) => {
     const validationErrors = validateSIMCardData({ sim_number, carrier, client_id });
     if (validationErrors.length > 0) {
       const simCardResult = await db.query('SELECT * FROM sim_cards WHERE id = $1', [id]);
-      const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+      const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
       const pdasResult = await db.query(`
         SELECT p.id, p.serial_number, p.model, c.name as client_name
         FROM pdas p
@@ -400,7 +400,7 @@ exports.updateSIMCard = async (req, res) => {
 
     if (existingSIM.rows.length > 0) {
       const simCardResult = await db.query('SELECT * FROM sim_cards WHERE id = $1', [id]);
-      const clientsResult = await db.query('SELECT id, name, client_id FROM clients ORDER BY name');
+      const clientsResult = await db.query('SELECT id, name, pnumber FROM clients ORDER BY name');
       const pdasResult = await db.query(`
         SELECT p.id, p.serial_number, p.model, c.name as client_name
         FROM pdas p

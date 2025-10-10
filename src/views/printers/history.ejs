@@ -1,104 +1,615 @@
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
-  <div class="max-w-3xl mx-auto">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-          <i class="fas fa-history"></i> Printer History
-        </h1>
-        <p class="text-gray-600 dark:text-gray-300 mt-1">
-          History for: <strong>Printer #<%= printer.id %></strong> (<%= printer.supplier %>)
-        </p>
-      </div>
-      <a href="/printers/<%= printer.id %>" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md font-semibold transition">
-        <i class="fas fa-arrow-left mr-2"></i> Back to Printer
-      </a>
-    </div>
+<%
+  function getActionStyle(actionType) {
+    switch(actionType) {
+      case 'created':
+        return { icon: 'fas fa-plus-circle', color: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' };
+      case 'updated':
+        return { icon: 'fas fa-edit', color: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' };
+      case 'assigned':
+        return { icon: 'fas fa-building', color: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' };
+      case 'unassigned':
+        return { icon: 'fas fa-building', color: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' };
+      case 'status_changed':
+        return { icon: 'fas fa-exchange-alt', color: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' };
+      case 'maintenance':
+        return { icon: 'fas fa-tools', color: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' };
+      case 'retired':
+        return { icon: 'fas fa-archive', color: 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300' };
+      default:
+        return { icon: 'fas fa-history', color: 'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400' };
+    }
+  }
 
-    <!-- History Timeline -->
-    <% if (history.length === 0) { %>
-      <div class="flex flex-col items-center justify-center py-16 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
-        <div class="text-4xl text-blue-500 mb-2">
-          <i class="fas fa-history"></i>
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diffInMs = now - date;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    const diffInMonths = Math.floor(diffInDays / 30);
+    const diffInYears = Math.floor(diffInDays / 365);
+
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
+    if (diffInMonths < 12) return `${diffInMonths}mo ago`;
+    return `${diffInYears}y ago`;
+  }
+%>
+
+<div class="container mx-auto px-4 py-8">
+  <!-- Modern Header with Glassmorphism -->
+  <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 mb-8 animate-[fadeInUp_0.6s_ease-out]">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="space-y-3">
+        <!-- Breadcrumb with hover effects -->
+        <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+          <a href="/printers" class="group flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
+            <i class="fas fa-print group-hover:scale-110 transition-transform duration-300"></i>
+            <span>Printers</span>
+          </a>
+          <i class="fas fa-chevron-right mx-2 text-xs"></i>
+          <a href="/printers/<%= item.id %>" class="group flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
+            <span class="group-hover:underline"><%= item.asset_id || item.cep_brc %></span>
+          </a>
+          <i class="fas fa-chevron-right mx-2 text-xs"></i>
+          <span class="text-gray-700 dark:text-gray-200 font-medium">History</span>
+        </nav>
+
+        <!-- Title with gradient text -->
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Printer History
+        </h1>
+
+        <!-- Printer badges with modern styling -->
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-semibold shadow-lg">
+            <%= item.asset_id || item.cep_brc %>
+          </span>
+          <span class="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full text-sm font-semibold shadow-lg">
+            <%= item.name %>
+          </span>
+          <span class="px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full text-sm font-semibold shadow-lg">
+            <i class="fas fa-print mr-1"></i> Printer
+          </span>
         </div>
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No history found</h3>
-        <p class="text-gray-500 dark:text-gray-400">No actions have been recorded for this printer yet.</p>
       </div>
-    <% } else { %>
-      <div class="relative pl-6 before:absolute before:top-0 before:left-2 before:w-1 before:h-full before:bg-gray-200 dark:before:bg-gray-700 before:rounded">
-        <% history.forEach(entry => { %>
-          <div class="relative mb-10 group">
-            <div class="absolute -left-2 top-2 w-5 h-5 flex items-center justify-center rounded-full
-              <%= entry.action_type === 'created' ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300' :
-                  entry.action_type === 'updated' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300' :
-                  entry.action_type === 'deleted' ? 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300' :
-                  'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300' %>">
-              <% if (entry.action_type === 'created') { %>
-                <i class="fas fa-plus"></i>
-              <% } else if (entry.action_type === 'updated') { %>
-                <i class="fas fa-edit"></i>
-              <% } else if (entry.action_type === 'deleted') { %>
-                <i class="fas fa-trash"></i>
-              <% } else { %>
-                <i class="fas fa-info"></i>
-              <% } %>
+
+      <!-- Action buttons with modern hover effects -->
+      <div class="flex flex-wrap gap-3">
+        <a href="/printers/<%= item.id %>" class="group px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i> Back to Printer
+        </a>
+        <a href="/printers/<%= item.id %>/edit" class="group px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform duration-300"></i> Edit Printer
+        </a>
+        <button onclick="exportHistory()" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-download mr-2 group-hover:translate-y-1 transition-transform duration-300"></i> Export History
+        </button>
+        <button onclick="printHistory()" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+          <i class="fas fa-print mr-2 group-hover:scale-110 transition-transform duration-300"></i> Print History
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modern Filter Panel -->
+  <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 mb-8 animate-[fadeInUp_0.6s_ease-out_0.1s] opacity-0 [animation-fill-mode:forwards]">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+      <div class="group">
+        <label for="actionFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          Action Type
+        </label>
+        <select id="actionFilter" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500">
+          <option value="">All Actions</option>
+          <option value="created">Created</option>
+          <option value="updated">Updated</option>
+          <option value="assigned">Assigned to Client</option>
+          <option value="unassigned">Unassigned from Client</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="retired">Retired</option>
+        </select>
+      </div>
+
+      <div class="group">
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          Date Range
+        </label>
+        <div class="flex gap-2">
+          <input type="date" id="dateFrom" class="flex-1 px-3 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300" placeholder="From">
+          <input type="date" id="dateTo" class="flex-1 px-3 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300" placeholder="To">
+        </div>
+      </div>
+
+      <div class="group">
+        <label for="userFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          Performed By
+        </label>
+        <select id="userFilter" class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-500">
+          <option value="">All Users</option>
+          <% if (typeof users !== 'undefined') { %>
+            <% users.forEach(user => { %>
+              <option value="<%= user.id %>"><%= user.name %></option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+
+      <div class="flex gap-2">
+        <button id="applyHistoryFilters" class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg group">
+          <i class="fas fa-search mr-2 group-hover:scale-110 transition-transform duration-300"></i> Apply
+        </button>
+        <button id="resetHistoryFilters" class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg group">
+          <i class="fas fa-times mr-2 group-hover:rotate-90 transition-transform duration-300"></i> Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modern Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <%
+      const stats = [
+        {
+          icon: 'fas fa-history',
+          label: 'Total Events',
+          value: history ? history.length : 0,
+          color: 'from-blue-500 to-blue-600',
+          delay: '0s'
+        },
+        {
+          icon: 'fas fa-calendar-alt',
+          label: 'Days in System',
+          value: history && history.length > 0 ? Math.ceil((new Date() - new Date(history[history.length - 1].created_at)) / (1000 * 60 * 60 * 24)) : 0,
+          color: 'from-green-500 to-green-600',
+          delay: '0.1s'
+        },
+        {
+          icon: 'fas fa-user-friends',
+          label: 'Contributors',
+          value: history ? [...new Set(history.map(h => h.user_name).filter(Boolean))].length : 0,
+          color: 'from-purple-500 to-purple-600',
+          delay: '0.2s'
+        },
+        {
+          icon: 'fas fa-building',
+          label: 'Client Changes',
+          value: history ? history.filter(h => h.action_type === 'assigned' || h.action_type === 'unassigned').length : 0,
+          color: 'from-yellow-500 to-orange-500',
+          delay: '0.3s'
+        }
+      ];
+    %>
+
+    <% stats.forEach((stat) => { %>
+      <div class="group bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 hover:scale-105 transition-all duration-500 hover:shadow-2xl">
+        <div class="flex items-center space-x-4">
+          <div class="p-3 bg-gradient-to-r <%= stat.color %> rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+            <i class="<%= stat.icon %> text-2xl text-white"></i>
+          </div>
+          <div>
+            <div class="text-3xl font-bold bg-gradient-to-r <%= stat.color %> bg-clip-text text-transparent">
+              <%= stat.value %>
             </div>
-            <div class="ml-8">
-              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-1">
-                <h4 class="font-semibold text-gray-800 dark:text-gray-100 text-base">
-                  <%= entry.action_type.charAt(0).toUpperCase() + entry.action_type.slice(1) %>
-                </h4>
-                <span class="text-xs text-gray-500 dark:text-gray-400">
-                  <i class="fas fa-calendar"></i>
-                  <%= new Date(entry.created_at).toLocaleString() %>
-                </span>
-              </div>
-              <div class="pl-1">
-                <% if (entry.performed_by_name) { %>
-                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                    <strong>Performed by:</strong> <%= entry.performed_by_name %>
-                  </p>
-                <% } %>
-                <% if (entry.action_details) { %>
-                  <div>
-                    <% if (entry.action_type === 'created') { %>
-                      <p class="text-gray-700 dark:text-gray-200 mb-2">Printer created with the following information:</p>
-                      <ul class="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-200 text-sm">
-                        <% if (entry.action_details.supplier) { %>
-                          <li><strong>Supplier:</strong> <%= entry.action_details.supplier %></li>
-                        <% } %>
-                        <% if (entry.action_details.client_id) { %>
-                          <li><strong>Client ID:</strong> <%= entry.action_details.client_id %></li>
-                        <% } %>
-                        <% if (entry.action_details.employee_id) { %>
-                          <li><strong>Employee ID:</strong> <%= entry.action_details.employee_id %></li>
-                        <% } %>
-                      </ul>
-                    <% } else if (entry.action_type === 'updated' && entry.action_details.changes) { %>
-                      <p class="text-gray-700 dark:text-gray-200 mb-2">The following changes were made:</p>
-                      <ul class="list-disc pl-6 space-y-1 text-gray-700 dark:text-gray-200 text-sm">
-                        <% Object.keys(entry.action_details.changes).forEach(field => { %>
-                          <% const change = entry.action_details.changes[field]; %>
-                          <li>
-                            <strong><%= field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>:</strong>
-                            <span class="text-red-600 dark:text-red-300 line-through ml-1">"<%= change.from || 'empty' %>"</span>
-                            <i class="fas fa-arrow-right mx-1 text-gray-400"></i>
-                            <span class="text-green-700 dark:text-green-300">"<%= change.to || 'empty' %>"</span>
-                          </li>
-                        <% }); %>
-                      </ul>
-                    <% } else if (entry.action_type === 'deleted') { %>
-                      <p class="text-gray-700 dark:text-gray-200 mb-2">Printer was deleted</p>
-                    <% } else { %>
-                      <pre class="bg-gray-100 dark:bg-gray-900 rounded p-3 text-xs text-gray-700 dark:text-gray-200 overflow-x-auto"><%= JSON.stringify(entry.action_details, null, 2) %></pre>
-                    <% } %>
-                  </div>
-                <% } %>
-              </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">
+              <%= stat.label %>
             </div>
           </div>
-        <% }); %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <!-- Modern Timeline -->
+  <div class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
+    <% if (typeof paginatedHistory !== 'undefined' && paginatedHistory && paginatedHistory.length > 0) { %>
+      <div class="p-6">
+        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="fas fa-timeline text-blue-500 text-lg"></i>
+          Event Timeline
+          <span class="text-xs font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+            <%= paginatedHistory.length %> events
+          </span>
+        </h2>
+
+        <div class="relative">
+          <!-- Compact timeline line -->
+          <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400 to-purple-400 opacity-60"></div>
+
+          <% paginatedHistory.forEach((entry, index) => { %>
+            <%
+              const actionStyle = getActionStyle(entry.action_type);
+              const entryDate = new Date(entry.created_at);
+              const timeAgo = getTimeAgo(entryDate);
+              const animationDelay = index * 0.05;
+            %>
+
+            <div class="relative mb-3 animate-[slideInLeft_0.4s_ease-out_<%= animationDelay %>s] group">
+              <!-- Compact timeline marker -->
+              <div class="absolute left-2.5 w-3 h-3 bg-white dark:bg-gray-800 rounded-full border-2 <%= actionStyle.color.replace('bg-', 'border-').replace('-100', '-400').replace('-900', '-500') %> shadow-sm group-hover:scale-125 transition-all duration-200 z-10">
+              </div>
+
+              <!-- Compact content card -->
+              <div class="ml-8 bg-white/80 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200/60 dark:border-gray-700 overflow-hidden hover:shadow-md transition-all duration-200 group-hover:translate-x-1">
+                <!-- Single line header with all info -->
+                <div class="px-4 py-3">
+                  <div class="flex items-center justify-between gap-3">
+                    <!-- Action info -->
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                      <span class="inline-flex items-center gap-1 px-2 py-1 <%= actionStyle.color %> rounded-md text-xs font-medium">
+                        <i class="<%= actionStyle.icon %> text-xs"></i>
+                        <%= entry.action_type.charAt(0).toUpperCase() + entry.action_type.slice(1) %>
+                      </span>
+
+                      <!-- Show only the most relevant changed information -->
+                      <% if (entry.action_details && Object.keys(entry.action_details).length > 0) { %>
+                        <span class="text-xs text-gray-600 dark:text-gray-400 truncate">
+                          <%
+                            // Filter to show only the most important changes for printers
+                            const importantKeys = ['assigned_to', 'client_id', 'status', 'location', 'condition', 'name', 'warranty_months', 'warranty_end_date', 'warranty_start_date', 'date_assigned', 'receipt'];
+                            const relevantChanges = Object.entries(entry.action_details).filter(([key, value]) =>
+                              importantKeys.includes(key) && value !== null && value !== undefined && key !== 'timestamp'
+                            );
+
+                            if (relevantChanges.length > 0) {
+                              const [key, value] = relevantChanges[0];
+                              const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                              // If value is an object with 'from' and 'to', show both
+                              if (value && typeof value === 'object' && ('from' in value || 'to' in value)) {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400 truncate">
+                              <span class="font-semibold text-gray-800 dark:text-gray-200"><%= displayKey %></span>:
+                              <span class="inline-flex items-center gap-1">
+                                <span class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[11px]">
+                                  <%= value.from !== undefined && value.from !== null ? value.from : '-' %>
+                                </span>
+                                <i class="fas fa-arrow-right text-gray-400 text-[10px]"></i>
+                                <span class="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-[11px] font-semibold">
+                                  <%= value.to !== undefined && value.to !== null ? value.to : '-' %>
+                                </span>
+                              </span>
+                            </span>
+                          <%
+                              } else {
+                                let displayValue = value;
+                                if (typeof value === 'object') {
+                                  displayValue = value.name || value.toString();
+                                }
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400 truncate">
+                              <span class="font-semibold text-gray-800 dark:text-gray-200"><%= displayKey %></span>:
+                              <span class="font-medium text-gray-800 dark:text-gray-200"><%= displayValue %></span>
+                            </span>
+                          <%
+                              }
+                            } else if (entry.action_type === 'created') {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Printer created in system</span>
+                          <%
+                            } else if (entry.action_type === 'updated') {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Printer details updated</span>
+                          <%
+                            } else if (entry.action_type === 'assigned') {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Assigned to client</span>
+                          <%
+                            } else if (entry.action_type === 'unassigned') {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Unassigned from client</span>
+                          <%
+                            } else if (entry.action_type === 'status_changed') {
+                          %>
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Status modified</span>
+                          <%
+                            }
+                          %>
+                        </span>
+                      <% } %>
+                    </div>
+
+                    <!-- Time and user info -->
+                    <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                      <% if (entry.performed_by_name) { %>
+                        <span class="font-medium text-gray-700 dark:text-gray-300"><%= entry.performed_by_name %></span>
+                        <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
+                      <% } %>
+                      <span class="flex items-center gap-1">
+                        <i class="fas fa-clock text-xs"></i>
+                        <%= timeAgo %>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Expandable details for complex changes (only if needed) -->
+                  <% if (entry.action_details && Object.keys(entry.action_details).length > 2) { %>
+                    <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 hidden group-hover:block">
+                      <div class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                        <% Object.entries(entry.action_details).forEach(([key, value]) => { %>
+                          <% if (key !== 'timestamp' && value !== null && value !== undefined) { %>
+                            <div class="flex gap-2">
+                              <span class="font-medium capitalize text-gray-700 dark:text-gray-300 min-w-0"><%= key.replace(/_/g, ' ') %>:</span>
+                              <span class="truncate">
+                                <% if (typeof value === 'object') { %>
+                                  <%= value.name || JSON.stringify(value) %>
+                                <% } else { %>
+                                  <%= value %>
+                                <% } %>
+                              </span>
+                            </div>
+                          <% } %>
+                        <% }) %>
+                      </div>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- Compact Pagination -->
+      <div class="border-t border-gray-200/50 dark:border-gray-600/50 bg-gray-50/50 dark:bg-gray-800/50 px-6 py-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div class="text-xs text-gray-600 dark:text-gray-400">
+            <span><%= typeof startIndex !== 'undefined' ? startIndex + 1 : 1 %>-<%= typeof endIndex !== 'undefined' ? endIndex : totalItems %> of <%= totalItems %></span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <% const currentPageValue = typeof currentPage !== 'undefined' ? currentPage : 1; %>
+            <% const totalPagesValue = typeof totalPages !== 'undefined' ? totalPages : 1; %>
+            <% const itemsPerPageValue = typeof itemsPerPage !== 'undefined' ? itemsPerPage : 20; %>
+
+            <% if (totalPagesValue > 1) { %>
+              <div class="flex items-center gap-1">
+                <% if (currentPageValue > 1) { %>
+                  <a href="?page=<%= currentPageValue - 1 %>&perPage=<%= itemsPerPageValue %>" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded transition-colors">
+                    <i class="fas fa-chevron-left text-xs"></i>
+                  </a>
+                <% } %>
+
+                <span class="px-3 py-1 bg-blue-500 text-white rounded text-xs font-medium">
+                  <%= currentPageValue %>
+                </span>
+
+                <% if (currentPageValue < totalPagesValue) { %>
+                  <a href="?page=<%= currentPageValue + 1 %>&perPage=<%= itemsPerPageValue %>" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded transition-colors">
+                    <i class="fas fa-chevron-right text-xs"></i>
+                  </a>
+                <% } %>
+              </div>
+            <% } %>
+
+            <select id="historyPerPage" class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs text-gray-900 dark:text-gray-100">
+              <option value="10" <%= itemsPerPageValue == 10 ? 'selected' : '' %>>10</option>
+              <option value="20" <%= itemsPerPageValue == 20 ? 'selected' : '' %>>20</option>
+              <option value="50" <%= itemsPerPageValue == 50 ? 'selected' : '' %>>50</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- Compact empty state -->
+      <div class="flex flex-col items-center justify-center py-12 px-6">
+        <div class="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mb-4">
+          <i class="fas fa-history text-xl text-white"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No History Found</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center">
+          No events have been recorded for this printer yet.
+        </p>
       </div>
     <% } %>
   </div>
+
+  <!-- Enhanced CSS with modern animations -->
+  <style>
+  /* Custom animations for modern feel */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Glassmorphism effects */
+  .backdrop-blur-lg {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* Custom scrollbar for better UX */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #2563eb, #7c3aed);
+  }
+
+  /* Responsive design improvements */
+  @media (max-width: 768px) {
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    .ml-20 {
+      margin-left: 3rem;
+    }
+
+    .absolute.left-8 {
+      left: 1rem;
+    }
+
+    .absolute.left-4 {
+      left: 0.5rem;
+    }
+  }
+  </style>
+
+  <!-- Enhanced JavaScript with smooth interactions -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add loading states to buttons
+    function addLoadingState(button, text = 'Loading...') {
+      const originalText = button.innerHTML;
+      button.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${text}`;
+      button.disabled = true;
+
+      return () => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+      };
+    }
+
+    // Enhanced pagination handling
+    const historyPerPageSelect = document.getElementById('historyPerPage');
+    if (historyPerPageSelect) {
+      historyPerPageSelect.addEventListener('change', function() {
+        const removeLoading = addLoadingState(this, 'Updating...');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('perPage', this.value);
+        urlParams.delete('page');
+
+        setTimeout(() => {
+          window.location.search = urlParams.toString();
+        }, 300);
+      });
+    }
+
+    // Enhanced filter functionality with loading states
+    const applyFiltersBtn = document.getElementById('applyHistoryFilters');
+    const resetFiltersBtn = document.getElementById('resetHistoryFilters');
+
+    if (applyFiltersBtn) {
+      applyFiltersBtn.addEventListener('click', function() {
+        const removeLoading = addLoadingState(this, 'Applying Filters...');
+
+        setTimeout(() => {
+          const actionFilter = document.getElementById('actionFilter').value;
+          const dateFrom = document.getElementById('dateFrom').value;
+          const dateTo = document.getElementById('dateTo').value;
+          const userFilter = document.getElementById('userFilter').value;
+
+          const params = new URLSearchParams();
+          if (actionFilter) params.append('action', actionFilter);
+          if (dateFrom) params.append('dateFrom', dateFrom);
+          if (dateTo) params.append('dateTo', dateTo);
+          if (userFilter) params.append('user', userFilter);
+
+          window.location.search = params.toString();
+        }, 300);
+      });
+    }
+
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener('click', function() {
+        const removeLoading = addLoadingState(this, 'Resetting...');
+
+        setTimeout(() => {
+          window.location.href = window.location.pathname;
+        }, 300);
+      });
+    }
+
+    // Add intersection observer for scroll animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationPlayState = 'running';
+        }
+      });
+    }, observerOptions);
+
+    // Observe all animated elements
+    document.querySelectorAll('[class*="animate-"]').forEach(el => {
+      observer.observe(el);
+    });
+  });
+
+  // Enhanced export functionality with progress indication
+  function exportHistory() {
+    const exportBtn = event.target.closest('button');
+    const originalText = exportBtn.innerHTML;
+
+    exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Exporting...';
+    exportBtn.disabled = true;
+
+    const params = new URLSearchParams(window.location.search);
+    params.append('export', 'csv');
+    params.append('export_timestamp', new Date().toISOString());
+
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = `${window.location.pathname}/export?${params.toString()}`;
+    document.body.appendChild(iframe);
+
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+      exportBtn.innerHTML = originalText;
+      exportBtn.disabled = false;
+
+      // Show success notification
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-[fadeInUp_0.3s_ease-out]';
+      notification.innerHTML = '<i class="fas fa-check mr-2"></i>Export completed successfully!';
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }, 2000);
+  }
+
+  // Enhanced print functionality
+  function printHistory() {
+    const printBtn = event.target.closest('button');
+    const originalText = printBtn.innerHTML;
+
+    printBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Preparing...';
+    printBtn.disabled = true;
+
+    setTimeout(() => {
+      window.print();
+      printBtn.innerHTML = originalText;
+      printBtn.disabled = false;
+    }, 500);
+  }
+  </script>
 </div>

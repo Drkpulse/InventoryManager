@@ -1,104 +1,293 @@
-<div class="container mx-auto px-4 py-8">
-  <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-8">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-1">
-          <i class="fas fa-edit"></i> Edit Client
-        </h1>
-        <p class="text-gray-500 dark:text-gray-400">Update client information for: <strong><%= client.name %></strong></p>
-      </div>
-      <div>
-        <a href="/clients/<%= client.id %>" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition">
-          <i class="fas fa-arrow-left mr-2"></i> Back to Client
-        </a>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Edit Client</h1>
+          <p class="mt-2 text-gray-600 dark:text-gray-400">
+            Update information for client #<%= client.pnumber %>
+          </p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <a href="/clients/<%= client.id %>" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+            <i class="fas fa-eye mr-2"></i> View Client
+          </a>
+          <a href="/clients" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Clients
+          </a>
+        </div>
       </div>
     </div>
 
-    <% if (locals.errors && errors.length > 0) { %>
-      <div class="mb-6 flex flex-col gap-2 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
-        <div class="flex items-center gap-2">
-          <i class="fas fa-exclamation-triangle"></i>
-          <strong>Please fix the following errors:</strong>
-        </div>
-        <ul class="list-disc pl-6">
-          <% errors.forEach(error => { %>
-            <li><%= error %></li>
-          <% }); %>
-        </ul>
+    <!-- Form Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Client Information</h2>
       </div>
-    <% } %>
 
-    <form method="POST" action="/clients/<%= client.id %>" novalidate class="space-y-8">
-      <div>
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2 mb-4">
-          <i class="fas fa-info-circle"></i> Client Information
-        </h3>
+      <form id="clientForm" action="/clients/<%= client.id %>" method="POST" class="p-6 space-y-6">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <!-- Error Display -->
+        <% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-circle text-red-400"></i>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800 dark:text-red-200">There were errors with your submission</h3>
+                <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                  <ul class="list-disc pl-5 space-y-1">
+                    <% errors.forEach(error => { %>
+                      <li><%= error %></li>
+                    <% }); %>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Form Fields -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label for="client_id" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Client ID <span class="text-red-500">*</span></label>
-            <input
-              type="text"
-              id="client_id"
-              name="client_id"
-              value="<%= client.client_id %>"
-              required
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-            <div class="text-xs text-red-600 dark:text-red-400 mt-1 hidden">Please provide a valid client ID.</div>
-            <small class="text-gray-500 dark:text-gray-400">Unique identifier for the client (e.g., CLI001, CLIENT-A)</small>
+          <!-- Client Name -->
+          <div class="md:col-span-2">
+            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Client Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   id="name"
+                   name="name"
+                   value="<%= typeof formData !== 'undefined' && formData.name ? formData.name : client.name %>"
+                   required
+                   maxlength="255"
+                   class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                   placeholder="Enter client name">
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Full name of the client organization</p>
           </div>
-          <div>
-            <label for="name" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Client Name <span class="text-red-500">*</span></label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value="<%= client.name %>"
-              required
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-            <div class="text-xs text-red-600 dark:text-red-400 mt-1 hidden">Please provide a client name.</div>
-          </div>
-        </div>
-        <div class="mt-6">
-          <label for="description" class="block font-semibold mb-1 text-gray-700 dark:text-gray-200">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            rows="4"
-            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          ><%= client.description || '' %></textarea>
-          <small class="text-gray-500 dark:text-gray-400">Optional description or notes about this client</small>
-        </div>
-      </div>
 
-      <div class="flex gap-2 mt-4">
-        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
-          <i class="fas fa-save"></i> Update Client
-        </button>
-        <a href="/clients/<%= client.id %>" class="px-6 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold rounded-md transition flex items-center gap-2">
-          <i class="fas fa-times"></i> Cancel
-        </a>
-      </div>
-    </form>
+          <!-- Client Number -->
+          <div>
+            <label for="pnumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Client Number <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   id="pnumber"
+                   name="pnumber"
+                   value="<%= typeof formData !== 'undefined' && formData.pnumber ? formData.pnumber : client.pnumber %>"
+                   required
+                   maxlength="255"
+                   data-original-pnumber="<%= client.pnumber %>"
+                   data-client-id="<%= client.id %>"
+                   class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                   placeholder="e.g., CL001, CLIENT-001">
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Unique identifier for this client</p>
+            <div id="pnumberCheck" class="mt-1 text-sm hidden">
+              <span id="pnumberCheckText"></span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="md:col-span-2">
+            <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Description
+            </label>
+            <textarea id="description"
+                      name="description"
+                      rows="4"
+                      maxlength="1000"
+                      class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Optional description or notes about this client"><%= typeof formData !== 'undefined' && formData.description ? formData.description : (client.description || '') %></textarea>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Additional information about the client (optional)</p>
+          </div>
+        </div>
+
+        <!-- Asset Summary (if has assets) -->
+        <% if (client.total_assets && client.total_assets > 0) { %>
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-400"></i>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">Client has assigned assets</h3>
+                <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                  <p>This client currently has <%= client.total_assets %> asset<%= client.total_assets !== 1 ? 's' : '' %> assigned. Changes to the client number will be reflected in all associated assets.</p>
+                  <div class="mt-2 flex flex-wrap gap-4">
+                    <% if (client.printer_count > 0) { %>
+                      <span class="flex items-center gap-1">
+                        <i class="fas fa-print"></i>
+                        <%= client.printer_count %> printer<%= client.printer_count !== 1 ? 's' : '' %>
+                      </span>
+                    <% } %>
+                    <% if (client.pda_count > 0) { %>
+                      <span class="flex items-center gap-1">
+                        <i class="fas fa-mobile-alt"></i>
+                        <%= client.pda_count %> PDA<%= client.pda_count !== 1 ? 's' : '' %>
+                      </span>
+                    <% } %>
+                    <% if (client.sim_card_count > 0) { %>
+                      <span class="flex items-center gap-1">
+                        <i class="fas fa-sim-card"></i>
+                        <%= client.sim_card_count %> SIM card<%= client.sim_card_count !== 1 ? 's' : '' %>
+                      </span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Form Actions -->
+        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <a href="/clients/<%= client.id %>" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+            <i class="fas fa-times mr-2"></i> Cancel
+          </a>
+          <button type="submit"
+                  id="submitBtn"
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed rounded-md transition-colors duration-200">
+            <i class="fas fa-save mr-2"></i> Update Client
+          </button>
+        </div>
+      </form>
+    </div>
+
   </div>
 </div>
 
 <script>
-  // Simple client-side validation for required fields (optional, for Tailwind)
-  document.querySelector('form').addEventListener('submit', function(e) {
-    let valid = true;
-    ['client_id', 'name'].forEach(function(id) {
-      const input = document.getElementById(id);
-      if (!input.value.trim()) {
-        input.classList.add('border-red-500', 'focus:ring-red-500');
-        input.nextElementSibling.classList.remove('hidden');
-        valid = false;
-      } else {
-        input.classList.remove('border-red-500', 'focus:ring-red-500');
-        input.nextElementSibling.classList.add('hidden');
-      }
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('clientForm');
+    const pnumberInput = document.getElementById('pnumber');
+    const submitBtn = document.getElementById('submitBtn');
+    const pnumberCheck = document.getElementById('pnumberCheck');
+    const pnumberCheckText = document.getElementById('pnumberCheckText');
+    const originalPnumber = pnumberInput.dataset.originalPnumber;
+    const clientId = pnumberInput.dataset.clientId;
+
+    let pnumberCheckTimeout;
+    let isValidPnumber = true;
+
+
+
+    // Client number validation
+    function checkPnumberAvailability(pnumber) {
+        if (!pnumber || pnumber.trim().length === 0) {
+            pnumberCheck.classList.add('hidden');
+            isValidPnumber = true;
+            updateSubmitButton();
+            return;
+        }
+
+        // If unchanged from original, it's valid
+        if (pnumber.trim() === originalPnumber) {
+            pnumberCheck.classList.add('hidden');
+            isValidPnumber = true;
+            updateSubmitButton();
+            return;
+        }
+
+        // Show checking state
+        pnumberCheck.classList.remove('hidden');
+        pnumberCheckText.className = 'text-blue-600 dark:text-blue-400';
+        pnumberCheckText.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Checking availability...';
+
+        fetch(`/api/clients/check-pnumber/${encodeURIComponent(pnumber.trim())}?excludeId=${clientId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                pnumberCheckText.className = 'text-green-600 dark:text-green-400';
+                pnumberCheckText.innerHTML = '<i class="fas fa-check mr-1"></i> Client number is available';
+                isValidPnumber = true;
+            } else {
+                pnumberCheckText.className = 'text-red-600 dark:text-red-400';
+                pnumberCheckText.innerHTML = '<i class="fas fa-times mr-1"></i> Client number is already taken';
+                isValidPnumber = false;
+            }
+            updateSubmitButton();
+        })
+        .catch(error => {
+            console.error('Error checking client number:', error);
+            pnumberCheckText.className = 'text-gray-600 dark:text-gray-400';
+            pnumberCheckText.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> Unable to check availability';
+            isValidPnumber = true; // Allow submission if check fails
+            updateSubmitButton();
+        });
+    }
+
+    // Update submit button state
+    function updateSubmitButton() {
+        if (isValidPnumber) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('disabled:bg-blue-400', 'disabled:cursor-not-allowed');
+            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('disabled:bg-blue-400', 'disabled:cursor-not-allowed');
+            submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        }
+    }
+
+    // Debounced client number checking
+    pnumberInput.addEventListener('input', function() {
+        clearTimeout(pnumberCheckTimeout);
+        pnumberCheckTimeout = setTimeout(() => {
+            checkPnumberAvailability(this.value);
+        }, 500);
     });
-    if (!valid) e.preventDefault();
-  });
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        if (!isValidPnumber) {
+            e.preventDefault();
+            pnumberInput.focus();
+            return false;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Updating Client...';
+    });
+
+    // Input field enhancements
+    const inputs = form.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        // Add focus/blur effects
+        input.addEventListener('focus', function() {
+            this.classList.add('ring-2', 'ring-blue-500', 'border-blue-500');
+        });
+
+        input.addEventListener('blur', function() {
+            this.classList.remove('ring-2', 'ring-blue-500', 'border-blue-500');
+        });
+
+        // Character count for description
+        if (input.name === 'description') {
+            const maxLength = parseInt(input.getAttribute('maxlength'));
+            const counter = document.createElement('div');
+            counter.className = 'text-xs text-gray-500 dark:text-gray-400 mt-1 text-right';
+            counter.id = 'descriptionCounter';
+            input.parentNode.appendChild(counter);
+
+            function updateCounter() {
+                const remaining = maxLength - input.value.length;
+                counter.textContent = `${remaining} characters remaining`;
+                if (remaining < 50) {
+                    counter.classList.add('text-yellow-600', 'dark:text-yellow-400');
+                    counter.classList.remove('text-gray-500', 'dark:text-gray-400');
+                } else {
+                    counter.classList.remove('text-yellow-600', 'dark:text-yellow-400');
+                    counter.classList.add('text-gray-500', 'dark:text-gray-400');
+                }
+            }
+
+            input.addEventListener('input', updateCounter);
+            updateCounter();
+        }
+    });
+});
 </script>

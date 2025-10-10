@@ -1,176 +1,322 @@
-<section class="min-h-screen bg-gray-50 dark:bg-gray-900 p-8 text-gray-900 dark:text-white animate-fadeIn">
-  <!-- Header Section -->
-  <div class="flex justify-between items-center mb-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
+<div class="container mx-auto px-4 py-8">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
     <div>
-      <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-900 to-blue-700 bg-clip-text text-transparent flex items-center gap-3">
-        <i class="fas fa-print"></i> Printer Management
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+        <i class="fas fa-print"></i> Printer Assets Management
       </h1>
-      <p class="text-gray-500 dark:text-gray-300 mt-2 text-lg">Manage and track all network printers</p>
     </div>
-    <div class="flex gap-4 items-center">
-      <a href="/printers/new" class="bg-gradient-to-r from-indigo-900 to-blue-700 text-white border-none px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition hover:-translate-y-0.5 hover:shadow-xl">
-        <i class="fas fa-plus"></i> Add New Printer
+    <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+      <a href="/printers/new" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-plus mr-2 group-hover:scale-110 transition-transform duration-300"></i> Add New Printer
       </a>
+      <button id="exportPrintersBtn" type="button" class="group px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <i class="fas fa-download mr-2 group-hover:translate-y-1 transition-transform duration-300"></i> Export Printer List
+      </button>
     </div>
   </div>
 
-  <% if (locals.messages && messages.success) { %>
-    <div class="bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 p-4 rounded-xl mb-6 flex items-center gap-3">
-      <i class="fas fa-check-circle text-green-600 dark:text-green-400"></i> <%= messages.success %>
+  <!-- Error/Success Messages -->
+  <% if (query && query.error) { %>
+    <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
+      <div class="flex items-center gap-2 text-red-800 dark:text-red-200">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span class="font-semibold">Error:</span>
+        <% if (query.error === 'printer_not_found') { %>
+          Printer not found.
+        <% } else { %>
+          <%= query.error %>
+        <% } %>
+      </div>
     </div>
   <% } %>
 
-    <!-- Table Controls -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-      <span class="text-gray-700 dark:text-gray-200 text-sm">
-        Showing <%= printers.length %> of <%= totalPrinters %> printers
-      </span>
-      <div class="flex flex-wrap gap-2">
-        <select class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          onchange="filterPrinters('client', this.value)">
-          <option value="">All Clients</option>
-          <% clients.forEach(client => { %>
-            <option value="<%= client.id %>" <%= filters.client == client.id ? 'selected' : '' %>>
-              <%= client.name %>
-            </option>
-          <% }); %>
-        </select>
+    <% if (query && query.deleted === 'true') { %>
+    <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+      <div class="flex items-center gap-2 text-green-800 dark:text-green-200">
+        <i class="fas fa-check-circle"></i>
+        <span class="font-semibold">Success:</span> Printer deleted successfully.
       </div>
     </div>
+  <% } %>
 
-    <!-- Table -->
-    <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
-      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead class="bg-gray-50 dark:bg-gray-900">
-          <tr>
-            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Supplier</th>
-            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Model</th>
-            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Client</th>
-            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Cost</th>
-            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Status</th>
-            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Employee</th>
-            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Created</th>
-            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-          <% if (printers.length === 0) { %>
-            <tr>
-              <td colspan="8" class="text-center py-12">
-                <div class="flex flex-col items-center justify-center py-8 text-center border border-dashed border-blue-400 rounded bg-blue-50 dark:bg-blue-950">
-                  <div class="text-4xl text-blue-500 mb-2">
-                    <i class="fas fa-print"></i>
-                  </div>
-                  <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No printers found</h3>
-                  <p class="text-gray-500 dark:text-gray-400">Start by adding your first printer.</p>
-                  <a href="/printers/new" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition flex items-center gap-2">
-                    <i class="fas fa-plus"></i> Add New Printer
-                  </a>
-                </div>
-              </td>
-            </tr>
-          <% } else { %>
-            <% printers.forEach(printer => { %>
-              <tr>
-                <td class="px-4 py-3 text-gray-800 dark:text-gray-100"><%= printer.supplier %></td>
-                <td class="px-4 py-3 text-gray-800 dark:text-gray-100"><%= printer.model || '-' %></td>
-                <td class="px-4 py-3">
-                  <a href="/clients/<%= printer.client_id %>" class="text-purple-700 dark:text-purple-300 hover:underline">
-                    <%= printer.client_name %> (<%= printer.client_code %>)
-                  </a>
-                </td>
-                <td class="px-4 py-3">
-                  <% if (printer.cost) { %>
-                    <span class="text-gray-800 dark:text-gray-100">€<%= parseFloat(printer.cost).toFixed(2) %></span>
-                  <% } else { %>
-                    <span class="text-gray-400 dark:text-gray-500 italic">-</span>
-                  <% } %>
-                </td>
-                <td class="px-4 py-3">
-                  <% if (printer.status_name) { %>
-                    <span class="inline-block px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-semibold"><%= printer.status_name %></span>
-                  <% } else { %>
-                    <span class="text-gray-400 dark:text-gray-500 italic">-</span>
-                  <% } %>
-                </td>
-                <td class="px-4 py-3">
-                  <% if (printer.employee_name) { %>
-                    <span class="text-gray-800 dark:text-gray-100"><%= printer.employee_name %></span>
-                  <% } else { %>
-                    <span class="text-gray-400 dark:text-gray-500 italic">Unassigned</span>
-                  <% } %>
-                </td>
-                <td class="px-4 py-3 text-gray-700 dark:text-gray-200"><%= new Date(printer.created_at).toLocaleDateString() %></td>
-                <td class="px-4 py-3">
-                  <div class="flex gap-2">
-                    <a href="/printers/<%= printer.id %>" class="inline-flex items-center px-3 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 rounded-md transition" title="View">
-                      <i class="fas fa-eye"></i>
-                    </a>
-                    <a href="/printers/<%= printer.id %>/edit" class="inline-flex items-center px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900 hover:bg-yellow-200 dark:hover:bg-yellow-800 text-yellow-700 dark:text-yellow-200 rounded-md transition" title="Edit">
-                      <i class="fas fa-edit"></i>
-                    </a>
-                    <button class="inline-flex items-center px-3 py-1.5 bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-200 rounded-md transition" onclick="confirmDelete(<%= printer.id %>)" title="Delete">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            <% }); %>
-          <% } %>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination -->
-    <% if (totalPages > 1) { %>
-      <div class="flex justify-center mt-8">
-        <nav aria-label="Page navigation">
-          <ul class="inline-flex items-center -space-x-px">
-            <% if (currentPage > 1) { %>
-              <li>
-                <a class="px-3 py-1 rounded-l bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 transition" href="?page=<%= currentPage - 1 %>">
-                  <i class="fas fa-chevron-left"></i> Previous
-                </a>
-              </li>
-            <% } %>
-            <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
-              <li>
-                <a class="px-3 py-1 border border-gray-300 dark:border-gray-700 <%= i === currentPage ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700' %> transition" href="?page=<%= i %>">
-                  <%= i %>
-                </a>
-              </li>
-            <% } %>
-            <% if (currentPage < totalPages) { %>
-              <li>
-                <a class="px-3 py-1 rounded-r bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 transition" href="?page=<%= currentPage + 1 %>">
-                  Next <i class="fas fa-chevron-right"></i>
-                </a>
-              </li>
-            <% } %>
-          </ul>
-        </nav>
+  <!-- Search Bar -->
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+        <i class="fas fa-search text-blue-600 dark:text-blue-300"></i>
       </div>
-    <% } %>
+      <div>
+        <label class="block font-semibold text-gray-700 dark:text-gray-200">Search Printer Assets</label>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Find printers by ID, name, brand, model, or client</p>
+      </div>
+    </div>
+    <div class="relative">
+      <input type="text" id="printerSearch" placeholder="Search by Asset ID, Name, Brand, Model, or Client..." autocomplete="off"
+        class="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        value="<%= currentFilters && currentFilters.q || '' %>">
+      <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-blue-500 dark:text-blue-400"></i>
+    </div>
+  </div>
 
-    <script>
-      function filterPrinters(type, value) {
-        const url = new URL(window.location);
-        if (value) {
-          url.searchParams.set(type, value);
+  <!-- Advanced Filters Panel -->
+  <div class="mb-6 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow">
+    <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" id="filtersToggle">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-filter"></i>
+        <h3 class="font-semibold text-gray-700 dark:text-gray-200">Advanced Filters</h3>
+        <span class="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold" id="filterBadge">0</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500 dark:text-gray-400" id="appliedFiltersPreview">No filters applied</span>
+        <i class="fas fa-chevron-down toggle-icon"></i>
+      </div>
+    </div>
+    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 hidden" id="filtersContent">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+        <div>
+          <label for="clientFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Client</label>
+          <select id="clientFilter" name="client_id"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <option value="">All Clients</option>
+            <% if (typeof clients !== 'undefined') { %>
+              <% clients.forEach(client => { %>
+                <option value="<%= client.id %>" <%= (currentFilters && currentFilters.client_id == client.id) ? 'selected' : '' %>>
+                  <%= client.name %> (<%= client.pnumber %>)
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+        <div>
+          <label for="statusFilter" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Status</label>
+          <select id="statusFilter" name="status_id"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <option value="">All Statuses</option>
+            <% if (statuses && statuses.length > 0) { %>
+              <% statuses.forEach(status => { %>
+                <option value="<%= status.id %>" <%= currentFilters && currentFilters.status_id == status.id ? 'selected' : '' %>>
+                  <%= status.name %>
+                </option>
+              <% }); %>
+            <% } %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Cost Range</label>
+          <div class="flex gap-2">
+            <input type="number" id="minPrice" name="minPrice" placeholder="Min €" min="0" step="0.01" value="<%= currentFilters && currentFilters.minPrice ? currentFilters.minPrice : '' %>"
+              class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <span class="self-center text-gray-500 dark:text-gray-400">to</span>
+            <input type="number" id="maxPrice" name="maxPrice" placeholder="Max €" min="0" step="0.01" value="<%= currentFilters && currentFilters.maxPrice ? currentFilters.maxPrice : '' %>"
+              class="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap gap-2 text-xs" id="appliedFilters"></div>
+        <div class="flex gap-2">
+          <button type="button" id="applyFilters" class="group px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+            <i class="fas fa-search group-hover:scale-110 transition-transform duration-300"></i> Apply Filters
+          </button>
+          <button type="button" id="resetFilters" class="group px-4 py-2 bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 hover:shadow-lg">
+            <i class="fas fa-times group-hover:-rotate-12 transition-transform duration-300"></i> Reset All
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printers Table -->
+  <div>
+    <%- include('_table') %>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Simple search - redirects to search URL
+  const searchInput = document.getElementById('printerSearch');
+
+  if (searchInput) {
+    let searchTimeout;
+
+    searchInput.addEventListener('input', function(e) {
+      clearTimeout(searchTimeout);
+      const searchTerm = e.target.value.trim();
+
+      searchTimeout = setTimeout(() => {
+        const currentUrl = new URL(window.location.href);
+
+        if (searchTerm === '') {
+          currentUrl.searchParams.delete('q');
+          currentUrl.searchParams.set('page', '1');
         } else {
-          url.searchParams.delete(type);
+          currentUrl.searchParams.set('q', searchTerm);
+          currentUrl.searchParams.set('page', '1');
         }
-        window.location = url;
+
+        window.location.href = currentUrl.toString();
+      }, 500);
+    });
+  }
+
+  // Filter toggle functionality
+  const filterToggle = document.getElementById('filtersToggle');
+  const filterContent = document.getElementById('filtersContent');
+
+  if (filterToggle && filterContent) {
+    filterContent.classList.add('hidden');
+    const toggleIcon = filterToggle.querySelector('i.fa-chevron-up, i.fa-chevron-down');
+    if (toggleIcon) {
+      toggleIcon.classList.remove('fa-chevron-up');
+      toggleIcon.classList.add('fa-chevron-down');
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasActiveFilters = urlParams.get('client_id') || urlParams.get('status_id') ||
+                            urlParams.get('minPrice') || urlParams.get('maxPrice');
+    if (hasActiveFilters) {
+      filterContent.classList.remove('hidden');
+      if (toggleIcon) {
+        toggleIcon.classList.remove('fa-chevron-down');
+        toggleIcon.classList.add('fa-chevron-up');
+      }
+    }
+
+    filterToggle.addEventListener('click', function() {
+      filterContent.classList.toggle('hidden');
+      const icon = filterToggle.querySelector('i.fa-chevron-down, i.fa-chevron-up');
+      if (icon) {
+        icon.classList.toggle('fa-chevron-down');
+        icon.classList.toggle('fa-chevron-up');
+      }
+    });
+  }
+
+  // Apply filters button
+  const applyFiltersBtn = document.getElementById('applyFilters');
+
+  if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener('click', function() {
+      const currentUrl = new URL(window.location.href);
+
+      const clientFilter = document.getElementById('clientFilter');
+      const statusFilter = document.getElementById('statusFilter');
+      const minPrice = document.getElementById('minPrice');
+      const maxPrice = document.getElementById('maxPrice');
+
+      if (clientFilter && clientFilter.value) {
+        currentUrl.searchParams.set('client_id', clientFilter.value);
+      } else {
+        currentUrl.searchParams.delete('client_id');
       }
 
-      function confirmDelete(printerId) {
-        if (confirm('Are you sure you want to delete this printer? This action cannot be undone.')) {
-          const form = document.createElement('form');
-          form.method = 'POST';
-          form.action = `/printers/${printerId}/delete`;
-          document.body.appendChild(form);
-          form.submit();
-        }
+      if (statusFilter && statusFilter.value) {
+        currentUrl.searchParams.set('status_id', statusFilter.value);
+      } else {
+        currentUrl.searchParams.delete('status_id');
       }
-    </script>
-</section>
+
+      if (minPrice && minPrice.value) {
+        currentUrl.searchParams.set('minPrice', minPrice.value);
+      } else {
+        currentUrl.searchParams.delete('minPrice');
+      }
+
+      if (maxPrice && maxPrice.value) {
+        currentUrl.searchParams.set('maxPrice', maxPrice.value);
+      } else {
+        currentUrl.searchParams.delete('maxPrice');
+      }
+
+      currentUrl.searchParams.set('page', '1');
+      window.location.href = currentUrl.toString();
+    });
+  }
+
+  // Reset filters button
+  const resetFiltersBtn = document.getElementById('resetFilters');
+
+  if (resetFiltersBtn) {
+    resetFiltersBtn.addEventListener('click', function() {
+      const currentUrl = new URL(window.location.href);
+
+      currentUrl.searchParams.delete('client_id');
+      currentUrl.searchParams.delete('status_id');
+      currentUrl.searchParams.delete('minPrice');
+      currentUrl.searchParams.delete('maxPrice');
+      currentUrl.searchParams.delete('q');
+      currentUrl.searchParams.set('page', '1');
+
+      window.location.href = currentUrl.toString();
+    });
+  }
+
+  // Update filter badge and preview on page load
+  function updateFilterBadgeAndPreview() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterBadge = document.getElementById('filterBadge');
+    const appliedFiltersPreview = document.getElementById('appliedFiltersPreview');
+
+    let activeFilters = [];
+
+    if (urlParams.get('client_id')) {
+      const clientSelect = document.getElementById('clientFilter');
+      const selectedOption = clientSelect ? clientSelect.querySelector(`option[value="${urlParams.get('client_id')}"]`) : null;
+      if (selectedOption) {
+        activeFilters.push(`Client: ${selectedOption.textContent}`);
+      }
+    }
+
+    if (urlParams.get('status_id')) {
+      const statusSelect = document.getElementById('statusFilter');
+      const selectedOption = statusSelect ? statusSelect.querySelector(`option[value="${urlParams.get('status_id')}"]`) : null;
+      if (selectedOption) {
+        activeFilters.push(`Status: ${selectedOption.textContent}`);
+      }
+    }
+
+    if (urlParams.get('minPrice')) {
+      activeFilters.push(`Min Price: €${urlParams.get('minPrice')}`);
+    }
+
+    if (urlParams.get('maxPrice')) {
+      activeFilters.push(`Max Price: €${urlParams.get('maxPrice')}`);
+    }
+
+    if (filterBadge) {
+      if (activeFilters.length > 0) {
+        filterBadge.textContent = activeFilters.length;
+        filterBadge.style.display = '';
+      } else {
+        filterBadge.style.display = 'none';
+      }
+    }
+
+    if (appliedFiltersPreview) {
+      if (activeFilters.length > 0) {
+        appliedFiltersPreview.innerHTML = activeFilters.map(filter =>
+          `<span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">
+            <i class="fas fa-filter"></i> ${filter}
+          </span>`
+        ).join(' ');
+      } else {
+        appliedFiltersPreview.textContent = 'No filters applied';
+      }
+    }
+  }
+
+  updateFilterBadgeAndPreview();
+
+  const perPageSelect = document.getElementById('printersPerPage');
+  if (perPageSelect) {
+    perPageSelect.addEventListener('change', function(e) {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('perPage', e.target.value);
+      currentUrl.searchParams.set('page', '1');
+      window.location.href = currentUrl.toString();
+    });
+  }
+});
+</script>

@@ -9,7 +9,7 @@
 DO $$
 DECLARE
     missing_tables TEXT[] := '{}';
-    table_name TEXT;
+    tbl_name TEXT;
     tables_to_check TEXT[] := ARRAY[
         'users', 'departments', 'software', 'statuses', 'locations', 'employees',
         'types', 'brands', 'sales', 'items', 'license_config',
@@ -19,13 +19,13 @@ DECLARE
 BEGIN
     RAISE NOTICE '=== CHECKING CORE TABLES ===';
 
-    FOREACH table_name IN ARRAY tables_to_check
+    FOREACH tbl_name IN ARRAY tables_to_check
     LOOP
         IF NOT EXISTS (
-            SELECT 1 FROM information_schema.tables
-            WHERE table_name = table_name AND table_schema = 'public'
+            SELECT 1 FROM information_schema.tables t
+            WHERE t.table_name = tbl_name AND t.table_schema = 'public'
         ) THEN
-            missing_tables := missing_tables || table_name;
+            missing_tables := missing_tables || tbl_name;
         END IF;
     END LOOP;
 
@@ -40,20 +40,20 @@ END $$;
 DO $$
 DECLARE
     missing_columns TEXT[] := '{}';
-    column_name TEXT;
+    col_name TEXT;
     columns_to_check TEXT[] := ARRAY[
         'failed_login_attempts', 'account_locked', 'locked_at', 'locked_until', 'login_attempts', 'last_failed_login'
     ];
 BEGIN
     RAISE NOTICE '=== CHECKING USERS TABLE LOCKOUT COLUMNS ===';
 
-    FOREACH column_name IN ARRAY columns_to_check
+    FOREACH col_name IN ARRAY columns_to_check
     LOOP
         IF NOT EXISTS (
-            SELECT 1 FROM information_schema.columns
-            WHERE table_name = 'users' AND column_name = column_name
+            SELECT 1 FROM information_schema.columns c
+            WHERE c.table_name = 'users' AND c.column_name = col_name
         ) THEN
-            missing_columns := missing_columns || column_name;
+            missing_columns := missing_columns || col_name;
         END IF;
     END LOOP;
 
@@ -68,7 +68,7 @@ END $$;
 DO $$
 DECLARE
     missing_fks TEXT[] := '{}';
-    constraint_name TEXT;
+    constraint_nm TEXT;
     constraints_to_check TEXT[] := ARRAY[
         'login_attempts_user_id_fkey',
         'account_lockouts_locked_by_user_id_fkey',
@@ -83,13 +83,13 @@ DECLARE
 BEGIN
     RAISE NOTICE '=== CHECKING FOREIGN KEY CONSTRAINTS ===';
 
-    FOREACH constraint_name IN ARRAY constraints_to_check
+    FOREACH constraint_nm IN ARRAY constraints_to_check
     LOOP
         IF NOT EXISTS (
-            SELECT 1 FROM information_schema.table_constraints
-            WHERE constraint_name = constraint_name AND table_schema = 'public'
+            SELECT 1 FROM information_schema.table_constraints tc
+            WHERE tc.constraint_name = constraint_nm AND tc.table_schema = 'public'
         ) THEN
-            missing_fks := missing_fks || constraint_name;
+            missing_fks := missing_fks || constraint_nm;
         END IF;
     END LOOP;
 
@@ -104,7 +104,7 @@ END $$;
 DO $$
 DECLARE
     missing_indexes TEXT[] := '{}';
-    index_name TEXT;
+    idx_name TEXT;
     indexes_to_check TEXT[] := ARRAY[
         'idx_users_lockout',
         'idx_users_failed_attempts',
@@ -117,13 +117,13 @@ DECLARE
 BEGIN
     RAISE NOTICE '=== CHECKING ESSENTIAL INDEXES ===';
 
-    FOREACH index_name IN ARRAY indexes_to_check
+    FOREACH idx_name IN ARRAY indexes_to_check
     LOOP
         IF NOT EXISTS (
-            SELECT 1 FROM pg_indexes
-            WHERE indexname = index_name AND schemaname = 'public'
+            SELECT 1 FROM pg_indexes idx
+            WHERE idx.indexname = idx_name AND idx.schemaname = 'public'
         ) THEN
-            missing_indexes := missing_indexes || index_name;
+            missing_indexes := missing_indexes || idx_name;
         END IF;
     END LOOP;
 
@@ -138,7 +138,7 @@ END $$;
 DO $$
 DECLARE
     missing_functions TEXT[] := '{}';
-    function_name TEXT;
+    func_name TEXT;
     functions_to_check TEXT[] := ARRAY[
         'find_user_by_login',
         'cleanup_expired_sessions',
@@ -148,13 +148,13 @@ DECLARE
 BEGIN
     RAISE NOTICE '=== CHECKING ESSENTIAL FUNCTIONS ===';
 
-    FOREACH function_name IN ARRAY functions_to_check
+    FOREACH func_name IN ARRAY functions_to_check
     LOOP
         IF NOT EXISTS (
-            SELECT 1 FROM information_schema.routines
-            WHERE routine_name = function_name AND routine_schema = 'public'
+            SELECT 1 FROM information_schema.routines r
+            WHERE r.routine_name = func_name AND r.routine_schema = 'public'
         ) THEN
-            missing_functions := missing_functions || function_name;
+            missing_functions := missing_functions || func_name;
         END IF;
     END LOOP;
 

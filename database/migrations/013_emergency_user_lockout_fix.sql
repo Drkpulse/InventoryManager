@@ -93,7 +93,10 @@ END $$;
 CREATE INDEX IF NOT EXISTS idx_users_lockout ON users(account_locked, locked_until);
 CREATE INDEX IF NOT EXISTS idx_users_failed_attempts ON users(failed_login_attempts);
 
--- Update the find_user_by_login function to handle missing columns gracefully
+-- Drop existing function first to avoid return type conflicts
+DROP FUNCTION IF EXISTS find_user_by_login(TEXT) CASCADE;
+
+-- Create the find_user_by_login function to handle missing columns gracefully
 CREATE OR REPLACE FUNCTION find_user_by_login(login_input TEXT)
 RETURNS TABLE(
   id INTEGER,

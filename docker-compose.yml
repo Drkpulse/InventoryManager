@@ -18,7 +18,8 @@ services:
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
       - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-900000}
       - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-500}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_LEVEL=${LOG_LEVEL:-${INFO_LEVEL:-info}}
+      - INFO_LEVEL=${INFO_LEVEL:-${LOG_LEVEL:-info}}
       - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-7}
     depends_on:
       postgres:

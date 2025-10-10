@@ -15,8 +15,9 @@ const csrfProtection = (req, res, next) => {
   // Skip CSRF for safe methods and API health checks
   const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
   const skipPaths = ['/health', '/api/health'];
+  const skipAnalytics = req.path.startsWith('/analytics') || req.path.startsWith('/api/analytics');
 
-  if (safeMethods.includes(req.method) || skipPaths.includes(req.path)) {
+  if (safeMethods.includes(req.method) || skipPaths.includes(req.path) || skipAnalytics) {
     // Generate token for safe methods (to include in forms)
     if (!req.session.csrfToken) {
       req.session.csrfToken = generateCSRFToken();

@@ -9,6 +9,21 @@ const db = require('../src/config/db');
 const fs = require('fs');
 const path = require('path');
 
+// Check log level for conditional logging
+const logLevel = process.env.LOG_LEVEL || process.env.INFO_LEVEL || 'info';
+const isDebugMode = logLevel === 'debug';
+
+// Logger function that respects log level
+function logInfo(message) {
+  console.log(message);
+}
+
+function logDebug(message) {
+  if (isDebugMode) {
+    console.log(message);
+  }
+}
+
 // Migration tracking table
 async function createMigrationsTable() {
   try {
@@ -20,7 +35,7 @@ async function createMigrationsTable() {
         description TEXT
       )
     `);
-    console.log('✅ Migrations tracking table ready');
+    logDebug('✅ Migrations tracking table ready');
   } catch (error) {
     console.error('❌ Error creating migrations table:', error);
     throw error;
@@ -51,7 +66,7 @@ async function markMigrationExecuted(migrationName, description = '') {
        executed_at = CURRENT_TIMESTAMP, description = $2`,
       [migrationName, description]
     );
-    console.log(`✅ Marked migration ${migrationName} as executed`);
+    logDebug(`✅ Marked migration ${migrationName} as executed`);
   } catch (error) {
     console.error(`Error marking migration ${migrationName}:`, error);
   }
@@ -61,12 +76,18 @@ async function markMigrationExecuted(migrationName, description = '') {
 async function executeSQLFile(filePath, migrationName) {
   try {
     const sql = fs.readFileSync(filePath, 'utf8');
-    console.log(`📄 Executing ${migrationName}...`);
+    logDebug(`📄 Executing ${migrationName}...`);
     await db.query(sql);
-    console.log(`✅ ${migrationName} completed successfully`);
+    logDebug(`✅ ${migrationName} completed successfully`);
     return true;
   } catch (error) {
-    console.error(`❌ Error executing ${migrationName}:`, error.message);
+    logInfo(`❌ Error executing ${migrationName}:`);
+    logInfo(`   Error: ${error.message}`);
+    if (isDebugMode) {
+      logDebug(`   Details: ${error.detail || 'No additional details'}`);
+      logDebug(`   Hint: ${error.hint || 'No hint available'}`);
+      logDebug(`   Position: ${error.position || 'Unknown'}`);
+    }
     return false;
   }
 }
@@ -89,7 +110,7 @@ function getAllMigrationFiles() {
       })
       .sort((a, b) => a.order - b.order); // Sort by migration number
 
-    console.log(`📁 Found ${files.length} migration files`);
+    logDebug(`📁 Found ${files.length} migration files`);
     return files;
   } catch (error) {
     console.error('❌ Error reading migrations directory:', error);
@@ -100,15 +121,15 @@ function getAllMigrationFiles() {
 // Run a single migration file
 async function runSingleMigration(migration) {
   const { name, filePath } = migration;
-  
+
   if (await isMigrationExecuted(name)) {
-    console.log(`⏭️  Skipping ${name} (already executed)`);
+    logDebug(`⏭️  Skipping ${name} (already executed)`);
     return true;
   }
 
   try {
-    console.log(`🔧 Running ${name}...`);
-    
+    logDebug(`🔧 Running ${name}...`);
+
     // Handle special case for 001 migration (hardcoded SQL)
     if (name === '001_add_user_lockout_fields') {
       await db.query(`
@@ -120,7 +141,7 @@ async function runSingleMigration(migration) {
       await markMigrationExecuted(name, 'Added user account lockout fields');
       return true;
     }
-    
+
     // For all other migrations, read and execute the SQL file
     const success = await executeSQLFile(filePath, name);
     if (success) {
@@ -135,12 +156,12 @@ async function runSingleMigration(migration) {
       } catch (error) {
         // Ignore errors reading file for description
       }
-      
+
       await markMigrationExecuted(name, description);
     }
     return success;
   } catch (error) {
-    console.error(`❌ Failed ${name}:`, error.message);
+    logInfo(`❌ Failed ${name}:`, error.message);
     return false;
   }
 }
@@ -148,7 +169,7 @@ async function runSingleMigration(migration) {
 async function runMigration010() {
   const migrationName = '010_add_user_analytics';
   if (await isMigrationExecuted(migrationName)) {
-    console.log(`⏭️  Skipping ${migrationName} (already executed)`);
+    logDebug(`⏭️  Skipping ${migrationName} (already executed)`);
     return true;
   }
 
@@ -162,7 +183,7 @@ async function runMigration010() {
 
 // Verify critical tables and columns exist
 async function verifyDatabaseStructure() {
-  console.log('\n🔍 Verifying database structure...');
+  logDebug('\n🔍 Verifying database structure...');
 
   const checks = [
     {
@@ -229,46 +250,59 @@ async function verifyDatabaseStructure() {
   };
 
   let allGood = true;
+  let issuesFound = [];
+
   for (const check of checks) {
     try {
       const result = await db.query(check.query);
       if (result.rows.length > 0) {
-        console.log(`✅ ${check.name}`);
+        logDebug(`✅ ${check.name}`);
       } else {
-        console.log(`❌ ${check.name} missing`);
+        logInfo(`❌ ${check.name} missing`);
+        issuesFound.push(check.name);
         allGood = false;
       }
     } catch (error) {
-      console.log(`❌ Error checking ${check.name}:`, error.message);
+      logInfo(`❌ Error checking ${check.name}:`, error.message);
+      issuesFound.push(`${check.name} (error: ${error.message})`);
       allGood = false;
     }
+  }
+
+  // Only show issues summary if there are problems
+  if (issuesFound.length > 0) {
+    logInfo(`⚠️  Found ${issuesFound.length} database structure issues`);
   }
 
   // Special check for duplicate columns in license_config
   try {
     const columnCheck = await db.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'license_config' 
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_name = 'license_config'
       AND column_name IN ('company', 'company_name')
       ORDER BY column_name
     `);
-    
+
     const columns = columnCheck.rows.map(row => row.column_name);
     if (columns.includes('company_name') && columns.includes('company')) {
-      console.log(`⚠️  ${licenseConfigCheck.name}: Both 'company' and 'company_name' columns exist - needs fixing`);
+      logInfo(`⚠️  ${licenseConfigCheck.name}: Both 'company' and 'company_name' columns exist - needs fixing`);
+      issuesFound.push('license_config duplicate columns');
       allGood = false;
     } else if (columns.includes('company')) {
-      console.log(`✅ ${licenseConfigCheck.name}: Correct 'company' column exists`);
+      logDebug(`✅ ${licenseConfigCheck.name}: Correct 'company' column exists`);
     } else if (columns.includes('company_name')) {
-      console.log(`⚠️  ${licenseConfigCheck.name}: Only 'company_name' column exists, 'company' needed`);
+      logInfo(`⚠️  ${licenseConfigCheck.name}: Only 'company_name' column exists, 'company' needed`);
+      issuesFound.push('license_config wrong column name');
       allGood = false;
     } else {
-      console.log(`❌ ${licenseConfigCheck.name}: No company column found`);
+      logInfo(`❌ ${licenseConfigCheck.name}: No company column found`);
+      issuesFound.push('license_config missing company column');
       allGood = false;
     }
   } catch (error) {
-    console.log(`❌ Error checking ${licenseConfigCheck.name}:`, error.message);
+    logInfo(`❌ Error checking ${licenseConfigCheck.name}:`, error.message);
+    issuesFound.push(`license_config check failed: ${error.message}`);
     allGood = false;
   }
 
@@ -277,74 +311,72 @@ async function verifyDatabaseStructure() {
 
 // Main migration runner
 async function runAllMigrations() {
-  console.log('🚀 Starting Database Migration Runner');
-  console.log('=====================================');
+  logInfo('🚀 Starting Database Migration Runner');
+  if (isDebugMode) {
+    logInfo('=====================================');
+  }
 
   try {
     // Test database connection
-    console.log('🔌 Testing database connection...');
+    logDebug('🔌 Testing database connection...');
     await db.query('SELECT NOW()');
-    console.log('✅ Database connection successful');
+    logDebug('✅ Database connection successful');
 
     // Create migrations table
     await createMigrationsTable();
 
     // Get all migration files
     const migrations = getAllMigrationFiles();
-    
+
     if (migrations.length === 0) {
-      console.log('⚠️  No migration files found in migrations directory');
+      logInfo('⚠️  No migration files found in migrations directory');
       return;
     }
 
-    console.log(`\n📋 Found migrations to process:`);
-    migrations.forEach(m => {
-      console.log(`   ${m.order.toString().padStart(3, '0')}: ${m.name}`);
-    });
+    if (isDebugMode && migrations.length > 0) {
+      logDebug(`\n📋 Found migrations to process:`);
+      migrations.forEach(m => {
+        logDebug(`   ${m.order.toString().padStart(3, '0')}: ${m.name}`);
+      });
+    }
 
     let successCount = 0;
     let skippedCount = 0;
-    
+
     for (const migration of migrations) {
-      console.log(`\n📋 Processing Migration ${migration.name}...`);
-      
+      logDebug(`\n📋 Processing Migration ${migration.name}...`);
+
       // Check if already executed
       if (await isMigrationExecuted(migration.name)) {
-        console.log(`⏭️  Skipping ${migration.name} (already executed)`);
+        logDebug(`⏭️  Skipping ${migration.name} (already executed)`);
         skippedCount++;
         continue;
       }
-      
+
       const success = await runSingleMigration(migration);
       if (success) {
         successCount++;
-        console.log(`✅ ${migration.name} completed successfully`);
+        logDebug(`✅ ${migration.name} completed successfully`);
       } else {
-        console.error(`❌ Migration ${migration.name} failed - stopping`);
+        logInfo(`❌ Migration ${migration.name} failed - stopping`);
         break;
       }
     }
 
-    console.log(`\n📊 Migration Results:`);
-    console.log(`   New migrations executed: ${successCount}`);
-    console.log(`   Already executed: ${skippedCount}`);
-    console.log(`   Total migrations: ${migrations.length}`);
+    // Show results only if there were new migrations or issues
+    if (successCount > 0 || !isDebugMode) {
+      logInfo(`📊 Migration Results: ${successCount} new, ${skippedCount} existing, ${migrations.length} total`);
+    }
 
     // Verify structure
     const structureValid = await verifyDatabaseStructure();
 
-    console.log('\n🎉 Migration Summary:');
-    console.log('====================');
-    console.log(`Migrations processed: ${successCount + skippedCount}/${migrations.length}`);
-    console.log(`Database structure: ${structureValid ? '✅ Valid' : '❌ Issues found'}`);
-
+    // Always show final status
     if (structureValid) {
-      console.log('\n✅ All migrations completed successfully!');
-      console.log('🚀 Your database is ready to use.');
+      logInfo('✅ All database migrations completed successfully');
       process.exit(0);
     } else {
-      console.log('\n⚠️  Some database structure issues remain.');
-      console.log('💡 Please check the error messages above.');
+      logInfo('❌ Database structure issues found - check logs above');
       process.exit(1);
     }
 
@@ -357,8 +389,8 @@ async function runAllMigrations() {
 // Show migration status
 async function showMigrationStatus() {
   try {
-    console.log('📋 Current Migration Status');
-    console.log('==========================');
+    logInfo('📋 Current Migration Status');
+    logInfo('==========================');
 
     await createMigrationsTable();
 
@@ -369,10 +401,10 @@ async function showMigrationStatus() {
     `);
 
     if (result.rows.length === 0) {
-      console.log('No migrations have been executed yet.');
+      logInfo('No migrations have been executed yet.');
     } else {
       result.rows.forEach(row => {
-        console.log(`✅ ${row.migration_name} - ${row.executed_at.toISOString()} - ${row.description}`);
+        logInfo(`✅ ${row.migration_name} - ${row.executed_at.toISOString()} - ${row.description}`);
       });
     }
 

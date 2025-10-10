@@ -249,22 +249,43 @@ else
 fi
 
 # Database initialization
-log "🗄️  Database initialization check..."
-log "===================================="
 if [ "$INIT_DB" = "true" ]; then
-    log "✅ Database initialization requested (INIT_DB=true)"
-    log "⏳ Waiting 5 seconds before starting initialization..."
+    log "✅ Database initialization requested (INIT_DB=true)" "INFO"
+    log "⏳ Waiting 5 seconds before starting initialization..." "DEBUG"
     sleep 5
 
-    log "🔧 Running database initialization script..."
+    log "🔧 Running database schema initialization..." "INFO"
     if su-exec appuser:appuser node database/init-db.js; then
-        log "✅ Database initialization completed successfully"
+        log "✅ Database schema created successfully" "INFO"
+
+        # Run migrations separately after schema creation
+        log "🔄 Running database migrations..." "INFO"
+        if su-exec appuser:appuser node database/run-migrations.js; then
+            log "✅ Database migrations completed successfully" "INFO"
+        else
+            log "⚠️  Database migrations failed - check logs for details" "WARN"
+        fi
     else
-        log "⚠️  Database initialization failed - this might be normal if database already exists"
-        log "   Check application logs for details"
+        log "⚠️  Database initialization failed - this might be normal if database already exists" "WARN"
+        log "   Running migrations anyway in case schema exists..." "DEBUG"
+
+        # Try to run migrations even if init-db failed (database might already exist)
+        if su-exec appuser:appuser node database/run-migrations.js; then
+            log "✅ Database migrations completed successfully" "INFO"
+        else
+            log "❌ Database migrations also failed - check configuration" "ERROR"
+        fi
     fi
 else
-    log "ℹ️  Database initialization skipped (INIT_DB=false)"
+    log "ℹ️  Database initialization skipped (INIT_DB=false)" "DEBUG"
+    log "🔄 Running any pending database migrations..." "INFO"
+
+    # Even if INIT_DB=false, we should run pending migrations
+    if su-exec appuser:appuser node database/run-migrations.js; then
+        log "✅ Database migrations completed successfully" "INFO"
+    else
+        log "⚠️  Database migrations failed - check logs for details" "WARN"
+    fi
 fi
 
 # Pre-flight checks
@@ -335,6 +356,7 @@ ENV NODE_ENV=production \
     PUID=99 \
     PGID=100 \
     LOG_LEVEL=info \
+    INFO_LEVEL=info \
     MAX_FILE_SIZE=10MB \
     ENABLE_CLUSTERING=false \
     CLUSTER_WORKERS=0 \
@@ -347,14 +369,28 @@ EXPOSE 3000
 # Define volumes for data persistence
 VOLUME ["/app/uploads", "/app/logs", "/app/data", "/app/backups", "/config"]
 
+# Create a simple health check script with conditional logging
+RUN echo '#!/bin/sh' > /app/healthcheck.sh && \
+    echo '# Health check script with conditional logging' >> /app/healthcheck.sh && \
+    echo 'if [ "${LOG_LEVEL:-${INFO_LEVEL:-info}}" = "debug" ]; then' >> /app/healthcheck.sh && \
+    echo '  echo "[$(date)] Health check starting..."' >> /app/healthcheck.sh && \
+    echo 'fi' >> /app/healthcheck.sh && \
+    echo 'if wget --no-verbose --tries=1 --timeout=5 --spider http://localhost:${PORT:-3000}/health 2>/dev/null; then' >> /app/healthcheck.sh && \
+    echo '  if [ "${LOG_LEVEL:-${INFO_LEVEL:-info}}" = "debug" ]; then' >> /app/healthcheck.sh && \
+    echo '    echo "[$(date)] Health check passed"' >> /app/healthcheck.sh && \
+    echo '  fi' >> /app/healthcheck.sh && \
+    echo '  exit 0' >> /app/healthcheck.sh && \
+    echo 'else' >> /app/healthcheck.sh && \
+    echo '  if [ "${LOG_LEVEL:-${INFO_LEVEL:-info}}" = "debug" ]; then' >> /app/healthcheck.sh && \
+    echo '    echo "[$(date)] Health check failed"' >> /app/healthcheck.sh && \
+    echo '  fi' >> /app/healthcheck.sh && \
+    echo '  exit 1' >> /app/healthcheck.sh && \
+    echo 'fi' >> /app/healthcheck.sh && \
+    chmod +x /app/healthcheck.sh
+
 # Health check with fallback options
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
     CMD /app/healthcheck.sh || curl -f http://localhost:${PORT:-3000}/health || nc -z localhost ${PORT:-3000} || exit 1
-
-# Create a simple health check script
-RUN echo '#!/bin/sh' > /app/healthcheck.sh && \
-    echo 'wget --no-verbose --tries=1 --timeout=5 --spider http://localhost:${PORT:-3000}/health 2>/dev/null || exit 1' >> /app/healthcheck.sh && \
-    chmod +x /app/healthcheck.sh
 
 # Use tini as PID 1 for proper signal handling
 ENTRYPOINT ["/sbin/tini", "--", "/app/entrypoint.sh"]

@@ -56,7 +56,7 @@ CREATE TABLE users (
   role VARCHAR(50) DEFAULT 'user',
   cep_id VARCHAR(50) UNIQUE NOT NULL,
   settings JSONB DEFAULT '{
-    "theme": "light",
+    "theme": "dark",
     "language": "en",
     "items_per_page": "20",
     "maintenance_alerts": true,
@@ -309,6 +309,105 @@ CREATE TABLE sim_card_history (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ===== SECURITY TABLES =====
+
+-- Table for tracking login attempts
+CREATE TABLE IF NOT EXISTS login_attempts (
+  id SERIAL PRIMARY KEY,
+  identifier VARCHAR(255) NOT NULL,
+  ip_address INET NOT NULL,
+  user_agent TEXT,
+  attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  attempt_type VARCHAR(20) DEFAULT 'failed',
+  user_id INTEGER,
+  session_id VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table for account lockouts
+CREATE TABLE IF NOT EXISTS account_lockouts (
+  id SERIAL PRIMARY KEY,
+  identifier VARCHAR(255) UNIQUE NOT NULL,
+  locked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  locked_until TIMESTAMP NOT NULL,
+  attempt_count INTEGER DEFAULT 1,
+  reason VARCHAR(100) DEFAULT 'too_many_failed_attempts',
+  locked_by_user_id INTEGER,
+  unlocked_at TIMESTAMP,
+  unlocked_by_user_id INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Enhanced security events table
+CREATE TABLE IF NOT EXISTS security_events (
+  id SERIAL PRIMARY KEY,
+  event_type VARCHAR(50) NOT NULL,
+  user_id INTEGER,
+  ip_address INET,
+  user_agent TEXT,
+  session_id VARCHAR(255),
+  event_data JSONB,
+  severity VARCHAR(20) DEFAULT 'info',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Password history table
+CREATE TABLE IF NOT EXISTS password_history (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Session tracking table
+CREATE TABLE IF NOT EXISTS user_sessions (
+  id SERIAL PRIMARY KEY,
+  session_id VARCHAR(255) UNIQUE NOT NULL,
+  user_id INTEGER,
+  ip_address INET,
+  user_agent TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE,
+  logout_time TIMESTAMP
+);
+
+-- CSRF tokens table
+CREATE TABLE IF NOT EXISTS csrf_tokens (
+  id SERIAL PRIMARY KEY,
+  token VARCHAR(255) UNIQUE NOT NULL,
+  user_id INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP NOT NULL,
+  used_at TIMESTAMP
+);
+
+-- API tokens table
+CREATE TABLE IF NOT EXISTS api_tokens (
+  id SERIAL PRIMARY KEY,
+  token_hash VARCHAR(255) UNIQUE NOT NULL,
+  user_id INTEGER,
+  name VARCHAR(100),
+  permissions JSONB,
+  last_used TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP,
+  is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Two-factor authentication table
+CREATE TABLE IF NOT EXISTS user_2fa (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER UNIQUE,
+  secret VARCHAR(32) NOT NULL,
+  backup_codes TEXT[],
+  enabled BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_used TIMESTAMP
+);
+
 -- Add indexes for common queries
 CREATE INDEX idx_items_type ON items(type_id);
 CREATE INDEX idx_items_brand ON items(brand_id);
@@ -327,6 +426,31 @@ CREATE INDEX IF NOT EXISTS idx_employee_software_software_id ON employee_softwar
 CREATE INDEX IF NOT EXISTS idx_employee_software_employee_id ON employee_software(employee_id);
 CREATE INDEX IF NOT EXISTS idx_printers_employee ON printers(employee_id);
 CREATE INDEX IF NOT EXISTS idx_users_lockout ON users(account_locked, locked_until);
+CREATE INDEX IF NOT EXISTS idx_users_failed_attempts ON users(failed_login_attempts);
+
+-- Security tables indexes
+CREATE INDEX IF NOT EXISTS idx_login_attempts_identifier ON login_attempts (identifier);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_ip ON login_attempts (ip_address);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_time ON login_attempts (attempt_time);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_user ON login_attempts (user_id);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_type ON login_attempts (attempt_type);
+CREATE INDEX IF NOT EXISTS idx_account_lockouts_identifier ON account_lockouts (identifier);
+CREATE INDEX IF NOT EXISTS idx_account_lockouts_locked_until ON account_lockouts (locked_until);
+CREATE INDEX IF NOT EXISTS idx_security_events_type ON security_events (event_type);
+CREATE INDEX IF NOT EXISTS idx_security_events_user ON security_events (user_id);
+CREATE INDEX IF NOT EXISTS idx_security_events_time ON security_events (created_at);
+CREATE INDEX IF NOT EXISTS idx_security_events_severity ON security_events (severity);
+CREATE INDEX IF NOT EXISTS idx_password_history_user ON password_history (user_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_session ON user_sessions (session_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions (user_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_expires ON user_sessions (expires_at);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_activity ON user_sessions (last_activity);
+CREATE INDEX IF NOT EXISTS idx_csrf_tokens_user ON csrf_tokens (user_id);
+CREATE INDEX IF NOT EXISTS idx_csrf_tokens_expires ON csrf_tokens (expires_at);
+CREATE INDEX IF NOT EXISTS idx_csrf_tokens_token ON csrf_tokens (token);
+CREATE INDEX IF NOT EXISTS idx_api_tokens_user ON api_tokens (user_id);
+CREATE INDEX IF NOT EXISTS idx_api_tokens_active ON api_tokens (is_active);
+
 CREATE INDEX IF NOT EXISTS idx_printers_client ON printers(client_id);
 CREATE INDEX IF NOT EXISTS idx_printers_status ON printers(status_id);
 CREATE INDEX IF NOT EXISTS idx_pdas_client ON pdas(client_id);
@@ -694,6 +818,66 @@ LEFT JOIN brands b ON i.brand_id = b.id
 LEFT JOIN employees e ON i.assigned_to = e.id
 LEFT JOIN departments d ON e.dept_id = d.id;
 
+-- ===== SECURITY FUNCTIONS =====
+
+-- Function to clean up expired sessions
+CREATE OR REPLACE FUNCTION cleanup_expired_sessions()
+RETURNS INTEGER AS $$
+DECLARE
+  deleted_count INTEGER;
+BEGIN
+  DELETE FROM user_sessions WHERE expires_at < NOW();
+  GET DIAGNOSTICS deleted_count = ROW_COUNT;
+
+  DELETE FROM csrf_tokens WHERE expires_at < NOW();
+
+  RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to log security events
+CREATE OR REPLACE FUNCTION log_security_event(
+  p_event_type VARCHAR(50),
+  p_user_id INTEGER DEFAULT NULL,
+  p_ip_address INET DEFAULT NULL,
+  p_user_agent TEXT DEFAULT NULL,
+  p_session_id VARCHAR(255) DEFAULT NULL,
+  p_event_data JSONB DEFAULT NULL,
+  p_severity VARCHAR(20) DEFAULT 'info'
+) RETURNS VOID AS $$
+BEGIN
+  INSERT INTO security_events (
+    event_type, user_id, ip_address, user_agent,
+    session_id, event_data, severity
+  ) VALUES (
+    p_event_type, p_user_id, p_ip_address, p_user_agent,
+    p_session_id, p_event_data, p_severity
+  );
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to check if user account is locked
+CREATE OR REPLACE FUNCTION is_account_locked(user_identifier VARCHAR)
+RETURNS TABLE(
+  is_locked BOOLEAN,
+  locked_until TIMESTAMP,
+  failed_attempts INTEGER,
+  locked_at TIMESTAMP
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    COALESCE(u.account_locked, FALSE) as is_locked,
+    u.locked_until,
+    COALESCE(u.failed_login_attempts, 0) as failed_attempts,
+    u.locked_at
+  FROM users u
+  WHERE LOWER(u.email) = LOWER(user_identifier)
+     OR LOWER(u.cep_id) = LOWER(user_identifier)
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION find_user_by_login(login_input TEXT)
 RETURNS TABLE(
   id INTEGER,
@@ -707,20 +891,126 @@ RETURNS TABLE(
   last_login TIMESTAMP,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
+  login_attempts INTEGER,
   failed_login_attempts INTEGER,
   account_locked BOOLEAN,
   locked_at TIMESTAMP,
-  locked_until TIMESTAMP
+  locked_until TIMESTAMP,
+  last_failed_login TIMESTAMP
 ) AS $$
 BEGIN
   RETURN QUERY
   SELECT u.id, u.name, u.email, u.password, u.role, u.cep_id, u.active, u.settings, u.last_login, u.created_at, u.updated_at,
+         COALESCE(u.login_attempts, 0) as login_attempts,
          COALESCE(u.failed_login_attempts, 0) as failed_login_attempts,
          COALESCE(u.account_locked, FALSE) as account_locked,
          u.locked_at,
-         u.locked_until
+         u.locked_until,
+         u.last_failed_login
   FROM users u
   WHERE (LOWER(u.email) = LOWER(login_input) OR LOWER(u.cep_id) = LOWER(login_input))
   LIMIT 1;
 END;
 $$ LANGUAGE plpgsql;
+
+-- ===== ADD SECURITY TABLE FOREIGN KEY CONSTRAINTS =====
+-- Add foreign keys after all tables are created to avoid dependency issues
+
+DO $$
+BEGIN
+    -- Add foreign key constraints for user_id columns in security tables
+
+    -- login_attempts.user_id -> users.id
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'login_attempts_user_id_fkey'
+    ) THEN
+        ALTER TABLE login_attempts
+        ADD CONSTRAINT login_attempts_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
+    END IF;
+
+    -- account_lockouts foreign keys
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'account_lockouts_locked_by_user_id_fkey'
+    ) THEN
+        ALTER TABLE account_lockouts
+        ADD CONSTRAINT account_lockouts_locked_by_user_id_fkey
+        FOREIGN KEY (locked_by_user_id) REFERENCES users(id) ON DELETE SET NULL;
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'account_lockouts_unlocked_by_user_id_fkey'
+    ) THEN
+        ALTER TABLE account_lockouts
+        ADD CONSTRAINT account_lockouts_unlocked_by_user_id_fkey
+        FOREIGN KEY (unlocked_by_user_id) REFERENCES users(id) ON DELETE SET NULL;
+    END IF;
+
+    -- security_events.user_id -> users.id
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'security_events_user_id_fkey'
+    ) THEN
+        ALTER TABLE security_events
+        ADD CONSTRAINT security_events_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
+    END IF;
+
+    -- password_history.user_id -> users.id
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'password_history_user_id_fkey'
+    ) THEN
+        ALTER TABLE password_history
+        ADD CONSTRAINT password_history_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    END IF;
+
+    -- user_sessions.user_id -> users.id
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'user_sessions_user_id_fkey'
+    ) THEN
+        ALTER TABLE user_sessions
+        ADD CONSTRAINT user_sessions_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    END IF;
+
+    -- csrf_tokens.user_id -> users.id
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'csrf_tokens_user_id_fkey'
+    ) THEN
+        ALTER TABLE csrf_tokens
+        ADD CONSTRAINT csrf_tokens_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    END IF;
+
+    -- api_tokens.user_id -> users.id
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'api_tokens_user_id_fkey'
+    ) THEN
+        ALTER TABLE api_tokens
+        ADD CONSTRAINT api_tokens_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    END IF;
+
+    -- user_2fa.user_id -> users.id
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'user_2fa_user_id_fkey'
+    ) THEN
+        ALTER TABLE user_2fa
+        ADD CONSTRAINT user_2fa_user_id_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE WARNING 'Some foreign key constraints could not be added: %', SQLERRM;
+        -- Continue execution even if some constraints fail
+END $$;

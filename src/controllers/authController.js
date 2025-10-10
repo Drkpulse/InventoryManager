@@ -1,6 +1,20 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
+// Helper function to safely execute lockout-related queries
+async function safeUserUpdate(query, params = []) {
+  try {
+    return await db.query(query, params);
+  } catch (error) {
+    if (error.code === '42703') {
+      // Column doesn't exist, log warning but continue
+      console.warn('Lockout columns not available, skipping update:', error.message);
+      return { rows: [] };
+    }
+    throw error;
+  }
+}
+
 exports.loginForm = async (req, res) => {
   res.render('layout', {
     title: 'Login',
@@ -41,7 +55,31 @@ exports.login = async (req, res) => {
     }
 
     // Query for user using the helper function (case-insensitive)
-    const { rows } = await db.query('SELECT * FROM find_user_by_login($1)', [loginInput]);
+    let rows;
+    try {
+      const result = await db.query('SELECT * FROM find_user_by_login($1)', [loginInput]);
+      rows = result.rows;
+    } catch (dbError) {
+      if (dbError.code === '42703') {
+        // Column doesn't exist, use fallback query
+        console.warn('find_user_by_login function failed, using fallback query');
+        const fallbackResult = await db.query(`
+          SELECT id, name, email, password, role, cep_id, active, settings, last_login, created_at, updated_at,
+                 COALESCE(login_attempts, 0) as login_attempts,
+                 COALESCE(login_attempts, 0) as failed_login_attempts,
+                 false as account_locked,
+                 NULL::TIMESTAMP as locked_at,
+                 locked_until,
+                 last_failed_login
+          FROM users
+          WHERE LOWER(email) = LOWER($1) OR LOWER(cep_id) = LOWER($1)
+          LIMIT 1
+        `, [loginInput]);
+        rows = fallbackResult.rows;
+      } else {
+        throw dbError;
+      }
+    }
 
     if (rows.length === 0) {
       console.log('User not found:', loginInput);
@@ -74,11 +112,15 @@ exports.login = async (req, res) => {
       return res.redirect('/auth/login');
     }
 
-    // Check if account is locked
-    if (user.account_locked && user.locked_until && new Date() < new Date(user.locked_until)) {
-      console.log(`🔒 Locked account attempted login: ${loginInput} - ${user.failed_login_attempts} failed attempts, locked until ${new Date(user.locked_until).toLocaleString()}`);
-      const remainingMinutes = Math.ceil((new Date(user.locked_until) - new Date()) / (1000 * 60));
-      const errorMessage = `Account is locked due to ${user.failed_login_attempts} failed login attempts. Please try again in ${remainingMinutes} minutes or contact an administrator.`;
+    // Check if account is locked (safely handle missing columns)
+    const accountLocked = user.account_locked || false;
+    const lockedUntil = user.locked_until;
+    const failedAttempts = user.failed_login_attempts || 0;
+
+    if (accountLocked && lockedUntil && new Date() < new Date(lockedUntil)) {
+      console.log(`🔒 Locked account attempted login: ${loginInput} - ${failedAttempts} failed attempts, locked until ${new Date(lockedUntil).toLocaleString()}`);
+      const remainingMinutes = Math.ceil((new Date(lockedUntil) - new Date()) / (1000 * 60));
+      const errorMessage = `Account is locked due to ${failedAttempts} failed login attempts. Please try again in ${remainingMinutes} minutes or contact an administrator.`;
 
       if (req.isAjax) {
         return res.status(423).json({
@@ -86,7 +128,7 @@ exports.login = async (req, res) => {
           message: errorMessage,
           locked: true,
           remainingMinutes,
-          failedAttempts: user.failed_login_attempts
+          failedAttempts: failedAttempts
         });
       }
       req.flash('error', errorMessage);
@@ -94,14 +136,15 @@ exports.login = async (req, res) => {
     }
 
     // If account was locked but time has expired, unlock it automatically
-    if (user.account_locked && user.locked_until && new Date() >= new Date(user.locked_until)) {
-      console.log(`⏰ Auto-unlocking expired lock for user: ${loginInput} (${user.name}) - was locked for ${user.failed_login_attempts} failed attempts`);
-      await db.query(
+    if (accountLocked && lockedUntil && new Date() >= new Date(lockedUntil)) {
+      console.log(`⏰ Auto-unlocking expired lock for user: ${loginInput} (${user.name}) - was locked for ${failedAttempts} failed attempts`);
+      await safeUserUpdate(
         'UPDATE users SET account_locked = FALSE, failed_login_attempts = 0, locked_until = NULL, locked_at = NULL WHERE id = $1',
         [user.id]
       );
-      user.account_locked = false;
-      user.failed_login_attempts = 0;
+      // Update local user object to reflect the unlocked state
+      if (typeof user.account_locked !== 'undefined') user.account_locked = false;
+      if (typeof user.failed_login_attempts !== 'undefined') user.failed_login_attempts = 0;
     }
 
     // Compare password
@@ -111,13 +154,13 @@ exports.login = async (req, res) => {
       console.log('Password mismatch for user:', loginInput);
 
       // Increment failed login attempts
-      const newFailedAttempts = (user.failed_login_attempts || 0) + 1;
+      const newFailedAttempts = failedAttempts + 1;
       const maxAttempts = 5;
 
       if (newFailedAttempts >= maxAttempts) {
         // Lock the account for 30 minutes
         const lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
-        await db.query(
+        await safeUserUpdate(
           'UPDATE users SET failed_login_attempts = $1, account_locked = TRUE, locked_at = CURRENT_TIMESTAMP, locked_until = $2 WHERE id = $3',
           [newFailedAttempts, lockUntil, user.id]
         );
@@ -138,7 +181,7 @@ exports.login = async (req, res) => {
         return res.redirect('/auth/login');
       } else {
         // Just increment failed attempts
-        await db.query(
+        await safeUserUpdate(
           'UPDATE users SET failed_login_attempts = $1 WHERE id = $2',
           [newFailedAttempts, user.id]
         );
@@ -198,7 +241,7 @@ exports.login = async (req, res) => {
       };
 
       // Update last login and reset failed attempts
-      await db.query(
+      await safeUserUpdate(
         'UPDATE users SET last_login = NOW(), failed_login_attempts = 0, account_locked = FALSE, locked_until = NULL WHERE id = $1',
         [user.id]
       );

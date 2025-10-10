@@ -20,8 +20,22 @@ async function initializeDatabase() {
 
   let dbPool;
 
+  // Check log level for conditional logging
+  const logLevel = process.env.LOG_LEVEL || process.env.INFO_LEVEL || 'info';
+  const isDebugMode = logLevel === 'debug';
+
+  function logInfo(message) {
+    console.log(message);
+  }
+
+  function logDebug(message) {
+    if (isDebugMode) {
+      console.log(message);
+    }
+  }
+
   try {
-    console.log('🚀 Starting database initialization...');
+    logDebug('🚀 Starting database initialization...');
 
     // Check if the database exists
     const dbCheckResult = await mainPool.query(
@@ -30,11 +44,11 @@ async function initializeDatabase() {
     );
 
     if (dbCheckResult.rows.length === 0) {
-      console.log(`📦 Creating database ${process.env.DB_NAME}...`);
+      logInfo(`📦 Creating database ${process.env.DB_NAME}...`);
       await mainPool.query(`CREATE DATABASE ${process.env.DB_NAME}`);
-      console.log(`✅ Database ${process.env.DB_NAME} created successfully`);
+      logInfo(`✅ Database ${process.env.DB_NAME} created successfully`);
     } else {
-      console.log(`📋 Database ${process.env.DB_NAME} already exists`);
+      logDebug(`📋 Database ${process.env.DB_NAME} already exists`);
     }
 
     // Now connect to the inventory database
@@ -46,7 +60,7 @@ async function initializeDatabase() {
     // Run the complete database schema setup
     await runDatabaseSetup(dbPool);
 
-    console.log('🎉 Database initialization completed successfully!');
+    logInfo('🎉 Database initialization completed successfully!');
 
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
@@ -132,8 +146,8 @@ async function runDatabaseSetup(pool) {
       LEFT JOIN departments d ON e.dept_id = d.id;
     `);
 
-    console.log('🔄 Running database migrations...');
-    await runMigrations(client);
+    // Database migrations are handled separately by run-migrations.js
+    logDebug('🔄 Database migrations will be handled by separate migration runner...');
 
     await client.query('COMMIT');
     console.log('✅ Database setup completed successfully!');

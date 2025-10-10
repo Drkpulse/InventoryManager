@@ -2,6 +2,32 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
+// Helper function to safely query users with optional lockout columns
+async function safeUserQuery(query, params = []) {
+  try {
+    return await db.query(query, params);
+  } catch (error) {
+    // If column doesn't exist, try a fallback query
+    if (error.code === '42703') { // undefined_column error
+      console.warn('Column missing in query, using fallback:', error.message);
+
+      // Create a simplified fallback query for user data
+      const fallbackQuery = query
+        .replace(/COALESCE\(u\.failed_login_attempts,\s*0\)\s*as\s*failed_login_attempts,?/gi, '0 as failed_login_attempts,')
+        .replace(/COALESCE\(u\.account_locked,\s*false\)\s*as\s*account_locked,?/gi, 'false as account_locked,')
+        .replace(/u\.locked_at,?/gi, 'NULL::TIMESTAMP as locked_at,')
+        .replace(/u\.locked_until,?/gi, 'NULL::TIMESTAMP as locked_until,')
+        .replace(/u\.failed_login_attempts,?/gi, '0 as failed_login_attempts,')
+        .replace(/u\.account_locked,?/gi, 'false as account_locked,')
+        .replace(/failed_login_attempts\s*>\s*\d+/gi, 'false')
+        .replace(/account_locked\s*=\s*(true|false)/gi, 'false');
+
+      return await db.query(fallbackQuery, params);
+    }
+    throw error;
+  }
+}
+
 // Users Management
 exports.users = async (req, res) => {
   try {
@@ -9,7 +35,7 @@ exports.users = async (req, res) => {
     let result;
     try {
       // Try the full query with roles first
-      result = await db.query(`
+      result = await safeUserQuery(`
         SELECT
           u.id, u.name, u.email, u.cep_id, u.role, u.created_at, u.last_login,
           CASE WHEN u.active IS NULL THEN true ELSE u.active END as active,
@@ -1253,8 +1279,8 @@ exports.unlockUser = async (req, res) => {
     const userId = req.params.id;
 
     // Get user details including lockout info for logging
-    const userResult = await db.query(
-      'SELECT name, email, cep_id, account_locked, failed_login_attempts, locked_at, locked_until FROM users WHERE id = $1',
+    const userResult = await safeUserQuery(
+      'SELECT name, email, cep_id, COALESCE(account_locked, false) as account_locked, COALESCE(failed_login_attempts, 0) as failed_login_attempts, locked_at, locked_until FROM users WHERE id = $1',
       [userId]
     );
 
@@ -1271,11 +1297,20 @@ exports.unlockUser = async (req, res) => {
       return res.redirect('/admin/users');
     }
 
-    // Unlock the user account and reset failed attempts
-    await db.query(
-      'UPDATE users SET account_locked = FALSE, failed_login_attempts = 0, locked_until = NULL, locked_at = NULL WHERE id = $1',
-      [userId]
-    );
+    // Unlock the user account and reset failed attempts (safely)
+    try {
+      await db.query(
+        'UPDATE users SET account_locked = FALSE, failed_login_attempts = 0, locked_until = NULL, locked_at = NULL WHERE id = $1',
+        [userId]
+      );
+    } catch (updateError) {
+      if (updateError.code === '42703') {
+        // If lockout columns don't exist, just log a warning
+        console.warn('Lockout columns not available, user unlock operation skipped');
+      } else {
+        throw updateError;
+      }
+    }
 
     // Log the unlock action with details
     const lockDetails = {
@@ -1704,32 +1739,32 @@ exports.getUserAnalytics = async (req, res) => {
       // Active sessions from analytics data
       db.query(`
         SELECT COUNT(DISTINCT session_id) as active_sessions
-        FROM user_session_summary 
+        FROM user_session_summary
         WHERE last_activity > NOW() - INTERVAL '30 minutes'
       `),
-      
+
       // Cookie consent rate from analytics
       db.query(`
-        SELECT 
-          COUNT(CASE WHEN consent_type = 'accepted_all' THEN 1 END)::FLOAT / 
+        SELECT
+          COUNT(CASE WHEN consent_type = 'accepted_all' THEN 1 END)::FLOAT /
           NULLIF(COUNT(*), 0) * 100 as consent_rate
-        FROM cookie_consent_analytics 
+        FROM cookie_consent_analytics
         WHERE timestamp > NOW() - INTERVAL '7 days'
       `),
-      
+
       // Average session duration from analytics
       db.query(`
         SELECT AVG(total_duration_seconds) as avg_duration
-        FROM user_session_summary 
-        WHERE start_time > NOW() - INTERVAL '24 hours' 
+        FROM user_session_summary
+        WHERE start_time > NOW() - INTERVAL '24 hours'
           AND end_time IS NOT NULL
       `),
 
       // Recent activity from page views
       db.query(`
         SELECT COUNT(DISTINCT session_id) as recent_visitors
-        FROM user_analytics_events 
-        WHERE event_type = 'page_view' 
+        FROM user_analytics_events
+        WHERE event_type = 'page_view'
           AND timestamp > NOW() - INTERVAL '1 hour'
       `)
     ]);
@@ -1776,7 +1811,7 @@ exports.getUserAnalytics = async (req, res) => {
 
     // Performance score calculation
     const recentActivity = recentActivityQuery.rows[0]?.recent_visitors || 0;
-    const performanceScore = Math.min(100, 
+    const performanceScore = Math.min(100,
       40 + // Base score
       Math.min(30, activeSessions * 5) + // Session activity (max 30 points)
       Math.min(20, recentActivity * 2) + // Recent activity (max 20 points)
@@ -1816,8 +1851,47 @@ exports.getUserAnalytics = async (req, res) => {
 // SECURITY MANAGEMENT METHODS
 // =============================================================================
 
+// Helper function to check if security tables exist
+async function checkSecurityTables() {
+  const requiredTables = ['login_attempts', 'account_lockouts', 'security_events', 'user_sessions'];
+  const existing = [];
+  const missing = [];
+
+  for (const table of requiredTables) {
+    try {
+      await db.query(`SELECT 1 FROM ${table} LIMIT 1`);
+      existing.push(table);
+    } catch (error) {
+      // Table doesn't exist or can't be queried
+      missing.push(table);
+    }
+  }
+
+  return {
+    allExist: missing.length === 0,
+    existing,
+    missing
+  };
+}
+
 exports.securityCenter = async (req, res) => {
   try {
+    // Check if security tables exist first
+    const securityTablesExist = await checkSecurityTables();
+
+    if (!securityTablesExist.allExist) {
+      return res.render('layout', {
+        title: 'Security Center',
+        body: 'admin/security-center',
+        user: req.user,
+        securityData: {
+          tablesNotReady: true,
+          missingTables: securityTablesExist.missing,
+          message: 'Security tables are not yet initialized. Please run database migrations.'
+        }
+      });
+    }
+
     // Get security overview data
     const [
       recentAttemptsResult,
@@ -1862,11 +1936,21 @@ exports.securityCenter = async (req, res) => {
           AND expires_at > NOW()
       `),
 
-      // Suspicious activity indicators
+      // Suspicious activity indicators (with fallback for missing columns)
       db.query(`
         SELECT
-          COUNT(CASE WHEN failed_login_attempts > 3 THEN 1 END) as users_with_failures,
-          COUNT(CASE WHEN account_locked = true THEN 1 END) as locked_users,
+          COALESCE(
+            (SELECT COUNT(CASE WHEN failed_login_attempts > 3 THEN 1 END) FROM users
+             WHERE EXISTS (SELECT 1 FROM information_schema.columns
+                          WHERE table_name = 'users' AND column_name = 'failed_login_attempts')),
+            0
+          ) as users_with_failures,
+          COALESCE(
+            (SELECT COUNT(CASE WHEN account_locked = true THEN 1 END) FROM users
+             WHERE EXISTS (SELECT 1 FROM information_schema.columns
+                          WHERE table_name = 'users' AND column_name = 'account_locked')),
+            0
+          ) as locked_users,
           COUNT(CASE WHEN last_login < NOW() - INTERVAL '30 days' THEN 1 END) as inactive_users
         FROM users
       `)
@@ -1899,7 +1983,13 @@ exports.securityCenter = async (req, res) => {
 
   } catch (error) {
     console.error('Error loading security center:', error);
-    req.flash('error', 'Failed to load security center');
+
+    // Check if it's a missing table error
+    if (error.code === '42P01') {
+      req.flash('error', 'Security tables are not initialized. Please run database migrations.');
+    } else {
+      req.flash('error', 'Failed to load security center: ' + error.message);
+    }
     res.redirect('/admin');
   }
 };
@@ -2045,7 +2135,7 @@ exports.securityEvents = async (req, res) => {
 exports.accountLockouts = async (req, res) => {
   try {
     // Get currently locked accounts with details
-    const lockoutsResult = await db.query(`
+    const lockoutsResult = await safeUserQuery(`
       SELECT
         al.id,
         al.identifier,
@@ -2057,8 +2147,8 @@ exports.accountLockouts = async (req, res) => {
         u.name as user_name,
         u.email as user_email,
         u.cep_id,
-        u.failed_login_attempts,
-        u.account_locked as user_locked
+        COALESCE(u.failed_login_attempts, 0) as failed_login_attempts,
+        COALESCE(u.account_locked, false) as user_locked
       FROM account_lockouts al
       LEFT JOIN users u ON al.identifier = u.email OR al.identifier = u.cep_id
       WHERE al.locked_until > NOW()
@@ -2123,14 +2213,23 @@ exports.unlockAccount = async (req, res) => {
     // Remove lockout record
     await db.query('DELETE FROM account_lockouts WHERE identifier = $1', [identifier]);
 
-    // Reset user failed attempts if it's a user account
-    await db.query(`
-      UPDATE users
-      SET failed_login_attempts = 0,
-          account_locked = FALSE,
-          locked_until = NULL
-      WHERE email = $1 OR cep_id = $1
-    `, [identifier]);
+    // Reset user failed attempts if it's a user account (safely)
+    try {
+      await db.query(`
+        UPDATE users
+        SET failed_login_attempts = 0,
+            account_locked = FALSE,
+            locked_until = NULL
+        WHERE email = $1 OR cep_id = $1
+      `, [identifier]);
+    } catch (updateError) {
+      if (updateError.code === '42703') {
+        // If lockout columns don't exist, just continue
+        console.warn('Lockout columns not available for user reset');
+      } else {
+        throw updateError;
+      }
+    }
 
     // Log security event
     await db.query(`

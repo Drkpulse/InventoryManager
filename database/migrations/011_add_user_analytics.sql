@@ -1,11 +1,11 @@
 -- Enhanced User Analytics Tables for Performance Tracking
--- Migration: 010_add_user_analytics.sql
+-- Migration: 011_add_user_analytics.sql
 
 -- User Analytics Events table for detailed user behavior tracking
 CREATE TABLE IF NOT EXISTS user_analytics_events (
   id SERIAL PRIMARY KEY,
   session_id VARCHAR(255),
-  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  user_id INTEGER,
   event_type VARCHAR(50) NOT NULL, -- 'page_view', 'click', 'form_submit', 'search', 'download', etc.
   page_url VARCHAR(500),
   page_title VARCHAR(200),
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS user_analytics_events (
 CREATE TABLE IF NOT EXISTS page_performance_metrics (
   id SERIAL PRIMARY KEY,
   session_id VARCHAR(255),
-  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  user_id INTEGER,
   page_url VARCHAR(500) NOT NULL,
   page_title VARCHAR(200),
   load_time_ms INTEGER, -- Page load time in milliseconds
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS page_performance_metrics (
 CREATE TABLE IF NOT EXISTS user_session_summary (
   id SERIAL PRIMARY KEY,
   session_id VARCHAR(255) UNIQUE NOT NULL,
-  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  user_id INTEGER,
   start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   end_time TIMESTAMP,
   total_duration_seconds INTEGER,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS user_session_summary (
 CREATE TABLE IF NOT EXISTS cookie_consent_analytics (
   id SERIAL PRIMARY KEY,
   session_id VARCHAR(255),
-  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  user_id INTEGER,
   consent_type VARCHAR(50) NOT NULL, -- 'accepted_all', 'rejected_all', 'customized', 'dismissed'
   performance_cookies BOOLEAN DEFAULT FALSE,
   preference_cookies BOOLEAN DEFAULT FALSE,
@@ -114,25 +114,56 @@ CREATE TABLE IF NOT EXISTS performance_aggregates (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes for performance
-CREATE INDEX IF NOT EXISTS idx_analytics_events_session ON user_analytics_events (session_id);
-CREATE INDEX IF NOT EXISTS idx_analytics_events_user ON user_analytics_events (user_id, timestamp);
-CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON user_analytics_events (event_type, timestamp);
-CREATE INDEX IF NOT EXISTS idx_analytics_events_page ON user_analytics_events (page_url, timestamp);
+-- Create indexes for performance (with error handling for user_id indexes)
+DO $$
+BEGIN
+    -- Safe indexes that don't depend on user relationships
+    CREATE INDEX IF NOT EXISTS idx_analytics_events_session ON user_analytics_events (session_id);
+    CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON user_analytics_events (event_type, timestamp);
+    CREATE INDEX IF NOT EXISTS idx_analytics_events_page ON user_analytics_events (page_url, timestamp);
 
-CREATE INDEX IF NOT EXISTS idx_performance_metrics_session ON page_performance_metrics (session_id);
-CREATE INDEX IF NOT EXISTS idx_performance_metrics_user ON page_performance_metrics (user_id, timestamp);
-CREATE INDEX IF NOT EXISTS idx_performance_metrics_page ON page_performance_metrics (page_url, timestamp);
+    CREATE INDEX IF NOT EXISTS idx_performance_metrics_session ON page_performance_metrics (session_id);
+    CREATE INDEX IF NOT EXISTS idx_performance_metrics_page ON page_performance_metrics (page_url, timestamp);
 
-CREATE INDEX IF NOT EXISTS idx_session_summary_session ON user_session_summary (session_id);
-CREATE INDEX IF NOT EXISTS idx_session_summary_user ON user_session_summary (user_id, start_time);
-CREATE INDEX IF NOT EXISTS idx_session_summary_time ON user_session_summary (start_time, end_time);
+    CREATE INDEX IF NOT EXISTS idx_session_summary_session ON user_session_summary (session_id);
+    CREATE INDEX IF NOT EXISTS idx_session_summary_time ON user_session_summary (start_time, end_time);
 
-CREATE INDEX IF NOT EXISTS idx_cookie_consent_session ON cookie_consent_analytics (session_id);
-CREATE INDEX IF NOT EXISTS idx_cookie_consent_user ON cookie_consent_analytics (user_id, timestamp);
-CREATE INDEX IF NOT EXISTS idx_cookie_consent_type ON cookie_consent_analytics (consent_type, timestamp);
+    CREATE INDEX IF NOT EXISTS idx_cookie_consent_session ON cookie_consent_analytics (session_id);
+    CREATE INDEX IF NOT EXISTS idx_cookie_consent_type ON cookie_consent_analytics (consent_type, timestamp);
 
-CREATE INDEX IF NOT EXISTS idx_performance_aggregates_date ON performance_aggregates (date_period, period_type);
+    CREATE INDEX IF NOT EXISTS idx_performance_aggregates_date ON performance_aggregates (date_period, period_type);
+
+    -- User_id dependent indexes with error handling
+    BEGIN
+        CREATE INDEX IF NOT EXISTS idx_analytics_events_user ON user_analytics_events (user_id, timestamp);
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE WARNING 'Could not create user_analytics_events user_id index: %', SQLERRM;
+    END;
+
+    BEGIN
+        CREATE INDEX IF NOT EXISTS idx_performance_metrics_user ON page_performance_metrics (user_id, timestamp);
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE WARNING 'Could not create page_performance_metrics user_id index: %', SQLERRM;
+    END;
+
+    BEGIN
+        CREATE INDEX IF NOT EXISTS idx_session_summary_user ON user_session_summary (user_id, start_time);
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE WARNING 'Could not create user_session_summary user_id index: %', SQLERRM;
+    END;
+
+    BEGIN
+        CREATE INDEX IF NOT EXISTS idx_cookie_consent_user ON cookie_consent_analytics (user_id, timestamp);
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE WARNING 'Could not create cookie_consent_analytics user_id index: %', SQLERRM;
+    END;
+
+    RAISE NOTICE 'Analytics indexes created with error handling for user_id dependencies';
+END $$;
 
 -- Function to update performance aggregates
 CREATE OR REPLACE FUNCTION update_performance_aggregates(target_date DATE DEFAULT CURRENT_DATE)
@@ -196,7 +227,40 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Add unique constraint for daily aggregates
-ALTER TABLE performance_aggregates
-ADD CONSTRAINT unique_daily_aggregate
-UNIQUE (date_period, period_type);
+-- Add unique constraint for daily aggregates (with better error handling)
+DO $$
+BEGIN
+    -- First check if the table exists
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_name = 'performance_aggregates'
+    ) THEN
+        RAISE WARNING 'Table performance_aggregates does not exist, constraint cannot be added';
+        RETURN;
+    END IF;
+
+    -- Check if constraint already exists
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'unique_daily_aggregate'
+        AND table_name = 'performance_aggregates'
+    ) THEN
+        -- Try to add the constraint
+        BEGIN
+            ALTER TABLE performance_aggregates
+            ADD CONSTRAINT unique_daily_aggregate
+            UNIQUE (date_period, period_type);
+            RAISE NOTICE 'Added unique_daily_aggregate constraint to performance_aggregates';
+        EXCEPTION
+            WHEN duplicate_object THEN
+                RAISE NOTICE 'Constraint unique_daily_aggregate already exists (duplicate_object), skipping';
+            WHEN others THEN
+                RAISE WARNING 'Failed to add unique_daily_aggregate constraint: %', SQLERRM;
+        END;
+    ELSE
+        RAISE NOTICE 'Constraint unique_daily_aggregate already exists, skipping';
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE WARNING 'Error in constraint creation block: %', SQLERRM;
+END $$;
